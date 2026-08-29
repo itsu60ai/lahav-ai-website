@@ -1,0 +1,415 @@
+{
+  "created": "2026-08-29",
+  "page_selection": [
+    {
+      "folder": "01-home",
+      "page": "Home",
+      "recommended_route": "/",
+      "source_stitch_dir": "lahav_ai_prd"
+    },
+    {
+      "folder": "02-services",
+      "page": "Services",
+      "recommended_route": "/services",
+      "source_stitch_dir": "lahav_ai_8"
+    },
+    {
+      "folder": "03-crm",
+      "page": "CRM Service Detail",
+      "recommended_route": "/services/crm",
+      "source_stitch_dir": "crm_lahav_ai_3"
+    },
+    {
+      "folder": "04-business-automations",
+      "page": "Business Automations Service Detail",
+      "recommended_route": "/services/automations",
+      "source_stitch_dir": "lahav_ai_4"
+    },
+    {
+      "folder": "05-website-development",
+      "page": "Website Development Service Detail",
+      "recommended_route": "/services/web-development",
+      "source_stitch_dir": "lahav_ai_9"
+    },
+    {
+      "folder": "06-application-development",
+      "page": "Application Development Service Detail",
+      "recommended_route": "/services/app-development",
+      "source_stitch_dir": "lahav_ai_10"
+    },
+    {
+      "folder": "07-ai-content-creation",
+      "page": "AI Content Creation Service Detail",
+      "recommended_route": "/services/ai-content",
+      "source_stitch_dir": "ai_lahav_ai_2"
+    },
+    {
+      "folder": "08-about",
+      "page": "About",
+      "recommended_route": "/about",
+      "source_stitch_dir": "lahav_ai_17"
+    },
+    {
+      "folder": "09-blog",
+      "page": "Articles / Blog Index",
+      "recommended_route": "/articles",
+      "source_stitch_dir": "lahav_ai_18"
+    },
+    {
+      "folder": "10-article-detail",
+      "page": "Article Template",
+      "recommended_route": "/articles/[slug]",
+      "source_stitch_dir": "lahav_ai_article_detail_template"
+    },
+    {
+      "folder": "11-contact-discovery",
+      "page": "Contact / Book Discovery",
+      "recommended_route": "/contact",
+      "source_stitch_dir": "lahav_ai_discovery"
+    },
+    {
+      "folder": "12-privacy",
+      "page": "Privacy Policy Template",
+      "recommended_route": "/privacy",
+      "source_stitch_dir": "lahav_ai_legal_template"
+    },
+    {
+      "folder": "13-404",
+      "page": "404",
+      "recommended_route": "404 fallback",
+      "source_stitch_dir": "404_lahav_ai_broken_flow"
+    }
+  ],
+  "files": [
+    {
+      "path": "00_START_HERE/CLAUDE_INSTRUCTIONS.md",
+      "sha256": "c1907b03cd4e9c812803b0e30702817f33ce680c6163faafe2f0249a07d839a3",
+      "bytes": 936
+    },
+    {
+      "path": "00_START_HERE/MASTER_BUILD_BRIEF.md",
+      "sha256": "d5253edacb470b6d33bf5afe57c56f997d86c91376b543aed9f80f753656f5fe",
+      "bytes": 4712
+    },
+    {
+      "path": "00_START_HERE/PAGE_MAP.md",
+      "sha256": "632cb24650dea07c9611864e476d9bbf3966412bba1499cef71be107829ca064",
+      "bytes": 1694
+    },
+    {
+      "path": "00_START_HERE/PROJECT_STATUS.md",
+      "sha256": "5739facd70ef1f9ab6194c9873818a2307bcdaec9655833764d160844c0f0cc6",
+      "bytes": 683
+    },
+    {
+      "path": "00_START_HERE/PROMPT_TO_PASTE_IN_CLAUDE.txt",
+      "sha256": "65df493564ae663e9963af113c4b27939ca81dec7f3adeacb49c21176cb77a12",
+      "bytes": 854
+    },
+    {
+      "path": "00_START_HERE/SOURCE_OF_TRUTH.md",
+      "sha256": "ef8f21fdad14afe2d922d8c95bdf384521d7042db42cf7b7515a51718b2717c2",
+      "bytes": 1095
+    },
+    {
+      "path": "01_PRD/LAHAV_AI_Website_PRD.pdf",
+      "sha256": "174e4b6815071c27c4420deaf5ba035d9315fe245cadc294687885baf3dd4aa8",
+      "bytes": 136401
+    },
+    {
+      "path": "01_PRD/SERVICE_PAGE_SCOPE_ADDENDUM.md",
+      "sha256": "a698ece8b7055f406404df1c17aa16b4922d3e1c96e218056181d997f32f1dbb",
+      "bytes": 2792
+    },
+    {
+      "path": "01_PRD/WEBSITE_PRD.md",
+      "sha256": "3f0056e7662c6f0ff16d56ea73160ecc9124aea17bab64e580a9bc7e1594d11e",
+      "bytes": 9187
+    },
+    {
+      "path": "02_BRAND/BRAND_RULES.md",
+      "sha256": "cbb7c89176bb24abb7d91709e68393439bd7e5298ae25c35d0db1b0678d355ca",
+      "bytes": 1553
+    },
+    {
+      "path": "02_BRAND/LAHAV_AI_Hebrew_Brand_Guide.png",
+      "sha256": "65c20bb72f7499c10c4d9d164e7acfd5b8204a1a6efd1efa3a5de3812e67cbbb",
+      "bytes": 2088402
+    },
+    {
+      "path": "02_BRAND/LAHAV_AI_Monochrome_Dark.svg",
+      "sha256": "fe6c417d6a16337aef9df21ad1a70bbe9850ce494d4081708d8565dec65b1641",
+      "bytes": 1004
+    },
+    {
+      "path": "02_BRAND/LAHAV_AI_Monogram.png",
+      "sha256": "9f8fbca96e247242e04afe463af835c6ac69acf62026fec25af61d276f4f8b2c",
+      "bytes": 205864
+    },
+    {
+      "path": "02_BRAND/LAHAV_AI_Monogram.svg",
+      "sha256": "1a3ca2ebeb1af33e9aa0a6380a84e8b88b1ac80f570835ebbef4cd8b5e009d8d",
+      "bytes": 625
+    },
+    {
+      "path": "02_BRAND/LAHAV_AI_Primary.png",
+      "sha256": "de42f545bbbf7d409cf4672cdfa4f42e66447f90f6d12370cc22cc09b2d7c73c",
+      "bytes": 175984
+    },
+    {
+      "path": "02_BRAND/LAHAV_AI_Primary.svg",
+      "sha256": "c08c583e97e0c6064c70b37af47eb19612c8a91a3a4a42384d3abdd0aa14127e",
+      "bytes": 1004
+    },
+    {
+      "path": "02_BRAND/LAHAV_AI_White.svg",
+      "sha256": "baefbfefeff18bc9bf3f1481e47c7166b9eb086f9a81ef19f68a282ee95323de",
+      "bytes": 1004
+    },
+    {
+      "path": "03_STITCH_FINAL/01-home/NOTES.md",
+      "sha256": "839cb1fc890f2582be55634c4bc2c9be0e88f1cbc8bb98d3eb40306d4c47de4b",
+      "bytes": 345
+    },
+    {
+      "path": "03_STITCH_FINAL/01-home/stitch-reference.png",
+      "sha256": "e032ca5fc58bb9d7e79f043b55142851c34d9fa377d68d534d823054583bf8fb",
+      "bytes": 177843
+    },
+    {
+      "path": "03_STITCH_FINAL/01-home/stitch-source.html",
+      "sha256": "f9b029e5a97c10274a7693db2fa13b60fe31a8f53c029b252c1481795a673636",
+      "bytes": 38235
+    },
+    {
+      "path": "03_STITCH_FINAL/02-services/NOTES.md",
+      "sha256": "8db8566ef286e22c378a465a4203f1a8a1c9ecb0e5ff18cb40638ea49a027f6c",
+      "bytes": 316
+    },
+    {
+      "path": "03_STITCH_FINAL/02-services/stitch-reference.png",
+      "sha256": "ca2c417ace68523eae6c229a5fcaaeaa1efeebc0e827b3a80fb501d53bac034b",
+      "bytes": 228185
+    },
+    {
+      "path": "03_STITCH_FINAL/02-services/stitch-source.html",
+      "sha256": "71bbe2744bdbf19685342525f7e1bcedee5f812e303f686a45cbb0e726acd6fa",
+      "bytes": 34171
+    },
+    {
+      "path": "03_STITCH_FINAL/03-crm/NOTES.md",
+      "sha256": "070970aa165f97ce86008216839785e416ed9efe126458939857fa6965a4a0ea",
+      "bytes": 312
+    },
+    {
+      "path": "03_STITCH_FINAL/03-crm/stitch-reference.png",
+      "sha256": "9c663907b56d5a707ed63605de08bf0dfba023a23b4d409f374d66f8c87ac0e5",
+      "bytes": 203610
+    },
+    {
+      "path": "03_STITCH_FINAL/03-crm/stitch-source.html",
+      "sha256": "b5cf41e660175612fbf32871c1533e8b0eae37373034ac9dfde30f396cffa848",
+      "bytes": 35348
+    },
+    {
+      "path": "03_STITCH_FINAL/04-business-automations/NOTES.md",
+      "sha256": "6575162a680e98462e72e923b78d71de1d49e7f91985cb0507295ef8c12541dc",
+      "bytes": 303
+    },
+    {
+      "path": "03_STITCH_FINAL/04-business-automations/stitch-reference.png",
+      "sha256": "b6e4028175b2efd67b4650f4b188b4ed759624c064fdc975a77308cf046276ed",
+      "bytes": 179705
+    },
+    {
+      "path": "03_STITCH_FINAL/04-business-automations/stitch-source.html",
+      "sha256": "b484c0a3ec5e7d8a2d9f2b61ec91b7f6cb001e718bbf35158ae2985af5e68c60",
+      "bytes": 30184
+    },
+    {
+      "path": "03_STITCH_FINAL/05-website-development/NOTES.md",
+      "sha256": "4f567349600a079d35fb94d1818d2e6ef40448dea6cba9f9e0b07ffd236fed39",
+      "bytes": 309
+    },
+    {
+      "path": "03_STITCH_FINAL/05-website-development/stitch-reference.png",
+      "sha256": "0fab76848ea64e1bd63abf30c7eacaa64dcc4bfdc45863da81b1cde7d15bcd1c",
+      "bytes": 299994
+    },
+    {
+      "path": "03_STITCH_FINAL/05-website-development/stitch-source.html",
+      "sha256": "a521fc312db3f9034e232875ba7b0bfec0cc5f6cc0fb97ed39097660bfc5bd93",
+      "bytes": 28789
+    },
+    {
+      "path": "03_STITCH_FINAL/06-application-development/NOTES.md",
+      "sha256": "a42cac2bd48872bdfc22a99fd5d96a1b87819eb4ef47f6afaf293645cd80a655",
+      "bytes": 283
+    },
+    {
+      "path": "03_STITCH_FINAL/06-application-development/stitch-reference.png",
+      "sha256": "69266452d989cf6f2fb0c0c011641abde055d71363dc69adafc3447977c8d86d",
+      "bytes": 311856
+    },
+    {
+      "path": "03_STITCH_FINAL/06-application-development/stitch-source.html",
+      "sha256": "66979cdec68c108deac6ee7a7173c71b6e0aa6c274dfad107c1a201da992c3d9",
+      "bytes": 30416
+    },
+    {
+      "path": "03_STITCH_FINAL/07-ai-content-creation/NOTES.md",
+      "sha256": "9847ecb721fbfd7be5093ac5ff0071c8538bcfbdecd5a0e6a110c722900f3bcb",
+      "bytes": 307
+    },
+    {
+      "path": "03_STITCH_FINAL/07-ai-content-creation/stitch-reference.png",
+      "sha256": "4ec0e0bbf90142efbcd9ed666ce6b71307fad37cf4ec5ad3a145a2e8c6ec8ec6",
+      "bytes": 217991
+    },
+    {
+      "path": "03_STITCH_FINAL/07-ai-content-creation/stitch-source.html",
+      "sha256": "e37d138cd95f506009ff79679947eea6198e02ef082ab39aaff7bb285877b6c1",
+      "bytes": 27436
+    },
+    {
+      "path": "03_STITCH_FINAL/08-about/NOTES.md",
+      "sha256": "7ea7a8e42faac5dd3731cfa7fa4892628187369472395c75f1182542ce38fdad",
+      "bytes": 271
+    },
+    {
+      "path": "03_STITCH_FINAL/08-about/stitch-reference.png",
+      "sha256": "a4b2ed9b6634738aaf66e654e488452d26b97cc45264f21650a6ed32abfc1cae",
+      "bytes": 159248
+    },
+    {
+      "path": "03_STITCH_FINAL/08-about/stitch-source.html",
+      "sha256": "b4aff89d692e4821f60812879dcf22228a49963e1c1564cfcf1e85622d40837a",
+      "bytes": 23941
+    },
+    {
+      "path": "03_STITCH_FINAL/09-blog/NOTES.md",
+      "sha256": "c0a3bcb9a995952e0b618c084160815dcb4328c45405ffe6d576b08fcae0f30c",
+      "bytes": 294
+    },
+    {
+      "path": "03_STITCH_FINAL/09-blog/stitch-reference.png",
+      "sha256": "5340be3b91ad50d79f5036c0a86d353dc5712092b9c65c27359aa6285320f445",
+      "bytes": 389069
+    },
+    {
+      "path": "03_STITCH_FINAL/09-blog/stitch-source.html",
+      "sha256": "81e69b9f23286462295550910585c06dfc331aafbe85135274774df8dbd926f2",
+      "bytes": 30398
+    },
+    {
+      "path": "03_STITCH_FINAL/10-article-detail/NOTES.md",
+      "sha256": "aba304f30b07419d187c031ca63ad97ccbc4d70fc3af9ddc3595d5c1a1cbcd22",
+      "bytes": 285
+    },
+    {
+      "path": "03_STITCH_FINAL/10-article-detail/stitch-reference.png",
+      "sha256": "42431f0f303db7bb1d7513b5c059c5f4feaa58187fa3e4c5c0f40cb59e5b8770",
+      "bytes": 292672
+    },
+    {
+      "path": "03_STITCH_FINAL/10-article-detail/stitch-source.html",
+      "sha256": "327b13e393a02a4a46c1d265a93b4cecf6a7b6199d89154c64081e0cd529e63f",
+      "bytes": 29559
+    },
+    {
+      "path": "03_STITCH_FINAL/11-contact-discovery/NOTES.md",
+      "sha256": "1d26e7e72ad9b8b2f2ccd810ede94b10d4e61cdd6109f44ee209b406a35c6dc9",
+      "bytes": 303
+    },
+    {
+      "path": "03_STITCH_FINAL/11-contact-discovery/stitch-reference.png",
+      "sha256": "c53c79b0729be199b4473d8be906ce89cfd02b12ca4d1ab85b66690b000fe1dc",
+      "bytes": 269528
+    },
+    {
+      "path": "03_STITCH_FINAL/11-contact-discovery/stitch-source.html",
+      "sha256": "031da81c5dee78fb6843e6a720baa37ce18e0a7847e6711fa7875bc80467e567",
+      "bytes": 26767
+    },
+    {
+      "path": "03_STITCH_FINAL/12-privacy/NOTES.md",
+      "sha256": "77e52297ee6e9eb65e8de697f2216380db7a33e7e293c33b37d9ed1dab2087ba",
+      "bytes": 287
+    },
+    {
+      "path": "03_STITCH_FINAL/12-privacy/stitch-reference.png",
+      "sha256": "3800358b8f3bc7dd86d655e2659d941043bc4f4534b55eed6cbf440ba867141f",
+      "bytes": 235227
+    },
+    {
+      "path": "03_STITCH_FINAL/12-privacy/stitch-source.html",
+      "sha256": "396d050120cd3476e46eac1845fbf3b403beabecc0f46f58091a2b23d14a3586",
+      "bytes": 19020
+    },
+    {
+      "path": "03_STITCH_FINAL/13-404/NOTES.md",
+      "sha256": "84c82faf41fea23e02af589b28223cbd26c91e91189bfbf1c9925f0be21a0726",
+      "bytes": 267
+    },
+    {
+      "path": "03_STITCH_FINAL/13-404/stitch-reference.png",
+      "sha256": "4886a675d410436b356fa241bff91d278ada51d775438f2281f0e717c3f27e9b",
+      "bytes": 553119
+    },
+    {
+      "path": "03_STITCH_FINAL/13-404/stitch-source.html",
+      "sha256": "0ffc3aa7fbd2c7ddad180f01f0c840a6e33ce09241bace88ab54de6298912f68",
+      "bytes": 13662
+    },
+    {
+      "path": "03_STITCH_FINAL/FINAL_PAGES_MONTAGE.jpg",
+      "sha256": "733737c834b25024394b3faf73fef559bb4d885499867504c6b62a6830a5ee0a",
+      "bytes": 501959
+    },
+    {
+      "path": "04_VISUAL_DIRECTION/VISUAL_REFERENCES.md",
+      "sha256": "e0eae5e36440a33751526972abb7e064f15550f2d05b717d921b101f779487cf",
+      "bytes": 885
+    },
+    {
+      "path": "04_VISUAL_DIRECTION/VISUAL_UPGRADE_BRIEF.md",
+      "sha256": "47cc2d144995e2359d705a79fcf47559e6a82c2f3894a3aede3f5b9536f10d06",
+      "bytes": 3881
+    },
+    {
+      "path": "05_CONTENT_RULES/APPROVED_COPY.md",
+      "sha256": "7f53e80c0c87684c11bb9034438657400beb3bd492ac6f88b0cb76de6a5831ef",
+      "bytes": 1729
+    },
+    {
+      "path": "05_CONTENT_RULES/CONTENT_CLEANUP.md",
+      "sha256": "6420085db9e0ba80c79b835b9bd99e0bb0ce53e76ebbe20b3463edadec56ac20",
+      "bytes": 4145
+    },
+    {
+      "path": "06_ARCHITECTURE_AND_QA/ARCHITECTURE_GUARDRAILS.md",
+      "sha256": "afdacf2f6cd749f782297547580238d52cbb25925f1b4a2db08340f3eb6034ea",
+      "bytes": 2493
+    },
+    {
+      "path": "06_ARCHITECTURE_AND_QA/ASSET_POLICY.md",
+      "sha256": "fa2b8df93534f7ef0be63fedb2ce43145d55857b01e53890e05b99874f0cd854",
+      "bytes": 800
+    },
+    {
+      "path": "06_ARCHITECTURE_AND_QA/QA_ACCEPTANCE.md",
+      "sha256": "eea4993f9ec38868b6392570cf21144c7b902f4464d4a7bde73a437783dbaf9c",
+      "bytes": 2129
+    },
+    {
+      "path": "07_REFERENCE_ARCHIVE/FILTERING_REPORT.md",
+      "sha256": "ed32b22541b7cf07a0c0f4c4fac16f1705f201e1311a6eb55976bef8c1c3dddc",
+      "bytes": 1834
+    },
+    {
+      "path": "README.md",
+      "sha256": "0bfe1aff99c593e9bc50e76ab4dbca007a80973982e8a3134b868fb0580d4d32",
+      "bytes": 1011
+    }
+  ]
+}

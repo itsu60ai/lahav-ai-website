@@ -1,0 +1,865 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const typeScale = [
+  { cls: 't-display-1', token: '--text-display-1', range: '48 → 116px', use: 'כותרת ראשית של דף הבית בלבד', sample: 'מערכות AI שעושות סדר' },
+  { cls: 't-display-2', token: '--text-display-2', range: '40 → 84px', use: 'פתיח של עמוד פנימי', sample: 'אוטומציות עסקיות' },
+  { cls: 't-h1', token: '--text-h1', range: '36 → 64px', use: 'כותרת עמוד', sample: 'מערכות CRM חכמות' },
+  { cls: 't-h2', token: '--text-h2', range: '32 → 52px', use: 'כותרת סקשן — משקל עריכתי חזק', sample: 'איך אנחנו עובדים' },
+  { cls: 't-h3', token: '--text-h3', range: '22 → 30px', use: 'כותרת כרטיס', sample: 'אפיון התהליך העסקי' },
+  { cls: 't-lead', token: '--text-lead', range: '19 → 26px', use: 'פסקת פתיחה', sample: 'קודם מבינים איך העסק עובד היום, ורק אחר כך בוחרים טכנולוגיה.' },
+];
+
+const supportScale = [
+  { cls: 't-body', token: '--text-body', range: '18px', use: 'טקסט גוף', sample: 'אנחנו מתחילים מהתהליך העסקי ולא מהטכנולוגיה. קודם מבינים איך העסק עובד היום, איפה נמצאים צווארי הבקבוק ומה באמת צריך להשתפר — ורק לאחר מכן מתכננים את הפתרון המתאים. שורת טקסט נעצרת בסביבות 68 תווים, כדי שהעין תמצא בקלות את תחילת השורה הבאה.' },
+  { cls: 't-small', token: '--text-small', range: '16px · משקל 500', use: 'טקסט תומך בכרטיסים ובתוויות', sample: 'מערכות שמרכזות לידים, לקוחות, מכירות ומשימות במקום אחד ברור. גם הטקסט התומך נשאר קריא בבירור, לא דק ולא זעיר.' },
+  { cls: 't-micro', token: '--text-micro', range: '14px · משקל 500', use: 'כיתובים ומטא-מידע בלבד', sample: 'עודכן לפני 3 ימים · מערכות CRM' },
+];
+
+const colors = [
+  { name: 'Deep Navy', hex: '#0B1530', token: 'navy', ratio: '18.3:1', role: 'טקסט ראשי, משטחים כהים, פוטר', pass: 'כל גודל טקסט' },
+  { name: 'Royal Blue', hex: '#1D4ED8', token: 'royal', ratio: '6.7:1', role: 'פעולה ראשית, קישורים', pass: 'כל גודל טקסט' },
+  { name: 'Electric Blue', hex: '#2997FF', token: 'electric', ratio: '3.0:1', role: 'הדגשה, focus, גרדיאנט', pass: 'כותרות גדולות ואייקונים בלבד' },
+  { name: 'Cool Gray', hex: '#F2F4F7', token: 'cool', ratio: '—', role: 'רקע סקשן מתחלף, משטחים', pass: 'רקע בלבד' },
+  { name: 'White', hex: '#FFFFFF', token: 'white', ratio: '—', role: 'רקע ברירת מחדל', pass: 'רקע בלבד' },
+];
+
+const neutrals = [
+  { name: 'ink', hex: '#0B1530', ratio: '18.3:1', role: 'טקסט ראשי' },
+  { name: 'ink-2', hex: '#33405C', ratio: '10.2:1', role: 'טקסט משני, פסקאות פתיחה' },
+  { name: 'ink-3', hex: '#6B7793', ratio: '4.5:1', role: 'טקסט מושתק, כיתובים' },
+  { name: 'line', hex: '#E3E7EE', ratio: '—', role: 'קווי הפרדה ומסגרות' },
+  { name: 'surface-2', hex: '#F2F4F7', ratio: '—', role: 'רקע סקשן מתחלף' },
+];
+
+const spacing = [4, 8, 12, 16, 24, 32, 48, 64, 96];
+---
+
+<BaseLayout
+  title="מערכת העיצוב · LAHAV AI"
+  description="עמוד פנימי לסקירת מערכת העיצוב של אתר LAHAV AI."
+  noindex={true}
+>
+  <!-- Page chrome -->
+  <header class="sys-top">
+    <div class="u-container sys-top__inner">
+      <img src="/brand/lahav-primary-lockup.svg" alt="LAHAV AI" width="132" height="97" />
+      <div>
+        <div class="t-eyebrow">עמוד פנימי · לא מפורסם</div>
+        <strong>מערכת העיצוב</strong>
+      </div>
+      <span class="chip sys-top__chip">שלב 2 · מאושר עם עדכון ממוקד</span>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ── Intro ─────────────────────────────────────────────── -->
+    <section class="u-container u-section">
+      <p class="t-eyebrow">LAHAV AI · Design System v0.1</p>
+      <h1 class="t-display-2 sys-title">היסודות של האתר,<br />לפני שבונים עמוד אחד.</h1>
+      <p class="t-lead sys-intro">
+        כל מה שמופיע כאן הוא אבן בניין שתחזור בכל 13 העמודים: הטיפוגרפיה, הצבעים, הכפתורים,
+        שדות הטופס, הכרטיסים והמרווחים. מאשרים את זה פעם אחת — וכל האתר נשאר עקבי.
+      </p>
+
+      <div class="sys-callout sys-changelog">
+        <strong>מה עודכן בסבב הזה (לא עיצוב מחדש):</strong>
+        <ol>
+          <li>כותרות סקשן (h2) חזקות ועריכתיות יותר, בהשראת קנה המידה של Apple.</li>
+          <li>רצפת גודל ומשקל גבוהה יותר לכל טקסט תומך — שום דבר לא זעיר או דק.</li>
+          <li>הכרטיסים מסומנים כאופציית רכיב, לא ברירת מחדל — עם דוגמה עריכתית חלופית.</li>
+          <li>הפאנל הכהה קיבל עומק, זוהר עדין ותנועה מדודה — הבסיס לגרפיקות הייחודיות לכל עמוד.</li>
+        </ol>
+      </div>
+    </section>
+
+    <hr class="rule-gradient" />
+
+    <!-- ── 1. Typography ─────────────────────────────────────── -->
+    <section class="u-container u-section">
+      <div class="sys-head">
+        <p class="t-eyebrow">01</p>
+        <h2 class="t-h2">טיפוגרפיה</h2>
+        <p class="t-lead">
+          Heebo לכותרות, Assistant לטקסט. לאחר האישור הראשוני חיזקנו את הסולם: כותרות הסקשן
+          (h2) עברו למשקל עריכתי חזק יותר, וכל טקסט תומך קיבל רצפה גבוהה יותר — כלום באתר
+          לא ייראה קטן או דק.
+        </p>
+      </div>
+
+      <div class="sys-stack">
+        {
+          typeScale.map((t) => (
+            <div class="sys-type-row">
+              <div class="sys-type-meta">
+                <code class="t-micro">{t.token}</code>
+                <span class="t-micro">{t.range}</span>
+                <span class="t-micro sys-muted">{t.use}</span>
+              </div>
+              <p class={t.cls}>{t.sample}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <h3 class="t-h3 sys-subhead">טקסט תומך — הרצפה שהועלתה</h3>
+      <p class="t-lead sys-support-intro">
+        זו הנקודה השנייה מהעדכון: שום טקסט תומך לא יורד מתחת ל-16px, ומשקל הפונט שלו
+        הועלה מ-Regular ל-Medium — כדי שהוא יישאר קריא וברור גם בפסקאות קצרות.
+      </p>
+      <div class="sys-stack">
+        {
+          supportScale.map((t) => (
+            <div class="sys-type-row">
+              <div class="sys-type-meta">
+                <code class="t-micro">{t.token}</code>
+                <span class="t-micro">{t.range}</span>
+                <span class="t-micro sys-muted">{t.use}</span>
+              </div>
+              <p class={t.cls}>{t.sample}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ── 2. Color ──────────────────────────────────────────── -->
+    <section class="sys-alt">
+      <div class="u-container u-section">
+        <div class="sys-head">
+          <p class="t-eyebrow">02</p>
+          <h2 class="t-h2">צבע וניגודיות</h2>
+          <p class="t-lead">
+            חמשת צבעי המותג, ולידם יחס הניגודיות שנמדד מול רקע לבן. זה מה שקובע איפה מותר
+            להשתמש בכל צבע.
+          </p>
+        </div>
+
+        <div class="sys-swatches">
+          {
+            colors.map((c) => (
+              <article class="card sys-swatch">
+                <div class="sys-swatch__chip" style={`background:${c.hex}`} />
+                <h3 class="t-h3">{c.name}</h3>
+                <code class="t-micro">{c.hex}</code>
+                <p class="t-small">{c.role}</p>
+                <div class="sys-swatch__ratio tabular">
+                  <span>{c.ratio}</span>
+                  <span class="t-micro">{c.pass}</span>
+                </div>
+              </article>
+            ))
+          }
+        </div>
+
+        <div class="sys-callout">
+          <strong>כלל שנובע מהמדידה:</strong> Electric Blue מגיע ל-3.0:1 בלבד על רקע לבן.
+          לכן הוא משמש לכותרות גדולות, אייקונים, מסגרות ו-focus — ולעולם לא לטקסט גוף.
+          על רקע נייבי הוא מגיע ל-6.1:1 ובטוח לשימוש מלא.
+        </div>
+
+        <h3 class="t-h3 sys-subhead">נייטרלים</h3>
+        <div class="sys-neutrals">
+          {
+            neutrals.map((n) => (
+              <div class="sys-neutral">
+                <span class="sys-neutral__chip" style={`background:${n.hex}`} />
+                <div>
+                  <strong class="t-small">{n.name}</strong>
+                  <div class="t-micro">
+                    {n.hex} · {n.ratio}
+                  </div>
+                  <div class="t-micro sys-muted">{n.role}</div>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+        <p class="t-small sys-note">
+          הנייטרלים אינם אפור ניטרלי — כולם נוטים לכיוון הנייבי של המותג. זה מה שגורם
+          לעמוד להיראות מתוכנן ולא ברירת מחדל.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── 3. Light + dark rhythm (F-1 preview) ──────────────── -->
+    <section class="u-container u-section">
+      <div class="sys-head">
+        <p class="t-eyebrow">03</p>
+        <h2 class="t-h2">מקצב אור וכהה</h2>
+        <p class="t-lead">
+          האתר בהיר ומרווח. הכהה מופיע כפאנל ויזואלי בתוך החוויה הבהירה — לא כרקע של האתר.
+          זו רק נקודת הפתיחה של השפה הזו: בעמודי הפרודקשן היא תתפתח לתרשימי מערכת ייחודיים
+          לכל עמוד, עם עומק, תאורה עדינה ותנועה מדודה — לא כרטיס כהה גנרי.
+        </p>
+      </div>
+
+      <div class="panel-dark sys-panel on-dark">
+        <div class="sys-panel__text">
+          <p class="t-eyebrow sys-panel__eyebrow">מערכת אחת מחוברת</p>
+          <h3 class="t-h1 sys-panel__title">כל התהליכים במקום אחד</h3>
+          <p class="sys-panel__body">
+            פאנל כהה בתוך עמוד בהיר, עם שתי שכבות זוהר עדינות, רשת עומק ברקע, ונקודות חיבור
+            שנושמות באיטיות. הטיפוגרפיה נשארת גדולה, והוויזואל נבנה מגיאומטריה של המותג —
+            בלי רובוטים ובלי ניאון.
+          </p>
+        </div>
+        <svg class="sys-panel__viz" viewBox="0 0 440 300" role="img" aria-label="תרשים: מקורות מידע מתחברים למערכת מרכזית">
+          <defs>
+            <linearGradient id="core" x1="1" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2997FF"></stop>
+              <stop offset="100%" stop-color="#1D4ED8"></stop>
+            </linearGradient>
+            <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#2997FF" stop-opacity=".55"></stop>
+              <stop offset="100%" stop-color="#2997FF" stop-opacity="0"></stop>
+            </radialGradient>
+          </defs>
+          <circle cx="238" cy="150" r="120" fill="url(#coreGlow)"></circle>
+          <g class="panel-flow-line" stroke="rgba(41,151,255,.5)" stroke-width="1.5" fill="none">
+            <path d="M366 62 L250 62 L250 128"></path>
+            <path d="M366 150 L250 150"></path>
+            <path d="M366 238 L250 238 L250 172"></path>
+            <path d="M190 150 L86 150"></path>
+          </g>
+          <g fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.18)">
+            <rect x="366" y="40" width="62" height="44" rx="11"></rect>
+            <rect x="366" y="128" width="62" height="44" rx="11"></rect>
+            <rect x="366" y="216" width="62" height="44" rx="11"></rect>
+            <rect x="24" y="122" width="62" height="56" rx="13"></rect>
+          </g>
+          <g fill="#fff">
+            <circle class="panel-node-pulse" cx="397" cy="62" r="3.5" style="animation-delay:0ms"></circle>
+            <circle class="panel-node-pulse" cx="397" cy="150" r="3.5" style="animation-delay:600ms"></circle>
+            <circle class="panel-node-pulse" cx="397" cy="238" r="3.5" style="animation-delay:1200ms"></circle>
+            <circle class="panel-node-pulse" cx="55" cy="150" r="3.5" style="animation-delay:1800ms"></circle>
+          </g>
+          <rect x="190" y="118" width="96" height="64" rx="16" fill="url(#core)"></rect>
+          <g fill="rgba(255,255,255,.92)">
+            <rect x="210" y="140" width="56" height="6" rx="3"></rect>
+            <rect x="226" y="156" width="40" height="6" rx="3" opacity=".65"></rect>
+          </g>
+        </svg>
+      </div>
+      <p class="t-small sys-panel-note">
+        נקודות החיבור נושמות באיטיות והקווים זורמים בעדינות לכיוון המערכת המרכזית — תנועה
+        מוגבלת ומדודה, שנעצרת כליל אצל מי שהגדיר במערכת ההפעלה &ldquo;צמצום תנועה&rdquo;.
+      </p>
+    </section>
+
+    <!-- ── 4. Buttons ────────────────────────────────────────── -->
+    <section class="sys-alt">
+      <div class="u-container u-section">
+        <div class="sys-head">
+          <p class="t-eyebrow">04</p>
+          <h2 class="t-h2">כפתורים והיררכיית פעולה</h2>
+          <p class="t-lead">
+            שלוש רמות בלבד. הכחול המלא שמור לפעולה הראשית — קביעת שיחת Discovery —
+            ולשום דבר אחר.
+          </p>
+        </div>
+
+        <div class="sys-grid-3">
+          <div class="card sys-demo">
+            <h3 class="t-h3">ראשי</h3>
+            <p class="t-small">קביעת שיחת Discovery. אחד בלבד באזור.</p>
+            <div class="sys-row">
+              <button class="btn btn-primary btn-lg" type="button">קביעת שיחת Discovery</button>
+              <button class="btn btn-primary" type="button">קביעת שיחה</button>
+              <button class="btn btn-primary" type="button" disabled>לא זמין</button>
+            </div>
+          </div>
+
+          <div class="card sys-demo">
+            <h3 class="t-h3">משני</h3>
+            <p class="t-small">וואטסאפ. תמיד זמין, אף פעם לא חזק מהראשי.</p>
+            <div class="sys-row">
+              <button class="btn btn-secondary btn-lg" type="button">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+                  ><path
+                    d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.25 8.23Z"
+                  ></path></svg
+                >
+                שיחה בוואטסאפ
+              </button>
+              <button class="btn btn-secondary" type="button" disabled>לא זמין</button>
+            </div>
+          </div>
+
+          <div class="card sys-demo">
+            <h3 class="t-h3">שלישוני</h3>
+            <p class="t-small">קישורים פנימיים ופעולות משנה.</p>
+            <div class="sys-row">
+              <a class="btn btn-tertiary" href="#main">
+                למידע נוסף <span class="arrow-inline" aria-hidden="true">←</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="sys-callout">
+          <strong>מצבים:</strong> לכל כפתור מוגדרים חמישה מצבים — רגיל, ריחוף, focus, לחיצה
+          וכבוי. נסה ללחוץ Tab במקלדת: טבעת ה-focus הכחולה נראית בבירור על כל אלמנט.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5. Forms ──────────────────────────────────────────── -->
+    <section class="u-container u-section">
+      <div class="sys-head">
+        <p class="t-eyebrow">05</p>
+        <h2 class="t-h2">שדות טופס</h2>
+        <p class="t-lead">
+          לכל שדה יש תווית קבועה מעליו. שגיאה מוצגת כטקסט ולא רק בצבע — כדי שגם מי שלא
+          מבחין בצבעים יבין מה קרה.
+        </p>
+      </div>
+
+      <div class="sys-grid-2">
+        <div class="field">
+          <label class="field-label" for="f1">שם מלא</label>
+          <input class="input" id="f1" type="text" placeholder="ישראל ישראלי" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="f2">טלפון</label>
+          <input class="input input-ltr" id="f2" type="tel" inputmode="tel" placeholder="050-0000000" />
+          <span class="field-hint">שדה מספרי — נכתב משמאל לימין בתוך עמוד עברי</span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="f3">אימייל</label>
+          <input class="input input-ltr" id="f3" type="email" value="name@example.com" aria-invalid="true" aria-describedby="f3e" />
+          <span class="field-error" id="f3e">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"
+              ><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6"></path><circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none"></circle></svg
+            >
+            כתובת האימייל אינה תקינה. בדוק שהיא כוללת @ ושם דומיין.
+          </span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="f4">שירות שמעניין אותך</label>
+          <select class="input" id="f4">
+            <option>מערכות CRM חכמות</option>
+            <option>אוטומציות עסקיות</option>
+            <option>פיתוח אתרים</option>
+            <option>פיתוח אפליקציות</option>
+            <option>יצירת תוכן באמצעות AI</option>
+          </select>
+          <span class="field-success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"
+              ><path d="m5 13 4 4 10-10"></path></svg
+            >
+            נבחר
+          </span>
+        </div>
+
+        <div class="field sys-span-2">
+          <label class="field-label" for="f5">איך נוכל לעזור?</label>
+          <textarea class="input" id="f5" rows="4" placeholder="ספרו בקצרה על התהליך שרוצים לשפר"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="f6">שדה כבוי</label>
+          <input class="input" id="f6" type="text" value="לא ניתן לעריכה" disabled />
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 6. Cards ──────────────────────────────────────────── -->
+    <section class="sys-alt">
+      <div class="u-container u-section">
+        <div class="sys-head">
+          <p class="t-eyebrow">06</p>
+          <h2 class="t-h2">כרטיסים — אופציית רכיב, לא ברירת המחדל</h2>
+          <p class="t-lead">
+            הכרטיס למטה הוא רכיב זמין לשימוש כשיש רשימה מקבילה אמיתית — כמו חמשת השירותים.
+            הוא <strong>אינו</strong> תבנית ברירת המחדל של העמוד. דף הבית ועמודי השירות ייבנו
+            קודם כל מקומפוזיציות עריכתיות וא-סימטריות; רשת כרטיסים תופיע רק היכן שהתוכן
+            עצמו הוא רשימה.
+          </p>
+        </div>
+
+        <div class="sys-grid-3">
+          <article class="card sys-card-featured">
+            <span class="chip">שירות מוביל</span>
+            <h3 class="t-h3">מערכות CRM חכמות</h3>
+            <p class="t-small">מערכות שמרכזות לידים, לקוחות, מכירות ומשימות במקום אחד ברור.</p>
+            <a class="btn btn-tertiary sys-card-link" href="#main">
+              למידע נוסף <span class="arrow-inline" aria-hidden="true">←</span>
+            </a>
+          </article>
+
+          <article class="card sys-card-featured">
+            <span class="chip">שירות מוביל</span>
+            <h3 class="t-h3">אוטומציות עסקיות</h3>
+            <p class="t-small">חיבור בין מערכות ותהליכים כדי לצמצם עבודה ידנית וטעויות.</p>
+            <a class="btn btn-tertiary sys-card-link" href="#main">
+              למידע נוסף <span class="arrow-inline" aria-hidden="true">←</span>
+            </a>
+          </article>
+
+          <article class="card">
+            <h3 class="t-h3">פיתוח אתרים</h3>
+            <p class="t-small">אתרים עסקיים שנבנים סביב מטרה ברורה ותהליך המרה.</p>
+          </article>
+        </div>
+
+        <div class="sys-callout sys-callout-wide">
+          <strong>הכלל:</strong> חמישה כרטיסים שווים בשורה הם הפתרון הנכון רק כשיש חמישה
+          פריטים מקבילים באמת. ברגע שיש נושא אחד עם משקל גדול יותר — התשובה היא קומפוזיציה
+          עריכתית כמו זו שמתחת, לא עוד כרטיס.
+        </div>
+
+        <h3 class="t-h3 sys-subhead">לדוגמה: אותו תוכן, קומפוזיציה עריכתית</h3>
+        <div class="u-editorial sys-editorial-demo">
+          <div>
+            <p class="t-eyebrow">שירות מוביל</p>
+            <h3 class="t-h1">מערכות CRM חכמות</h3>
+            <p class="t-lead sys-editorial-demo__lead">
+              מערכות שמרכזות לידים, לקוחות, מכירות ומשימות במקום אחד ברור — במקום חמישה
+              כלים מנותקים שאף אחד לא באמת מסתכל עליהם יחד.
+            </p>
+            <a class="btn btn-tertiary sys-card-link" href="#main">
+              למידע נוסף <span class="arrow-inline" aria-hidden="true">←</span>
+            </a>
+          </div>
+          <div class="panel-dark sys-editorial-demo__visual">
+            <svg viewBox="0 0 260 220" role="img" aria-label="תרשים ממוזער: לידים ומשימות מתחברים למערכת אחת">
+              <g class="panel-flow-line" stroke="rgba(41,151,255,.5)" stroke-width="1.5" fill="none">
+                <path d="M226 60 L150 60 L150 100"></path>
+                <path d="M226 160 L150 160 L150 120"></path>
+              </g>
+              <g fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.2)">
+                <rect x="226" y="40" width="26" height="40" rx="8"></rect>
+                <rect x="226" y="140" width="26" height="40" rx="8"></rect>
+              </g>
+              <rect x="96" y="86" width="68" height="48" rx="12" fill="var(--color-electric)"></rect>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 7. Spacing + RTL ──────────────────────────────────── -->
+    <section class="u-container u-section">
+      <div class="sys-head">
+        <p class="t-eyebrow">07</p>
+        <h2 class="t-h2">מרווחים וכיווניות</h2>
+        <p class="t-lead">
+          סולם אחד של מרווחים בקפיצות של 4 פיקסלים. המרווח בין סקשנים גדול בכוונה — זה מה
+          שיוצר את התחושה היקרה.
+        </p>
+      </div>
+
+      <div class="sys-spacing">
+        {
+          spacing.map((s) => (
+            <div class="sys-spacing__item">
+              <span class="sys-spacing__bar" style={`width:${s}px`} />
+              <span class="t-micro tabular">{s}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="sys-grid-2 sys-rtl-demo">
+        <div class="card">
+          <h3 class="t-h3">אייקון כיווני — מתהפך</h3>
+          <p class="t-small">חץ "המשך" מצביע שמאלה בעברית, כי הקריאה מימין לשמאל.</p>
+          <p class="sys-arrow-demo">
+            <span class="arrow-inline" aria-hidden="true">←</span> השלב הבא
+          </p>
+        </div>
+        <div class="card">
+          <h3 class="t-h3">אייקון לא כיווני — לא מתהפך</h3>
+          <p class="t-small">וואטסאפ, טלפון, חיפוש והגדרות נשארים כמו שהם.</p>
+          <p class="sys-arrow-demo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"
+              ><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg
+            >
+            חיפוש
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 8. Motion ─────────────────────────────────────────── -->
+    <section class="sys-alt">
+      <div class="u-container u-section">
+        <div class="sys-head">
+          <p class="t-eyebrow">08</p>
+          <h2 class="t-h2">תנועה</h2>
+          <p class="t-lead">
+            תנועה קצרה ומדודה: 140–420 מילישניות. העבר עכבר על הכרטיס כדי לראות. מי שהגדיר
+            במערכת ההפעלה "צמצום תנועה" — לא יראה אנימציה בכלל.
+          </p>
+        </div>
+        <div class="sys-grid-3">
+          <div class="card sys-motion">
+            <strong class="t-small">‎--dur-fast · 140ms</strong>
+            <p class="t-micro">לחיצה, שינוי מצב מיידי</p>
+          </div>
+          <div class="card sys-motion">
+            <strong class="t-small">‎--dur · 220ms</strong>
+            <p class="t-micro">ריחוף, focus, פתיחת תפריט</p>
+          </div>
+          <div class="card sys-motion">
+            <strong class="t-small">‎--dur-slow · 420ms</strong>
+            <p class="t-micro">כניסת סקשן בגלילה</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="sys-footer">
+      <div class="u-container">
+        <p class="t-small">
+          עמוד פנימי לסקירה. לא מקושר מהאתר, מסומן ל-Google כ-noindex, ולא ייכלל בגרסה
+          הפומבית.
+        </p>
+      </div>
+    </footer>
+  </main>
+</BaseLayout>
+
+<style>
+  .sys-top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .sys-top__inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-height: 68px;
+  }
+  .sys-top__inner img {
+    width: 118px;
+    height: auto;
+  }
+  .sys-top__inner strong {
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+  }
+  .sys-top__chip {
+    margin-inline-start: auto;
+  }
+
+  .sys-title {
+    margin-block: 0.75rem 1.5rem;
+  }
+  .sys-intro {
+    max-width: 58ch;
+  }
+
+  .sys-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: clamp(2.5rem, 4vw, 4rem);
+    max-width: 62ch;
+  }
+
+  .sys-alt {
+    background: var(--color-surface-2);
+  }
+
+  .sys-stack {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 3.5vw, 3.5rem);
+  }
+  .sys-type-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-bottom: clamp(2rem, 3.5vw, 3.5rem);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .sys-type-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  .sys-type-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+  .sys-type-meta code {
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line);
+    border-radius: 6px;
+    padding: 2px 8px;
+    direction: ltr;
+  }
+  .sys-muted {
+    color: var(--color-ink-3);
+  }
+
+  .sys-swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1.25rem;
+  }
+  .sys-swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sys-swatch__chip {
+    height: 76px;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-line);
+    margin-bottom: 0.5rem;
+  }
+  .sys-swatch code {
+    direction: ltr;
+    align-self: flex-start;
+  }
+  .sys-swatch__ratio {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-weight: 700;
+  }
+  .sys-swatch__ratio .t-micro {
+    font-weight: 400;
+    color: var(--color-ink-3);
+    text-align: end;
+  }
+
+  .sys-callout {
+    margin-top: 2rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-inline-start: 3px solid var(--color-electric);
+    border-radius: var(--radius);
+    font-size: var(--text-small);
+    line-height: 1.7;
+    max-width: 78ch;
+  }
+  .sys-changelog ol {
+    margin: 0.75rem 0 0;
+    padding-inline-start: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .sys-subhead {
+    margin-top: 3rem;
+    margin-bottom: 1.25rem;
+  }
+  .sys-support-intro {
+    max-width: 64ch;
+    margin-bottom: 2.5rem;
+  }
+  .sys-neutrals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+  }
+  .sys-neutral {
+    display: flex;
+    gap: 0.875rem;
+    align-items: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    padding: 0.875rem 1rem;
+  }
+  .sys-neutral__chip {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--color-line);
+    flex: 0 0 auto;
+  }
+  .sys-neutral .t-micro {
+    direction: ltr;
+    text-align: start;
+  }
+  .sys-note {
+    margin-top: 1.25rem;
+    max-width: 70ch;
+  }
+
+  .sys-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: center;
+    padding: clamp(2rem, 5vw, 4.5rem);
+  }
+  .sys-panel-note {
+    margin-top: 1.25rem;
+    max-width: 62ch;
+  }
+  .sys-panel__text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .sys-panel__eyebrow {
+    color: var(--color-electric);
+  }
+  .sys-panel__title {
+    color: #fff;
+  }
+  .sys-panel__body {
+    color: rgba(255, 255, 255, 0.78);
+    max-width: 44ch;
+  }
+  .sys-panel__viz {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+
+  .sys-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  .sys-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .sys-span-2 {
+    grid-column: 1 / -1;
+  }
+
+  .sys-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .sys-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+  }
+
+  .sys-card-featured {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .sys-card-featured::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 4px;
+    background: var(--gradient-brand);
+  }
+  .sys-card-featured .chip {
+    align-self: flex-start;
+  }
+  .sys-card-link {
+    margin-top: auto;
+    align-self: flex-start;
+  }
+
+  .sys-callout-wide {
+    max-width: none;
+  }
+
+  .sys-editorial-demo {
+    margin-top: clamp(2.5rem, 4vw, 4rem);
+  }
+  .sys-editorial-demo__lead {
+    margin-block: 1.25rem 1.5rem;
+  }
+  .sys-editorial-demo__visual {
+    aspect-ratio: 4 / 3;
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    display: grid;
+    place-items: center;
+  }
+  .sys-editorial-demo__visual svg {
+    width: 100%;
+    max-width: 260px;
+  }
+
+  .sys-spacing {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-bottom: 3rem;
+  }
+  .sys-spacing__item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .sys-spacing__bar {
+    height: 14px;
+    border-radius: 3px;
+    background: var(--gradient-brand);
+    flex: 0 0 auto;
+  }
+
+  .sys-rtl-demo .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sys-arrow-demo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-weight: 700;
+    color: var(--color-royal);
+  }
+
+  .sys-motion {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .sys-motion strong {
+    direction: ltr;
+    text-align: start;
+  }
+  .sys-motion:hover {
+    transform: translateY(-4px);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .sys-footer {
+    background: var(--color-navy);
+    color: rgba(255, 255, 255, 0.62);
+    padding-block: 2.5rem;
+  }
+  .sys-footer .t-small {
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  @media (max-width: 900px) {
+    .sys-grid-3,
+    .sys-grid-2,
+    .sys-panel {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

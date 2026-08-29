@@ -1,0 +1,606 @@
+<!DOCTYPE html><html class="scroll-smooth" dir="rtl" lang="he"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>LAHAV AI - פתרונות AI לעסקים</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&amp;family=Heebo:wght@600;700;800&amp;family=Sora:wght@600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "tertiary-fixed-dim": "#a3c9ff",
+                "error": "#D32F2F",
+                "inverse-surface": "#2d3133",
+                "error-container": "#ffdad6",
+                "primary-fixed-dim": "#bcc5e9",
+                "background": "#f7f9fc",
+                "secondary-fixed": "#dce1ff",
+                "on-tertiary": "#ffffff",
+                "on-primary-fixed-variant": "#3d4663",
+                "on-primary-fixed": "#111a35",
+                "surface-container": "#eceef1",
+                "surface-dim": "#d8dadd",
+                "secondary-fixed-dim": "#b7c4ff",
+                "surface-container-highest": "#e0e3e6",
+                "primary-container": "#111a35",
+                "on-error-container": "#93000a",
+                "on-tertiary-fixed": "#001c39",
+                "on-background": "#191c1e",
+                "outline": "#76767e",
+                "secondary": "#1d4ed8",
+                "surface-tint": "#545d7c",
+                "outline-variant": "#c6c6ce",
+                "on-tertiary-container": "#0086ea",
+                "on-surface": "#191c1e",
+                "surface-variant": "#e0e3e6",
+                "surface-bright": "#f7f9fc",
+                "royal-blue": "#1D4ED8",
+                "secondary-container": "#4069f2",
+                "on-primary": "#ffffff",
+                "tertiary": "#000000",
+                "primary-fixed": "#dbe1ff",
+                "surface-container-lowest": "#ffffff",
+                "on-secondary-fixed": "#001551",
+                "on-error": "#ffffff",
+                "on-secondary-container": "#fffbff",
+                "primary": "#000000",
+                "on-secondary": "#ffffff",
+                "on-surface-variant": "#45464d",
+                "tertiary-fixed": "#d3e3ff",
+                "surface-container-low": "#f2f4f7",
+                "on-tertiary-fixed-variant": "#004882",
+                "surface-container-high": "#e6e8eb",
+                "deep-navy": "#0B1530",
+                "inverse-on-surface": "#eff1f4",
+                "white": "#FFFFFF",
+                "tertiary-container": "#001c39",
+                "success": "#2E7D32",
+                "cool-gray": "#F2F4F7",
+                "electric-blue": "#2997FF",
+                "on-primary-container": "#7a83a3",
+                "on-secondary-fixed-variant": "#0039b5",
+                "inverse-primary": "#bcc5e9",
+                "surface": "#f7f9fc"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "stack-lg": "48px",
+                "container-max": "1280px",
+                "gutter": "24px",
+                "stack-md": "24px",
+                "margin-mobile": "20px",
+                "base": "8px",
+                "stack-sm": "12px",
+                "section-gap": "120px",
+                "margin-desktop": "64px"
+        },
+        "fontFamily": {
+                "headline-lg": [
+                        "Heebo"
+                ],
+                "brand-accent": [
+                        "Sora"
+                ],
+                "label-bold": [
+                        "Assistant"
+                ],
+                "display-lg": [
+                        "Heebo"
+                ],
+                "body-lg": [
+                        "Assistant"
+                ],
+                "headline-xl": [
+                        "Heebo"
+                ],
+                "display-lg-mobile": [
+                        "Heebo"
+                ],
+                "caption": [
+                        "Assistant"
+                ],
+                "headline-md": [
+                        "Heebo"
+                ],
+                "body-md": [
+                        "Assistant"
+                ]
+        },
+        "fontSize": {
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "1.3",
+                                "fontWeight": "700"
+                        }
+                ],
+                "brand-accent": [
+                        "20px",
+                        {
+                                "lineHeight": "1.5",
+                                "fontWeight": "600"
+                        }
+                ],
+                "label-bold": [
+                        "14px",
+                        {
+                                "lineHeight": "1.2",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display-lg": [
+                        "64px",
+                        {
+                                "lineHeight": "1.1",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "1.6",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-xl": [
+                        "48px",
+                        {
+                                "lineHeight": "1.2",
+                                "fontWeight": "700"
+                        }
+                ],
+                "display-lg-mobile": [
+                        "40px",
+                        {
+                                "lineHeight": "1.2",
+                                "fontWeight": "800"
+                        }
+                ],
+                "caption": [
+                        "12px",
+                        {
+                                "lineHeight": "1.4",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "1.4",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "1.5",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [data-weight="fill"] .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-deep-navy/80 backdrop-blur-md docked full-width top-0 sticky z-50 border-b border-outline-variant dark:border-primary-container shadow-sm flex flex-row-reverse justify-between items-center px-margin-desktop py-4 w-full max-w-container-max mx-auto md:flex hidden">
+<div class="flex items-center gap-4">
+<span class="font-brand-accent text-brand-accent text-deep-navy dark:text-white uppercase tracking-tighter">LAHAV AI</span>
+<img alt="LAHAV AI Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBet6Uq9z0uGrz8B_FYDJG-2ppsjP5AvaDr2fu7qh5Bjx784yRTlvjmHqZKhXn3L6vhKLbPRX4Y29OlJN4rXhVZN_bTCAy5c2LqK56lSrTrIgs7MWKc2yB4UM77Wz0D5xc7dDBX9VALbUnGY-6uuFBJOXRH6t16hIikjnDDov5QwI-zXMXuOO4ULK1BpZAU_reL-X8neJJBTj92HWWrRmI1qqDpJzFrz0n0Nsb22c-s2Xv6I6KThpG2UcIjU33yWZ3cIg">
+</div>
+<nav aria-label="Main Navigation" class="flex gap-8">
+<a class="font-label-bold text-label-bold text-royal-blue dark:text-electric-blue border-b-2 border-royal-blue pb-1 opacity-80 scale-95 transition-transform hover:bg-surface-container-low dark:hover:bg-primary-container transition-all" href="#">בית</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant dark:text-surface-container-highest hover:text-royal-blue transition-colors hover:bg-surface-container-low dark:hover:bg-primary-container transition-all" href="#">שירותים</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant dark:text-surface-container-highest hover:text-royal-blue transition-colors hover:bg-surface-container-low dark:hover:bg-primary-container transition-all" href="#">אודות</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant dark:text-surface-container-highest hover:text-royal-blue transition-colors hover:bg-surface-container-low dark:hover:bg-primary-container transition-all" href="#">מאמרים</a>
+<a class="font-label-bold text-label-bold text-on-surface-variant dark:text-surface-container-highest hover:text-royal-blue transition-colors hover:bg-surface-container-low dark:hover:bg-primary-container transition-all" href="#">צור קשר</a>
+</nav>
+<button class="bg-royal-blue hover:bg-electric-blue text-white font-label-bold text-label-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
+            קביעת שיחת Discovery
+            <span class="material-symbols-outlined text-sm">chat</span>
+</button>
+</header>
+<!-- Mobile Header -->
+<header class="bg-surface/80 backdrop-blur-md sticky top-0 z-50 border-b border-outline-variant shadow-sm flex justify-between items-center px-margin-mobile py-4 w-full md:hidden">
+<img alt="LAHAV AI Logo" class="h-6 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-hR99P3-zPj7vfEvpb2IJz1g9npX4MSKvRYI34FhpvAXWMg70pA_irj4J3i2xtPwO8YK-CBmaZPkssns9QsPnQhtlCUTg8KC3yfXq-uPTi8vB7kldnuzv06hTYgoAJkifMxkHEfoAT0Ab0lFz-BeE2g1ym4VOAEyY90uh2NAgBKYJ3BY02pXT8xLpss7zXzv_dA8nBm83KUlH_fdUKfHLeFX9-_3h1SCxK6h7eHJL4sgVoc4mtZKuvqqBR6Dpy3cOlQ">
+<button class="text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<main class="flex-grow">
+<!-- Hero Section -->
+<section class="relative pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto overflow-hidden">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="z-10 space-y-8">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-deep-navy">
+                        פתרונות AI לעסקים<br>
+<span class="text-royal-blue">Work smarter, not harder</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                        הטמעת בינה מלאכותית מקצה לקצה. אנו מתאימים טכנולוגיות מתקדמות לצרכים העסקיים הייחודיים שלך, כדי להאיץ צמיחה ולייעל תהליכים בארגון.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="bg-royal-blue hover:bg-electric-blue text-white font-label-bold text-label-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg">
+                            קביעת שיחת Discovery
+                            <span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="border-[1.5px] border-royal-blue text-royal-blue hover:bg-surface-container-low font-label-bold text-label-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2">
+<img alt="WhatsApp" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh7WLR1A9JjzUTJhcbvYudjQ5hPFvVt_AAtUoUyg2Je-GzZEqWMYaq9nvNb830fSMaQPSeZyCksOvMbbd7KqVS-WCQGT8rsSIdr6dxAgpGY-j1QtVN938AzbB68u3bCPeywiiYTBimNhLt6KnLkvpfVDX9x9-caoPXNF6V8pRDnN-BuppJEhQtWiV15B88qiNNNN-k7V1SX-sAnCARZGfN_k4O1kfnqmUthwDXh5FsEV9RymxTrSDg">
+                            שלחו לנו הודעה
+                        </button>
+</div>
+</div>
+<div class="relative h-[400px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl bg-white border border-cool-gray flex items-center justify-center">
+<div class="absolute inset-0 bg-gradient-to-br from-surface-container-low to-white"></div>
+<img alt="Hero Visualization" class="absolute inset-0 w-full h-full object-cover mix-blend-multiply opacity-80" data-alt="A highly detailed, 3D rendered abstract visualization of data flows and business intelligence processes. The scene features glowing blue and silver interconnected nodes resembling a sophisticated neural network integrated with sleek, modern corporate dashboard elements. The lighting is bright and clean, emphasizing a premium, high-tech corporate aesthetic against a vast white background. Soft shadows and precise geometries convey efficiency and clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdEWtV3Ol5oB_QeusDxPX2DL3rc21Fobyubhe6KX2qqOHMuSxyReViY5GdYiGIFVskDTU83FbkzYbfR8WvAgcoKCUffkL6O-0bEd7x5XnwhIxwgu4kBGqqKemnuG0tsiXaAivrqIgaqLGowlS3AflDfOWVNbxwD1Zu2QlIQn65glo0n-6Eb5TWZQil9wQ0M7cGXbuPBvhmz4m8XtBHatbhs2vGC5H8IcdQtkcmm4smJr0bbi8RFryz">
+<img alt="Lahav AI Monogram" class="z-10 w-48 h-48 opacity-20 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5CnrORyN_KVK5ti1g4m8GptQcIjG-mt-GXQQBPPjchudUqjY_h7cVdOWfNL0-gzI-e77vDXHPvtE0DD06H2OmcEF7nMgBREeKFNtL-oRxMsYWOw5c5jgs1OvM4fiLbCT4HBl_1f6R6b33n3cIDCcxmhg747EFAKJRtXgR1e3aT-Z6HskMxBfJSYg0MiVg-4qriHdUKwadGCaD88hwpNPLOsBYvFVJkJ1FoaW_9odB_8MRKOJFk6m4xstlhZCc7Y8Gzw">
+</div>
+</div>
+</section>
+<!-- Connected Business Systems Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface border-t border-surface-variant overflow-hidden">
+<div class="max-w-container-max mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="space-y-8 lg:pr-12">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy leading-tight">
+                    מערכות עסקיות מחוברות
+                </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                    אנו יוצרים סביבה עסקית הוליסטית שבה כל המערכות שלכם מדברות זו עם זו. מידע זורם בצורה חלקה, תהליכים אוטומטיים מתרחשים מאחורי הקלעים, והעסק שלכם פועל כיחידה אחת חכמה ויעילה.
+                </p>
+<div class="space-y-6 pt-4">
+<div class="flex gap-4">
+<div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined text-royal-blue">sync_alt</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">סנכרון נתונים בזמן אמת</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">מידע מעודכן תמיד בכל המערכות בארגון.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined text-royal-blue">hub</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">אינטגרציה חכמה</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">חיבור מערכות קיימות וחדשות למערכת אקולוגית אחת.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative h-[500px] bg-white rounded-3xl shadow-xl border border-surface-variant overflow-hidden flex items-center justify-center p-12">
+<!-- Abstract tech graphic placeholder -->
+<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-surface-container-low to-white opacity-80"></div>
+<div class="relative z-10 w-full h-full border-2 border-dashed border-outline-variant rounded-2xl flex flex-col items-center justify-center text-outline gap-4 bg-surface/50 backdrop-blur-sm">
+<span class="material-symbols-outlined text-6xl">account_tree</span>
+<span class="font-label-bold text-label-bold">ויזואליזציה של זרימת נתונים תשתלב כאן</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Services Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-bright border-y border-surface-variant">
+<div class="max-w-container-max mx-auto space-y-stack-lg">
+<div class="text-center space-y-4 max-w-2xl mx-auto">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy">השירותים שלנו</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                    אנו מציעים מגוון רחב של שירותים כדי לעזור לך למנף את הכוח של בינה מלאכותית בעסק שלך.
+                </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+<!-- Highlighted Service 1 -->
+<div class="bg-white rounded-2xl p-8 border border-surface-variant shadow-sm hover:shadow-lg transition-all lg:col-span-3 flex flex-col justify-between group overflow-hidden relative">
+<div class="absolute inset-0 bg-gradient-to-br from-royal-blue/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-royal-blue text-4xl mb-6 bg-surface-container-low w-16 h-16 rounded-xl flex items-center justify-center">integration_instructions</span>
+<div>
+<h3 class="font-headline-lg text-headline-lg text-deep-navy mb-4">מערכות CRM</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            הטמעת מערכות CRM חכמות מבוססות AI לניהול קשרי לקוחות מתקדם, שיפור חווית הלקוח והגדלת המכירות. תהליכי ניהול לקוחות חכמים שמאפשרים לך להתמקד במה שחשוב באמת.
+        </p>
+</div>
+</div>
+<!-- Highlighted Service 2 -->
+<div class="bg-deep-navy rounded-2xl p-8 shadow-md hover:shadow-xl transition-all lg:col-span-3 flex flex-col justify-between text-white relative overflow-hidden group">
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-royal-blue rounded-full blur-3xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+<span class="material-symbols-outlined text-electric-blue text-4xl mb-6 bg-white/10 w-16 h-16 rounded-xl flex items-center justify-center relative z-10 backdrop-blur-sm">smart_toy</span>
+<div class="relative z-10">
+<h3 class="font-headline-lg text-headline-lg text-white mb-4">אוטומציה עסקית</h3>
+<p class="font-body-md text-body-md text-surface-container-highest">
+            ייעול תהליכים באמצעות כלים אוטומטיים ובינה מלאכותית, חיסכון בזמן והפחתת טעויות אנוש. אנו בונים זרימות עבודה חכמות שמחברות את כל המערכות שלך יחד בצורה חלקה.
+        </p>
+</div>
+</div>
+<!-- Other Services -->
+<div class="bg-white rounded-2xl p-6 border border-surface-variant shadow-sm hover:shadow-md transition-shadow lg:col-span-2">
+<span class="material-symbols-outlined text-electric-blue text-3xl mb-4">language</span>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">פיתוח אתרים</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+             בניית אתרים מתקדמים עם חוויות משתמש מותאמות אישית מבוססות נתונים.
+        </p>
+</div>
+<div class="bg-white rounded-2xl p-6 border border-surface-variant shadow-sm hover:shadow-md transition-shadow lg:col-span-2">
+<span class="material-symbols-outlined text-electric-blue text-3xl mb-4">app_shortcut</span>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">פיתוח אפליקציות</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+             יצירת יישומים חכמים למובייל שמשלבים יכולות בינה מלאכותית מתקדמות.
+        </p>
+</div>
+<div class="bg-white rounded-2xl p-6 border border-surface-variant shadow-sm hover:shadow-md transition-shadow lg:col-span-2">
+<span class="material-symbols-outlined text-electric-blue text-3xl mb-4">edit_document</span>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">יצירת תוכן AI</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+             כלים ומערכות ליצירת תוכן שיווקי, טקסטואלי וויזואלי בקנה מידה רחב.
+        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Why Us / Approach Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface relative overflow-hidden">
+<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-surface-container-low via-surface to-surface opacity-50"></div>
+<div class="max-w-container-max mx-auto space-y-20 relative z-10">
+<div class="text-center space-y-4 max-w-2xl mx-auto">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy">הדרך להצלחה</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                תהליך העבודה המוכח שלנו מבטיח הטמעה חלקה ומוצלחת של פתרונות AI בארגון שלך.
+            </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-4 relative px-4">
+<!-- Connector Line (Desktop) -->
+<div class="hidden lg:block absolute top-12 left-12 right-12 h-1 bg-gradient-to-r from-surface-variant via-royal-blue to-electric-blue z-0 rounded-full"></div>
+<div class="relative z-10 flex flex-col items-center text-center space-y-4">
+<div class="w-24 h-24 rounded-2xl bg-white border border-surface-variant flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform">
+<span class="font-headline-lg text-headline-lg text-surface-tint">1</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">אבחון (Discovery)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">הבנת הצרכים והאתגרים העסקיים.</p>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center space-y-4 mt-0 lg:mt-8">
+<div class="w-24 h-24 rounded-2xl bg-white border border-surface-variant flex items-center justify-center shadow-lg transform -rotate-2 hover:rotate-0 transition-transform">
+<span class="font-headline-lg text-headline-lg text-royal-blue">2</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">אפיון (Specification)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">הגדרת דרישות הפתרון הטכנולוגי.</p>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center space-y-4">
+<div class="w-24 h-24 rounded-2xl bg-white border border-surface-variant flex items-center justify-center shadow-lg transform rotate-2 hover:rotate-0 transition-transform">
+<span class="font-headline-lg text-headline-lg text-surface-tint">3</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">תכנון (Planning)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">בניית תוכנית עבודה מפורטת.</p>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center space-y-4 mt-0 lg:mt-8">
+<div class="w-24 h-24 rounded-2xl bg-white border border-surface-variant flex items-center justify-center shadow-lg transform -rotate-3 hover:rotate-0 transition-transform">
+<span class="font-headline-lg text-headline-lg text-surface-tint">4</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">פיתוח (Build)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">יצירת הפתרון המותאם אישית.</p>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center space-y-4">
+<div class="w-24 h-24 rounded-2xl bg-white border border-surface-variant flex items-center justify-center shadow-lg transform rotate-1 hover:rotate-0 transition-transform">
+<span class="font-headline-lg text-headline-lg text-surface-tint">5</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">בדיקות (Testing)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">אבטחת איכות ותקינות הפתרון.</p>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center space-y-4 mt-0 lg:mt-8">
+<div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-royal-blue to-electric-blue text-white flex items-center justify-center shadow-lg shadow-electric-blue/30 transform -rotate-1 hover:rotate-0 transition-transform">
+<span class="font-headline-lg text-headline-lg text-white">6</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">מסירה (Delivery)</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">הטמעה בארגון ותמיכה מתמשכת.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- About / Founder Trust Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-white border-t border-surface-variant overflow-hidden">
+<div class="max-w-container-max mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+<div class="lg:col-span-5 relative">
+<div class="aspect-[4/5] bg-surface-container-low rounded-2xl overflow-hidden border border-surface-variant flex items-center justify-center">
+<div class="text-center text-outline p-6">
+<span class="material-symbols-outlined text-6xl mb-4 block">image</span>
+<p class="font-label-bold text-label-bold">צילום מקצועי ישולב כאן</p>
+</div>
+</div>
+<div class="absolute -bottom-8 -right-8 w-48 h-48 bg-electric-blue/10 rounded-full blur-2xl -z-10"></div>
+</div>
+<div class="lg:col-span-7 space-y-8 pt-8">
+<div class="inline-block px-4 py-2 bg-royal-blue/10 rounded-full text-royal-blue font-label-bold text-label-bold">
+                    החזון שלנו
+                </div>
+<h2 class="font-headline-xl text-headline-xl text-deep-navy">
+                    המשימה שלנו
+                </h2>
+<div class="prose prose-lg prose-blue text-on-surface-variant space-y-6">
+<p class="font-body-lg text-body-lg">
+                        ב-LAHAV AI, אנו מאמינים שבינה מלאכותית צריכה להיות נגישה ומועילה לכל עסק. המטרה שלנו היא להעצים ארגונים קטנים ובינוניים באמצעות פתרונות טכנולוגיים מתקדמים שפעם היו זמינים רק לתאגידי ענק.
+                    </p>
+<p class="font-body-lg text-body-lg">
+                        אנו משלבים מומחיות טכנולוגית עמוקה עם הבנה עסקית חדה, כדי לספק כלים שמייצרים ערך אמיתי ומדיד. הצוות שלנו מורכב ממומחי AI, מפתחי תוכנה ויועצים עסקיים שעובדים יחד כדי להביא את העתיד לעסק שלך.
+                    </p>
+</div>
+<div class="pt-8 border-t border-surface-variant flex flex-col sm:flex-row gap-8">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-electric-blue text-3xl">verified</span>
+<div>
+<h4 class="font-label-bold text-label-bold text-deep-navy">שותף טכנולוגי אמין</h4>
+<p class="font-caption text-caption text-on-surface-variant">ליווי מלא מאפיון להטמעה</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-electric-blue text-3xl">trending_up</span>
+<div>
+<h4 class="font-label-bold text-label-bold text-deep-navy">תוצאות מדידות</h4>
+<p class="font-caption text-caption text-on-surface-variant">מיקוד בהחזר השקעה (ROI)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Articles / Knowledge Center Preview -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-bright border-y border-surface-variant">
+<div class="max-w-container-max mx-auto space-y-12">
+<div class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-surface-variant pb-8">
+<div class="space-y-4 max-w-2xl">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy">מרכז ידע</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                    תובנות, מדריכים ומאמרים מקצועיים על שילוב בינה מלאכותית בעולם העסקים.
+                </p>
+</div>
+<a class="inline-flex items-center gap-2 font-label-bold text-label-bold text-royal-blue hover:text-electric-blue transition-colors group" href="#">
+                לכל המאמרים
+                <span class="material-symbols-outlined text-sm transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Article Placeholder 1 -->
+<article class="group cursor-pointer flex flex-col h-full border-b border-transparent hover:border-royal-blue transition-colors pb-6">
+<div class="aspect-video bg-surface-container-low mb-6 overflow-hidden rounded-xl">
+<div class="w-full h-full bg-surface-variant flex items-center justify-center text-outline group-hover:scale-105 transition-transform duration-500">
+<span class="material-symbols-outlined text-4xl">feed</span>
+</div>
+</div>
+<div class="space-y-3 flex-grow">
+<div class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="font-label-bold text-royal-blue">קטגוריה</span>
+<span>•</span>
+<span>תאריך פרסום</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy group-hover:text-royal-blue transition-colors">כותרת מאמר לדוגמה</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">תקציר קצר של תוכן המאמר ישולב כאן. זהו טקסט זמני המציג את מבנה התוכן.</p>
+</div>
+</article>
+<!-- Article Placeholder 2 -->
+<article class="group cursor-pointer flex flex-col h-full border-b border-transparent hover:border-royal-blue transition-colors pb-6">
+<div class="aspect-video bg-surface-container-low mb-6 overflow-hidden rounded-xl">
+<div class="w-full h-full bg-surface-variant flex items-center justify-center text-outline group-hover:scale-105 transition-transform duration-500">
+<span class="material-symbols-outlined text-4xl">feed</span>
+</div>
+</div>
+<div class="space-y-3 flex-grow">
+<div class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="font-label-bold text-royal-blue">קטגוריה</span>
+<span>•</span>
+<span>תאריך פרסום</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy group-hover:text-royal-blue transition-colors">כותרת מאמר לדוגמה נוספת</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">תקציר קצר של תוכן המאמר ישולב כאן. זהו טקסט זמני המציג את מבנה התוכן.</p>
+</div>
+</article>
+<!-- Article Placeholder 3 -->
+<article class="group cursor-pointer flex flex-col h-full border-b border-transparent hover:border-royal-blue transition-colors pb-6">
+<div class="aspect-video bg-surface-container-low mb-6 overflow-hidden rounded-xl">
+<div class="w-full h-full bg-surface-variant flex items-center justify-center text-outline group-hover:scale-105 transition-transform duration-500">
+<span class="material-symbols-outlined text-4xl">feed</span>
+</div>
+</div>
+<div class="space-y-3 flex-grow">
+<div class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="font-label-bold text-royal-blue">קטגוריה</span>
+<span>•</span>
+<span>תאריך פרסום</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy group-hover:text-royal-blue transition-colors">עוד כותרת מאמר להמחשה</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">תקציר קצר של תוכן המאמר ישולב כאן. זהו טקסט זמני המציג את מבנה התוכן.</p>
+</div>
+</article>
+</div>
+</div>
+</section>
+<!-- Contact Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-bright">
+<div class="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="space-y-8">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy">מוכנים לצאת לדרך?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                השאירו פרטים ונחזור אליכם בהקדם לתיאום פגישת היכרות.
+            </p>
+<div class="flex items-center gap-4 p-6 bg-white rounded-2xl border border-surface-variant shadow-sm">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center text-royal-blue">
+<img alt="WhatsApp" class="w-6 h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0rkrcD33w7w0gWfeymiqmOkKg0fkj8f5P3y2tfG9QCWtodlSBYHSTObIFHP0Q4iYx_COVsS3LPSlDC8pj1_ZOyaa3OVRK1csBbIvnArfNteIIArBFvvz3NHhjmBJprrmOcfx_rAi0niaK4NB_87J70cXBGgFhQsc-zBI-sE_uRjFnPu0BxpnLfLP4su74fXrG1XYoGZI0VqDvOSIXnSu30h5-xaFEsJJdUYwVsz0jObNgdDQOkv3U">
+</div>
+<div>
+<p class="font-label-bold text-label-bold text-deep-navy">מעדיפים בוואטסאפ?</p>
+<a class="font-body-md text-body-md text-royal-blue hover:underline" href="#">שלחו לנו הודעה ישירה</a>
+</div>
+</div>
+</div>
+<form class="bg-white p-8 rounded-2xl shadow-xl border border-surface-variant space-y-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-bold text-label-bold text-deep-navy block">שם מלא</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-royal-blue p-3 font-body-md" placeholder="ישראל ישראלי" type="text">
+</div>
+<div class="space-y-2">
+<label class="font-label-bold text-label-bold text-deep-navy block">שם החברה</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-royal-blue p-3 font-body-md" placeholder="חברה בע״מ" type="text">
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-bold text-label-bold text-deep-navy block">דוא״ל</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-royal-blue p-3 font-body-md" placeholder="israel@company.co.il" type="email">
+</div>
+<div class="space-y-2">
+<label class="font-label-bold text-label-bold text-deep-navy block">ספרו לנו קצת על הצרכים שלכם</label>
+<textarea class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-royal-blue p-3 font-body-md h-32 resize-none" placeholder="נשמח לשמוע..."></textarea>
+</div>
+<button class="w-full bg-royal-blue hover:bg-electric-blue text-white font-label-bold text-label-bold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2" type="submit">
+                    שליחת פנייה
+                    <span class="material-symbols-outlined">send</span>
+</button>
+</form>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-deep-navy dark:bg-black full-width bottom-0 border-t border-primary-container grid grid-cols-1 md:grid-cols-4 gap-stack-lg px-margin-desktop py-section-gap w-full max-w-container-max mx-auto text-right rtl">
+<div class="space-y-4">
+<span class="font-brand-accent text-brand-accent text-electric-blue">
+<img alt="LAHAV AI Logo" class="h-8 w-auto object-contain brightness-0 invert opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFxmq6wO7X_U9E1TYdaFEZpp_NvlbxnYW9NfeU-WIHqqYxiFQa30Oh4L2a1ovS7FDiI1Khy0b3j5NyFJvzqjsAV2w-L-pK-p_y6VsKIKdTr2iyEdjetKTwVJ7Ul8e_uQF9QBlq7oyysb2rTgjOH-ejqrDi9bPu7i2QgXOjXrB7f8_2Ej9NyeMXg0xG5vN82hDdHwWrPHoQXRW0-C4N5dhwCiNRmHrh3wEaQt9FzP6a5nFrGVbG5EyxOU_qiIWKb_CUxQ">
+</span>
+<p class="font-body-md text-body-md text-surface-container-highest">
+                © 2024 LAHAV AI. כל הזכויות שמורות. מומחים לפתרונות בינה מלאכותית לעסקים.
+            </p>
+</div>
+<div class="space-y-4">
+<h3 class="font-label-bold text-label-bold text-white">שירותים</h3>
+<ul class="space-y-2">
+<li><a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] transition-transform duration-200 block" href="#">אוטומציה עסקית</a></li>
+<li><a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] transition-transform duration-200 block" href="#">מערכות CRM</a></li>
+<li><a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] transition-transform duration-200 block" href="#">פיתוח אפליקציות</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h3 class="font-label-bold text-label-bold text-white">מידע</h3>
+<ul class="space-y-2">
+<li><a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] transition-transform duration-200 block" href="#">בלוג טכנולוגי</a></li>
+<li><a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] transition-transform duration-200 block" href="#">מדיניות פרטיות</a></li>
+</ul>
+</div>
+</footer>
+</body></html>

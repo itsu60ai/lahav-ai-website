@@ -1,0 +1,215 @@
+<!DOCTYPE html><html dir="rtl" lang="he"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>הדף לא נמצא - LAHAV AI</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600&amp;family=Heebo:wght@600;700;800&amp;family=Sora:wght@600&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#0039b5",
+                        "surface-container-highest": "#e0e3e6",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e0e3e6",
+                        "secondary-fixed": "#dce1ff",
+                        "on-primary-fixed-variant": "#3d4663",
+                        "primary-fixed": "#dbe1ff",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "on-tertiary-container": "#0086ea",
+                        "on-secondary-fixed": "#001551",
+                        "inverse-on-surface": "#eff1f4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#7a83a3",
+                        "on-surface-variant": "#45464d",
+                        "surface-tint": "#545d7c",
+                        "on-tertiary-fixed": "#001c39",
+                        "on-secondary-container": "#fffbff",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "electric-blue": "#2997FF",
+                        "background": "#f7f9fc",
+                        "surface": "#f7f9fc",
+                        "surface-container-low": "#f2f4f7",
+                        "surface-dim": "#d8dadd",
+                        "inverse-primary": "#bcc5e9",
+                        "on-primary-fixed": "#111a35",
+                        "deep-navy": "#0B1530",
+                        "royal-blue": "#1D4ED8",
+                        "error": "#D32F2F",
+                        "primary-fixed-dim": "#bcc5e9",
+                        "tertiary-fixed-dim": "#a3c9ff",
+                        "surface-container": "#eceef1",
+                        "secondary": "#1d4ed8",
+                        "secondary-container": "#4069f2",
+                        "tertiary": "#000000",
+                        "on-tertiary-fixed-variant": "#004882",
+                        "outline-variant": "#c6c6ce",
+                        "success": "#2E7D32",
+                        "tertiary-fixed": "#d3e3ff",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f7f9fc",
+                        "surface-container-high": "#e6e8eb",
+                        "primary-container": "#111a35",
+                        "outline": "#76767e",
+                        "on-primary": "#ffffff",
+                        "white": "#FFFFFF",
+                        "on-surface": "#191c1e",
+                        "primary": "#000000",
+                        "cool-gray": "#F2F4F7",
+                        "secondary-fixed-dim": "#b7c4ff",
+                        "tertiary-container": "#001c39"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "section-gap": "120px",
+                        "stack-lg": "48px",
+                        "stack-sm": "12px",
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "brand-accent": ["Sora"],
+                        "caption": ["Assistant"],
+                        "body-lg": ["Assistant"],
+                        "headline-md": ["Heebo"],
+                        "body-md": ["Assistant"],
+                        "headline-lg": ["Heebo"],
+                        "headline-xl": ["Heebo"],
+                        "display-lg-mobile": ["Heebo"],
+                        "display-lg": ["Heebo"],
+                        "label-bold": ["Assistant"]
+                    }
+                }
+            }
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .font-brand-accent { font-family: 'Sora', sans-serif; font-size: 20px; line-height: 1.5; font-weight: 600; }
+            .font-caption { font-family: 'Assistant', sans-serif; font-size: 12px; line-height: 1.4; font-weight: 400; }
+            .font-body-lg { font-family: 'Assistant', sans-serif; font-size: 18px; line-height: 1.6; font-weight: 400; }
+            .font-headline-md { font-family: 'Heebo', sans-serif; font-size: 24px; line-height: 1.4; font-weight: 600; }
+            .font-body-md { font-family: 'Assistant', sans-serif; font-size: 16px; line-height: 1.5; font-weight: 400; }
+            .font-headline-lg { font-family: 'Heebo', sans-serif; font-size: 32px; line-height: 1.3; font-weight: 700; }
+            .font-headline-xl { font-family: 'Heebo', sans-serif; font-size: 48px; line-height: 1.2; font-weight: 700; }
+            .font-display-lg-mobile { font-family: 'Heebo', sans-serif; font-size: 40px; line-height: 1.2; font-weight: 800; }
+            .font-display-lg { font-family: 'Heebo', sans-serif; font-size: 64px; line-height: 1.1; letter-spacing: -0.02em; font-weight: 800; }
+            .font-label-bold { font-family: 'Assistant', sans-serif; font-size: 14px; line-height: 1.2; font-weight: 600; }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-md">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-deep-navy/80 backdrop-blur-md sticky top-0 z-50 w-full border-b border-outline-variant shadow-sm transition-all duration-300">
+<div class="flex flex-row-reverse justify-between items-center px-margin-desktop py-4 w-full max-w-container-max mx-auto">
+<!-- Brand Logo -->
+<div class="flex items-center">
+<a class="font-brand-accent text-deep-navy uppercase tracking-tighter hover:opacity-80 transition-opacity" href="/">
+                    LAHAV AI
+                </a>
+</div>
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-gutter">
+<a class="text-on-surface-variant hover:text-royal-blue hover:bg-surface-container-low transition-all duration-200 px-3 py-2 rounded-DEFAULT font-label-bold opacity-80 hover:scale-95 transition-transform" href="/">בית</a>
+<a class="text-on-surface-variant hover:text-royal-blue hover:bg-surface-container-low transition-all duration-200 px-3 py-2 rounded-DEFAULT font-label-bold opacity-80 hover:scale-95 transition-transform" href="/services">שירותים</a>
+<a class="text-on-surface-variant hover:text-royal-blue hover:bg-surface-container-low transition-all duration-200 px-3 py-2 rounded-DEFAULT font-label-bold opacity-80 hover:scale-95 transition-transform" href="/about">אודות</a>
+<a class="text-on-surface-variant hover:text-royal-blue hover:bg-surface-container-low transition-all duration-200 px-3 py-2 rounded-DEFAULT font-label-bold opacity-80 hover:scale-95 transition-transform" href="/articles">מאמרים</a>
+<a class="text-on-surface-variant hover:text-royal-blue hover:bg-surface-container-low transition-all duration-200 px-3 py-2 rounded-DEFAULT font-label-bold opacity-80 hover:scale-95 transition-transform" href="/contact">צור קשר</a>
+</nav>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-4">
+<button class="hidden lg:flex items-center gap-2 bg-royal-blue text-white hover:bg-electric-blue transition-colors px-6 py-2.5 rounded-DEFAULT font-label-bold">
+                    קביעת שיחת Discovery
+                </button>
+<button class="text-royal-blue hover:bg-surface-container-low p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">chat</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content (404) -->
+<main class="flex-grow flex items-center justify-center py-section-gap px-margin-mobile md:px-margin-desktop relative overflow-hidden">
+<!-- Decorative background subtle element -->
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-royal-blue/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+<div class="max-w-container-max w-full grid grid-cols-1 md:grid-cols-2 gap-stack-lg items-center">
+<!-- Text Content -->
+<div class="flex flex-col gap-stack-md text-right order-2 md:order-1">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
+<span class="font-display-lg text-error">404</span>
+</div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-deep-navy">הדף לא נמצא</h1>
+<p class="font-body-lg text-on-surface-variant max-w-lg">
+                    נראה שהחיבור אבד או שהכתובת אינה קיימת. בואו נחזיר אתכם למסלול הנכון.
+                </p>
+<div class="flex flex-wrap items-center gap-4 mt-stack-sm">
+<a class="inline-flex items-center justify-center bg-royal-blue text-white hover:bg-electric-blue transition-colors rounded-DEFAULT px-8 py-3.5 font-label-bold" href="/">
+                        חזרה לעמוד הבית
+                    </a>
+<a class="inline-flex items-center justify-center border-2 border-outline-variant text-deep-navy hover:border-royal-blue hover:text-royal-blue transition-colors rounded-DEFAULT px-8 py-3.5 font-label-bold" href="/services">
+                        שירותים
+                    </a>
+<a class="inline-flex items-center justify-center text-royal-blue hover:text-electric-blue transition-colors font-label-bold group" href="/contact">
+                        צרו קשר
+                        <span class="material-symbols-outlined mr-1 transform group-hover:-translate-x-1 transition-transform" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</a>
+</div>
+</div>
+<!-- Visual -->
+<div class="order-1 md:order-2 flex justify-center md:justify-end">
+<div class="relative w-full max-w-md aspect-square rounded-xl overflow-hidden shadow-lg border border-cool-gray bg-white flex items-center justify-center">
+<img class="w-full h-full object-cover opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5igPcFRJIbpu97uCIJQc9Z0F6jjJIgR5iq7a5VzJ245LeVM2WwNEsPz2GHfVE0Z6I3t0VlTK3YHe1PCnDHqSadBZYV-yrrFf5MQcgy5TepZ3glfezDGjHbZfR90WqLQv9fDR7QEhTD-23Iz3kgC6xosUctEO96eoeMLxt7qalUDTTNzwmRFkvBjDP45uXL2HMjm3zGwymv8gUD_6Ph90ss_-iDYNafVwltFGTDhM9J2ozXr8NQ5lL">
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-deep-navy w-full border-t border-primary-container text-right">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-stack-lg px-margin-desktop py-section-gap w-full max-w-container-max mx-auto rtl">
+<!-- Brand & Copyright -->
+<div class="flex flex-col gap-4">
+<div class="font-brand-accent text-electric-blue uppercase">
+                    LAHAV AI
+                </div>
+<p class="font-body-md text-surface-container-highest">
+                    © 2024 LAHAV AI. כל הזכויות שמורות. מומחים לפתרונות בינה מלאכותית לעסקים.
+                </p>
+</div>
+<!-- Links Column -->
+<div class="flex flex-col gap-3">
+<a class="font-label-bold text-surface-container-highest hover:text-white hover:translate-x-[-4px] transition-all duration-200" href="/services">שירותים</a>
+<a class="font-label-bold text-surface-container-highest hover:text-white hover:translate-x-[-4px] transition-all duration-200" href="/automation">אוטומציה עסקית</a>
+<a class="font-label-bold text-surface-container-highest hover:text-white hover:translate-x-[-4px] transition-all duration-200" href="/crm">מערכות CRM</a>
+</div>
+<!-- More Links -->
+<div class="flex flex-col gap-3">
+<a class="font-label-bold text-surface-container-highest hover:text-white hover:translate-x-[-4px] transition-all duration-200" href="/apps">פיתוח אפליקציות</a>
+<a class="font-label-bold text-surface-container-highest hover:text-white hover:translate-x-[-4px] transition-all duration-200" href="/blog">בלוג טכנולוגי</a>
+<a class="font-label-bold text-surface-container-highest hover:text-white hover:translate-x-[-4px] transition-all duration-200" href="/privacy">מדיניות פרטיות</a>
+</div>
+<!-- Optional 4th Column Space for layout balance based on grid-cols-4 -->
+<div></div>
+</div>
+</footer>
+</body></html>

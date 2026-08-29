@@ -1,0 +1,7 @@
+Read the handoff package starting with `00_START_HERE/MASTER_BUILD_BRIEF.md`. Then read the linked PRD, brand, visual direction, content rules, architecture/QA documents, and inspect all 13 final Stitch page references and HTML sources.
+
+Do NOT start implementation yet. First perform the Architecture + Implementation Review requested in the Master Build Brief. Inspect the existing repository before recommending a stack. Clearly separate Client Requirements, Architecture Recommendations, and Technical Verification Required.
+
+The visual goal is an ultra-premium LAHAV AI website: keep the approved business structure and brand, but materially elevate the Stitch visuals using the supplied benchmark direction. Do not invent facts or silently add paid dependencies.
+
+Return the architecture review and implementation sequence, then stop for approval.

@@ -1,0 +1,409 @@
+<!DOCTYPE html><html dir="rtl" lang="he"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>אודות LAHAV AI - פתרונות משולבי AI לעסקים</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&amp;family=Heebo:wght@400;600;700;800&amp;family=Sora:wght@600&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#001c39",
+                        "surface-container-highest": "#e0e3e6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#45464d",
+                        "inverse-surface": "#2d3133",
+                        "outline": "#76767e",
+                        "cool-gray": "#F2F4F7",
+                        "secondary-fixed": "#dce1ff",
+                        "electric-blue": "#2997FF",
+                        "primary": "#000000",
+                        "on-error": "#ffffff",
+                        "surface": "#f7f9fc",
+                        "on-secondary-fixed": "#001551",
+                        "deep-navy": "#0B1530",
+                        "surface-bright": "#f7f9fc",
+                        "surface-container": "#eceef1",
+                        "on-secondary-fixed-variant": "#0039b5",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#191c1e",
+                        "error": "#D32F2F",
+                        "on-primary-fixed-variant": "#3d4663",
+                        "on-tertiary-fixed": "#001c39",
+                        "background": "#f7f9fc",
+                        "on-secondary-container": "#fffbff",
+                        "outline-variant": "#c6c6ce",
+                        "surface-dim": "#d8dadd",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#dbe1ff",
+                        "tertiary": "#000000",
+                        "secondary-container": "#4069f2",
+                        "primary-container": "#111a35",
+                        "inverse-on-surface": "#eff1f4",
+                        "white": "#FFFFFF",
+                        "surface-variant": "#e0e3e6",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#b7c4ff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#111a35",
+                        "on-surface": "#191c1e",
+                        "tertiary-fixed": "#d3e3ff",
+                        "surface-tint": "#545d7c",
+                        "on-primary-container": "#7a83a3",
+                        "surface-container-low": "#f2f4f7",
+                        "primary-fixed-dim": "#bcc5e9",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#a3c9ff",
+                        "on-tertiary-container": "#0086ea",
+                        "royal-blue": "#1D4ED8",
+                        "success": "#2E7D32",
+                        "inverse-primary": "#bcc5e9",
+                        "secondary": "#1d4ed8",
+                        "on-tertiary-fixed-variant": "#004882",
+                        "surface-container-high": "#e6e8eb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "container-max": "1280px",
+                        "stack-md": "24px",
+                        "stack-sm": "12px",
+                        "section-gap": "120px",
+                        "base": "8px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "stack-lg": "48px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Heebo"],
+                        "headline-lg": ["Heebo"],
+                        "brand-accent": ["Sora"],
+                        "headline-md": ["Heebo"],
+                        "body-lg": ["Assistant"],
+                        "display-lg-mobile": ["Heebo"],
+                        "caption": ["Assistant"],
+                        "label-bold": ["Assistant"],
+                        "headline-xl": ["Heebo"],
+                        "body-md": ["Assistant"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "brand-accent": ["20px", { "lineHeight": "1.5", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["40px", { "lineHeight": "1.2", "fontWeight": "800" }],
+                        "caption": ["12px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "label-bold": ["14px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "headline-xl": ["48px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .gradient-text {
+            background: linear-gradient(to left, #0B1530, #1D4ED8, #2997FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        
+        .bento-item-large {
+            grid-column: span 12;
+        }
+        @media (min-width: 768px) {
+            .bento-item-large {
+                grid-column: span 8;
+            }
+        }
+        
+        .bento-item-small {
+            grid-column: span 12;
+        }
+        @media (min-width: 768px) {
+            .bento-item-small {
+                grid-column: span 4;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased overflow-x-hidden selection:bg-royal-blue selection:text-white">
+<!-- TopNavBar -->
+<nav class="bg-surface/80 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-cool-gray shadow-sm">
+<div class="flex flex-row-reverse justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto md:px-margin-desktop px-margin-mobile">
+<!-- Brand -->
+<div class="flex items-center gap-2 rtl:flex-row-reverse">
+<span class="material-symbols-outlined text-royal-blue" style="font-variation-settings: 'FILL' 1;">hexagon</span>
+<span class="font-brand-accent text-brand-accent text-deep-navy">LAHAV AI</span>
+</div>
+<!-- Desktop Nav Links -->
+<div class="hidden md:flex flex-row-reverse items-center gap-stack-md">
+<a class="text-on-surface-variant hover:text-royal-blue transition-colors font-label-bold text-label-bold" href="#">בית</a>
+<a class="text-on-surface-variant hover:text-royal-blue transition-colors font-label-bold text-label-bold" href="#">שירותים</a>
+<a class="text-royal-blue font-bold border-b-2 border-royal-blue pb-1 font-label-bold text-label-bold" href="#">אודות</a>
+<a class="text-on-surface-variant hover:text-royal-blue transition-colors font-label-bold text-label-bold" href="#">מאמרי פרויקט</a>
+<a class="text-on-surface-variant hover:text-royal-blue transition-colors font-label-bold text-label-bold" href="#">צור קשר</a>
+</div>
+<!-- CTA & Mobile Menu -->
+<div class="flex items-center gap-4 flex-row-reverse">
+<a class="hidden md:inline-flex bg-royal-blue text-white px-6 py-2 rounded font-label-bold text-label-bold hover:bg-electric-blue transition-colors items-center gap-2" href="#">
+<span>Discovery</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+<button class="md:hidden text-deep-navy">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="pt-24 md:pt-32">
+<!-- Hero Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto relative">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-stack-lg items-center">
+<div class="order-2 lg:order-1 flex flex-col gap-stack-md relative z-10 text-right">
+<div class="inline-flex items-center gap-2 bg-royal-blue/10 text-royal-blue px-4 py-2 rounded-full w-fit mb-4">
+<span class="material-symbols-outlined text-sm">corporate_fare</span>
+<span class="font-label-bold text-label-bold">Business First</span>
+</div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-deep-navy mb-6">
+                        קצת על <span class="gradient-text">LAHAV AI</span>
+</h1>
+<div class="space-y-4">
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                            LAHAV AI מתמחה בתכנון ובהקמה של מערכות חכמות לעסקים - מערכות CRM, אוטומציות, אתרים, אפליקציות, צ'אטבוטים ופתרונות מבוססי AI.
+                        </p>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                            אנחנו מתחילים מהתהליך העסקי ולא מהטכנולוגיה. קודם מבינים איך העסק עובד היום, איפה נמצאים צווארי הבקבוק ומה באמת צריך להשתפר - ורק לאחר מכן מתכננים את הפתרון המתאים.
+                        </p>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                            המטרה שלנו היא לא להוסיף עוד מערכת לעסק - אלא לבנות תשתית שמפחיתה עבודה ידנית, מייצרת סדר ושליטה, ומאפשרת לעסק לעבוד בצורה חכמה ויעילה יותר.
+                        </p>
+</div>
+</div>
+<div class="order-1 lg:order-2 relative w-full aspect-square rounded-2xl overflow-hidden shadow-[0px_4px_40px_rgba(11,21,48,0.08)] border border-cool-gray bg-white flex items-center justify-center p-12">
+<img alt="LAHAV AI Monogram" class="w-full h-full object-contain opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc4Chiq69mX9DgbvN6dClc5ZSY4RjZ4UXSX0-bi3Ap3vgor1bfunOQMq40t4X9dfadc6kzcnZqc5YeG-mxL6XPH6hcef_cwWfjHuwnb3VV6DLReOH8_11LPRvl5aVksmwvHA3u9O46S0eCuXjjSvv_C8AJpl1Gajjl2fzndXVfmLTGtsai-klyFOZ3Av7-lG0C7QVbi6-J54fZ8Tn9Jiyfk5U7iKWL69_B8pbogYSIXJL3XpTtntZcL9wQwUzz54DYYQ">
+</div>
+</div>
+</section>
+<!-- Founder / Company Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-container-low border-y border-outline-variant">
+<div class="max-w-container-max mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center">
+<div class="md:col-span-5 relative mb-12 md:mb-0">
+<div class="bg-white rounded-xl border border-cool-gray p-8 aspect-[4/3] flex items-center justify-center shadow-sm">
+<img alt="LAHAV AI" class="w-3/4 h-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEfzsoD4XUU3852ON8A-Grn6thDL18geXwVSTpxB3Z0Nm89sCKhgh_3WYDLedAhx9V1ktit-8Qh-80FcitG9-mQrlW4sldh4Nbsk8swu75MdmpH4opC7REp20E-bnGuUrKbD3sAEQOoZndT43h4Dh5Xd0h8uvu9ZQMcavlkmRXr7dJS43bzPBqu3FlP0Qf48bjjAt3SdWyCZ7Q2yJZNjIjEalm_Grv8LqQNsLFolZoFZIkMQl32ueMOoCxQ6Pd8fHlzg">
+</div>
+</div>
+<div class="md:col-span-7 space-y-6 md:pr-16 text-right">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy mb-6">מי עומד מאחורי LAHAV AI</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed border-r-4 border-royal-blue pr-6">
+                            כאן יפורט סיפור המייסד והחזון שהוביל להקמת LAHAV AI...
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Philosophy Section -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-white">
+<div class="max-w-container-max mx-auto">
+<div class="text-center mb-16 flex flex-col gap-4">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy">הפילוסופיה שלנו</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                        עקרונות העבודה שמנחים אותנו בכל פרויקט.
+                    </p>
+</div>
+<div class="bento-grid">
+<!-- Large Card: Business First -->
+<div class="bento-item-large bg-surface p-8 rounded-xl border border-cool-gray hover:border-royal-blue transition-all duration-300 shadow-sm flex flex-col justify-center">
+<div class="w-12 h-12 bg-white rounded flex items-center justify-center mb-6 shadow-sm border border-cool-gray">
+<span class="material-symbols-outlined text-royal-blue text-2xl">architecture</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-deep-navy mb-4">מתחילים מהתהליך העסקי</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                                מבינים מה באמת צריך להשתפר ומתכננים לפני שבונים, תוך התמקדות בצרכים האמיתיים של הארגון.
+                            </p>
+</div>
+<!-- Small Card: Simplicity -->
+<div class="bento-item-small bg-deep-navy text-white p-8 rounded-xl flex flex-col justify-center shadow-sm">
+<div class="w-12 h-12 bg-royal-blue/20 rounded flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-electric-blue text-2xl">compress</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-4 text-white">לפשט, לא לסבך</h3>
+<p class="font-body-md text-body-md text-on-primary-container">
+                                שואפים לפשט תהליכים ולא להוסיף מורכבות מיותרת למערך הקיים.
+                            </p>
+</div>
+<!-- Large Card: Scalability -->
+<div class="bento-item-large bg-surface p-8 rounded-xl border border-cool-gray hover:border-royal-blue transition-all duration-300 shadow-sm flex flex-col justify-center">
+<div class="w-12 h-12 bg-white rounded flex items-center justify-center mb-6 shadow-sm border border-cool-gray">
+<span class="material-symbols-outlined text-royal-blue text-2xl">account_tree</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-deep-navy mb-4">מערכת ברורה וניתנת להרחבה</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                                יצירת תשתית טכנולוגית שקופה וקלה לניהול, שתוכל לצמוח ולהתרחב יחד עם העסק.
+                            </p>
+</div>
+<!-- Small Card: Planning -->
+<div class="bento-item-small bg-surface p-8 rounded-xl border border-cool-gray hover:border-royal-blue transition-all duration-300 shadow-sm flex flex-col justify-center">
+<div class="w-12 h-12 bg-white rounded flex items-center justify-center mb-6 shadow-sm border border-cool-gray">
+<span class="material-symbols-outlined text-royal-blue text-2xl">schema</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-4 text-deep-navy">תכנון יסודי</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                תכנון מוקפד המבטיח שהפתרון יתאים בדיוק למטרות שהוגדרו.
+                            </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Delivery Methodology -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-container-low border-y border-outline-variant">
+<div class="max-w-container-max mx-auto">
+<div class="mb-16 flex flex-col md:flex-row justify-between items-end gap-8 border-b border-cool-gray pb-8">
+<div class="w-full text-right">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy mb-4">מתודולוגיית העבודה שלנו</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                            כל פרויקט עובר תהליך מסודר של אפיון, תכנון, הקמה, בדיקות, הטמעה ומסירה, במטרה ליצור מערכת פשוטה לעבודה, ברורה לניהול וניתנת להרחבה ככל שהעסק גדל.
+                        </p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-8 relative">
+<!-- Step 1 -->
+<div class="flex gap-6 relative z-10 bg-surface-container-low">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-white border-2 border-royal-blue flex items-center justify-center text-royal-blue font-headline-md shadow-sm z-10 relative">
+                            1
+                        </div>
+<div>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">Discovery</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                זיהוי הצורך העסקי, הגדרת מטרות, והבנת תהליכי העבודה הקיימים.
+                            </p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex gap-6 relative z-10 bg-surface-container-low">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-white border-2 border-cool-gray text-outline flex items-center justify-center font-headline-md shadow-sm z-10 relative">
+                            2
+                        </div>
+<div>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">אפיון</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                תרגום המטרות למבנה מפורט והגדרת הפתרון הנדרש.
+                            </p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex gap-6 relative z-10 bg-surface-container-low">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-white border-2 border-cool-gray text-outline flex items-center justify-center font-headline-md shadow-sm z-10 relative">
+                            3
+                        </div>
+<div>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">תכנון</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                תכנון הארכיטקטורה ויצירת התשתית לפיתוח.
+                            </p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="flex gap-6 relative z-10 bg-surface-container-low">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-white border-2 border-cool-gray text-outline flex items-center justify-center font-headline-md shadow-sm z-10 relative">
+                            4
+                        </div>
+<div>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">בנייה / הקמה</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                הקמת המערכת ופיתוח הפתרון בהתאם לאפיון.
+                            </p>
+</div>
+</div>
+<!-- Step 5 -->
+<div class="flex gap-6 relative z-10 bg-surface-container-low">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-white border-2 border-cool-gray text-outline flex items-center justify-center font-headline-md shadow-sm z-10 relative">
+                            5
+                        </div>
+<div>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">בדיקות</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                סדרת בדיקות לוודא שכל התהליכים פועלים כשורה.
+                            </p>
+</div>
+</div>
+<!-- Step 6 -->
+<div class="flex gap-6 relative z-10 bg-surface-container-low">
+<div class="flex-shrink-0 w-12 h-12 rounded-full bg-deep-navy text-white flex items-center justify-center font-headline-md shadow-sm z-10 relative">
+<span class="material-symbols-outlined text-electric-blue">flag</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-deep-navy mb-2">מסירה והטמעה</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                העברת המערכת ללקוח והדרכה על השימוש בה.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-section-gap bg-surface text-center px-margin-mobile md:px-margin-desktop">
+<div class="max-w-3xl mx-auto">
+<span class="material-symbols-outlined text-4xl text-royal-blue mb-6">chat</span>
+<h2 class="font-headline-xl text-headline-xl text-deep-navy mb-6">מוכנים לבחון את התהליכים בעסק?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">
+                    נשמח לשוחח, להבין את צרכי העסק ולבדוק יחד כיצד ניתן לייעל את העבודה.
+                </p>
+<button class="bg-royal-blue text-white px-8 py-3 rounded-lg hover:bg-electric-blue transition-all font-label-bold text-label-bold inline-flex items-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-1">
+<span>קביעת שיחת Discovery</span>
+<span class="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-deep-navy w-full text-right py-section-gap border-t border-white/10">
+<div class="flex flex-col md:flex-row-reverse justify-between items-start gap-stack-lg px-margin-desktop max-w-container-max mx-auto">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-2 rtl:flex-row-reverse">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">hexagon</span>
+<span class="font-brand-accent text-brand-accent text-white">LAHAV AI</span>
+</div>
+<p class="text-surface-variant font-body-md text-body-md max-w-xs mt-2">
+                    תכנון והקמה של מערכות חכמות לעסקים.
+                </p>
+</div>
+<div class="flex flex-col gap-3">
+<span class="text-white font-label-bold text-label-bold mb-2">קישורים מהירים</span>
+<a class="text-surface-variant hover:text-white transition-colors font-body-md text-body-md hover:underline decoration-electric-blue" href="#">מדיניות פרטיות</a>
+<a class="text-surface-variant hover:text-white transition-colors font-body-md text-body-md hover:underline decoration-electric-blue" href="#">תנאי שימוש</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="text-white font-label-bold text-label-bold mb-2">צור קשר</span>
+<a class="text-surface-variant hover:text-white transition-colors font-body-md text-body-md flex items-center gap-2 rtl:flex-row-reverse" href="mailto:info@lahav.ai">
+<span class="material-symbols-outlined text-sm">mail</span>
+                    info@lahav.ai
+                </a>
+</div>
+</div>
+<div class="px-margin-desktop max-w-container-max mx-auto mt-16 pt-8 border-t border-white/10 flex justify-between items-center text-surface-variant font-body-md text-body-md">
+<span>© 2024 LAHAV AI. כל הזכויות שמורות.</span>
+</div>
+</footer>
+</body></html>

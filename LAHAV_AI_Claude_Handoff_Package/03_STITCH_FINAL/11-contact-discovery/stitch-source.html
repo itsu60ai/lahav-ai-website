@@ -1,0 +1,441 @@
+<!DOCTYPE html><html class="scroll-smooth" dir="rtl" lang="he"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>קביעת שיחת Discovery | LAHAV AI</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&amp;family=Heebo:wght@400;600;700;800&amp;family=Sora:wght@600&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#dce1ff",
+                    "secondary": "#1d4ed8",
+                    "surface-container-high": "#e6e8eb",
+                    "primary-fixed": "#dbe1ff",
+                    "on-primary-fixed": "#111a35",
+                    "tertiary-fixed-dim": "#a3c9ff",
+                    "inverse-surface": "#2d3133",
+                    "inverse-primary": "#bcc5e9",
+                    "surface-variant": "#e0e3e6",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#eff1f4",
+                    "on-secondary-container": "#fffbff",
+                    "on-secondary-fixed": "#001551",
+                    "electric-blue": "#2997FF",
+                    "on-tertiary-fixed": "#001c39",
+                    "on-primary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary-container": "#111a35",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#001c39",
+                    "surface-dim": "#d8dadd",
+                    "surface-container-highest": "#e0e3e6",
+                    "on-surface-variant": "#45464d",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f2f4f7",
+                    "surface": "#f7f9fc",
+                    "on-tertiary-container": "#0086ea",
+                    "cool-gray": "#F2F4F7",
+                    "tertiary": "#000000",
+                    "tertiary-fixed": "#d3e3ff",
+                    "on-surface": "#191c1e",
+                    "primary": "#000000",
+                    "on-primary-fixed-variant": "#3d4663",
+                    "surface-container": "#eceef1",
+                    "outline-variant": "#c6c6ce",
+                    "white": "#FFFFFF",
+                    "on-background": "#191c1e",
+                    "royal-blue": "#1D4ED8",
+                    "secondary-container": "#4069f2",
+                    "primary-fixed-dim": "#bcc5e9",
+                    "on-secondary": "#ffffff",
+                    "error": "#D32F2F",
+                    "background": "#f7f9fc",
+                    "outline": "#76767e",
+                    "on-tertiary": "#ffffff",
+                    "deep-navy": "#0B1530",
+                    "success": "#2E7D32",
+                    "on-tertiary-fixed-variant": "#004882",
+                    "surface-tint": "#545d7c",
+                    "surface-bright": "#f7f9fc",
+                    "on-secondary-fixed-variant": "#0039b5",
+                    "secondary-fixed-dim": "#b7c4ff",
+                    "on-primary-container": "#7a83a3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-lg": "48px",
+                    "base": "8px",
+                    "gutter": "24px",
+                    "margin-desktop": "64px",
+                    "stack-sm": "12px",
+                    "container-max": "1280px",
+                    "margin-mobile": "20px",
+                    "stack-md": "24px",
+                    "section-gap": "120px"
+            },
+            "fontFamily": {
+                    "label-bold": [
+                            "Assistant"
+                    ],
+                    "display-lg-mobile": [
+                            "Heebo"
+                    ],
+                    "caption": [
+                            "Assistant"
+                    ],
+                    "headline-lg": [
+                            "Heebo"
+                    ],
+                    "body-md": [
+                            "Assistant"
+                    ],
+                    "headline-xl": [
+                            "Heebo"
+                    ],
+                    "headline-md": [
+                            "Heebo"
+                    ],
+                    "display-lg": [
+                            "Heebo"
+                    ],
+                    "brand-accent": [
+                            "Sora"
+                    ],
+                    "body-lg": [
+                            "Assistant"
+                    ]
+            },
+            "fontSize": {
+                    "label-bold": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg-mobile": [
+                            "40px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "caption": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.4",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-xl": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.4",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "64px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "brand-accent": [
+                            "20px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          }
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill-1 {
+          font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(224, 227, 230, 0.5);
+            box-shadow: 0px 4px 30px rgba(11, 21, 48, 0.05);
+        }
+        .rtl-input {
+            direction: rtl;
+            text-align: right;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased overflow-x-hidden selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- Header: TopNavBar Component -->
+<header class="bg-surface/80 dark:bg-deep-navy/80 backdrop-blur-md docked full-width top-0 sticky z-50 border-b border-outline-variant dark:border-primary-container shadow-sm">
+<div class="flex flex-row-reverse justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full max-w-container-max mx-auto">
+<!-- Brand Logo -->
+<div class="flex items-center gap-2">
+<span class="font-brand-accent text-brand-accent text-deep-navy dark:text-white uppercase tracking-tighter">LAHAV AI</span>
+</div>
+<!-- Navigation Links (Desktop) -->
+<nav class="hidden md:flex flex-row-reverse gap-gutter items-center Headlines: font-headline-md text-headline-md. Links: font-label-bold text-label-bold">
+<a class="text-on-surface-variant dark:text-surface-container-highest hover:text-royal-blue hover:bg-surface-container-low dark:hover:bg-primary-container transition-all px-3 py-2 rounded-lg font-label-bold text-label-bold" href="#">בית</a>
+<a class="text-on-surface-variant dark:text-surface-container-highest hover:text-royal-blue hover:bg-surface-container-low dark:hover:bg-primary-container transition-all px-3 py-2 rounded-lg font-label-bold text-label-bold" href="#">שירותים</a>
+<a class="text-on-surface-variant dark:text-surface-container-highest hover:text-royal-blue hover:bg-surface-container-low dark:hover:bg-primary-container transition-all px-3 py-2 rounded-lg font-label-bold text-label-bold" href="#">אודות</a>
+<a class="text-on-surface-variant dark:text-surface-container-highest hover:text-royal-blue hover:bg-surface-container-low dark:hover:bg-primary-container transition-all px-3 py-2 rounded-lg font-label-bold text-label-bold" href="#">מאמרים</a>
+<a class="text-royal-blue dark:text-electric-blue border-b-2 border-royal-blue pb-1 font-label-bold text-label-bold opacity-80 scale-95 transition-transform" href="#">צור קשר</a>
+</nav>
+<!-- Trailing Action -->
+<div class="flex items-center">
+<a class="hidden md:flex items-center gap-2 bg-royal-blue hover:bg-electric-blue text-white font-label-bold text-label-bold px-6 py-2.5 rounded-full transition-colors hover:translate-x-[-4px] duration-200" href="#booking-form">
+                    קביעת שיחת Discovery
+                    <span class="material-symbols-outlined text-[18px]">chat</span>
+</a>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden text-deep-navy p-2 hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="pt-section-gap pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto relative overflow-hidden">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-center relative z-10">
+<!-- Text Content -->
+<div class="md:col-span-6 flex flex-col items-start gap-stack-md text-right">
+<div class="inline-flex items-center gap-2 bg-secondary-fixed/50 px-4 py-1.5 rounded-full border border-secondary-fixed">
+<span class="material-symbols-outlined text-[16px] text-royal-blue">track_changes</span>
+<span class="font-label-bold text-label-bold text-royal-blue">אבחון טכנולוגי מדויק</span>
+</div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-deep-navy">
+                        מתחילים ב-Discovery: <br>
+<span class="text-royal-blue">הצעד הראשון למערכת חכמה יותר</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[500px]">
+                        שיחת Discovery היא השלב שבו אנחנו לומדים להכיר את העסק שלך, מזהים את צווארי הבקבוק ומבינים איך טכנולוגיה יכולה לייצר אצלך סדר, שליטה וצמיחה.
+                    </p>
+<div class="flex flex-wrap items-center gap-4 mt-4">
+<a class="inline-flex items-center justify-center gap-2 bg-deep-navy hover:bg-royal-blue text-white font-label-bold text-label-bold px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg" href="#booking-form">
+                            קביעת שיחה עכשיו
+                            <span class="material-symbols-outlined text-[20px] rotate-180">arrow_right_alt</span>
+</a>
+</div>
+</div>
+<!-- Visual Content -->
+<div class="md:col-span-6 mt-12 md:mt-0 relative">
+<div class="absolute -inset-4 bg-gradient-to-tr from-secondary-fixed to-surface-bright rounded-3xl blur-3xl opacity-50 -z-10"></div>
+<img alt="" class="w-full h-auto max-w-[500px] mx-auto drop-shadow-2xl object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpuyNptM6KaYb_oMN7wjoIAYvyUmGARf-mwlPIGVG9ImDTbWkJOxAZgeOzSRrA6kx501Dk2L_en0MKD0LEF2zd86TGFwgpUoERHYF4LxAsMHmemj1yS4uHFJOFW3ofHn1JXuZch3Rcr64IiwgpCG6SVEYLe6kpeqlzmWJp59lpGyGtrJpsu2m6KeXzYxYlBRyS1hsZmBKXDil825DqTAq6SDNioAmjRy8YB02hlrVI73Y2Pg_tdV1fan2YGDEus0jdpQ">
+</div>
+</div>
+</section>
+<!-- "Why Discovery?" Section - Bento Grid -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto bg-surface-container-low rounded-[2rem] md:rounded-[4rem] my-stack-lg">
+<div class="text-center mb-stack-lg flex flex-col items-center">
+<h2 class="font-headline-xl text-headline-xl text-deep-navy mb-4">למה השיחה מיועדת?</h2>
+<div class="w-16 h-1 bg-electric-blue rounded-full"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-white p-6 rounded-2xl border border-cool-gray hover:border-royal-blue hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col gap-4">
+<div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center text-royal-blue">
+<span class="material-symbols-outlined icon-fill-1 text-[28px]">account_tree</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">הבנת התהליכים העסקיים הקיימים</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex-grow">
+                        מיפוי מדויק של דרך העבודה הנוכחית כדי להבין את הבסיס עליו נבנה את הפתרון.
+                    </p>
+</div>
+<!-- Card 2 -->
+<div class="bg-white p-6 rounded-2xl border border-cool-gray hover:border-royal-blue hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col gap-4">
+<div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center text-royal-blue">
+<span class="material-symbols-outlined icon-fill-1 text-[28px]">speed</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">זיהוי הזדמנויות לאוטומציה וייעול</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex-grow">
+                        איתור משימות רוטיניות שגוזלות זמן ויכולות להיות מוחלפות על ידי מערכות חכמות.
+                    </p>
+</div>
+<!-- Card 3 -->
+<div class="bg-white p-6 rounded-2xl border border-cool-gray hover:border-royal-blue hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col gap-4">
+<div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center text-royal-blue">
+<span class="material-symbols-outlined icon-fill-1 text-[28px]">architecture</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">מיפוי הצרכים הטכנולוגיים המדויקים</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex-grow">
+                        התאמת הכלים הטכנולוגיים לדרישות הספציפיות של העסק שלך, ללא פשרות.
+                    </p>
+</div>
+<!-- Card 4 -->
+<div class="bg-white p-6 rounded-2xl border border-cool-gray hover:border-royal-blue hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col gap-4">
+<div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center text-royal-blue">
+<span class="material-symbols-outlined icon-fill-1 text-[28px]">psychology</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-deep-navy">בחינת היתכנות לפתרונות AI ו-CRM</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex-grow">
+                        בדיקת היתכנות מקצועית לשילוב בינה מלאכותית ומערכות ניהול לקוחות בארגון.
+                    </p>
+</div>
+</div>
+</section>
+<!-- Form Section & What Happens Next -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto" id="booking-form">
+<div class="bg-deep-navy rounded-[2rem] p-8 md:p-16 relative overflow-hidden shadow-xl">
+<!-- Decorative background elements -->
+<div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+<div class="absolute -top-32 -left-32 w-96 h-96 bg-royal-blue rounded-full blur-[100px] opacity-30"></div>
+<div class="absolute -bottom-32 -right-32 w-96 h-96 bg-electric-blue rounded-full blur-[100px] opacity-20"></div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-stack-lg relative z-10">
+<!-- Left: The Form (RTL - physical right side visually, but order matters) -->
+<div class="lg:col-span-7">
+<div class="glass-panel p-8 rounded-2xl">
+<h2 class="font-headline-lg text-headline-lg text-deep-navy mb-6">ספרו לנו קצת על העסק</h2>
+<form class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">שם מלא</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 text-on-surface rtl-input focus:border-royal-blue focus:ring-1 focus:ring-royal-blue outline-none transition-shadow" placeholder="ישראל ישראלי" type="text">
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">דוא״ל</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 text-on-surface rtl-input focus:border-royal-blue focus:ring-1 focus:ring-royal-blue outline-none transition-shadow" placeholder="email@example.com" type="email">
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">טלפון</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 text-on-surface rtl-input focus:border-royal-blue focus:ring-1 focus:ring-royal-blue outline-none transition-shadow" placeholder="050-0000000" type="tel">
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">שם החברה / עסק</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 text-on-surface rtl-input focus:border-royal-blue focus:ring-1 focus:ring-royal-blue outline-none transition-shadow" placeholder="חברה בע״מ" type="text">
+</div>
+</div>
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-2">על מה תרצו שנדבר? (אופציונלי)</label>
+<textarea class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 text-on-surface rtl-input focus:border-royal-blue focus:ring-1 focus:ring-royal-blue outline-none transition-shadow resize-none" placeholder="שתפו אותנו בקצרה באתגרים המרכזיים שלכם..." rows="3"></textarea>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 pt-4 border-t border-cool-gray">
+<button class="flex-1 bg-royal-blue hover:bg-electric-blue text-white font-label-bold text-label-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md" type="submit">
+                                        קביעת שיחת Discovery
+                                    </button>
+<a class="flex-1 bg-transparent border-2 border-outline-variant hover:border-royal-blue text-on-surface hover:text-royal-blue font-label-bold text-label-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2" href="#">
+<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"></path></svg>
+                                        שיחה בוואטסאפ
+                                    </a>
+</div>
+</form>
+</div>
+</div>
+<!-- Right: Timeline/Motivation -->
+<div class="lg:col-span-5 flex flex-col justify-center">
+<h3 class="font-headline-lg text-headline-lg text-white mb-8">מה קורה הלאה?</h3>
+<div class="space-y-8 relative before:absolute before:inset-y-0 before:right-6 before:w-[2px] before:bg-white/20">
+<!-- Step 1 -->
+<div class="relative flex items-start gap-6">
+<div class="w-12 h-12 rounded-full bg-electric-blue flex items-center justify-center shrink-0 border-4 border-deep-navy relative z-10 text-white font-bold text-lg">1</div>
+<div class="pt-2">
+<h4 class="font-headline-md text-headline-md text-white mb-1">אנחנו עוברים על הפרטים</h4>
+<p class="font-body-md text-body-md text-inverse-primary">הצוות שלנו יקרא את הפנייה ויבצע מחקר ראשוני כדי להגיע מוכנים.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative flex items-start gap-6">
+<div class="w-12 h-12 rounded-full bg-surface-tint flex items-center justify-center shrink-0 border-4 border-deep-navy relative z-10 text-white font-bold text-lg">2</div>
+<div class="pt-2">
+<h4 class="font-headline-md text-headline-md text-white mb-1">תיאום זמן נוח</h4>
+<p class="font-body-md text-body-md text-inverse-primary">ניצור קשר לקביעת מועד לשיחה המעמיקה, בזמן שנוח לך.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative flex items-start gap-6">
+<div class="w-12 h-12 rounded-full bg-surface-tint flex items-center justify-center shrink-0 border-4 border-deep-navy relative z-10 text-white font-bold text-lg">3</div>
+<div class="pt-2">
+<h4 class="font-headline-md text-headline-md text-white mb-1">שיחת Discovery</h4>
+<p class="font-body-md text-body-md text-inverse-primary">בשיחה נבין יחד את הפוטנציאל האמיתי לשיפור העסק והתייעלות.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Component -->
+<footer class="bg-deep-navy dark:bg-black full-width bottom-0 border-t border-primary-container grid grid-cols-1 md:grid-cols-4 gap-stack-lg px-margin-mobile md:px-margin-desktop py-section-gap w-full max-w-container-max mx-auto text-right rtl">
+<!-- Brand & Copyright -->
+<div class="md:col-span-1 flex flex-col gap-4">
+<span class="font-brand-accent text-brand-accent text-electric-blue">LAHAV AI</span>
+<p class="font-body-md text-body-md text-white">© 2024 LAHAV AI. כל הזכויות שמורות. מומחים לפתרונות בינה מלאכותית לעסקים.</p>
+</div>
+<!-- Links (Spread across remaining columns for balance, simplified rendering based on JSON provided links array) -->
+<div class="md:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
+<div class="flex flex-col gap-3">
+<span class="font-label-bold text-label-bold text-white mb-2">פתרונות</span>
+<a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] duration-200" href="#">שירותים</a>
+<a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] duration-200" href="#">אוטומציה עסקית</a>
+<a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] duration-200" href="#">מערכות CRM</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-bold text-label-bold text-white mb-2">טכנולוגיה</span>
+<a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] duration-200" href="#">פיתוח אפליקציות</a>
+<a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] duration-200" href="#">בלוג טכנולוגי</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-bold text-label-bold text-white mb-2">חברה</span>
+<a class="font-body-md text-body-md text-surface-container-highest hover:text-white transition-colors hover:translate-x-[-4px] duration-200" href="#">מדיניות פרטיות</a>
+</div>
+</div>
+</footer>
+</body></html>

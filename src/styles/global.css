@@ -1,0 +1,576 @@
+/* =============================================================
+   LAHAV AI — foundation
+   Implements: docs/approved/DESIGN_BRIEF.md, 02_BRAND/BRAND_RULES.md,
+   and decision F-1 (light, spacious, large confident typography).
+   Hebrew-first, native RTL. Single committed light theme (brand default).
+   ============================================================= */
+
+@import '@fontsource-variable/heebo';
+@import '@fontsource-variable/assistant';
+@import 'tailwindcss';
+
+/* -------------------------------------------------------------
+   1. Tokens
+   ------------------------------------------------------------- */
+@theme {
+  /* --- Brand palette (fixed, R12 / BRAND_RULES) --- */
+  --color-navy: #0b1530;
+  --color-royal: #1d4ed8;
+  --color-electric: #2997ff;
+  --color-cool: #f2f4f7;
+  --color-white: #ffffff;
+
+  /* --- Neutrals: biased toward the brand navy, never a flat grey --- */
+  --color-ink: #0b1530; /* primary text        — 18.3:1 on white */
+  --color-ink-2: #33405c; /* secondary text      — 10.2:1 on white */
+  --color-ink-3: #6b7793; /* muted / captions    —  4.5:1 on white */
+  --color-line: #e3e7ee; /* hairlines, borders */
+  --color-line-strong: #ccd4e0;
+  --color-surface: #ffffff;
+  --color-surface-2: #f2f4f7; /* Cool Gray — alternating sections */
+  --color-surface-3: #e9edf3;
+
+  /* --- Semantic, functional use only (D-Q1) --- */
+  --color-success: #15803d;
+  --color-error: #b91c1c;
+  --color-success-soft: #eaf5ee;
+  --color-error-soft: #fdeceb;
+
+  /* --- Type families --- */
+  --font-display: 'Heebo Variable', 'Heebo', 'Segoe UI', Arial, sans-serif;
+  --font-body: 'Assistant Variable', 'Assistant', 'Segoe UI', Arial, sans-serif;
+
+  /* --- Type scale: Apple-grade presence. Fluid, never below the a11y floor.
+     Revised per client refinement (post design-system approval): section
+     headings (h2) carry noticeably more editorial weight, and every
+     supporting/body size has a raised floor so nothing on the real site
+     ever reads as small or thin. --- */
+  --text-display-1: clamp(3rem, 1.1rem + 7.2vw, 7.25rem); /*  48 → 116 */
+  --text-display-2: clamp(2.5rem, 1.35rem + 4.4vw, 5.25rem); /*  40 →  84 */
+  --text-h1: clamp(2.25rem, 1.4rem + 3.1vw, 4rem); /*  36 →  64 */
+  --text-h2: clamp(2rem, 1.35rem + 2.4vw, 3.25rem); /*  32 →  52 */
+  --text-h3: clamp(1.375rem, 1.2rem + 0.7vw, 1.875rem); /*  22 →  30 */
+  --text-lead: clamp(1.1875rem, 1.05rem + 0.55vw, 1.625rem); /*  19 →  26 */
+  --text-body-lg: 1.25rem; /*  20 */
+  --text-body: 1.125rem; /*  18 */
+  --text-small: 1rem; /*  16 */
+  --text-micro: 0.875rem; /*  14 */
+
+  /* --- Spacing: 4px base, generous at the top end (whitespace is the premium signal) --- */
+  --spacing: 0.25rem;
+  --space-section: clamp(4.5rem, 3rem + 7vw, 10rem);
+  --space-section-tight: clamp(3rem, 2rem + 4vw, 6rem);
+  --container-max: 1200px;
+  --container-wide: 1440px;
+  --measure: 68ch;
+
+  /* --- Radii --- */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+  --radius-full: 999px;
+
+  /* --- Elevation: navy-tinted, never generic black --- */
+  --shadow-sm: 0 1px 2px rgba(11, 21, 48, 0.05);
+  --shadow: 0 10px 30px rgba(11, 21, 48, 0.07);
+  --shadow-lg: 0 28px 70px rgba(11, 21, 48, 0.13);
+
+  /* --- Motion --- */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-inout: cubic-bezier(0.65, 0.05, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 420ms;
+
+  /* --- Brand gradient --- */
+  --gradient-brand: linear-gradient(118deg, #0b1530 0%, #1d4ed8 56%, #2997ff 100%);
+}
+
+/* -------------------------------------------------------------
+   2. Base
+   ------------------------------------------------------------- */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.7; /* Hebrew needs room */
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Headings: Heebo, tight and confident. Hebrew gets almost no negative
+     tracking — it hurts legibility — only the largest display sizes are
+     optically corrected. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.005em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    max-width: var(--measure);
+  }
+
+  a {
+    color: var(--color-royal);
+    text-underline-offset: 3px;
+  }
+
+  /* One focus treatment for the whole site */
+  :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-electric);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  img,
+  svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Numbers line up in tables and stat rows */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-electric) 24%, transparent);
+  }
+}
+
+/* -------------------------------------------------------------
+   3. Utilities used across the site
+   ------------------------------------------------------------- */
+@layer components {
+  .u-container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  .u-section {
+    padding-block: var(--space-section);
+  }
+
+  .u-section-tight {
+    padding-block: var(--space-section-tight);
+  }
+
+  /* Type roles — the scale above, applied */
+  .t-display-1 {
+    font-family: var(--font-display);
+    font-size: var(--text-display-1);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.022em;
+  }
+  .t-display-2 {
+    font-family: var(--font-display);
+    font-size: var(--text-display-2);
+    font-weight: 800;
+    line-height: 1.06;
+    letter-spacing: -0.016em;
+  }
+  .t-h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-h1);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+  .t-h2 {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  .t-h3 {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  .t-lead {
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--color-ink-2);
+    font-weight: 400;
+  }
+  .t-body {
+    font-size: var(--text-body);
+    line-height: 1.7;
+  }
+  .t-small {
+    font-size: var(--text-small);
+    line-height: 1.6;
+    font-weight: 500;
+    color: var(--color-ink-2);
+  }
+  .t-eyebrow {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    color: var(--color-royal);
+    font-family: var(--font-body);
+  }
+  .t-micro {
+    font-size: var(--text-micro);
+    font-weight: 500;
+    color: var(--color-ink-3);
+  }
+
+  /* --- Buttons: three levels only (CTA hierarchy, R2 / DESIGN_BRIEF §7) --- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    padding-inline: 1.5rem;
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out),
+      color var(--dur) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn[disabled],
+  .btn[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 1;
+  }
+
+  .btn-primary {
+    background: var(--color-royal);
+    color: var(--color-white);
+  }
+  .btn-primary:hover {
+    background: #1741bb;
+  }
+  .btn-primary[disabled] {
+    background: var(--color-surface-3);
+    color: var(--color-ink-3);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-royal);
+    border-color: var(--color-royal);
+  }
+  .btn-secondary:hover {
+    background: color-mix(in srgb, var(--color-royal) 7%, transparent);
+  }
+  .btn-secondary[disabled] {
+    color: var(--color-ink-3);
+    border-color: var(--color-line-strong);
+  }
+
+  .btn-tertiary {
+    background: transparent;
+    color: var(--color-royal);
+    padding-inline: 0.25rem;
+    min-height: 40px;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+  }
+  .btn-tertiary:hover {
+    color: #1741bb;
+  }
+
+  .btn-lg {
+    min-height: 58px;
+    padding-inline: 2rem;
+    font-size: var(--text-body-lg);
+  }
+
+  /* On dark surfaces */
+  .on-dark .btn-secondary {
+    color: var(--color-white);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  .on-dark .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* --- Surfaces --- */
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.5rem, 2.5vw, 2.25rem);
+    transition:
+      border-color var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+  .card:hover {
+    border-color: var(--color-line-strong);
+    box-shadow: var(--shadow);
+  }
+
+  /* Dark system panel — the reusable base for every "bespoke system graphic"
+     on production pages (Home hero visual, service diagrams, etc). Built-in
+     depth and lighting so no page has to reinvent it; each page then adds
+     its own diagram content on top. */
+  .panel-dark {
+    background: var(--color-navy);
+    color: rgba(255, 255, 255, 0.86);
+    border-radius: var(--radius-xl);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .panel-dark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(760px 420px at 88% 6%, rgba(41, 151, 255, 0.24), transparent 60%),
+      radial-gradient(520px 360px at 8% 96%, rgba(29, 78, 216, 0.22), transparent 65%);
+  }
+  .panel-dark::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 72%);
+  }
+  .panel-dark > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Restrained motion for system diagrams: a soft breathing pulse on
+     connection points. Disabled globally under prefers-reduced-motion
+     (see section 4 below). */
+  .panel-node-pulse {
+    animation: panel-pulse 3200ms ease-in-out infinite;
+  }
+  @keyframes panel-pulse {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  .panel-flow-line {
+    stroke-dasharray: 5 7;
+    animation: panel-flow 2600ms linear infinite;
+  }
+  @keyframes panel-flow {
+    to {
+      stroke-dashoffset: -24;
+    }
+  }
+
+  /* --- Forms --- */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .field-label {
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .field-hint {
+    font-size: var(--text-micro);
+    color: var(--color-ink-3);
+  }
+  .input {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    min-height: 50px;
+    width: 100%;
+    transition:
+      border-color var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+  .input::placeholder {
+    color: var(--color-ink-3);
+  }
+  .input:hover {
+    border-color: #b6c0d1;
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--color-royal);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-electric) 22%, transparent);
+  }
+  .input[aria-invalid='true'] {
+    border-color: var(--color-error);
+  }
+  .input[disabled] {
+    background: var(--color-surface-2);
+    color: var(--color-ink-3);
+    cursor: not-allowed;
+  }
+  /* Phone/email are LTR content inside an RTL layout */
+  .input-ltr {
+    direction: ltr;
+    text-align: start;
+  }
+  .field-error {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--text-small);
+    color: var(--color-error);
+    font-weight: 600;
+  }
+  .field-success {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--text-small);
+    color: var(--color-success);
+    font-weight: 600;
+  }
+
+  /* --- Small parts --- */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-electric) 12%, transparent);
+    color: #14509f;
+  }
+  .rule {
+    height: 1px;
+    border: 0;
+    background: var(--color-line);
+    margin: 0;
+  }
+  .rule-gradient {
+    height: 2px;
+    border: 0;
+    background: var(--gradient-brand);
+    margin: 0;
+  }
+
+  /* Directional arrow: flips with the writing direction */
+  .arrow-inline {
+    display: inline-block;
+    transition: transform var(--dur) var(--ease-out);
+  }
+  [dir='rtl'] .arrow-inline {
+    transform: scaleX(1);
+  }
+  a:hover > .arrow-inline,
+  .btn:hover > .arrow-inline {
+    transform: translateX(-3px);
+  }
+
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 1rem;
+    top: -100px;
+    z-index: 100;
+    background: var(--color-navy);
+    color: var(--color-white);
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius);
+    transition: top var(--dur) var(--ease-out);
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  /* --- Editorial composition primitives ---
+     Cards are a component option for when a grid is genuinely the right
+     shape (e.g. five parallel services). They are NOT the default page
+     layout. Home and service pages should reach for asymmetric,
+     editorial arrangements first — these two utilities are that
+     alternative, built on the same tokens as everything else. */
+  .u-editorial {
+    display: grid;
+    grid-template-columns: 7fr 5fr;
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .u-editorial--reverse {
+    grid-template-columns: 5fr 7fr;
+  }
+  .u-editorial--offset > :first-child {
+    padding-inline-end: clamp(0rem, 4vw, 3rem);
+  }
+  .u-editorial--offset > :last-child {
+    margin-block-start: clamp(1.5rem, 5vw, 4rem);
+  }
+  @media (max-width: 900px) {
+    .u-editorial,
+    .u-editorial--reverse {
+      grid-template-columns: 1fr;
+    }
+    .u-editorial--offset > :first-child,
+    .u-editorial--offset > :last-child {
+      padding-inline-end: 0;
+      margin-block-start: 0;
+    }
+  }
+}
+
+/* -------------------------------------------------------------
+   4. Motion preferences
+   ------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

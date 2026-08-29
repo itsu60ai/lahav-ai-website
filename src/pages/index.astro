@@ -1,0 +1,33 @@
+---
+// PLACEHOLDER ONLY — the real Home page is stage 4 and has not been built yet.
+// This exists so the dev server has a root route during stages 0–2.
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="LAHAV AI — בבנייה" noindex={true}>
+  <main id="main" class="u-container u-section holding">
+    <img src="/brand/lahav-primary-lockup.svg" alt="LAHAV AI" width="180" height="133" />
+    <p class="t-eyebrow">שלב 2 מתוך הבנייה</p>
+    <h1 class="t-h1">האתר בבנייה</h1>
+    <p class="t-lead">
+      עמודי האתר עדיין לא נבנו. כרגע קיימת רק מערכת העיצוב, שממתינה לאישור לפני שממשיכים.
+    </p>
+    <a class="btn btn-primary" href="/system/">מעבר למערכת העיצוב</a>
+  </main>
+</BaseLayout>
+
+<style>
+  .holding {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    min-height: 70vh;
+    justify-content: center;
+  }
+  .holding img {
+    width: 170px;
+    height: auto;
+    margin-bottom: 0.5rem;
+  }
+</style>
