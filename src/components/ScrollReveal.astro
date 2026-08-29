@@ -1,0 +1,29 @@
+---
+// Adds `is-in` to any element carrying [data-reveal] once it enters the
+// viewport. Elements decide for themselves what that means, so the same
+// tiny observer drives all three approved motion moments.
+//
+// Nothing here runs when the visitor prefers reduced motion: elements are
+// simply marked visible immediately.
+---
+
+<script>
+  const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduce || !('IntersectionObserver' in window)) {
+    els.forEach((el) => el.classList.add('is-in'));
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-in');
+          io.unobserve(entry.target); // reveal once, never replay
+        });
+      },
+      { threshold: 0.2, rootMargin: '0px 0px -8% 0px' }
+    );
+    els.forEach((el) => io.observe(el));
+  }
+</script>

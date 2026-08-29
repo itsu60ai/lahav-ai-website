@@ -1,5 +1,5 @@
 /* =============================================================
-   LAHAV AI — foundation
+   LAHAV AI, foundation
    Implements: docs/approved/DESIGN_BRIEF.md, 02_BRAND/BRAND_RULES.md,
    and decision F-1 (light, spacious, large confident typography).
    Hebrew-first, native RTL. Single committed light theme (brand default).
@@ -21,13 +21,13 @@
   --color-white: #ffffff;
 
   /* --- Neutrals: biased toward the brand navy, never a flat grey --- */
-  --color-ink: #0b1530; /* primary text        — 18.3:1 on white */
-  --color-ink-2: #33405c; /* secondary text      — 10.2:1 on white */
-  --color-ink-3: #6b7793; /* muted / captions    —  4.5:1 on white */
+  --color-ink: #0b1530; /* primary text       , 18.3:1 on white */
+  --color-ink-2: #33405c; /* secondary text     , 10.2:1 on white */
+  --color-ink-3: #6b7793; /* muted / captions   ,  4.5:1 on white */
   --color-line: #e3e7ee; /* hairlines, borders */
   --color-line-strong: #ccd4e0;
   --color-surface: #ffffff;
-  --color-surface-2: #f2f4f7; /* Cool Gray — alternating sections */
+  --color-surface-2: #f2f4f7; /* Cool Gray, alternating sections */
   --color-surface-3: #e9edf3;
 
   /* --- Semantic, functional use only (D-Q1) --- */
@@ -109,7 +109,7 @@
   }
 
   /* Headings: Heebo, tight and confident. Hebrew gets almost no negative
-     tracking — it hurts legibility — only the largest display sizes are
+     tracking, it hurts legibility, only the largest display sizes are
      optically corrected. */
   h1,
   h2,
@@ -187,7 +187,7 @@
     background: var(--color-surface-2);
   }
 
-  /* Type roles — the scale above, applied */
+  /* Type roles, the scale above, applied */
   .t-display-1 {
     font-family: var(--font-display);
     font-size: var(--text-display-1);
@@ -349,7 +349,7 @@
     box-shadow: var(--shadow);
   }
 
-  /* Dark system panel — the reusable base for every "bespoke system graphic"
+  /* Dark system panel, the reusable base for every "bespoke system graphic"
      on production pages (Home hero visual, service diagrams, etc). Built-in
      depth and lighting so no page has to reinvent it; each page then adds
      its own diagram content on top. */
@@ -541,7 +541,7 @@
      Cards are a component option for when a grid is genuinely the right
      shape (e.g. five parallel services). They are NOT the default page
      layout. Home and service pages should reach for asymmetric,
-     editorial arrangements first — these two utilities are that
+     editorial arrangements first, these two utilities are that
      alternative, built on the same tokens as everything else. */
   .u-editorial {
     display: grid;

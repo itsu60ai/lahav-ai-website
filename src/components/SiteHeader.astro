@@ -1,5 +1,5 @@
 ---
-import { NAV, CTA_PRIMARY, WHATSAPP_HREF } from '../lib/site';
+import { NAV, CTA_PRIMARY, WHATSAPP_HREF, SERVICES } from '../lib/site';
 
 interface Props {
   currentPath: string;
@@ -9,39 +9,77 @@ const { currentPath } = Astro.props;
 const isActive = (href: string) => (href === '/' ? currentPath === '/' : currentPath.startsWith(href));
 ---
 
-<header class="hdr">
+<header class="hdr" data-header>
   <div class="u-container hdr__inner">
-    <a class="hdr__brand" href="/" aria-label="LAHAV AI — לדף הבית">
+    <a class="hdr__brand" href="/" aria-label="LAHAV AI, לדף הבית">
       <img src="/brand/lahav-primary-lockup.svg" alt="LAHAV AI" width="118" height="87" />
     </a>
 
     <nav class="hdr__nav" aria-label="ניווט ראשי">
       {
-        NAV.map((item) => (
-          <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
-            {item.label}
-          </a>
-        ))
+        NAV.map((item) =>
+          'children' in item ? (
+            <div class="hdr__dd" data-dropdown>
+              <button
+                class="hdr__link hdr__dd-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="services-menu"
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                data-dropdown-btn
+              >
+                {item.label}
+                <svg class="hdr__caret" width="11" height="7" viewBox="0 0 11 7" fill="none" aria-hidden="true">
+                  <path d="M1 1.5 5.5 5.5 10 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+
+              <div class="hdr__dd-panel" id="services-menu" data-dropdown-panel>
+                <a class="hdr__dd-all" href={item.href}>
+                  כל השירותים
+                  <span class="arrow-inline" aria-hidden="true">←</span>
+                </a>
+                {SERVICES.map((s) => (
+                  <a class="hdr__dd-item" href={`/services/${s.slug}/`}>
+                    <span class="hdr__dd-name">{s.name}</span>
+                    <span class="hdr__dd-lead">{s.lead}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <a class="hdr__link" href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          )
+        )
       }
     </nav>
 
     <a class="btn btn-primary hdr__cta" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
 
     <button class="hdr__burger" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-toggle>
-      <span></span>
+      <span class="hdr__burger-bars" aria-hidden="true"></span>
       <span class="sr-only">פתיחת תפריט</span>
     </button>
   </div>
 
   <div class="hdr__mobile" id="mobile-nav" data-menu-panel>
     <div class="u-container hdr__mobile-inner">
-      {
-        NAV.map((item) => (
-          <a class="hdr__mobile-link" href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
-            {item.label}
-          </a>
-        ))
-      }
+      <a class="hdr__mobile-link" href="/">בית</a>
+
+      <div class="hdr__mobile-group">
+        <a class="hdr__mobile-link hdr__mobile-link--head" href="/services/">שירותים</a>
+        <div class="hdr__mobile-sub">
+          {SERVICES.map((s) => (
+            <a href={`/services/${s.slug}/`}>{s.name}</a>
+          ))}
+        </div>
+      </div>
+
+      <a class="hdr__mobile-link" href="/about/">אודות</a>
+      <a class="hdr__mobile-link" href="/contact/">צור קשר</a>
+
       <a class="btn btn-primary" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
       <a class="btn btn-secondary" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
         שיחה בוואטסאפ
@@ -51,18 +89,69 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
 </header>
 
 <script>
+  // ---- Services dropdown: pointer + keyboard, both first class ----
+  const dd = document.querySelector<HTMLElement>('[data-dropdown]');
+  const ddBtn = document.querySelector<HTMLButtonElement>('[data-dropdown-btn]');
+  const ddPanel = document.querySelector<HTMLElement>('[data-dropdown-panel]');
+
+  if (dd && ddBtn && ddPanel) {
+    let closeTimer: number | undefined;
+
+    const openDd = () => {
+      window.clearTimeout(closeTimer);
+      dd.classList.add('is-open');
+      ddBtn.setAttribute('aria-expanded', 'true');
+    };
+    const closeDd = () => {
+      dd.classList.remove('is-open');
+      ddBtn.setAttribute('aria-expanded', 'false');
+    };
+
+    ddBtn.addEventListener('click', () => {
+      dd.classList.contains('is-open') ? closeDd() : openDd();
+    });
+
+    // Mouse users get hover, with a small grace period so the pointer can
+    // travel from the button to the panel without it snapping shut.
+    dd.addEventListener('mouseenter', openDd);
+    dd.addEventListener('mouseleave', () => {
+      closeTimer = window.setTimeout(closeDd, 160);
+    });
+
+    // Keyboard: close on Escape, and close once focus leaves the group.
+    dd.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeDd();
+        ddBtn.focus();
+      }
+    });
+    dd.addEventListener('focusout', () => {
+      window.setTimeout(() => {
+        if (!dd.contains(document.activeElement)) closeDd();
+      }, 0);
+    });
+    document.addEventListener('click', (e) => {
+      if (!dd.contains(e.target as Node)) closeDd();
+    });
+  }
+
+  // ---- Mobile menu ----
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const panel = document.querySelector<HTMLElement>('[data-menu-panel]');
+
   if (toggle && panel) {
     const close = () => {
       panel.classList.remove('is-open');
+      toggle.classList.remove('is-open');
       toggle.setAttribute('aria-expanded', 'false');
     };
     const open = () => {
       panel.classList.add('is-open');
+      toggle.classList.add('is-open');
       toggle.setAttribute('aria-expanded', 'true');
       panel.querySelector<HTMLElement>('a, button')?.focus();
     };
+
     toggle.addEventListener('click', () => {
       panel.classList.contains('is-open') ? close() : open();
     });
@@ -72,13 +161,12 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
         toggle.focus();
       }
     });
-    // Simple focus trap while the panel is open
     panel.addEventListener('keydown', (e) => {
       if (e.key !== 'Tab') return;
-      const focusables = panel.querySelectorAll<HTMLElement>('a, button');
-      if (focusables.length === 0) return;
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
+      const f = panel.querySelectorAll<HTMLElement>('a, button');
+      if (!f.length) return;
+      const first = f[0];
+      const last = f[f.length - 1];
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last.focus();
@@ -87,6 +175,14 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
         first.focus();
       }
     });
+  }
+
+  // ---- Header gains a hairline + stronger blur once the page scrolls ----
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  if (header) {
+    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
   }
 </script>
 
@@ -103,46 +199,137 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
   .hdr {
     position: sticky;
     top: 0;
-    z-index: 50;
-    background: color-mix(in srgb, var(--color-surface) 90%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--color-line);
+    z-index: 60;
+    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+  }
+  .hdr.is-scrolled {
+    border-bottom-color: var(--color-line);
+    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
   }
   .hdr__inner {
     display: flex;
     align-items: center;
     gap: clamp(1rem, 3vw, 2.5rem);
-    min-height: 76px;
+    min-height: 80px;
   }
   .hdr__brand {
     flex: 0 0 auto;
     line-height: 0;
   }
   .hdr__brand img {
-    width: 118px;
+    width: 116px;
     height: auto;
   }
+
   .hdr__nav {
     display: flex;
     align-items: center;
-    gap: clamp(1.25rem, 2.5vw, 2.25rem);
+    gap: clamp(0.5rem, 1.6vw, 1.5rem);
     margin-inline-start: auto;
   }
-  .hdr__nav a {
+  .hdr__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     color: var(--color-ink);
     text-decoration: none;
     font-weight: 600;
     font-size: var(--text-small);
-    padding-block: 0.5rem;
-    border-bottom: 2px solid transparent;
+    font-family: var(--font-body);
+    padding: 0.6rem 0.75rem;
+    border: 0;
+    background: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
   }
-  .hdr__nav a:hover {
-    border-bottom-color: var(--color-electric);
+  .hdr__link:hover {
+    color: var(--color-royal);
+    background: color-mix(in srgb, var(--color-royal) 6%, transparent);
   }
-  .hdr__nav a[aria-current='page'] {
-    border-bottom-color: var(--color-royal);
+  .hdr__link[aria-current='page'] {
+    color: var(--color-royal);
     font-weight: 700;
   }
+
+  /* ---------- Services dropdown ---------- */
+  .hdr__dd {
+    position: relative;
+  }
+  .hdr__caret {
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .hdr__dd.is-open .hdr__caret {
+    transform: rotate(180deg);
+  }
+  .hdr__dd-panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    inset-inline-start: 0;
+    width: min(23rem, calc(100vw - 2rem));
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 -6px;
+    transition:
+      opacity var(--dur) var(--ease-out),
+      translate var(--dur) var(--ease-out),
+      visibility var(--dur);
+  }
+  .hdr__dd.is-open .hdr__dd-panel {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+  }
+  .hdr__dd-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.75rem 0.875rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: background-color var(--dur) var(--ease-out);
+  }
+  .hdr__dd-item:hover {
+    background: var(--color-surface-2);
+  }
+  .hdr__dd-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-small);
+    color: var(--color-ink);
+  }
+  .hdr__dd-lead {
+    font-size: var(--text-micro);
+    color: var(--color-ink-3);
+    line-height: 1.45;
+  }
+  .hdr__dd-all {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 0.875rem 0.75rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid var(--color-line);
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-royal);
+    text-decoration: none;
+  }
+  .hdr__dd-all:hover {
+    text-decoration: underline;
+  }
+
   .hdr__cta {
     flex: 0 0 auto;
     min-height: 46px;
@@ -150,44 +337,61 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     padding-inline: 1.375rem;
   }
 
+  /* ---------- Burger ---------- */
   .hdr__burger {
     display: none;
     width: 46px;
     height: 46px;
     border: 1px solid var(--color-line);
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--color-surface);
     cursor: pointer;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
   }
-  .hdr__burger span {
+  .hdr__burger-bars,
+  .hdr__burger-bars::before,
+  .hdr__burger-bars::after {
     display: block;
     width: 20px;
     height: 2px;
     background: var(--color-ink);
+    border-radius: 2px;
+    transition: transform var(--dur) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+  }
+  .hdr__burger-bars {
     position: relative;
   }
-  .hdr__burger span::before,
-  .hdr__burger span::after {
+  .hdr__burger-bars::before,
+  .hdr__burger-bars::after {
     content: '';
     position: absolute;
     inset-inline: 0;
-    height: 2px;
-    background: var(--color-ink);
   }
-  .hdr__burger span::before {
+  .hdr__burger-bars::before {
     top: -6px;
   }
-  .hdr__burger span::after {
+  .hdr__burger-bars::after {
     top: 6px;
   }
+  .hdr__burger.is-open .hdr__burger-bars {
+    background: transparent;
+  }
+  .hdr__burger.is-open .hdr__burger-bars::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .hdr__burger.is-open .hdr__burger-bars::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
 
+  /* ---------- Mobile panel ---------- */
   .hdr__mobile {
     display: none;
     border-top: 1px solid var(--color-line);
     background: var(--color-surface);
+    max-height: calc(100dvh - 80px);
+    overflow-y: auto;
   }
   .hdr__mobile.is-open {
     display: block;
@@ -195,22 +399,52 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
   .hdr__mobile-inner {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding-block: 1.25rem 1.75rem;
+    padding-block: 1rem 1.75rem;
   }
   .hdr__mobile-link {
-    padding: 0.875rem 0;
+    padding: 0.9rem 0;
+    font-family: var(--font-display);
     font-weight: 600;
+    font-size: var(--text-body-lg);
     color: var(--color-ink);
     text-decoration: none;
     border-bottom: 1px solid var(--color-line);
+  }
+  .hdr__mobile-link--head {
+    border-bottom: 0;
+    padding-bottom: 0.5rem;
+  }
+  .hdr__mobile-group {
+    border-bottom: 1px solid var(--color-line);
+    padding-bottom: 0.75rem;
+  }
+  .hdr__mobile-sub {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding-inline-start: 0.875rem;
+    border-inline-start: 2px solid var(--color-line);
+    margin-inline-start: 0.25rem;
+  }
+  .hdr__mobile-sub a {
+    padding: 0.55rem 0;
+    font-size: var(--text-small);
+    font-weight: 500;
+    color: var(--color-ink-2);
+    text-decoration: none;
+  }
+  .hdr__mobile-sub a:hover {
+    color: var(--color-royal);
   }
   .hdr__mobile-inner .btn {
     margin-top: 0.75rem;
     width: 100%;
   }
+  .hdr__mobile-inner .btn:first-of-type {
+    margin-top: 1.5rem;
+  }
 
-  @media (max-width: 900px) {
+  @media (max-width: 980px) {
     .hdr__nav,
     .hdr__cta {
       display: none;

@@ -1,6 +1,9 @@
 // Shared site constants. Single source so nothing drifts between the header,
 // footer and page CTAs. Values here are either approved facts (F-11, F-15)
-// or literal approved copy (APPROVED_COPY.md) — never invented.
+// or literal approved copy (APPROVED_COPY.md), never invented.
+//
+// COPY RULE: the em dash character is banned project-wide. Use a hyphen,
+// comma, colon, period, or rewrite the sentence.
 
 export const SITE = {
   name: 'LAHAV AI',
@@ -9,16 +12,6 @@ export const SITE = {
   legalLine: 'Ethan Lahav · LAHAV AI',
 };
 
-// Primary nav (APPROVED_COPY.md), with מאמרים removed per D-Q3: no real
-// approved articles exist yet, so the entry point is hidden rather than
-// shown empty. Re-add once O-6 (launch articles) is resolved.
-export const NAV = [
-  { href: '/', label: 'בית' },
-  { href: '/services/', label: 'שירותים' },
-  { href: '/about/', label: 'אודות' },
-  { href: '/contact/', label: 'צור קשר' },
-] as const;
-
 export const CTA_PRIMARY = {
   label: 'קביעת שיחת Discovery',
   href: '/contact/',
@@ -26,58 +19,71 @@ export const CTA_PRIMARY = {
 
 // F-11: approved secondary contact. Israeli number 054-696-9503 in
 // international format for the wa.me link, with the approved opening
-// message. No persistent floating button anywhere (D-Q2) — this link is
-// placed contextually (hero, closing band, footer, contact page).
+// message. No persistent floating button anywhere (D-Q2), this link is
+// placed contextually only.
 const WHATSAPP_NUMBER_INTL = '972546969503';
 const WHATSAPP_MESSAGE = 'היי, הגעתי דרך האתר של LAHAV AI ואשמח לשמוע פרטים.';
 
 export const WHATSAPP_HREF =
   `https://wa.me/${WHATSAPP_NUMBER_INTL}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
-// The five approved services (R7 / F-2). Exactly five. Chatbots are never a
-// sixth entry — see SOURCE_OF_TRUTH.md §5.1. CRM and Automations are
-// featured (D-1, F-2) and get the editorial treatment on Home; the other
-// three are presented as a compact list, not additional cards.
+// The five approved services (R7 / F-2). Exactly five, never a sixth.
+// `pain` says which everyday business problem the service answers, so each
+// one is understandable at a glance without technical language.
 export const SERVICES = [
   {
     slug: 'crm',
     name: 'מערכות CRM חכמות',
     featured: true,
-    blurb: 'מערכות שמרכזות לידים, לקוחות, מכירות ומשימות במקום אחד ברור — במקום חמישה כלים מנותקים.',
+    lead: 'כל הלקוחות, הלידים והמשימות במקום אחד',
+    pain: 'היום המידע מפוזר בין וואטסאפ, מייל, אקסל וראש של מישהו. אנחנו בונים מערכת אחת שרואה הכל, ויודעת מה השלב הבא של כל לקוח.',
   },
   {
     slug: 'automations',
     name: 'אוטומציות עסקיות',
     featured: true,
-    blurb: 'חיבור בין מערכות ותהליכים כדי לצמצם עבודה ידנית, טעויות ומעקב שנופל בין הכיסאות.',
+    lead: 'הפעולות הקטנות שגוזלות לכם את היום, קורות לבד',
+    pain: 'העתקת פרטים בין מערכות, הודעות מעקב, תזכורות, עדכון טבלאות. במקום לעשות את זה ביד כל יום, המערכת עושה את זה בשבילכם.',
   },
   {
     slug: 'web-development',
     name: 'פיתוח אתרים',
     featured: false,
-    blurb: 'אתרים עסקיים שנבנים סביב מטרה ברורה, מבנה נכון ותהליך המרה — לא רק שכבה ויזואלית.',
+    lead: 'אתר שמביא פניות, לא רק נראה טוב',
+    pain: 'אתר עסקי שבנוי סביב מטרה ברורה, ומחובר לתהליך שקורה אחרי שמישהו משאיר פרטים.',
   },
   {
     slug: 'app-development',
     name: 'פיתוח אפליקציות',
     featured: false,
-    blurb: 'תוכנה מותאמת לתהליך העסקי הספציפי, כשיש צורך אמיתי שכלים מדף המדף לא פותרים.',
+    lead: 'כשמה שקיים בשוק פשוט לא מתאים',
+    pain: 'תוכנה שנבנית סביב התהליך הספציפי שלכם, במקום לכופף את העסק לכלי שלא נבנה בשבילו.',
   },
   {
     slug: 'ai-content',
     name: 'יצירת תוכן באמצעות AI',
     featured: false,
-    blurb: 'תהליך תוכן מובנה: יעד עסקי, בריף, טיוטת AI, בדיקה אנושית, ואז פרסום — לא פרסום אוטומטי.',
+    lead: 'תוכן עסקי בקצב סביר, בלי לוותר על שליטה',
+    pain: 'תהליך מסודר: מטרה עסקית, בריף, טיוטה בעזרת AI, ואז בדיקה ואישור שלכם לפני שמשהו מתפרסם.',
   },
 ] as const;
 
-// Delivery journey (WEBSITE_PRD §7 Home; matches the Stitch structural
-// reference). Six stages, RTL-ordered.
+// Primary nav (APPROVED_COPY.md). מאמרים stays hidden per D-Q3 until real
+// approved articles exist (O-6). Services carries a dropdown of the five.
+export const NAV = [
+  { href: '/', label: 'בית' },
+  { href: '/services/', label: 'שירותים', children: SERVICES },
+  { href: '/about/', label: 'אודות' },
+  { href: '/contact/', label: 'צור קשר' },
+] as const;
+
+// Delivery journey (WEBSITE_PRD §7 Home). Six stages, RTL-ordered.
+// `what` is written for a business owner, not a project manager.
 export const PROCESS = [
-  { n: 1, label: 'אפיון' },
-  { n: 2, label: 'תכנון' },
-  { n: 3, label: 'הקמה' },
-  { n: 4, label: 'בדיקות' },
-  { n: 5, label: 'הטמעה' },
-  { n: 6, label: 'מסירה' },
+  { n: 1, label: 'אפיון', what: 'יושבים, מבינים איך העסק עובד היום ואיפה נתקע' },
+  { n: 2, label: 'תכנון', what: 'מחליטים מה נבנה, באיזה סדר, ומה נשאר לשלב הבא' },
+  { n: 3, label: 'הקמה', what: 'בונים את המערכת ומחברים בין החלקים' },
+  { n: 4, label: 'בדיקות', what: 'עוברים על התהליכים ומוודאים שהכל עובד כמו שצריך' },
+  { n: 5, label: 'הטמעה', what: 'מעבירים את הצוות למערכת החדשה, בלי לעצור את העסק' },
+  { n: 6, label: 'מסירה', what: 'אתם מקבלים מערכת שאתם יודעים לתפעל לבד' },
 ] as const;

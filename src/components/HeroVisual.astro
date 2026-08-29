@@ -1,0 +1,290 @@
+---
+// The Home hero's single major visual moment.
+//
+// The idea, read right to left like the Hebrew around it:
+//   RIGHT  scattered business inputs, tilted and irregular (chaos)
+//   CENTRE one organised system that takes them in
+//   LEFT   clean aligned rows coming out (order)
+//
+// It is deliberately abstract. No dashboards, no robots, no logos, no
+// integration names, nothing that could read as a factual claim.
+---
+
+<div class="hv" data-hero-visual data-reveal>
+  <svg
+    class="hv__svg"
+    viewBox="0 0 620 500"
+    role="img"
+    aria-label="איור מופשט: פניות ומשימות מפוזרות נכנסות למערכת אחת ויוצאות ממנה מסודרות"
+  >
+    <defs>
+      <linearGradient id="hvCore" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2997FF"></stop>
+        <stop offset="100%" stop-color="#1D4ED8"></stop>
+      </linearGradient>
+      <radialGradient id="hvGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#2997FF" stop-opacity=".42"></stop>
+        <stop offset="100%" stop-color="#2997FF" stop-opacity="0"></stop>
+      </radialGradient>
+      <linearGradient id="hvOut" x1="1" y1="0" x2="0" y2="0">
+        <stop offset="0%" stop-color="#2997FF" stop-opacity=".9"></stop>
+        <stop offset="100%" stop-color="#2997FF" stop-opacity=".25"></stop>
+      </linearGradient>
+    </defs>
+
+    <!-- ambient light behind the system -->
+    <circle class="hv__glow" cx="310" cy="250" r="185" fill="url(#hvGlow)"></circle>
+
+    <!-- ── incoming paths (right to centre) ── -->
+    <g class="hv__paths" fill="none" stroke="rgba(41,151,255,.38)" stroke-width="1.5">
+      <path class="hv__flow" style="--d:0ms" d="M556 88 C 470 88 470 190 396 205"></path>
+      <path class="hv__flow" style="--d:420ms" d="M578 190 C 500 190 480 226 396 232"></path>
+      <path class="hv__flow" style="--d:840ms" d="M566 300 C 490 300 480 276 396 268"></path>
+      <path class="hv__flow" style="--d:1260ms" d="M540 404 C 470 404 460 320 396 295"></path>
+    </g>
+
+    <!-- ── scattered inputs: tilted, uneven, deliberately not aligned ── -->
+    <g class="hv__inputs">
+      <g class="hv__chip" style="--d:0ms" transform="translate(556 88) rotate(-7)">
+        <rect x="-46" y="-19" width="92" height="38" rx="10"></rect>
+        <rect class="hv__chip-line" x="-30" y="-6" width="52" height="5" rx="2.5"></rect>
+        <rect class="hv__chip-line" x="-16" y="4" width="38" height="5" rx="2.5" opacity=".55"></rect>
+      </g>
+      <g class="hv__chip" style="--d:420ms" transform="translate(578 190) rotate(5)">
+        <rect x="-40" y="-17" width="80" height="34" rx="10"></rect>
+        <rect class="hv__chip-line" x="-24" y="-4" width="44" height="5" rx="2.5"></rect>
+      </g>
+      <g class="hv__chip" style="--d:840ms" transform="translate(566 300) rotate(-4)">
+        <rect x="-50" y="-19" width="100" height="38" rx="10"></rect>
+        <rect class="hv__chip-line" x="-34" y="-6" width="58" height="5" rx="2.5"></rect>
+        <rect class="hv__chip-line" x="-18" y="4" width="42" height="5" rx="2.5" opacity=".55"></rect>
+      </g>
+      <g class="hv__chip" style="--d:1260ms" transform="translate(540 404) rotate(8)">
+        <rect x="-38" y="-17" width="76" height="34" rx="10"></rect>
+        <rect class="hv__chip-line" x="-22" y="-4" width="40" height="5" rx="2.5"></rect>
+      </g>
+    </g>
+
+    <!-- ── the system ── -->
+    <g class="hv__system">
+      <rect x="228" y="176" width="168" height="148" rx="30" fill="url(#hvCore)"></rect>
+      <!-- brand geometry, echoing the monogram stroke -->
+      <path
+        class="hv__mark"
+        d="M282 216 L282 268 Q282 282 296 282 L326 282 Q336 282 341 273 L366 216"
+        fill="none"
+        stroke="rgba(255,255,255,.95)"
+        stroke-width="9"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+      <circle class="hv__mark-dot" cx="366" cy="264" r="6.5" fill="#fff"></circle>
+    </g>
+
+    <!-- ── outgoing paths (centre to left) ── -->
+    <g class="hv__paths" fill="none" stroke="rgba(41,151,255,.42)" stroke-width="1.5">
+      <path class="hv__flow" style="--d:1700ms" d="M228 214 C 186 214 176 150 132 150"></path>
+      <path class="hv__flow" style="--d:1900ms" d="M228 240 C 190 240 180 222 132 222"></path>
+      <path class="hv__flow" style="--d:2100ms" d="M228 264 C 190 264 180 294 132 294"></path>
+      <path class="hv__flow" style="--d:2300ms" d="M228 288 C 186 288 176 366 132 366"></path>
+    </g>
+
+    <!-- ── ordered outputs: perfectly aligned, evenly spaced ── -->
+    <g class="hv__outputs">
+      <g class="hv__row" style="--d:1800ms" transform="translate(40 150)">
+        <rect x="0" y="-16" width="92" height="32" rx="9"></rect>
+        <rect class="hv__row-bar" x="12" y="-4" width="52" height="6" rx="3"></rect>
+        <circle class="hv__row-dot" cx="78" cy="-1" r="4"></circle>
+      </g>
+      <g class="hv__row" style="--d:2000ms" transform="translate(40 222)">
+        <rect x="0" y="-16" width="92" height="32" rx="9"></rect>
+        <rect class="hv__row-bar" x="12" y="-4" width="52" height="6" rx="3"></rect>
+        <circle class="hv__row-dot" cx="78" cy="-1" r="4"></circle>
+      </g>
+      <g class="hv__row" style="--d:2200ms" transform="translate(40 294)">
+        <rect x="0" y="-16" width="92" height="32" rx="9"></rect>
+        <rect class="hv__row-bar" x="12" y="-4" width="52" height="6" rx="3"></rect>
+        <circle class="hv__row-dot" cx="78" cy="-1" r="4"></circle>
+      </g>
+      <g class="hv__row" style="--d:2400ms" transform="translate(40 366)">
+        <rect x="0" y="-16" width="92" height="32" rx="9"></rect>
+        <rect class="hv__row-bar" x="12" y="-4" width="52" height="6" rx="3"></rect>
+        <circle class="hv__row-dot" cx="78" cy="-1" r="4"></circle>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .hv {
+    position: relative;
+    width: 100%;
+  }
+  .hv__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Scattered inputs: muted, irregular */
+  .hv__chip rect:first-child {
+    fill: rgba(255, 255, 255, 0.05);
+    stroke: rgba(255, 255, 255, 0.16);
+    stroke-width: 1;
+  }
+  .hv__chip-line {
+    fill: rgba(255, 255, 255, 0.32);
+  }
+
+  /* Ordered outputs: brighter, confident, aligned */
+  .hv__row rect:first-child {
+    fill: rgba(41, 151, 255, 0.1);
+    stroke: rgba(41, 151, 255, 0.42);
+    stroke-width: 1;
+  }
+  .hv__row-bar {
+    fill: url(#hvOut);
+  }
+  .hv__row-dot {
+    fill: #2997ff;
+  }
+
+  /* ---------- Motion ----------
+     One orchestrated entrance: inputs appear, light travels toward the
+     system, ordered rows settle out the other side. Then a slow ambient
+     drift remains so the page feels alive without demanding attention. */
+
+  .hv__chip,
+  .hv__row {
+    opacity: 0;
+  }
+  .hv__glow {
+    opacity: 0;
+  }
+  .hv__system {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .hv__flow {
+    stroke-dasharray: 6 10;
+    stroke-dashoffset: 200;
+    opacity: 0;
+  }
+
+  [data-hero-visual].is-in .hv__glow {
+    animation: hv-glow-in 1600ms var(--ease-out) 300ms forwards,
+      hv-breathe 7s ease-in-out 2s infinite;
+  }
+  [data-hero-visual].is-in .hv__system {
+    animation: hv-system-in 900ms var(--ease-out) 200ms forwards;
+  }
+  [data-hero-visual].is-in .hv__mark {
+    stroke-dasharray: 210;
+    stroke-dashoffset: 210;
+    animation: hv-draw 1100ms var(--ease-out) 600ms forwards;
+  }
+  [data-hero-visual].is-in .hv__mark-dot {
+    opacity: 0;
+    animation: hv-pop 500ms var(--ease-out) 1500ms forwards;
+  }
+  [data-hero-visual].is-in .hv__chip {
+    animation: hv-chip-in 700ms var(--ease-out) calc(700ms + var(--d)) forwards;
+  }
+  [data-hero-visual].is-in .hv__row {
+    animation: hv-row-in 700ms var(--ease-out) calc(700ms + var(--d)) forwards;
+  }
+  [data-hero-visual].is-in .hv__flow {
+    animation: hv-flow-in 500ms linear calc(700ms + var(--d)) forwards,
+      hv-flow 2.4s linear calc(1200ms + var(--d)) infinite;
+  }
+
+  @keyframes hv-glow-in {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes hv-breathe {
+    0%,
+    100% {
+      opacity: 0.75;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes hv-system-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes hv-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes hv-pop {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  /* Inputs drift in from the outer edge, still tilted */
+  @keyframes hv-chip-in {
+    from {
+      opacity: 0;
+      translate: 26px 0;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  /* Outputs settle into their row from the system side */
+  @keyframes hv-row-in {
+    from {
+      opacity: 0;
+      translate: 22px 0;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  @keyframes hv-flow-in {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes hv-flow {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Reduced motion: everything simply present, no movement at all. */
+  @media (prefers-reduced-motion: reduce) {
+    .hv__chip,
+    .hv__row,
+    .hv__glow,
+    .hv__system,
+    .hv__flow {
+      opacity: 1;
+      animation: none !important;
+    }
+    .hv__flow {
+      stroke-dashoffset: 0;
+      stroke-dasharray: none;
+    }
+    .hv__mark {
+      stroke-dashoffset: 0 !important;
+    }
+  }
+</style>

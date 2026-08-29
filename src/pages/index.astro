@@ -1,85 +1,59 @@
 ---
-// HOME — first production page. Structural/content hierarchy follows the
-// approved Stitch reference (03_STITCH_FINAL/01-home); visual execution is
-// elevated per the Visual Upgrade Brief and decision F-1.
+// HOME. Redesigned around one goal: a non technical Israeli business owner
+// understands what LAHAV AI does, and what to do next, within seconds.
 //
-// Copy status: first AI draft, written against R9 (truth rules) and the
-// approved constants in src/lib/site.ts. Not yet human-approved for public
-// launch (R10) — flagged in the implementation report, not in the markup.
+// Rhythm: light (hero, explainer, pain) -> dark (system + services, the
+// major visual moment) -> light (process, founder) -> dark (closing CTA).
+//
+// Copy status: draft written against R9 truth rules and the approved facts
+// in src/lib/site.ts. Awaiting human approval per R10.
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ClosingCta from '../components/ClosingCta.astro';
+import HeroVisual from '../components/HeroVisual.astro';
+import ScrollReveal from '../components/ScrollReveal.astro';
 import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY } from '../lib/site';
 
 const featured = SERVICES.filter((s) => s.featured);
 const rest = SERVICES.filter((s) => !s.featured);
+
+const pains = [
+  {
+    title: 'המידע מפוזר בכל מקום',
+    body: 'חלק בוואטסאפ, חלק במייל, חלק באקסל, וחלק בראש של מישהו. אף אחד לא רואה את התמונה המלאה.',
+  },
+  {
+    title: 'אותה עבודה, שוב ושוב',
+    body: 'מעתיקים פרטים בין מערכות, ממלאים את אותם טפסים, שולחים את אותן הודעות. כל יום מחדש.',
+  },
+  {
+    title: 'פניות שנשכחות',
+    body: 'מישהו השאיר פרטים ולא חזרו אליו בזמן. עד שנזכרים, הוא כבר סגר עם מישהו אחר.',
+  },
+  {
+    title: 'קשה לדעת מה קורה',
+    body: 'שאלה פשוטה כמו "כמה פניות היו החודש" דורשת חצי שעה של חיפושים.',
+  },
+];
 ---
 
 <SiteLayout
-  title="LAHAV AI — מערכות AI ואוטומציות לעסקים קטנים ובינוניים"
-  description="LAHAV AI בונה מערכות CRM, אוטומציות ותוכנה מותאמת לעסקים קטנים ובינוניים בישראל. שיחת Discovery ראשונה ללא התחייבות."
+  title="LAHAV AI, מערכות ואוטומציות שעושות סדר בעסק"
+  description="בונים לעסקים קטנים ובינוניים בישראל מערכות CRM ואוטומציות שמחברות את כל מה שקורה בעסק למקום אחד. פחות עבודה ידנית, יותר שליטה."
 >
-  <!-- ============ HERO — light, with an integrated dark cinematic panel (F-1) ============ -->
+  <ScrollReveal />
+
+  <!-- ═══════════════ HERO ═══════════════ -->
   <section class="hero">
-    <div class="u-container hero__grid u-editorial u-editorial--reverse">
-      <div class="hero__visual">
-        <div class="panel-dark hero__panel">
-          <svg viewBox="0 0 560 480" role="img" aria-label="תרשים: תהליכים עסקיים מפוזרים מתחברים למערכת אחת מרכזית" class="hero__svg">
-            <defs>
-              <linearGradient id="heroCore" x1="1" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#2997FF"></stop>
-                <stop offset="100%" stop-color="#1D4ED8"></stop>
-              </linearGradient>
-              <radialGradient id="heroGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#2997FF" stop-opacity=".5"></stop>
-                <stop offset="100%" stop-color="#2997FF" stop-opacity="0"></stop>
-              </radialGradient>
-            </defs>
-
-            <circle cx="290" cy="248" r="170" fill="url(#heroGlow)"></circle>
-
-            <g class="panel-flow-line" stroke="rgba(41,151,255,.5)" stroke-width="1.5" fill="none">
-              <path d="M470 96 L340 96 L340 200"></path>
-              <path d="M486 248 L360 248"></path>
-              <path d="M470 400 L340 400 L340 296"></path>
-              <path d="M240 248 L90 248"></path>
-              <path d="M240 150 L140 150 L140 210"></path>
-              <path d="M240 346 L140 346 L140 286"></path>
-            </g>
-
-            <g fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.18)">
-              <rect x="470" y="70" width="72" height="52" rx="12"></rect>
-              <rect x="486" y="222" width="72" height="52" rx="12"></rect>
-              <rect x="470" y="374" width="72" height="52" rx="12"></rect>
-              <rect x="30" y="222" width="72" height="52" rx="12"></rect>
-              <rect x="80" y="124" width="72" height="52" rx="12"></rect>
-              <rect x="80" y="320" width="72" height="52" rx="12"></rect>
-            </g>
-
-            <g fill="#fff">
-              <circle class="panel-node-pulse" cx="506" cy="96" r="4" style="animation-delay:0ms"></circle>
-              <circle class="panel-node-pulse" cx="522" cy="248" r="4" style="animation-delay:400ms"></circle>
-              <circle class="panel-node-pulse" cx="506" cy="400" r="4" style="animation-delay:800ms"></circle>
-              <circle class="panel-node-pulse" cx="66" cy="248" r="4" style="animation-delay:1200ms"></circle>
-              <circle class="panel-node-pulse" cx="116" cy="150" r="4" style="animation-delay:1600ms"></circle>
-              <circle class="panel-node-pulse" cx="116" cy="346" r="4" style="animation-delay:2000ms"></circle>
-            </g>
-
-            <rect x="240" y="188" width="100" height="120" rx="20" fill="url(#heroCore)"></rect>
-            <g fill="rgba(255,255,255,.92)">
-              <rect x="260" y="222" width="60" height="7" rx="3.5"></rect>
-              <rect x="260" y="242" width="44" height="7" rx="3.5" opacity=".7"></rect>
-              <rect x="260" y="262" width="52" height="7" rx="3.5" opacity=".5"></rect>
-            </g>
-          </svg>
-        </div>
-      </div>
-
+    <div class="u-container hero__grid">
       <div class="hero__text">
-        <p class="hero__eyebrow">מערכות AI לעסקים קטנים ובינוניים</p>
-        <h1 class="t-display-1 hero__title">מערכות AI ואוטומציות<br />שעושות סדר בעסק שלך</h1>
-        <p class="t-lead hero__lead">
-          אנחנו בונים מערכות CRM, אוטומציות ותוכנה מותאמת לעסקים קטנים ובינוניים בישראל —
-          כדי שתפסיקו לעבוד ידנית ותתחילו לשלוט בתהליכים.
+        <p class="hero__eyebrow">מערכות AI ואוטומציה לעסקים</p>
+        <h1 class="t-display-1 hero__title">
+          פחות עבודה ידנית.<br />
+          <span class="hero__title-accent">יותר שליטה בעסק.</span>
+        </h1>
+        <p class="hero__lead">
+          אנחנו בונים מערכות CRM ואוטומציות לעסקים קטנים ובינוניים בישראל.
+          במקום עשרה כלים שלא מדברים ביניהם, מערכת אחת שעושה סדר ועובדת בשבילכם.
         </p>
         <div class="hero__actions">
           <a class="btn btn-primary btn-lg" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
@@ -91,207 +65,191 @@ const rest = SERVICES.filter((s) => !s.featured);
             שיחה בוואטסאפ
           </a>
         </div>
+        <p class="hero__note">שיחת היכרות של 30 דקות, נבין יחד איפה יש מה לשפר.</p>
+      </div>
+
+      <div class="hero__visual panel-dark">
+        <HeroVisual />
       </div>
     </div>
   </section>
 
-  <!-- ============ BUSINESS-FIRST / PAIN RECOGNITION ============ -->
-  <section class="section section--gray">
-    <div class="u-container u-editorial">
-      <div>
-        <p class="t-eyebrow">איפה זה נתקע היום</p>
-        <h2 class="t-h2 pain__title">יותר מדי עבודה ידנית.<br />פחות מדי שליטה.</h2>
-        <p class="t-lead pain__lead">
-          כשמידע מפוזר בין מערכות, מעקבים נעשים ידנית ותהליכים תלויים בזיכרון של אנשים —
-          העסק מאבד זמן, סדר והזדמנויות.
+  <!-- ═══════════════ EXPLAINER ═══════════════ -->
+  <section class="section explain">
+    <div class="u-container explain__inner">
+      <h2 class="t-h2 explain__title">רגע, מה זה בעצם אומר?</h2>
+      <div class="explain__body">
+        <p class="explain__p explain__p--lead">
+          "אוטומציה" נשמעת כמו מילה גדולה, אבל הרעיון פשוט.
         </p>
-        <p class="t-body pain__statement">
-          אנחנו לא מתחילים מהטכנולוגיה. קודם מבינים איך העסק עובד היום, איפה נמצאים
-          צווארי הבקבוק ומה באמת צריך להשתפר — ורק לאחר מכן בוחרים את הפתרון המתאים.
+        <p class="explain__p">
+          בכל עסק יש עשרות פעולות קטנות שנעשות ביד, כל יום: להעתיק פרטים של פנייה
+          ממקום למקום, לשלוח את אותה הודעה בפעם המאה, לזכור לחזור למישהו, לעדכן טבלה.
+          כל פעולה כזו לוקחת דקה. ביחד הן לוקחות לכם את היום.
+        </p>
+        <p class="explain__p explain__p--strong">
+          מה שאנחנו עושים זה להעביר את הפעולות האלה למערכת שעושה אותן לבד.
+          אתם נשארים עם ההחלטות, היא לוקחת את השאר.
         </p>
       </div>
+    </div>
+  </section>
 
-      <ul class="pain-list">
-        <li class="pain-list__item">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"
-            ><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h8"></path></svg
-          >
-          <div>
-            <h3 class="t-h3">כפילות ועבודה ידנית</h3>
-            <p class="t-small">אותם נתונים מוזנים שוב במקומות שונים, ומשימות רוטיניות גוזלות שעות.</p>
-          </div>
-        </li>
-        <li class="pain-list__item">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"
-            ><path d="M12 3 2 20h20L12 3Z"></path><path d="M12 10v4"></path><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"></circle></svg
-          >
-          <div>
-            <h3 class="t-h3">לידים ומשימות שנופלים בין הכיסאות</h3>
-            <p class="t-small">בלי מעקב מסודר, פניות נשארות ללא מענה ומשימות מתעכבות.</p>
-          </div>
-        </li>
-        <li class="pain-list__item">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"
-            ><path d="M3 3l18 18"></path><path d="M10.6 5.1A9.7 9.7 0 0 1 12 5c5 0 9 5 9 7a11 11 0 0 1-2.2 3.1M6.2 6.7C3.9 8.2 3 10.4 3 12c0 2 4 7 9 7 1.4 0 2.7-.4 3.8-1"></path></svg
-          >
-          <div>
-            <h3 class="t-h3">אין תמונה אחת ברורה של מה קורה בעסק</h3>
-            <p class="t-small">המידע מפוזר בין כלים שונים — וקשה לקבל החלטה על בסיס נתונים.</p>
-          </div>
-        </li>
+  <!-- ═══════════════ PAIN ═══════════════ -->
+  <section class="section section--gray pain">
+    <div class="u-container">
+      <div class="pain__head">
+        <p class="t-eyebrow">נשמע מוכר?</p>
+        <h2 class="t-h2">
+          לרוב העסקים לא חסר עוד כלי.<br />
+          חסר להם שהכלים ידברו ביניהם.
+        </h2>
+      </div>
+
+      <ul class="pain__list">
+        {
+          pains.map((p, i) => (
+            <li class="pain__item" data-reveal style={`--i:${i}`}>
+              <span class="pain__num tabular">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h3 class="t-h3">{p.title}</h3>
+                <p class="t-body pain__body">{p.body}</p>
+              </div>
+            </li>
+          ))
+        }
       </ul>
     </div>
   </section>
 
-  <!-- ============ CONNECTED SYSTEMS — bespoke dark panel ============ -->
-  <section class="section">
-    <div class="u-container u-editorial">
-      <div class="panel-dark systems__panel">
-        <svg viewBox="0 0 480 380" role="img" aria-label="תרשים: לידים, משימות, תקשורת ומידע מתחברים למערכת CRM מרכזית">
-          <defs>
-            <linearGradient id="sysCore" x1="1" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2997FF"></stop>
-              <stop offset="100%" stop-color="#1D4ED8"></stop>
-            </linearGradient>
-          </defs>
-          <g class="panel-flow-line" stroke="rgba(41,151,255,.42)" stroke-width="1.5" fill="none">
-            <path d="M410 90 L280 90 L280 150"></path>
-            <path d="M410 190 L320 190"></path>
-            <path d="M410 290 L280 290 L280 230"></path>
-            <path d="M160 190 L70 190"></path>
-          </g>
-          <g fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.18)">
-            <rect x="410" y="64" width="58" height="52" rx="12"></rect>
-            <rect x="410" y="164" width="58" height="52" rx="12"></rect>
-            <rect x="410" y="264" width="58" height="52" rx="12"></rect>
-            <rect x="16" y="164" width="58" height="52" rx="14"></rect>
-          </g>
-          <g font-family="Assistant, sans-serif" font-size="13" fill="rgba(255,255,255,.75)" text-anchor="middle">
-            <text x="439" y="130">לידים</text>
-            <text x="439" y="230">תקשורת</text>
-            <text x="439" y="330">מידע</text>
-            <text x="45" y="230">משימות</text>
-          </g>
-          <g fill="#fff">
-            <circle class="panel-node-pulse" cx="439" cy="90" r="4" style="animation-delay:0ms"></circle>
-            <circle class="panel-node-pulse" cx="439" cy="190" r="4" style="animation-delay:500ms"></circle>
-            <circle class="panel-node-pulse" cx="439" cy="290" r="4" style="animation-delay:1000ms"></circle>
-            <circle class="panel-node-pulse" cx="45" cy="190" r="4" style="animation-delay:1500ms"></circle>
-          </g>
-          <rect x="200" y="150" width="160" height="80" rx="18" fill="url(#sysCore)"></rect>
-          <g fill="rgba(255,255,255,.94)" font-family="Heebo, sans-serif" font-weight="700" font-size="17" text-anchor="middle">
-            <text x="280" y="197">מערכת CRM</text>
-          </g>
-        </svg>
-      </div>
+  <!-- ═══════════════ DARK ACT: system + services ═══════════════ -->
+  <div class="act-dark">
+    <!-- ---- connected system ---- -->
+    <section class="section sysflow">
+      <div class="u-container sysflow__grid">
+        <div class="sysflow__text">
+          <p class="t-eyebrow sysflow__eyebrow">התוצאה</p>
+          <h2 class="t-h2 sysflow__title">המערכות בעסק מתחילות לעבוד יחד</h2>
+          <p class="sysflow__lead">
+            פנייה שנכנסת מהאתר נרשמת לבד, מקבלת מענה ראשוני, נכנסת למעקב,
+            ומזכירה לכם לחזור אליה. בלי שאף אחד העתיק שורה אחת.
+          </p>
+        </div>
 
-      <div class="systems__text">
-        <p class="t-eyebrow">מערכת אחת מחוברת</p>
-        <h2 class="t-h2">כל התהליכים במקום אחד, במקום חמישה כלים מנותקים</h2>
-        <p class="t-lead">
-          במקום כלים מפוזרים שאף אחד לא באמת מסתכל עליהם יחד, אנחנו בונים מערכת אחת
-          שמרכזת לידים, משימות, תקשורת ומידע — ומדברת עם עצמה.
-        </p>
-      </div>
-    </div>
-  </section>
+        <div class="sysflow__viz" data-reveal>
+          <svg viewBox="0 0 520 330" role="img" aria-label="איור: פנייה נכנסת עוברת ארבעה שלבים אוטומטיים עד למעקב">
+            <defs>
+              <linearGradient id="sfCore" x1="1" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#2997FF"></stop>
+                <stop offset="100%" stop-color="#1D4ED8"></stop>
+              </linearGradient>
+            </defs>
 
-  <!-- ============ SERVICES — editorial, not a five-card grid ============ -->
-  <section class="section section--gray" id="services">
-    <div class="u-container">
-      <div class="section-head">
-        <p class="t-eyebrow">השירותים שלנו</p>
-        <h2 class="t-h2">פתרונות שנבנים סביב העסק שלך</h2>
-        <p class="t-lead">
-          אנחנו לא מתחילים מהטכנולוגיה. קודם מבינים את התהליך העסקי — ורק אחר כך בונים
-          את המערכת המתאימה.
-        </p>
-      </div>
+            <!-- the connecting spine, drawn on scroll -->
+            <path
+              class="sf__spine"
+              d="M452 62 L300 62 Q262 62 262 100 L262 132 Q262 168 224 168 L120 168 Q84 168 84 204 L84 244 Q84 278 122 278 L300 278"
+              fill="none"
+              stroke="rgba(41,151,255,.45)"
+              stroke-width="2"
+              stroke-linecap="round"
+            ></path>
 
-      <div class="services__featured">
-        {
-          featured.map((s, i) => (
-            <article class={`u-editorial services__row ${i % 2 === 1 ? 'u-editorial--reverse' : ''}`}>
-              <div class="services__visual">
-                <div class="panel-dark services__panel">
-                  <svg viewBox="0 0 200 160" role="img" aria-hidden="true">
-                    {s.slug === 'crm' ? (
-                      <>
-                        <circle cx="100" cy="80" r="60" fill="rgba(41,151,255,.14)" />
-                        <g stroke="rgba(41,151,255,.5)" stroke-width="1.5" fill="none">
-                          <path d="M60 50 L100 80 L60 110" />
-                          <path d="M140 50 L100 80 L140 110" />
-                        </g>
-                        <rect x="80" y="60" width="40" height="40" rx="10" fill="var(--color-electric)" />
-                      </>
-                    ) : (
-                      <>
-                        <circle cx="100" cy="80" r="60" fill="rgba(41,151,255,.1)" />
-                        <g stroke="rgba(41,151,255,.5)" stroke-width="1.5" fill="none" stroke-dasharray="4 5">
-                          <path d="M46 55 H80" />
-                          <path d="M46 105 H80" />
-                          <path d="M120 80 H154" />
-                        </g>
-                        <g fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5">
-                          <rect x="30" y="45" width="26" height="20" rx="5" />
-                          <rect x="30" y="95" width="26" height="20" rx="5" />
-                          <circle cx="164" cy="80" r="11" />
-                        </g>
-                        <rect x="80" y="58" width="40" height="44" rx="11" fill="var(--color-royal)" />
-                        <path d="M97 68 93 80 99 80 95 94 108 76 101 76 105 68Z" fill="#fff" />
-                      </>
-                    )}
-                  </svg>
+            <g class="sf__stops">
+              <g class="sf__stop" style="--d:120ms">
+                <rect x="374" y="38" width="132" height="48" rx="14"></rect>
+                <text x="440" y="68" text-anchor="middle">פנייה נכנסת</text>
+              </g>
+              <g class="sf__stop" style="--d:420ms">
+                <rect x="146" y="144" width="146" height="48" rx="14"></rect>
+                <text x="219" y="174" text-anchor="middle">נרשמת במערכת</text>
+              </g>
+              <g class="sf__stop" style="--d:720ms">
+                <rect x="16" y="220" width="150" height="48" rx="14"></rect>
+                <text x="91" y="250" text-anchor="middle">מענה ראשוני יוצא</text>
+              </g>
+              <g class="sf__stop sf__stop--end" style="--d:1020ms">
+                <rect x="296" y="254" width="150" height="48" rx="14" fill="url(#sfCore)"></rect>
+                <text x="371" y="284" text-anchor="middle" fill="#fff">נכנסת למעקב</text>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- services: the major moment ---- -->
+    <section class="section services" id="services">
+      <div class="u-container">
+        <div class="services__head">
+          <p class="t-eyebrow services__eyebrow">מה אנחנו בונים</p>
+          <h2 class="t-display-2 services__title">חמישה שירותים. מטרה אחת: שהעסק יעבוד חלק.</h2>
+        </div>
+
+        <!-- two lead services, full editorial rows -->
+        <div class="services__lead-list">
+          {
+            featured.map((s, i) => (
+              <article class="svc" data-reveal>
+                <span class="svc__index tabular" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div class="svc__main">
+                  <h3 class="t-h1 svc__name">{s.name}</h3>
+                  <p class="svc__lead">{s.lead}</p>
+                  <p class="svc__pain">{s.pain}</p>
+                  <a class="svc__link" href={`/services/${s.slug}/`}>
+                    לפרטים על השירות
+                    <span class="arrow-inline" aria-hidden="true">←</span>
+                  </a>
                 </div>
-              </div>
-              <div class="services__text">
-                <span class="chip">שירות מוביל</span>
-                <h3 class="t-h1 services__name">{s.name}</h3>
-                <p class="t-lead">{s.blurb}</p>
-                <a class="btn btn-tertiary" href={`/services/${s.slug}/`}>
-                  למידע נוסף <span class="arrow-inline" aria-hidden="true">←</span>
+              </article>
+            ))
+          }
+        </div>
+
+        <!-- remaining three, still fully readable, just tighter -->
+        <div class="services__rest">
+          {
+            rest.map((s, i) => (
+              <article class="svc-min" data-reveal style={`--i:${i}`}>
+                <span class="svc-min__index tabular" aria-hidden="true">{String(i + 3).padStart(2, '0')}</span>
+                <h3 class="t-h3 svc-min__name">{s.name}</h3>
+                <p class="svc-min__lead">{s.lead}</p>
+                <p class="svc-min__pain">{s.pain}</p>
+                <a class="svc__link" href={`/services/${s.slug}/`}>
+                  לפרטים
+                  <span class="arrow-inline" aria-hidden="true">←</span>
                 </a>
-              </div>
-            </article>
-          ))
-        }
+              </article>
+            ))
+          }
+        </div>
+
+        <p class="services__pricing">
+          אין מחירון קבוע. המחיר נקבע אחרי שיחת היכרות ואפיון, לפי מה שהעסק באמת צריך.
+        </p>
       </div>
+    </section>
+  </div>
 
-      <div class="services__rest">
-        {
-          rest.map((s) => (
-            <div class="services__rest-item">
-              <h3 class="t-h3">{s.name}</h3>
-              <p class="t-small">{s.blurb}</p>
-              <a class="btn btn-tertiary" href={`/services/${s.slug}/`}>
-                למידע נוסף <span class="arrow-inline" aria-hidden="true">←</span>
-              </a>
-            </div>
-          ))
-        }
-      </div>
-
-      <p class="t-small services__pricing">
-        התמחור נקבע לאחר שיחת Discovery ואפיון, בהתאם לתהליכים ולצרכים של העסק.
-      </p>
-    </div>
-  </section>
-
-  <!-- ============ PROCESS — bespoke timeline, not numbered cards ============ -->
-  <section class="section">
+  <!-- ═══════════════ PROCESS ═══════════════ -->
+  <section class="section process">
     <div class="u-container">
-      <div class="section-head">
-        <p class="t-eyebrow">איך אנחנו עובדים</p>
-        <h2 class="t-h2">מתהליך עסקי לפתרון שעובד</h2>
-        <p class="t-lead">כל פרויקט מתקדם בתהליך מסודר, עם נקודות בדיקה ברורות בכל שלב.</p>
+      <div class="process__head">
+        <p class="t-eyebrow">איך זה עובד</p>
+        <h2 class="t-h2">שישה שלבים, בלי הפתעות באמצע</h2>
       </div>
 
-      <ol class="timeline">
+      <ol class="process__list">
         {
-          PROCESS.map((p) => (
-            <li class="timeline__item">
-              <span class="timeline__dot">{p.n}</span>
-              <span class="t-small timeline__label">{p.label}</span>
+          PROCESS.map((p, i) => (
+            <li class="process__item" data-reveal style={`--i:${i}`}>
+              <div class="process__marker" aria-hidden="true">
+                <span class="process__num tabular">{p.n}</span>
+              </div>
+              <div class="process__content">
+                <h3 class="t-h3 process__label">{p.label}</h3>
+                <p class="process__what">{p.what}</p>
+              </div>
             </li>
           ))
         }
@@ -299,292 +257,637 @@ const rest = SERVICES.filter((s) => !s.featured);
     </div>
   </section>
 
-  <!-- ============ ABOUT / FOUNDER TEASER ============ -->
-  <section class="section section--gray">
-    <div class="u-container u-editorial">
-      <div>
-        <p class="t-eyebrow">מי אנחנו</p>
-        <h2 class="t-h2">איתן להב — מייסד ובונה מערכות AI</h2>
-        <p class="t-lead about__lead">
-          LAHAV AI נולדה מתוך תובנה פשוטה: לרוב העסקים לא חסר עוד כלי — חסר חיבור בין
-          המערכות הקיימות, יש יותר מדי עבודה ידנית, ותהליכים שהולכים ומסתבכים.
-        </p>
-        <p class="t-body">
-          הגישה שלנו מתחילה תמיד באותה נקודה: להבין איפה העבודה נתקעת, מה גוזל זמן ואיפה
-          מידע הולך לאיבוד — ורק אחר כך לבחור את הטכנולוגיה הנכונה.
-        </p>
-        <a class="btn btn-tertiary about__link" href="/about/">
-          עוד עלינו <span class="arrow-inline" aria-hidden="true">←</span>
-        </a>
+  <!-- ═══════════════ FOUNDER ═══════════════ -->
+  <section class="section section--gray founder">
+    <div class="u-container founder__grid">
+      <div class="founder__portrait" data-reveal>
+        <div class="founder__frame">
+          <svg viewBox="0 0 300 340" role="img" aria-label="מקום שמור לתמונת המייסד">
+            <defs>
+              <linearGradient id="fdMono" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0%" stop-color="#0B1530"></stop>
+                <stop offset="55%" stop-color="#1D4ED8"></stop>
+                <stop offset="100%" stop-color="#2997FF"></stop>
+              </linearGradient>
+            </defs>
+            <path
+              d="M92 96 L92 196 Q92 218 114 218 L172 218 Q190 218 200 200 L226 96"
+              fill="none"
+              stroke="url(#fdMono)"
+              stroke-width="16"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+            <path d="M226 96 L252 196" fill="none" stroke="#2997FF" stroke-width="16" stroke-linecap="round"></path>
+            <circle cx="226" cy="180" r="8.5" fill="#1D4ED8"></circle>
+          </svg>
+        </div>
+        <p class="founder__caption">תמונת המייסד תתווסף בהמשך</p>
       </div>
 
-      <div class="about__visual" aria-hidden="true">
-        <svg viewBox="0 0 260 260" role="presentation">
-          <defs>
-            <linearGradient id="founderMono" x1="0" y1="1" x2="1" y2="0">
-              <stop offset="0%" stop-color="#0B1530"></stop>
-              <stop offset="55%" stop-color="#1D4ED8"></stop>
-              <stop offset="100%" stop-color="#2997FF"></stop>
-            </linearGradient>
-          </defs>
-          <rect width="260" height="260" rx="28" fill="var(--color-surface-2)"></rect>
-          <path
-            d="M76 66 L76 158 Q76 178 96 178 L152 178 Q170 178 180 160 L204 66"
-            fill="none"
-            stroke="url(#founderMono)"
-            stroke-width="15"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          ></path>
-          <path d="M204 66 L228 158" fill="none" stroke="#2997FF" stroke-width="15" stroke-linecap="round"></path>
-          <circle cx="204" cy="142" r="8" fill="#1D4ED8"></circle>
-        </svg>
-        <p class="t-micro about__visual-caption">תמונת המייסד תתווסף בקרוב</p>
+      <div class="founder__text">
+        <p class="t-eyebrow">מי עומד מאחורי זה</p>
+        <h2 class="t-h2 founder__name">איתן להב</h2>
+        <p class="founder__role">Founder &amp; AI Systems Builder</p>
+        <p class="founder__body">
+          הקמתי את LAHAV AI מתוך דבר אחד שראיתי חוזר בעסקים: לא חסרים כלים.
+          חסר חיבור. יש יותר מדי עבודה ידנית, ותהליכים שמסתבכים ככל שהעסק גדל.
+        </p>
+        <p class="founder__body">
+          לכן אני מתחיל תמיד מאותה נקודה: איפה העבודה נתקעת, מה גוזל זמן, ואיפה
+          מידע הולך לאיבוד. רק אחרי שזה ברור, בוחרים טכנולוגיה ובונים.
+        </p>
+        <a class="svc__link founder__link" href="/about/">
+          עוד עלינו
+          <span class="arrow-inline" aria-hidden="true">←</span>
+        </a>
       </div>
     </div>
   </section>
 
   <ClosingCta
-    heading="יש תהליך בעסק שהגיע הזמן לעשות בו סדר?"
-    body="בואו נבין יחד מה קורה היום בעסק, ואיפה אפשר לחסוך זמן ולהחזיר שליטה."
+    heading="בואו נראה איפה אפשר לעשות סדר"
+    body="שיחה של 30 דקות. נעבור על התהליכים שלכם, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך."
   />
 </SiteLayout>
 
 <style>
-  /* ---------- Hero ---------- */
+  /* ═══════════ HERO ═══════════ */
   .hero {
-    padding-block: clamp(3rem, 6vw, 5.5rem) var(--space-section);
+    padding-block: clamp(2.5rem, 5vw, 5rem) clamp(4rem, 7vw, 7rem);
     overflow: clip;
   }
   .hero__grid {
+    display: grid;
+    grid-template-columns: 1.12fr 0.88fr;
+    gap: clamp(2.5rem, 5vw, 4.5rem);
     align-items: center;
   }
   .hero__eyebrow {
     display: inline-block;
     font-size: var(--text-micro);
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     color: var(--color-royal);
-    background: color-mix(in srgb, var(--color-royal) 9%, transparent);
+    background: color-mix(in srgb, var(--color-royal) 8%, transparent);
     border-radius: var(--radius-full);
-    padding: 0.5rem 1rem;
-    margin-bottom: 1.5rem;
+    padding: 0.5rem 1.1rem;
+    margin-bottom: 1.75rem;
   }
+  /* Deliberately a step below --text-display-1: in a two column hero that
+     size breaks the Hebrew into too many short lines, which reads as
+     cramped rather than confident. This keeps the line count at two. */
   .hero__title {
-    margin-bottom: 1.5rem;
+    font-size: clamp(2.5rem, 1.15rem + 3.9vw, 4.875rem);
+    line-height: 1.06;
+    margin-bottom: 1.75rem;
+  }
+  .hero__title-accent {
+    background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .hero__lead {
-    max-width: 46ch;
-    margin-bottom: 2.25rem;
+    font-size: var(--text-lead);
+    line-height: 1.6;
+    color: var(--color-ink-2);
+    max-width: 44ch;
+    margin-bottom: 2.5rem;
   }
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
   }
-  .hero__panel {
-    aspect-ratio: 7 / 6;
+  .hero__note {
+    margin-top: 1.25rem;
+    font-size: var(--text-small);
+    color: var(--color-ink-3);
+  }
+  .hero__visual {
+    padding: clamp(1.25rem, 3vw, 2.5rem);
+    aspect-ratio: 6 / 5;
     display: grid;
     place-items: center;
-    padding: clamp(1rem, 3vw, 2rem);
-  }
-  .hero__svg {
-    width: 100%;
-    height: auto;
   }
 
-  /* ---------- Pain recognition ---------- */
-  .pain__title {
-    margin-bottom: 1.25rem;
-  }
-  .pain__lead {
-    margin-bottom: 1.5rem;
-  }
-  .pain__statement {
-    color: var(--color-ink-2);
-    font-weight: 500;
-    border-inline-start: 3px solid var(--color-electric);
-    padding-inline-start: 1rem;
-  }
-  .pain-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: clamp(1.5rem, 2.5vw, 2rem);
-  }
-  .pain-list__item {
-    display: flex;
-    gap: 1.25rem;
-    align-items: flex-start;
-    padding-block: clamp(1.25rem, 2vw, 1.5rem);
-    border-bottom: 1px solid var(--color-line);
-  }
-  .pain-list__item:last-child {
-    border-bottom: 0;
-  }
-  .pain-list__item svg {
-    color: var(--color-royal);
-    flex: 0 0 auto;
-    margin-top: 0.25rem;
-  }
-
-  /* ---------- Connected systems ---------- */
-  .systems__panel {
-    aspect-ratio: 5 / 4;
+  /* ═══════════ EXPLAINER ═══════════ */
+  .explain__inner {
     display: grid;
-    place-items: center;
-    padding: clamp(1.5rem, 3vw, 2.5rem);
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
   }
-  .systems__panel svg {
-    width: 100%;
-    height: auto;
+  .explain__title {
+    position: sticky;
+    top: 120px;
   }
-
-  /* ---------- Services ---------- */
-  .section-head {
-    max-width: 66ch;
-    margin-bottom: clamp(3rem, 5vw, 4.5rem);
+  .explain__body {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-  }
-  .services__featured {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(3.5rem, 6vw, 6rem);
-  }
-  .services__row {
-    align-items: center;
-  }
-  .services__panel {
-    aspect-ratio: 5 / 4;
-    display: grid;
-    place-items: center;
-    padding: clamp(1.5rem, 3vw, 2.5rem);
-  }
-  .services__panel svg {
-    width: 65%;
-    height: auto;
-  }
-  .services__name {
-    margin-block: 1rem 1.25rem;
-  }
-
-  .services__rest {
-    margin-top: clamp(3.5rem, 6vw, 5rem);
-    padding-top: clamp(2rem, 3vw, 2.5rem);
-    border-top: 1px solid var(--color-line-strong);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(2rem, 3vw, 3rem);
-  }
-  .services__rest-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .services__pricing {
-    margin-top: clamp(2.5rem, 4vw, 3.5rem);
-    border-inline-start: 3px solid var(--color-electric);
-    padding-inline-start: 1rem;
+    gap: 1.5rem;
     max-width: 60ch;
   }
-
-  /* ---------- Timeline ---------- */
-  .timeline {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-    position: relative;
+  .explain__p {
+    font-size: var(--text-body-lg);
+    line-height: 1.75;
+    color: var(--color-ink-2);
+    max-width: none;
   }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    top: 22px;
-    inset-inline: 22px;
-    height: 2px;
-    background: var(--gradient-brand);
-    z-index: 0;
-  }
-  .timeline__item {
-    position: relative;
-    z-index: 1;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    text-align: center;
-  }
-  .timeline__dot {
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    background: var(--color-navy);
-    color: #fff;
-    display: grid;
-    place-items: center;
-    font-family: var(--font-display);
-    font-weight: 700;
-    flex: 0 0 auto;
-  }
-  .timeline__label {
+  .explain__p--lead {
+    font-size: var(--text-lead);
     font-weight: 600;
     color: var(--color-ink);
   }
+  .explain__p--strong {
+    color: var(--color-ink);
+    font-weight: 500;
+    border-inline-start: 3px solid var(--color-electric);
+    padding-inline-start: 1.25rem;
+  }
 
-  /* ---------- About / founder ---------- */
-  .about__lead {
-    margin-bottom: 1.25rem;
-  }
-  .about__link {
-    margin-top: 1.5rem;
-  }
-  .about__visual {
+  /* ═══════════ PAIN ═══════════ */
+  .pain__head {
+    max-width: 46rem;
+    margin-bottom: clamp(3rem, 5vw, 4.5rem);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
   }
-  .about__visual svg {
-    width: 100%;
-    max-width: 320px;
-    margin-inline: auto;
+  .pain__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 6vw, 6rem);
   }
-  .about__visual-caption {
-    text-align: center;
+  .pain__item {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    opacity: 0;
+    translate: 0 16px;
+    transition:
+      opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
+      translate 600ms var(--ease-out) calc(var(--i) * 90ms);
+  }
+  .pain__item.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .pain__num {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-electric);
+    padding-top: 0.35rem;
+    flex: 0 0 auto;
+  }
+  .pain__body {
+    color: var(--color-ink-2);
+    margin-top: 0.5rem;
+    max-width: 42ch;
   }
 
-  /* ---------- Responsive ---------- */
-  @media (max-width: 900px) {
-    .hero {
-      padding-top: clamp(2rem, 6vw, 3rem);
+  /* ═══════════ DARK ACT ═══════════ */
+  .act-dark {
+    background: var(--color-navy);
+    color: rgba(255, 255, 255, 0.82);
+    position: relative;
+    overflow: clip;
+  }
+  .act-dark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(900px 520px at 82% 4%, rgba(41, 151, 255, 0.2), transparent 62%),
+      radial-gradient(760px 520px at 10% 68%, rgba(29, 78, 216, 0.18), transparent 66%);
+  }
+  .act-dark > * {
+    position: relative;
+  }
+  .act-dark :global(.t-h2),
+  .act-dark :global(.t-h3),
+  .act-dark :global(.t-display-2) {
+    color: #fff;
+  }
+  .act-dark :global(.t-eyebrow) {
+    color: var(--color-electric);
+  }
+
+  /* The two dark sections are one continuous act, so the seam between them
+     is tighter than the gap between separate light/dark sections. */
+  .sysflow {
+    padding-bottom: clamp(2rem, 3vw, 3.5rem);
+  }
+  .services {
+    padding-top: clamp(2.5rem, 4vw, 4.5rem);
+  }
+
+  /* ---- connected system ---- */
+  .sysflow__grid {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .sysflow__title {
+    margin-block: 1rem 1.25rem;
+  }
+  .sysflow__lead {
+    font-size: var(--text-lead);
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.72);
+    max-width: 40ch;
+  }
+  .sysflow__viz svg {
+    width: 100%;
+    height: auto;
+  }
+  .sf__spine {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  .sysflow__viz.is-in .sf__spine {
+    animation: sf-draw 2000ms var(--ease-out) forwards;
+  }
+  @keyframes sf-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .sf__stop rect {
+    fill: rgba(255, 255, 255, 0.06);
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1;
+  }
+  .sf__stop text {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    fill: rgba(255, 255, 255, 0.9);
+  }
+  .sf__stop {
+    opacity: 0;
+  }
+  .sysflow__viz.is-in .sf__stop {
+    animation: sf-stop-in 600ms var(--ease-out) calc(300ms + var(--d)) forwards;
+  }
+  @keyframes sf-stop-in {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  /* ---- services ---- */
+  .services__head {
+    max-width: 52rem;
+    margin-bottom: clamp(3.5rem, 6vw, 5.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .services__lead-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3rem, 5vw, 4.5rem);
+  }
+  .svc {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    padding-bottom: clamp(3rem, 5vw, 4.5rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    opacity: 0;
+    translate: 0 20px;
+    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
+  }
+  .svc.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .svc__index {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 700;
+    color: var(--color-electric);
+    opacity: 0.75;
+    line-height: 1;
+    padding-top: 0.5rem;
+  }
+  .svc__name {
+    color: #fff;
+    margin-bottom: 0.875rem;
+  }
+  .svc__lead {
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    color: var(--color-electric);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    max-width: 32ch;
+  }
+  .svc__pain {
+    font-size: var(--text-body-lg);
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.72);
+    max-width: 56ch;
+    margin-bottom: 1.5rem;
+  }
+  .svc__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-electric);
+    text-decoration: none;
+    padding-block: 0.35rem;
+    border-bottom: 1.5px solid transparent;
+    transition: border-color var(--dur) var(--ease-out);
+  }
+  .svc__link:hover {
+    border-bottom-color: currentColor;
+  }
+
+  .services__rest {
+    margin-top: clamp(3rem, 5vw, 4rem);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(2rem, 4vw, 3.5rem);
+  }
+  .svc-min {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    opacity: 0;
+    translate: 0 16px;
+    transition:
+      opacity 600ms var(--ease-out) calc(var(--i) * 110ms),
+      translate 600ms var(--ease-out) calc(var(--i) * 110ms);
+  }
+  .svc-min.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .svc-min__index {
+    font-family: var(--font-display);
+    font-size: var(--text-micro);
+    font-weight: 700;
+    color: var(--color-electric);
+    opacity: 0.7;
+  }
+  .svc-min__name {
+    color: #fff;
+  }
+  .svc-min__lead {
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-electric);
+    line-height: 1.5;
+  }
+  .svc-min__pain {
+    font-size: var(--text-small);
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.66);
+  }
+  .svc-min .svc__link {
+    margin-top: auto;
+    padding-top: 0.5rem;
+    align-self: flex-start;
+  }
+
+  .services__pricing {
+    margin-top: clamp(3rem, 5vw, 4rem);
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: var(--text-small);
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 56ch;
+  }
+
+  /* ═══════════ PROCESS ═══════════ */
+  .process__head {
+    max-width: 40rem;
+    margin-bottom: clamp(3rem, 5vw, 4.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .process__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(2rem, 4vw, 3rem) clamp(2rem, 4vw, 3.5rem);
+  }
+  .process__item {
+    display: flex;
+    gap: 1.125rem;
+    align-items: flex-start;
+    opacity: 0;
+    translate: 0 18px;
+    transition:
+      opacity 600ms var(--ease-out) calc(var(--i) * 100ms),
+      translate 600ms var(--ease-out) calc(var(--i) * 100ms);
+  }
+  .process__item.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .process__marker {
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-line-strong);
+    display: grid;
+    place-items: center;
+    transition: border-color 500ms var(--ease-out), background-color 500ms var(--ease-out);
+  }
+  .process__item.is-in .process__marker {
+    border-color: var(--color-royal);
+    background: color-mix(in srgb, var(--color-royal) 7%, transparent);
+  }
+  .process__num {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-body);
+    color: var(--color-royal);
+  }
+  .process__label {
+    margin-bottom: 0.375rem;
+  }
+  .process__what {
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-ink-2);
+    max-width: 34ch;
+  }
+
+  /* ═══════════ FOUNDER ═══════════ */
+  .founder__grid {
+    display: grid;
+    grid-template-columns: 0.75fr 1.25fr;
+    gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .founder__portrait {
+    opacity: 0;
+    translate: 0 18px;
+    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
+  }
+  .founder__portrait.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .founder__frame {
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+  }
+  .founder__frame svg {
+    width: 100%;
+    max-width: 230px;
+    height: auto;
+  }
+  .founder__caption {
+    margin-top: 0.875rem;
+    text-align: center;
+    font-size: var(--text-micro);
+    color: var(--color-ink-3);
+  }
+  .founder__name {
+    margin-block: 0.75rem 0.25rem;
+  }
+  .founder__role {
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-royal);
+    direction: ltr;
+    text-align: start;
+    margin-bottom: 1.5rem;
+  }
+  .founder__body {
+    font-size: var(--text-body-lg);
+    line-height: 1.75;
+    color: var(--color-ink-2);
+    max-width: 52ch;
+    margin-bottom: 1rem;
+  }
+  .founder__link {
+    color: var(--color-royal);
+    margin-top: 0.75rem;
+  }
+
+  /* ═══════════ RESPONSIVE ═══════════ */
+  @media (max-width: 1024px) {
+    .hero__grid,
+    .explain__inner,
+    .sysflow__grid,
+    .founder__grid {
+      grid-template-columns: 1fr;
+    }
+    .hero__grid {
+      gap: clamp(2rem, 5vw, 3rem);
+    }
+    /* Visual first on narrow screens: it explains before the words do */
+    .hero__visual {
+      order: -1;
+      aspect-ratio: 5 / 4;
+    }
+    .explain__title {
+      position: static;
+    }
+    .founder__portrait {
+      max-width: 22rem;
+    }
+    .process__list {
+      grid-template-columns: repeat(2, 1fr);
     }
     .services__rest {
       grid-template-columns: 1fr;
+      gap: 2rem;
     }
-    .timeline {
-      flex-wrap: wrap;
-      row-gap: 1.5rem;
+    .svc-min {
+      padding-bottom: 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     }
-    .timeline::before {
-      display: none;
-    }
-    .timeline__item {
-      flex: 0 0 calc(33.33% - 0.5rem);
+    .svc-min:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
     }
   }
-  @media (max-width: 560px) {
+
+  @media (max-width: 720px) {
+    .pain__list {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .process__list {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+    .svc {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+    .svc__index {
+      padding-top: 0;
+    }
     .hero__actions {
       flex-direction: column;
       align-items: stretch;
     }
-    .timeline__item {
-      flex: 0 0 calc(50% - 0.5rem);
+    .hero__visual {
+      aspect-ratio: 4 / 3;
+      padding: 1rem;
+    }
+    .founder__portrait {
+      max-width: none;
+    }
+    .founder__frame {
+      aspect-ratio: 3 / 2;
+    }
+    .founder__frame svg {
+      max-width: 160px;
+    }
+  }
+
+  /* Reduced motion: reveal instantly, no travel */
+  @media (prefers-reduced-motion: reduce) {
+    .pain__item,
+    .svc,
+    .svc-min,
+    .process__item,
+    .founder__portrait {
+      opacity: 1;
+      translate: none;
+      transition: none;
+    }
+    .sf__spine {
+      stroke-dashoffset: 0;
+      animation: none !important;
+    }
+    .sf__stop {
+      opacity: 1;
+      animation: none !important;
     }
   }
 </style>
