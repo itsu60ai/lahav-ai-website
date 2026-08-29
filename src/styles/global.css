@@ -177,6 +177,16 @@
     padding-block: var(--space-section-tight);
   }
 
+  /* Section rhythm: white → gray → white (Design Brief §5.3). Every page
+     section reaches for one of these two rather than inventing a new
+     background per page. */
+  .section {
+    padding-block: var(--space-section);
+  }
+  .section--gray {
+    background: var(--color-surface-2);
+  }
+
   /* Type roles — the scale above, applied */
   .t-display-1 {
     font-family: var(--font-display);
