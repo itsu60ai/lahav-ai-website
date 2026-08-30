@@ -1,0 +1,80 @@
+---
+import ServicePage from '../../layouts/ServicePage.astro';
+import { SERVICE_PAGES } from '../../lib/site';
+const data = SERVICE_PAGES['crm'];
+---
+
+<ServicePage
+  slug="crm"
+  data={data}
+  title="מערכות CRM חכמות | LAHAV AI"
+  description="בונים מערכת CRM שמרכזת לקוחות, פניות ומשימות במקום אחד, ונותנת תמונה ברורה של כל לקוח ומה השלב הבא."
+  symptomsStyle="rail"
+>
+
+  <!-- CRM only: what changes day to day -->
+  <section class="section crm-after">
+    <div class="u-container">
+      <div class="lede">
+        <p class="t-eyebrow">מה משתנה ביום-יום</p>
+        <h2 class="t-h2">במקום לחפש, פשוט לפתוח ולראות</h2>
+      </div>
+      <div class="crm-cols">
+        <div class="crm-col">
+          <p class="crm-col__label">היום</p>
+          <ul class="crm-list crm-list--before">
+            <li>מחפשים בשיחות מה סוכם</li>
+            <li>שואלים מי דיבר עם הלקוח</li>
+            <li>נזכרים באיחור שצריך לחזור</li>
+            <li>אוספים ידנית כדי להבין מצב</li>
+          </ul>
+        </div>
+        <div class="crm-col">
+          <p class="crm-col__label crm-col__label--after">אחרי</p>
+          <ul class="crm-list crm-list--after">
+            <li>הכל רשום בכרטיס אחד</li>
+            <li>ברור מי אחראי ומה קרה</li>
+            <li>המערכת מזכירה בזמן</li>
+            <li>תמונת מצב זמינה מתי שצריך</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .crm-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(2rem, 5vw, 4rem);
+    }
+    .crm-col__label {
+      font-size: var(--text-micro);
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      color: var(--color-ink-3);
+      margin-bottom: 1rem;
+    }
+    .crm-col__label--after { color: var(--color-royal); }
+    .crm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    .crm-list li {
+      font-size: var(--text-body-lg);
+      line-height: 1.55;
+      padding-inline-start: 1.5rem;
+      position: relative;
+    }
+    .crm-list--before li { color: var(--color-ink-3); }
+    .crm-list--after li { color: var(--color-ink); font-weight: 500; }
+    .crm-list li::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      top: 0.7em;
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .crm-list--before li::before { background: var(--color-line-strong); }
+    .crm-list--after li::before { background: var(--color-royal); }
+    @media (max-width: 720px) { .crm-cols { grid-template-columns: 1fr; } }
+  </style>
+
+</ServicePage>

@@ -1,0 +1,372 @@
+---
+// Bespoke page visuals. One per service story, each with its own mechanism
+// so no two pages look alike. All abstract: no vendor names, no fake
+// dashboards, no invented metrics, nothing that reads as a factual claim.
+interface Props {
+  kind: 'crm' | 'automation' | 'web' | 'app' | 'content' | 'services' | 'about' | 'broken';
+  class?: string;
+}
+const { kind, class: cls = '' } = Astro.props;
+---
+
+<div class:list={['viz', `viz--${kind}`, cls]} data-reveal>
+  {
+    kind === 'crm' && (
+      <svg viewBox="0 0 1100 420" role="img" aria-label="איור: מסלול לקוח מפנייה ראשונה ועד עסקה, עם המידע מרוכז במקום אחד">
+        <defs>
+          <linearGradient id="vzCrm" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0%" stop-color="#2997FF" />
+            <stop offset="100%" stop-color="#1D4ED8" />
+          </linearGradient>
+        </defs>
+        <path class="vz-rail" d="M1030 120 L70 120" stroke="rgba(41,151,255,.28)" stroke-width="2" fill="none" />
+        {[
+          { x: 1030, label: 'פנייה' },
+          { x: 790, label: 'שיחה' },
+          { x: 550, label: 'הצעה' },
+          { x: 310, label: 'מעקב' },
+          { x: 70, label: 'לקוח' },
+        ].map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 180}ms`}>
+            <circle cx={s.x} cy="120" r="15" fill={i === 4 ? 'url(#vzCrm)' : 'rgba(255,255,255,.09)'} stroke="rgba(41,151,255,.55)" stroke-width="2" />
+            <text x={s.x} y="176" text-anchor="middle" class="vz-label">{s.label}</text>
+          </g>
+        ))}
+        {/* everything feeds one record */}
+        <g class="vz-record" >
+          <rect x="330" y="252" width="440" height="128" rx="24" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" />
+          <text x="550" y="296" text-anchor="middle" class="vz-title">כרטיס לקוח אחד</text>
+          <text x="550" y="330" text-anchor="middle" class="vz-sub">כל מה שנאמר, נשלח וסוכם</text>
+          <text x="550" y="358" text-anchor="middle" class="vz-next">השלב הבא ברור</text>
+        </g>
+        <g class="vz-feed" stroke="rgba(41,151,255,.3)" stroke-width="1.5" fill="none" stroke-dasharray="5 7">
+          <path d="M1030 140 C 1030 220 780 210 640 252" />
+          <path d="M790 140 C 790 200 700 216 590 252" />
+          <path d="M550 140 L550 252" />
+          <path d="M310 140 C 310 200 400 216 500 252" />
+        </g>
+      </svg>
+    )
+  }
+
+  {
+    kind === 'automation' && (
+      <svg viewBox="0 0 1100 460" role="img" aria-label="איור: אירוע מפעיל בדיקה, ומשם פעולה אוטומטית או העברה לאישור אנושי">
+        <defs>
+          <linearGradient id="vzAu" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0%" stop-color="#2997FF" />
+            <stop offset="100%" stop-color="#1D4ED8" />
+          </linearGradient>
+        </defs>
+        {/* trigger */}
+        <g class="vz-stop" style="--d:0ms">
+          <rect x="900" y="188" width="180" height="76" rx="20" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.22)" />
+          <text x="990" y="222" text-anchor="middle" class="vz-title-sm">קורה משהו</text>
+          <text x="990" y="248" text-anchor="middle" class="vz-sub">פנייה, תשלום, תאריך</text>
+        </g>
+        <path class="vz-line" style="--d:200ms" d="M900 226 L706 226" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        {/* decision */}
+        <g class="vz-stop" style="--d:400ms">
+          <path d="M600 166 L706 226 L600 286 L494 226 Z" fill="rgba(41,151,255,.12)" stroke="rgba(41,151,255,.5)" stroke-width="2" />
+          <text x="600" y="220" text-anchor="middle" class="vz-title-sm">בודק מה נכון</text>
+          <text x="600" y="244" text-anchor="middle" class="vz-sub">לפי הכללים שלכם</text>
+        </g>
+        {/* two outcomes */}
+        <path class="vz-line" style="--d:640ms" d="M494 200 C 420 200 400 120 320 120" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        <path class="vz-line" style="--d:820ms" d="M494 252 C 420 252 400 340 320 340" stroke="rgba(255,255,255,.3)" stroke-width="2" fill="none" stroke-dasharray="6 8" />
+        <g class="vz-stop" style="--d:900ms">
+          <rect x="80" y="82" width="240" height="76" rx="20" fill="url(#vzAu)" />
+          <text x="200" y="116" text-anchor="middle" class="vz-title-sm" fill="#fff">פועל לבד</text>
+          <text x="200" y="142" text-anchor="middle" class="vz-sub" fill="rgba(255,255,255,.85)">שולח, מעדכן, מזכיר</text>
+        </g>
+        <g class="vz-stop" style="--d:1080ms">
+          <rect x="80" y="302" width="240" height="76" rx="20" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.32)" />
+          <text x="200" y="336" text-anchor="middle" class="vz-title-sm">עובר אליכם</text>
+          <text x="200" y="362" text-anchor="middle" class="vz-sub">כשצריך החלטה</text>
+        </g>
+        <text x="200" y="416" text-anchor="middle" class="vz-note vz-stop" style="--d:1260ms">אתם נשארים בשליטה</text>
+      </svg>
+    )
+  }
+
+  {
+    kind === 'web' && (
+      <svg viewBox="0 0 1100 440" role="img" aria-label="איור: מבקר מגיע לאתר, עובר מסלול ברור ומגיע לפעולה שמזינה תהליך בעסק">
+        <defs>
+          <linearGradient id="vzWeb" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2997FF" />
+            <stop offset="100%" stop-color="#1D4ED8" />
+          </linearGradient>
+        </defs>
+        {/* three stacked screens, right to left */}
+        {[
+          { x: 830, y: 60, label: 'נחיתה' },
+          { x: 490, y: 110, label: 'הבנה' },
+          { x: 150, y: 160, label: 'פעולה' },
+        ].map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 220}ms`}>
+            <rect x={s.x} y={s.y} width="220" height="180" rx="18" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" />
+            <rect x={s.x + 22} y={s.y + 26} width={i === 2 ? 120 : 150} height="12" rx="6" fill="rgba(255,255,255,.4)" />
+            <rect x={s.x + 22} y={s.y + 50} width="96" height="9" rx="4.5" fill="rgba(255,255,255,.22)" />
+            {i < 2 && <rect x={s.x + 22} y={s.y + 68} width="126" height="9" rx="4.5" fill="rgba(255,255,255,.22)" />}
+            {i === 2 && <rect x={s.x + 22} y={s.y + 74} width="140" height="34" rx="10" fill="url(#vzWeb)" />}
+            <text x={s.x + 110} y={s.y + 214} text-anchor="middle" class="vz-label">{s.label}</text>
+          </g>
+        ))}
+        <path class="vz-line" style="--d:180ms" d="M830 150 L710 160" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        <path class="vz-line" style="--d:400ms" d="M490 200 L370 210" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        <path class="vz-line" style="--d:660ms" d="M150 300 C 150 380 400 400 560 400" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" stroke-dasharray="6 8" />
+        <g class="vz-stop" style="--d:760ms">
+          <rect x="560" y="372" width="300" height="56" rx="16" fill="rgba(41,151,255,.12)" stroke="rgba(41,151,255,.45)" />
+          <text x="710" y="406" text-anchor="middle" class="vz-title-sm">נכנס לתהליך בעסק</text>
+        </g>
+      </svg>
+    )
+  }
+
+  {
+    kind === 'app' && (
+      <svg viewBox="0 0 1100 440" role="img" aria-label="איור: צורך עסקי הופך למסכים, פעולות ומידע שזורם בתהליך">
+        <defs>
+          <linearGradient id="vzApp" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2997FF" />
+            <stop offset="100%" stop-color="#1D4ED8" />
+          </linearGradient>
+        </defs>
+        <g class="vz-stop" style="--d:0ms">
+          <rect x="880" y="170" width="200" height="90" rx="20" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.22)" />
+          <text x="980" y="206" text-anchor="middle" class="vz-title-sm">צורך בעסק</text>
+          <text x="980" y="232" text-anchor="middle" class="vz-sub">משהו שאין לו כלי מתאים</text>
+        </g>
+        <path class="vz-line" style="--d:180ms" d="M880 215 L760 215" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        {/* wireframe fragments */}
+        {[
+          { x: 560, y: 92 },
+          { x: 560, y: 250 },
+          { x: 330, y: 170 },
+        ].map((s, i) => (
+          <g class="vz-stop" style={`--d:${380 + i * 200}ms`}>
+            <rect x={s.x} y={s.y} width="180" height="98" rx="16" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" />
+            <rect x={s.x + 18} y={s.y + 20} width="80" height="10" rx="5" fill="rgba(255,255,255,.38)" />
+            <rect x={s.x + 18} y={s.y + 40} width="130" height="8" rx="4" fill="rgba(255,255,255,.2)" />
+            <rect x={s.x + 18} y={s.y + 56} width="104" height="8" rx="4" fill="rgba(255,255,255,.2)" />
+            <rect x={s.x + 18} y={s.y + 72} width="60" height="14" rx="7" fill="rgba(41,151,255,.55)" />
+          </g>
+        ))}
+        <path class="vz-line" style="--d:560ms" d="M560 141 C 520 141 520 200 510 219" stroke="rgba(41,151,255,.4)" stroke-width="2" fill="none" />
+        <path class="vz-line" style="--d:740ms" d="M560 299 C 520 299 520 240 510 221" stroke="rgba(41,151,255,.4)" stroke-width="2" fill="none" />
+        <path class="vz-line" style="--d:900ms" d="M330 219 L210 219" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        <g class="vz-stop" style="--d:1000ms">
+          <rect x="30" y="182" width="180" height="74" rx="18" fill="url(#vzApp)" />
+          <text x="120" y="226" text-anchor="middle" class="vz-title-sm" fill="#fff">תהליך שעובד</text>
+        </g>
+      </svg>
+    )
+  }
+
+  {
+    kind === 'content' && (
+      <svg viewBox="0 0 1100 380" role="img" aria-label="איור: מטרה עסקית, בריף, טיוטה בעזרת AI, בדיקה ואישור אנושי, ורק אז פרסום">
+        <defs>
+          <linearGradient id="vzCon" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0%" stop-color="#2997FF" />
+            <stop offset="100%" stop-color="#1D4ED8" />
+          </linearGradient>
+        </defs>
+        <path class="vz-rail" d="M1020 150 L80 150" stroke="rgba(41,151,255,.26)" stroke-width="2" fill="none" />
+        {[
+          { x: 1020, label: 'מטרה', sub: 'מה רוצים להשיג' },
+          { x: 785, label: 'בריף', sub: 'נושא וזווית' },
+          { x: 550, label: 'טיוטה', sub: 'בעזרת AI' },
+          { x: 315, label: 'בדיקה', sub: 'אתם קוראים' },
+          { x: 80, label: 'פרסום', sub: 'רק אחרי אישור' },
+        ].map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 200}ms`}>
+            <circle
+              cx={s.x}
+              cy="150"
+              r={i === 3 ? 24 : 17}
+              fill={i === 4 ? 'url(#vzCon)' : i === 3 ? 'rgba(41,151,255,.2)' : 'rgba(255,255,255,.08)'}
+              stroke={i === 3 ? '#2997FF' : 'rgba(41,151,255,.5)'}
+              stroke-width={i === 3 ? 3 : 2}
+            />
+            <text x={s.x} y="212" text-anchor="middle" class="vz-title-sm">{s.label}</text>
+            <text x={s.x} y="238" text-anchor="middle" class="vz-sub">{s.sub}</text>
+          </g>
+        ))}
+        <g class="vz-stop" style="--d:1100ms">
+          <rect x="188" y="286" width="254" height="52" rx="14" fill="rgba(41,151,255,.12)" stroke="rgba(41,151,255,.45)" />
+          <text x="315" y="318" text-anchor="middle" class="vz-note">שום דבר לא מתפרסם לבד</text>
+        </g>
+      </svg>
+    )
+  }
+
+  {
+    kind === 'services' && (
+      <svg viewBox="0 0 1100 400" role="img" aria-label="איור: חמישה תחומי שירות שמתחברים לתשתית אחת של העסק">
+        <defs>
+          <linearGradient id="vzSv" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2997FF" />
+            <stop offset="100%" stop-color="#1D4ED8" />
+          </linearGradient>
+        </defs>
+        <rect class="vz-record" x="400" y="290" width="300" height="76" rx="22" fill="url(#vzSv)" />
+        <text x="550" y="336" text-anchor="middle" class="vz-title" fill="#fff">העסק שלכם</text>
+        {[
+          { x: 990, label: 'CRM' },
+          { x: 770, label: 'אוטומציות' },
+          { x: 550, label: 'אתרים' },
+          { x: 330, label: 'אפליקציות' },
+          { x: 110, label: 'תוכן' },
+        ].map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 160}ms`}>
+            <rect x={s.x - 92} y="60" width="184" height="82" rx="20" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" />
+            <text x={s.x} y="110" text-anchor="middle" class="vz-title-sm">{s.label}</text>
+            <path
+              class="vz-line"
+              style={`--d:${400 + i * 160}ms`}
+              d={`M${s.x} 142 C ${s.x} 230 ${550 + (s.x - 550) * 0.3} 240 550 290`}
+              stroke="rgba(41,151,255,.32)"
+              stroke-width="2"
+              fill="none"
+            />
+          </g>
+        ))}
+      </svg>
+    )
+  }
+
+  {
+    kind === 'about' && (
+      <svg viewBox="0 0 1100 340" role="img" aria-label="איור: מתחילים מהתהליך העסקי ורק אחר כך בוחרים טכנולוגיה">
+        <defs>
+          <linearGradient id="vzAb" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0%" stop-color="#2997FF" />
+            <stop offset="100%" stop-color="#1D4ED8" />
+          </linearGradient>
+        </defs>
+        {[
+          { x: 940, t: 'התהליך', s: 'איך העסק עובד היום' },
+          { x: 620, t: 'הצוואר', s: 'איפה זה נתקע' },
+          { x: 300, t: 'הפתרון', s: 'רק אז בוחרים כלים' },
+        ].map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 240}ms`}>
+            <rect x={s.x - 130} y="90" width="260" height="110" rx="24" fill={i === 2 ? 'url(#vzAb)' : 'rgba(255,255,255,.05)'} stroke={i === 2 ? 'none' : 'rgba(255,255,255,.2)'} />
+            <text x={s.x} y="134" text-anchor="middle" class="vz-title-sm" fill={i === 2 ? '#fff' : undefined}>{s.t}</text>
+            <text x={s.x} y="164" text-anchor="middle" class="vz-sub" fill={i === 2 ? 'rgba(255,255,255,.85)' : undefined}>{s.s}</text>
+          </g>
+        ))}
+        <path class="vz-line" style="--d:200ms" d="M810 145 L750 145" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        <path class="vz-line" style="--d:440ms" d="M490 145 L430 145" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+      </svg>
+    )
+  }
+
+  {
+    kind === 'broken' && (
+      <svg viewBox="0 0 520 220" role="img" aria-label="איור: מסלול שנקטע באמצע">
+        <path class="vz-line" style="--d:0ms" d="M480 110 L320 110" stroke="rgba(41,151,255,.5)" stroke-width="3" fill="none" />
+        <path d="M300 110 L260 110" stroke="rgba(255,255,255,.22)" stroke-width="3" stroke-dasharray="7 9" fill="none" />
+        <path class="vz-line" style="--d:300ms" d="M240 110 L60 110" stroke="rgba(41,151,255,.5)" stroke-width="3" fill="none" />
+        <circle cx="480" cy="110" r="13" fill="rgba(41,151,255,.28)" stroke="#2997FF" stroke-width="2" />
+        <circle cx="60" cy="110" r="13" fill="rgba(41,151,255,.28)" stroke="#2997FF" stroke-width="2" />
+        <g class="vz-stop" style="--d:500ms">
+          <circle cx="280" cy="110" r="22" fill="rgba(11,21,48,.9)" stroke="rgba(255,255,255,.3)" stroke-width="2" />
+          <path d="M272 102 L288 118 M288 102 L272 118" stroke="rgba(255,255,255,.65)" stroke-width="2.5" stroke-linecap="round" />
+        </g>
+      </svg>
+    )
+  }
+</div>
+
+<style>
+  .viz {
+    width: 100%;
+  }
+  .viz svg {
+    width: 100%;
+    height: auto;
+  }
+  .vz-label,
+  .vz-sub {
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 500;
+    fill: rgba(255, 255, 255, 0.6);
+  }
+  .vz-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    fill: #fff;
+  }
+  .vz-title-sm {
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 700;
+    fill: #fff;
+  }
+  .vz-next,
+  .vz-note {
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 600;
+    fill: var(--color-electric);
+  }
+
+  /* Motion: staged reveal along the story, then rest. */
+  :global(html.reveal-ready) .vz-stop,
+  :global(html.reveal-ready) .vz-record {
+    opacity: 0;
+  }
+  :global(html.reveal-ready) .vz-line,
+  :global(html.reveal-ready) .vz-rail,
+  :global(html.reveal-ready) .vz-feed {
+    stroke-dasharray: 1400;
+    stroke-dashoffset: 1400;
+  }
+
+  :global(html.reveal-ready) .viz.is-in .vz-stop,
+  :global(html.reveal-ready) .viz.is-in .vz-record {
+    animation: vz-in 700ms var(--ease-out) calc(200ms + var(--d, 0ms)) forwards;
+  }
+  :global(html.reveal-ready) .viz.is-in .vz-rail,
+  :global(html.reveal-ready) .viz.is-in .vz-feed {
+    animation: vz-draw 1800ms var(--ease-out) 150ms forwards;
+  }
+  :global(html.reveal-ready) .viz.is-in .vz-line {
+    animation: vz-draw 900ms var(--ease-out) calc(200ms + var(--d, 0ms)) forwards;
+  }
+
+  @keyframes vz-in {
+    from {
+      opacity: 0;
+      translate: 0 12px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  @keyframes vz-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vz-stop,
+    .vz-record {
+      opacity: 1 !important;
+      animation: none !important;
+    }
+    .vz-line,
+    .vz-rail,
+    .vz-feed {
+      stroke-dasharray: none !important;
+      stroke-dashoffset: 0 !important;
+      animation: none !important;
+    }
+  }
+</style>

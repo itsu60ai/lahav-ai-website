@@ -1,0 +1,162 @@
+---
+// PRIVACY. Structure and honest, implementation-based copy only.
+//
+// F-15: LAHAV AI is a brand, not a registered entity. Operator line is
+// "Ethan Lahav / LAHAV AI". No company number, no address.
+// NV-2: no compliance claim is made anywhere. Final legal text and legal
+// review remain a separate, open item.
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { SITE } from '../lib/site';
+
+const sections = [
+  {
+    h: 'מי מפעיל את האתר',
+    p: [
+      'האתר מופעל על ידי Ethan Lahav / LAHAV AI. אנחנו מותג עסקי ולא חברה רשומה, ולכן לא מוצגים כאן מספר חברה או כתובת רשומה.',
+      'לכל שאלה בנושא הפרטיות אפשר לפנות אלינו דרך עמוד יצירת הקשר.',
+    ],
+  },
+  {
+    h: 'איזה מידע אנחנו אוספים',
+    p: [
+      'המידע היחיד שאנחנו אוספים ישירות הוא מה שאתם בוחרים למסור לנו בטופס יצירת הקשר: שם, טלפון, אימייל, השירות שמעניין אתכם, וההודעה שאתם כותבים.',
+      'אנחנו לא מבקשים ולא אוספים פרטי תשלום, מספרי זהות או מידע רגיש דרך האתר.',
+    ],
+  },
+  {
+    h: 'למה אנחנו משתמשים במידע',
+    p: [
+      'כדי לחזור אליכם ולהתקדם לשיחה. זהו. אנחנו לא מוכרים את הפרטים שלכם ולא מעבירים אותם לגורמים שלישיים לצורכי שיווק.',
+    ],
+  },
+  {
+    h: 'מדידה ונתוני שימוש',
+    p: [
+      'אנחנו מתכננים למדוד שימוש בסיסי באתר כדי להבין אילו עמודים מעניינים מבקרים. הכלי שנבחר לא משתמש בעוגיות מעקב ואינו מזהה מבקרים אישית.',
+      'הפירוט המדויק יעודכן כאן לאחר שהמערכות ייכנסו לפעולה בפועל.',
+    ],
+  },
+  {
+    h: 'שמירת מידע',
+    p: [
+      'פניות שנשלחות דרך האתר נשמרות כדי שנוכל לטפל בהן ולחזור אליכם. משך השמירה ואופן המחיקה יעודכנו כאן לאחר שהמערכות ייכנסו לפעולה.',
+    ],
+  },
+  {
+    h: 'הזכויות שלכם',
+    p: [
+      'אתם יכולים לפנות אלינו ולבקש לראות איזה מידע יש לנו עליכם, לתקן אותו, או לבקש שנמחק אותו. נטפל בפנייה כזו ונעדכן אתכם.',
+    ],
+  },
+  {
+    h: 'שינויים בעמוד הזה',
+    p: [
+      'העמוד הזה ישתנה ככל שהאתר והמערכות מאחוריו יתפתחו. כשנעדכן אותו, נעדכן גם את תאריך העדכון למטה.',
+    ],
+  },
+];
+---
+
+<SiteLayout
+  title="מדיניות פרטיות | LAHAV AI"
+  description="איזה מידע נאסף באתר LAHAV AI, למה משתמשים בו, ואיך אפשר לפנות אלינו בנושא."
+>
+  <div class="pv-flag">
+    <div class="u-container">
+      טיוטה. הנוסח הסופי ייקבע לאחר שהמערכות באתר יופעלו בפועל ולאחר בדיקה משפטית.
+    </div>
+  </div>
+
+  <article class="pv">
+    <header class="u-container pv__head">
+      <h1 class="t-display-2 pv__title">מדיניות פרטיות</h1>
+      <p class="pv__intro">
+        בקצרה: אנחנו אוספים רק את מה שאתם משאירים לנו בטופס, משתמשים בזה כדי
+        לחזור אליכם, ולא מוכרים אותו לאף אחד.
+      </p>
+    </header>
+
+    <div class="u-container pv__body">
+      {
+        sections.map((s, i) => (
+          <section class="pv__sec">
+            <h2 class="pv__h">
+              <span class="pv__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              {s.h}
+            </h2>
+            {s.p.map((t) => <p>{t}</p>)}
+          </section>
+        ))
+      }
+
+      <p class="pv__updated">עודכן לאחרונה: לא פורסם עדיין</p>
+      <p class="pv__legal">{SITE.legalLine}</p>
+    </div>
+  </article>
+</SiteLayout>
+
+<style>
+  .pv-flag {
+    background: #fff4e5;
+    border-bottom: 1px solid #f0c98a;
+    color: #8a5300;
+    font-size: var(--text-small);
+    font-weight: 600;
+    padding-block: 0.75rem;
+  }
+  .pv {
+    padding-block: clamp(2.5rem, 5vw, 4.5rem) clamp(3rem, 6vw, 6rem);
+  }
+  .pv__head,
+  .pv__body {
+    max-width: 48rem;
+  }
+  .pv__title {
+    margin-bottom: 1.25rem;
+  }
+  .pv__intro {
+    font-size: var(--text-lead);
+    line-height: 1.6;
+    color: var(--color-ink-2);
+    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    border-bottom: 1px solid var(--color-line);
+    max-width: none;
+  }
+  .pv__body {
+    margin-top: clamp(2rem, 4vw, 3rem);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 4vw, 3rem);
+  }
+  .pv__sec {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+  .pv__h {
+    display: flex;
+    align-items: baseline;
+    gap: 0.875rem;
+    font-size: var(--text-h3);
+  }
+  .pv__n {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    color: var(--color-electric);
+  }
+  .pv__sec p {
+    font-size: var(--text-body-lg);
+    line-height: 1.8;
+    color: var(--color-ink-2);
+    max-width: none;
+  }
+  .pv__updated,
+  .pv__legal {
+    font-size: var(--text-small);
+    color: var(--color-ink-3);
+  }
+  .pv__updated {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-line);
+  }
+</style>

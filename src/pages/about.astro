@@ -1,0 +1,285 @@
+---
+// ABOUT. Composition is editorial and personal: a large portrait opening,
+// a first-person statement, the belief, then how we work. No service rows,
+// no pain grid, no chooser. Deliberately the quietest page on the site.
+//
+// Every factual sentence traces to APPROVED_COPY.md or F-14. No years,
+// no clients, no credentials, no employment history.
+import SiteLayout from '../layouts/SiteLayout.astro';
+import ClosingCta from '../components/ClosingCta.astro';
+import Viz from '../components/Viz.astro';
+import ScrollReveal from '../components/ScrollReveal.astro';
+import { FOUNDER, PROCESS } from '../lib/site';
+---
+
+<SiteLayout
+  title="אודות | LAHAV AI"
+  description="LAHAV AI מתמחה בתכנון ובהקמה של מערכות חכמות לעסקים. מתחילים מהתהליך העסקי, ורק אחר כך בוחרים טכנולוגיה."
+>
+  <ScrollReveal />
+
+  <!-- Opening: portrait and a first person line, side by side -->
+  <section class="ab-open">
+    <div class="u-container ab-open__grid">
+      <figure class="ab-photo" data-reveal>
+        <img
+          src={FOUNDER.photo}
+          srcset={`${FOUNDER.photoSmall} 480w, ${FOUNDER.photo} 720w`}
+          sizes="(max-width: 900px) 90vw, 40vw"
+          alt={FOUNDER.alt}
+          width="720"
+          height="900"
+          loading="eager"
+          decoding="async"
+        />
+      </figure>
+      <div class="ab-open__text">
+        <p class="t-eyebrow">אודות</p>
+        <h1 class="t-display-2 ab-open__h1">לא חסרים כלים.<br />חסר שהם יעבדו יחד.</h1>
+        <p class="ab-open__lead">
+          זו התובנה שממנה נולדה LAHAV AI, וזו עדיין נקודת המוצא של כל פרויקט שאנחנו לוקחים.
+        </p>
+        <p class="ab-open__by">
+          {FOUNDER.name}<span class="ab-open__role">{FOUNDER.role}</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- First person statement -->
+  <section class="section ab-story">
+    <div class="u-container ab-story__inner">
+      <p class="ab-story__p">
+        הקמתי את LAHAV AI מתוך משהו שראיתי שוב ושוב בעסקים: הבעיה היא בדרך כלל
+        לא שחסרים כלים, אלא שהכלים והתהליכים לא עובדים יחד. מידע מתפזר, עבודה
+        ידנית מצטברת, ודברים פשוטים הופכים למסורבלים ככל שהעסק גדל.
+      </p>
+      <p class="ab-story__p">
+        לכן אני מתחיל מהעסק ולא מהטכנולוגיה. קודם מבינים איפה העבודה נתקעת, מה
+        גוזל זמן ומה צריך לעבוד פשוט יותר. רק אחר כך בוחרים את הכלים ובונים את
+        המערכת שמתאימה לתהליך.
+      </p>
+    </div>
+  </section>
+
+  <!-- The approach, as a visual -->
+  <section class="section section--navy">
+    <div class="u-container">
+      <div class="lede lede--center">
+        <p class="t-eyebrow">הגישה</p>
+        <h2 class="t-display-2">קודם התהליך.<br />אחר כך הטכנולוגיה.</h2>
+      </div>
+      <Viz kind="about" />
+    </div>
+  </section>
+
+  <!-- What LAHAV AI is, in approved language -->
+  <section class="section">
+    <div class="u-container ab-what">
+      <h2 class="t-h2 ab-what__h">קצת על LAHAV AI</h2>
+      <div class="ab-what__body">
+        <p>
+          LAHAV AI מתמחה בתכנון ובהקמה של מערכות חכמות לעסקים: מערכות CRM,
+          אוטומציות, אתרים, אפליקציות, יצירת תוכן ופתרונות מבוססי AI.
+        </p>
+        <p>
+          אנחנו מתחילים מהתהליך העסקי ולא מהטכנולוגיה. קודם מבינים איך העסק עובד
+          היום, איפה נמצאים צווארי הבקבוק ומה באמת צריך להשתפר, ורק לאחר מכן
+          מתכננים את הפתרון המתאים.
+        </p>
+        <p>
+          המטרה שלנו היא לא להוסיף עוד מערכת לעסק, אלא לבנות תשתית שמפחיתה עבודה
+          ידנית, מייצרת סדר ושליטה, ומאפשרת לעסק לעבוד בצורה חכמה ויעילה יותר.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How a project runs -->
+  <section class="section section--gray">
+    <div class="u-container">
+      <div class="lede">
+        <p class="t-eyebrow">איך פרויקט מתנהל</p>
+        <h2 class="t-h2">כל פרויקט עובר את אותו תהליך מסודר</h2>
+      </div>
+      <ol class="ab-steps">
+        {
+          PROCESS.map((p, i) => (
+            <li class="ab-step" data-reveal style={`--i:${i}`}>
+              <span class="ab-step__n tabular">{String(p.n).padStart(2, '0')}</span>
+              <div>
+                <h3 class="t-h3">{p.label}</h3>
+                <p class="ab-step__d">{p.what}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <ClosingCta
+    heading="נשמע כמו הדרך הנכונה לעבוד?"
+    body="שיחה של 30 דקות. נעבור על התהליכים שלכם, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך."
+  />
+</SiteLayout>
+
+<style>
+  .ab-open {
+    padding-top: clamp(2.5rem, 5vw, 5rem);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+  }
+  .ab-open__grid {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .ab-photo {
+    margin: 0;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--color-surface-3);
+    aspect-ratio: 4 / 5;
+    box-shadow: var(--shadow-lg);
+    transition: opacity 800ms var(--ease-out), translate 800ms var(--ease-out);
+  }
+  :global(html.reveal-ready) .ab-photo {
+    opacity: 0;
+    translate: 0 20px;
+  }
+  :global(html.reveal-ready) .ab-photo.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .ab-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 18%;
+  }
+  .ab-open__h1 {
+    margin-block: 1rem 1.5rem;
+  }
+  .ab-open__lead {
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--color-ink-2);
+    max-width: 46ch;
+    margin-bottom: 2rem;
+  }
+  .ab-open__by {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .ab-open__role {
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--color-royal);
+    direction: ltr;
+    text-align: start;
+  }
+
+  .ab-story__inner {
+    max-width: 46rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .ab-story__p {
+    font-size: clamp(1.25rem, 1rem + 0.9vw, 1.75rem);
+    line-height: 1.6;
+    color: var(--color-ink);
+    max-width: none;
+  }
+
+  .ab-what {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+  }
+  .ab-what__h {
+    position: sticky;
+    top: 120px;
+  }
+  .ab-what__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 60ch;
+  }
+  .ab-what__body p {
+    font-size: var(--text-body-lg);
+    line-height: 1.75;
+    color: var(--color-ink-2);
+    max-width: none;
+  }
+
+  .ab-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.5rem, 3vw, 2.5rem) clamp(2.5rem, 5vw, 4rem);
+  }
+  .ab-step {
+    display: flex;
+    gap: 1.25rem;
+    align-items: baseline;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-line);
+    transition:
+      opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
+      translate 600ms var(--ease-out) calc(var(--i) * 90ms);
+  }
+  :global(html.reveal-ready) .ab-step {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  :global(html.reveal-ready) .ab-step.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .ab-step__n {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-electric);
+    flex: 0 0 auto;
+  }
+  .ab-step__d {
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-ink-2);
+    margin-top: 0.25rem;
+  }
+
+  @media (max-width: 900px) {
+    .ab-open__grid,
+    .ab-what,
+    .ab-steps {
+      grid-template-columns: 1fr;
+    }
+    .ab-what__h {
+      position: static;
+    }
+    .ab-photo {
+      max-width: 22rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ab-photo,
+    .ab-step {
+      opacity: 1 !important;
+      translate: none !important;
+      transition: none !important;
+    }
+  }
+</style>

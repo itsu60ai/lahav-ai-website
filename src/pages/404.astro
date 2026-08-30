@@ -1,0 +1,78 @@
+---
+// 404. Short and elegant, as instructed. One small branded broken-flow
+// visual and clear routes back. No business claims, no cinematic page.
+import SiteLayout from '../layouts/SiteLayout.astro';
+import Viz from '../components/Viz.astro';
+import ScrollReveal from '../components/ScrollReveal.astro';
+import { CTA_PRIMARY } from '../lib/site';
+---
+
+<SiteLayout title="הדף לא נמצא | LAHAV AI" description="הקישור שהגעתם אליו לא קיים.">
+  <ScrollReveal />
+
+  <section class="nf">
+    <div class="u-container nf__inner">
+      <Viz kind="broken" class="nf__viz" />
+      <p class="t-eyebrow nf__code tabular">404</p>
+      <h1 class="t-h1 nf__title">הקישור הזה לא מוביל לשום מקום</h1>
+      <p class="nf__lead">
+        כנראה שהעמוד הוסר או שהכתובת השתנתה. אפשר לחזור מכאן:
+      </p>
+      <div class="nf__actions">
+        <a class="btn btn-primary" href="/">לדף הבית</a>
+        <a class="btn btn-secondary" href="/services/">לשירותים</a>
+        <a class="btn btn-secondary" href={CTA_PRIMARY.href}>צור קשר</a>
+      </div>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .nf {
+    min-height: min(62vh, 560px);
+    display: grid;
+    place-items: center;
+    padding-block: clamp(3rem, 7vw, 6rem);
+  }
+  .nf__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .nf__viz {
+    max-width: 22rem;
+    margin-bottom: 2rem;
+  }
+  /* the broken-flow art is drawn for dark surfaces, tint it for light */
+  .nf__viz :global(svg) {
+    filter: none;
+  }
+  .nf__code {
+    letter-spacing: 0.12em;
+    margin-bottom: 0.75rem;
+  }
+  .nf__title {
+    margin-bottom: 1rem;
+    max-width: 20ch;
+  }
+  .nf__lead {
+    font-size: var(--text-lead);
+    color: var(--color-ink-2);
+    margin-bottom: 2rem;
+    max-width: 44ch;
+  }
+  .nf__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+  @media (max-width: 560px) {
+    .nf__actions {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+    }
+  }
+</style>

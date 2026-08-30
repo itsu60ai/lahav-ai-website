@@ -22,3 +22,7 @@ Thumbs.db
 
 # local scratch
 *.local
+
+# review batch exports (large binaries, regenerated on demand)
+review/*.zip
+review/**/*.png

@@ -1,0 +1,277 @@
+---
+// CONTACT / DISCOVERY. Conversion page: booking is visually primary, the
+// form is the fallback, WhatsApp is the third route. Composition is a
+// two column split with the booking region reserved, not a marketing page.
+//
+// The booking provider is not chosen yet (O-7), so the region is a defined
+// placeholder rather than a fake widget. No response time is promised.
+import SiteLayout from '../layouts/SiteLayout.astro';
+import ScrollReveal from '../components/ScrollReveal.astro';
+import { WHATSAPP_HREF, SERVICES } from '../lib/site';
+---
+
+<SiteLayout
+  title="צור קשר וקביעת שיחת Discovery | LAHAV AI"
+  description="קביעת שיחת היכרות של 30 דקות, או השארת פרטים ונחזור אליכם. אפשר גם בוואטסאפ."
+>
+  <ScrollReveal />
+
+  <section class="ct-hero">
+    <div class="u-container">
+      <p class="t-eyebrow">צור קשר</p>
+      <h1 class="t-display-2 ct-hero__h1">בואו נדבר על מה שתקוע</h1>
+      <p class="ct-hero__lead">
+        הדרך הכי פשוטה להתחיל היא שיחה של 30 דקות. נעבור על התהליכים שלכם,
+        ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך.
+      </p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="u-container ct-grid">
+      <!-- PRIMARY: booking -->
+      <div class="ct-primary" data-reveal>
+        <div class="ct-primary__head">
+          <span class="chip">הדרך המומלצת</span>
+          <h2 class="t-h2">קביעת שיחת Discovery</h2>
+          <p class="ct-primary__lead">
+            30 דקות, בשיחת וידאו או טלפון. בלי מצגות ובלי הכנה מצדכם.
+          </p>
+        </div>
+
+        <div class="ct-booking">
+          <p class="ct-booking__title">יומן ההזמנות בהקמה</p>
+          <p class="ct-booking__body">
+            בזמן הקרוב אפשר לתאם דרך הטופס שלצד או בוואטסאפ, ונחזור אליכם עם
+            מועד שמתאים לשני הצדדים.
+          </p>
+        </div>
+
+        <ul class="ct-what">
+          <li>נבין איך העסק עובד היום</li>
+          <li>נאתר איפה נתקעת הכי הרבה עבודה ידנית</li>
+          <li>נגיד לכם מה לדעתנו שווה לעשות, וגם מה לא</li>
+        </ul>
+
+        <a class="btn btn-secondary ct-wa" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+            ><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.25 8.23Z"
+            ></path></svg
+          >
+          מעדיפים וואטסאפ? זה בסדר גמור
+        </a>
+      </div>
+
+      <!-- SECONDARY: form -->
+      <div class="ct-form-wrap" data-reveal>
+        <h2 class="t-h3 ct-form__title">או פשוט תשאירו פרטים</h2>
+        <p class="ct-form__sub">נחזור אליכם ונתאם משם.</p>
+
+        <form class="ct-form" method="post" action="#" novalidate>
+          <div class="field">
+            <label class="field-label" for="name">שם מלא</label>
+            <input class="input" id="name" name="name" type="text" autocomplete="name" required />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="phone">טלפון</label>
+            <input class="input input-ltr" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="email">אימייל</label>
+            <input class="input input-ltr" id="email" name="email" type="email" autocomplete="email" required />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="service">מה מעניין אתכם</label>
+            <select class="input" id="service" name="service">
+              <option value="">עוד לא בטוח</option>
+              {SERVICES.map((s) => <option value={s.slug}>{s.name}</option>)}
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="message">איך נוכל לעזור?</label>
+            <textarea class="input" id="message" name="message" rows="4"></textarea>
+            <span class="field-hint">כמה מילים על מה שתקוע היום יעזרו לנו להתכונן.</span>
+          </div>
+
+          <button class="btn btn-primary ct-submit" type="submit">שליחת הפרטים</button>
+
+          <p class="ct-form__note">
+            הטופס עדיין לא מחובר. עד שנחבר אותו, אפשר להשאיר הודעה בוואטסאפ.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .ct-hero {
+    padding-top: clamp(3rem, 6vw, 6rem);
+    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .ct-hero__h1 {
+    margin-block: 1rem 1.25rem;
+  }
+  .ct-hero__lead {
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--color-ink-2);
+    max-width: 56ch;
+  }
+
+  .section-tight {
+    padding-block: var(--space-section-tight);
+  }
+  .ct-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: start;
+  }
+  .ct-primary,
+  .ct-form-wrap {
+    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
+  }
+  :global(html.reveal-ready) .ct-primary,
+  :global(html.reveal-ready) .ct-form-wrap {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  :global(html.reveal-ready) .ct-primary.is-in,
+  :global(html.reveal-ready) .ct-form-wrap.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* Primary card carries the visual weight */
+  .ct-primary {
+    background: var(--color-navy);
+    color: rgba(255, 255, 255, 0.82);
+    border-radius: var(--radius-xl);
+    padding: clamp(1.75rem, 4vw, 3rem);
+    position: relative;
+    overflow: hidden;
+  }
+  .ct-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(700px 380px at 85% 0%, rgba(41, 151, 255, 0.24), transparent 62%);
+  }
+  .ct-primary > * {
+    position: relative;
+  }
+  .ct-primary__head h2 {
+    color: #fff;
+    margin-block: 0.875rem 0.75rem;
+  }
+  .ct-primary__lead {
+    color: rgba(255, 255, 255, 0.74);
+    font-size: var(--text-body-lg);
+    line-height: 1.6;
+  }
+  .ct-booking {
+    margin-top: clamp(1.5rem, 3vw, 2rem);
+    border: 1.5px dashed rgba(41, 151, 255, 0.45);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    background: rgba(41, 151, 255, 0.06);
+    min-height: 8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .ct-booking__title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-body-lg);
+    color: var(--color-electric);
+  }
+  .ct-booking__body {
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .ct-what {
+    list-style: none;
+    margin: clamp(1.5rem, 3vw, 2rem) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .ct-what li {
+    font-size: var(--text-small);
+    color: rgba(255, 255, 255, 0.8);
+    padding-inline-start: 1.5rem;
+    position: relative;
+    line-height: 1.55;
+  }
+  .ct-what li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.62em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-electric);
+  }
+  .ct-wa {
+    margin-top: clamp(1.5rem, 3vw, 2rem);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+    width: 100%;
+  }
+  .ct-wa:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Form is deliberately quieter */
+  .ct-form__title {
+    margin-bottom: 0.375rem;
+  }
+  .ct-form__sub {
+    font-size: var(--text-small);
+    color: var(--color-ink-3);
+    margin-bottom: 1.75rem;
+  }
+  .ct-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .ct-submit {
+    margin-top: 0.5rem;
+    align-self: flex-start;
+  }
+  .ct-form__note {
+    font-size: var(--text-micro);
+    color: var(--color-ink-3);
+    border-inline-start: 3px solid var(--color-line-strong);
+    padding-inline-start: 0.875rem;
+  }
+
+  @media (max-width: 900px) {
+    .ct-grid {
+      grid-template-columns: 1fr;
+    }
+    .ct-submit {
+      width: 100%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ct-primary,
+    .ct-form-wrap {
+      opacity: 1 !important;
+      translate: none !important;
+      transition: none !important;
+    }
+  }
+</style>

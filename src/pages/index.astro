@@ -1,93 +1,76 @@
 ---
-// HOME. Redesigned around one goal: a non technical Israeli business owner
-// understands what LAHAV AI does, and what to do next, within seconds.
+// HOME. Composition: big type statement, then a full-bleed dark stage that
+// dominates the viewport, then the story runs problem -> result -> services
+// -> process -> founder -> CTA.
 //
-// Rhythm: light (hero, explainer, pain) -> dark (system + services, the
-// major visual moment) -> light (process, founder) -> dark (closing CTA).
-//
-// Copy status: draft written against R9 truth rules and the approved facts
-// in src/lib/site.ts. Awaiting human approval per R10.
+// Unique to this page: the hero stage, the pain grid and the numbered
+// editorial service act. No other page repeats this composition.
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ClosingCta from '../components/ClosingCta.astro';
-import HeroVisual from '../components/HeroVisual.astro';
+import HeroStage from '../components/HeroStage.astro';
+import Viz from '../components/Viz.astro';
 import ScrollReveal from '../components/ScrollReveal.astro';
-import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, FOUNDER, CAPABILITIES } from '../lib/site';
+import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, CAPABILITIES, FOUNDER } from '../lib/site';
 
 const featured = SERVICES.filter((s) => s.featured);
 const rest = SERVICES.filter((s) => !s.featured);
 
 const pains = [
-  {
-    title: 'המידע מפוזר בכל מקום',
-    body: 'חלק בוואטסאפ, חלק במייל, חלק באקסל, וחלק בראש של מישהו. אף אחד לא רואה את התמונה המלאה.',
-  },
-  {
-    title: 'אותה עבודה, שוב ושוב',
-    body: 'מעתיקים פרטים בין מערכות, ממלאים את אותם טפסים, שולחים את אותן הודעות. כל יום מחדש.',
-  },
-  {
-    title: 'פניות שנשכחות',
-    body: 'מישהו השאיר פרטים ולא חזרו אליו בזמן. עד שנזכרים, הפנייה כבר התקררה.',
-  },
-  {
-    title: 'קשה לדעת מה קורה',
-    body: 'שאלה פשוטה כמו "כמה פניות היו החודש" דורשת לעבור בין כמה מקומות רק כדי להבין את התמונה.',
-  },
+  { t: 'המידע מפוזר בכל מקום', d: 'חלק בוואטסאפ, חלק במייל, חלק באקסל, וחלק בראש של מישהו. אף אחד לא רואה את התמונה המלאה.' },
+  { t: 'אותה עבודה, שוב ושוב', d: 'מעתיקים פרטים בין מערכות, ממלאים את אותם טפסים, שולחים את אותן הודעות. כל יום מחדש.' },
+  { t: 'פניות שנשכחות', d: 'מישהו השאיר פרטים ולא חזרו אליו בזמן. עד שנזכרים, הפנייה כבר התקררה.' },
+  { t: 'קשה לדעת מה קורה', d: 'שאלה פשוטה כמו "כמה פניות היו החודש" דורשת לעבור בין כמה מקומות רק כדי להבין את התמונה.' },
 ];
 ---
 
 <SiteLayout
   title="LAHAV AI, מערכות ואוטומציות שעושות סדר בעסק"
-  description="בונים לעסקים קטנים ובינוניים בישראל מערכות CRM ואוטומציות שמחברות את כל מה שקורה בעסק למקום אחד. פחות עבודה ידנית, יותר שליטה."
+  description="בונים לעסקים קטנים ובינוניים בישראל מערכות CRM, אוטומציות ופתרונות דיגיטליים שמחברים את התהליכים בעסק. פחות עבודה ידנית, יותר שליטה."
 >
   <ScrollReveal />
 
-  <!-- ═══════════════ HERO ═══════════════ -->
+  <!-- ══════════ HERO: statement, then a stage that dominates ══════════ -->
   <section class="hero">
-    <div class="u-container hero__grid">
-      <div class="hero__text">
-        <p class="hero__eyebrow">מערכות AI ואוטומציה לעסקים</p>
-        <h1 class="t-display-1 hero__title">
-          פחות עבודה ידנית.<br />
-          <span class="hero__title-accent">יותר שליטה בעסק.</span>
-        </h1>
-        <p class="hero__lead">
-          אנחנו בונים מערכות CRM, אוטומציות ופתרונות דיגיטליים שמחברים את התהליכים
-          בעסק, מפחיתים עבודה ידנית ועושים סדר במה שקורה ביום-יום.
-        </p>
-        <div class="hero__actions">
-          <a class="btn btn-primary btn-lg" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-          <a class="btn btn-secondary btn-lg" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
-              ><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.25 8.23Z"
-              ></path></svg
-            >
-            שיחה בוואטסאפ
-          </a>
-        </div>
-        <p class="hero__note">שיחת היכרות של 30 דקות, נבין יחד איפה יש מה לשפר.</p>
+    <div class="u-container hero__type">
+      <p class="hero__eyebrow">מערכות AI ואוטומציה לעסקים</p>
+      <h1 class="hero__title">
+        פחות עבודה ידנית.<br />
+        <span class="hero__accent">יותר שליטה בעסק.</span>
+      </h1>
+      <p class="hero__lead">
+        אנחנו בונים מערכות CRM, אוטומציות ופתרונות דיגיטליים שמחברים את התהליכים
+        בעסק, מפחיתים עבודה ידנית ועושים סדר במה שקורה ביום-יום.
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn-primary btn-lg" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
+        <a class="btn btn-secondary btn-lg" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+            ><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.25 8.23Z"
+            ></path></svg
+          >
+          שיחה בוואטסאפ
+        </a>
       </div>
+      <p class="hero__note">שיחת היכרות של 30 דקות, נבין יחד איפה יש מה לשפר.</p>
+    </div>
 
-      <div class="hero__visual panel-dark">
-        <HeroVisual />
-      </div>
+    <div class="hero__stage section--navy">
+      <HeroStage />
     </div>
   </section>
 
-  <!-- ═══════════════ EXPLAINER ═══════════════ -->
+  <!-- ══════════ EXPLAINER ══════════ -->
   <section class="section explain">
-    <div class="u-container explain__inner">
-      <h2 class="t-h2 explain__title">רגע, מה זה בעצם אומר?</h2>
-      <div class="explain__body">
-        <p class="explain__p explain__p--lead">
-          "אוטומציה" נשמעת כמו מילה גדולה, אבל הרעיון פשוט.
-        </p>
+    <div class="u-container explain__grid">
+      <h2 class="t-h2 explain__q">רגע, מה זה בעצם אומר?</h2>
+      <div class="explain__a">
+        <p class="explain__lead">"אוטומציה" נשמעת כמו מילה גדולה, אבל הרעיון פשוט.</p>
         <p class="explain__p">
           בעסקים רבים יש המון פעולות קטנות שחוזרות על עצמן: להעביר פרטים ממקום למקום,
           לשלוח הודעות, לזכור לחזור ללקוחות ולעדכן מידע ידנית. כל פעולה קטנה בפני עצמה,
           אבל יחד הן מצטברות להרבה עבודה שלא באמת חייבת להיעשות ביד.
         </p>
-        <p class="explain__p explain__p--strong">
+        <p class="explain__strong">
           מה שאנחנו עושים זה להעביר את הפעולות האלה למערכת שעושה אותן לבד.
           אתם נשארים עם ההחלטות, היא לוקחת את השאר.
         </p>
@@ -95,26 +78,20 @@ const pains = [
     </div>
   </section>
 
-  <!-- ═══════════════ PAIN ═══════════════ -->
-  <section class="section section--gray pain">
+  <!-- ══════════ PAIN ══════════ -->
+  <section class="section section--gray">
     <div class="u-container">
-      <div class="pain__head">
+      <div class="lede">
         <p class="t-eyebrow">נשמע מוכר?</p>
-        <h2 class="t-h2">
-          לרוב העסקים לא חסר עוד כלי.<br />
-          חסר להם שהכלים ידברו ביניהם.
-        </h2>
+        <h2 class="t-h2">לרוב העסקים לא חסר עוד כלי.<br />חסר להם שהכלים ידברו ביניהם.</h2>
       </div>
-
-      <ul class="pain__list">
+      <ul class="pains">
         {
           pains.map((p, i) => (
-            <li class="pain__item" data-reveal style={`--i:${i}`}>
-              <span class="pain__num tabular">{String(i + 1).padStart(2, '0')}</span>
-              <div>
-                <h3 class="t-h3">{p.title}</h3>
-                <p class="t-body pain__body">{p.body}</p>
-              </div>
+            <li class="pain" data-reveal style={`--i:${i}`}>
+              <span class="pain__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="t-h3">{p.t}</h3>
+              <p class="pain__d">{p.d}</p>
             </li>
           ))
         }
@@ -122,144 +99,87 @@ const pains = [
     </div>
   </section>
 
-  <!-- ═══════════════ DARK ACT: system + services ═══════════════ -->
-  <div class="act-dark">
-    <!-- ---- connected system ---- -->
-    <section class="section sysflow">
-      <div class="u-container sysflow__grid">
-        <div class="sysflow__text">
-          <p class="t-eyebrow sysflow__eyebrow">התוצאה</p>
-          <h2 class="t-h2 sysflow__title">המערכות בעסק מתחילות לעבוד יחד</h2>
-          <p class="sysflow__lead">
-            פנייה שנכנסת מהאתר נרשמת לבד, מקבלת מענה ראשוני, נכנסת למעקב,
-            ומזכירה לכם לחזור אליה. בלי שאף אחד העתיק שורה אחת.
-          </p>
-        </div>
-
-        <div class="sysflow__viz" data-reveal>
-          <svg viewBox="0 0 520 330" role="img" aria-label="איור: פנייה נכנסת עוברת ארבעה שלבים אוטומטיים עד למעקב">
-            <defs>
-              <linearGradient id="sfCore" x1="1" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#2997FF"></stop>
-                <stop offset="100%" stop-color="#1D4ED8"></stop>
-              </linearGradient>
-            </defs>
-
-            <!-- the connecting spine, drawn on scroll -->
-            <path
-              class="sf__spine"
-              d="M452 62 L300 62 Q262 62 262 100 L262 132 Q262 168 224 168 L120 168 Q84 168 84 204 L84 244 Q84 278 122 278 L300 278"
-              fill="none"
-              stroke="rgba(41,151,255,.45)"
-              stroke-width="2"
-              stroke-linecap="round"
-            ></path>
-
-            <g class="sf__stops">
-              <g class="sf__stop" style="--d:120ms">
-                <rect x="374" y="38" width="132" height="48" rx="14"></rect>
-                <text x="440" y="68" text-anchor="middle">פנייה נכנסת</text>
-              </g>
-              <g class="sf__stop" style="--d:420ms">
-                <rect x="146" y="144" width="146" height="48" rx="14"></rect>
-                <text x="219" y="174" text-anchor="middle">נרשמת במערכת</text>
-              </g>
-              <g class="sf__stop" style="--d:720ms">
-                <rect x="16" y="220" width="150" height="48" rx="14"></rect>
-                <text x="91" y="250" text-anchor="middle">מענה ראשוני יוצא</text>
-              </g>
-              <g class="sf__stop sf__stop--end" style="--d:1020ms">
-                <rect x="296" y="254" width="150" height="48" rx="14" fill="url(#sfCore)"></rect>
-                <text x="371" y="284" text-anchor="middle" fill="#fff">נכנסת למעקב</text>
-              </g>
-            </g>
-          </svg>
-        </div>
-      </div>
-
-      <!-- B4: capability categories only. Disciplines and system types, no
-           vendor, platform or framework names (PL-16). A slim band inside
-           the existing dark act, not a new section. -->
-      <div class="u-container caps" data-reveal>
-        <p class="caps__label">תחומים שאנחנו עובדים בהם</p>
-        <ul class="caps__list">
-          {CAPABILITIES.map((c) => <li>{c}</li>)}
-        </ul>
-      </div>
-    </section>
-
-    <!-- ---- services: the major moment ---- -->
-    <section class="section services" id="services">
-      <div class="u-container">
-        <div class="services__head">
-          <p class="t-eyebrow services__eyebrow">מה אנחנו בונים</p>
-          <h2 class="t-display-2 services__title">חמישה שירותים. מטרה אחת: שהעסק יעבוד חלק.</h2>
-        </div>
-
-        <!-- two lead services, full editorial rows -->
-        <div class="services__lead-list">
-          {
-            featured.map((s, i) => (
-              <article class="svc" data-reveal>
-                <span class="svc__index tabular" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                <div class="svc__main">
-                  <h3 class="t-h1 svc__name">{s.name}</h3>
-                  <p class="svc__lead">{s.lead}</p>
-                  <p class="svc__pain">{s.pain}</p>
-                  <a class="svc__link" href={`/services/${s.slug}/`}>
-                    לפרטים על השירות
-                    <span class="arrow-inline" aria-hidden="true">←</span>
-                  </a>
-                </div>
-              </article>
-            ))
-          }
-        </div>
-
-        <!-- remaining three, still fully readable, just tighter -->
-        <div class="services__rest">
-          {
-            rest.map((s, i) => (
-              <article class="svc-min" data-reveal style={`--i:${i}`}>
-                <span class="svc-min__index tabular" aria-hidden="true">{String(i + 3).padStart(2, '0')}</span>
-                <h3 class="t-h3 svc-min__name">{s.name}</h3>
-                <p class="svc-min__lead">{s.lead}</p>
-                <p class="svc-min__pain">{s.pain}</p>
-                <a class="svc__link" href={`/services/${s.slug}/`}>
-                  לפרטים
-                  <span class="arrow-inline" aria-hidden="true">←</span>
-                </a>
-              </article>
-            ))
-          }
-        </div>
-
-        <p class="services__pricing">
-          אין מחירון קבוע. המחיר נקבע אחרי שיחת היכרות ואפיון, לפי מה שהעסק באמת צריך.
+  <!-- ══════════ RESULT: connected system, full dark section ══════════ -->
+  <section class="section section--navy">
+    <div class="u-container">
+      <div class="lede lede--center">
+        <p class="t-eyebrow">התוצאה</p>
+        <h2 class="t-display-2">המערכות בעסק<br />מתחילות לעבוד יחד</h2>
+        <p class="t-lead">
+          פנייה שנכנסת מהאתר נרשמת לבד, מקבלת מענה ראשוני, נכנסת למעקב,
+          ומזכירה לכם לחזור אליה. בלי שאף אחד העתיק שורה אחת.
         </p>
       </div>
-    </section>
-  </div>
+      <Viz kind="crm" class="home__viz" />
 
-  <!-- ═══════════════ PROCESS ═══════════════ -->
-  <section class="section process">
+      <div class="caps" data-reveal>
+        <p class="caps__label">תחומים שאנחנו עובדים בהם</p>
+        <ul class="caps__list">{CAPABILITIES.map((c) => <li>{c}</li>)}</ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SERVICES: the commercial act ══════════ -->
+  <section class="section services" id="services">
     <div class="u-container">
-      <div class="process__head">
+      <div class="lede">
+        <p class="t-eyebrow">מה אנחנו בונים</p>
+        <h2 class="t-display-2">חמישה שירותים.<br />מטרה אחת: שהעסק יעבוד חלק.</h2>
+      </div>
+
+      {
+        featured.map((s, i) => (
+          <article class="svc" data-reveal>
+            <div class="svc__head">
+              <span class="svc__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              <span class="chip">שירות מוביל</span>
+            </div>
+            <h3 class="t-h1 svc__name">{s.name}</h3>
+            <p class="svc__lead">{s.lead}</p>
+            <p class="svc__body">{s.pain}</p>
+            <a class="link-arrow" href={`/services/${s.slug}/`}>
+              לפרטים על השירות <span class="arrow-inline" aria-hidden="true">←</span>
+            </a>
+          </article>
+        ))
+      }
+
+      <div class="svc-rest">
+        {
+          rest.map((s, i) => (
+            <article class="svc-min" data-reveal style={`--i:${i}`}>
+              <span class="svc-min__n tabular">{String(i + 3).padStart(2, '0')}</span>
+              <h3 class="t-h3">{s.name}</h3>
+              <p class="svc-min__lead">{s.lead}</p>
+              <p class="svc-min__body">{s.pain}</p>
+              <a class="link-arrow" href={`/services/${s.slug}/`}>
+                לפרטים <span class="arrow-inline" aria-hidden="true">←</span>
+              </a>
+            </article>
+          ))
+        }
+      </div>
+
+      <p class="pricing-note">
+        אין מחירון קבוע. המחיר נקבע אחרי שיחת היכרות ואפיון, לפי מה שהעסק באמת צריך.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════ PROCESS ══════════ -->
+  <section class="section section--gray">
+    <div class="u-container">
+      <div class="lede">
         <p class="t-eyebrow">איך זה עובד</p>
         <h2 class="t-h2">תהליך ברור מהאפיון ועד המסירה</h2>
       </div>
-
-      <ol class="process__list">
+      <ol class="steps">
         {
           PROCESS.map((p, i) => (
-            <li class="process__item" data-reveal style={`--i:${i}`}>
-              <div class="process__marker" aria-hidden="true">
-                <span class="process__num tabular">{p.n}</span>
-              </div>
-              <div class="process__content">
-                <h3 class="t-h3 process__label">{p.label}</h3>
-                <p class="process__what">{p.what}</p>
-              </div>
+            <li class="step" data-reveal style={`--i:${i}`}>
+              <span class="step__n">{p.n}</span>
+              <h3 class="t-h3 step__t">{p.label}</h3>
+              <p class="step__d">{p.what}</p>
             </li>
           ))
         }
@@ -267,66 +187,37 @@ const pains = [
     </div>
   </section>
 
-  <!-- ═══════════════ FOUNDER ═══════════════ -->
-  <section class="section section--gray founder">
+  <!-- ══════════ FOUNDER ══════════ -->
+  <section class="section founder">
     <div class="u-container founder__grid">
-      <div class="founder__portrait" data-reveal>
-        {FOUNDER.photoReady ? (
-          <figure class="founder__photo">
-            <img
-              src={FOUNDER.photo}
-              alt={FOUNDER.alt}
-              width="600"
-              height="750"
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
-        ) : (
-        <>
-        <div class="founder__frame">
-          <svg viewBox="0 0 300 340" role="img" aria-label="מקום שמור לתמונת המייסד">
-            <defs>
-              <linearGradient id="fdMono" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0%" stop-color="#0B1530"></stop>
-                <stop offset="55%" stop-color="#1D4ED8"></stop>
-                <stop offset="100%" stop-color="#2997FF"></stop>
-              </linearGradient>
-            </defs>
-            <path
-              d="M92 96 L92 196 Q92 218 114 218 L172 218 Q190 218 200 200 L226 96"
-              fill="none"
-              stroke="url(#fdMono)"
-              stroke-width="16"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></path>
-            <path d="M226 96 L252 196" fill="none" stroke="#2997FF" stroke-width="16" stroke-linecap="round"></path>
-            <circle cx="226" cy="180" r="8.5" fill="#1D4ED8"></circle>
-          </svg>
-        </div>
-        <p class="founder__caption">תמונת המייסד תתווסף בהמשך</p>
-        </>
-        )}
-      </div>
-
+      <figure class="founder__photo" data-reveal>
+        <img
+          src={FOUNDER.photo}
+          srcset={`${FOUNDER.photoSmall} 480w, ${FOUNDER.photo} 720w`}
+          sizes="(max-width: 900px) 88vw, 34vw"
+          alt={FOUNDER.alt}
+          width="720"
+          height="900"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
       <div class="founder__text">
         <p class="t-eyebrow">מי עומד מאחורי זה</p>
         <h2 class="t-h2 founder__name">{FOUNDER.name}</h2>
         <p class="founder__role">{FOUNDER.role}</p>
-        <p class="founder__body">
+        <p class="founder__p">
           הקמתי את LAHAV AI מתוך משהו שראיתי שוב ושוב בעסקים: הבעיה היא בדרך כלל
           לא שחסרים כלים, אלא שהכלים והתהליכים לא עובדים יחד. מידע מתפזר, עבודה
           ידנית מצטברת, ודברים פשוטים הופכים למסורבלים ככל שהעסק גדל.
         </p>
-        <p class="founder__body">
+        <p class="founder__p">
           לכן אני מתחיל מהעסק ולא מהטכנולוגיה. קודם מבינים איפה העבודה נתקעת, מה
           גוזל זמן ומה צריך לעבוד פשוט יותר. רק אחר כך בוחרים את הכלים ובונים את
           המערכת שמתאימה לתהליך.
         </p>
-        <a class="svc__link founder__link" href="/about/">
-          עוד עלינו
-          <span class="arrow-inline" aria-hidden="true">←</span>
+        <a class="link-arrow founder__link" href="/about/">
+          עוד עלינו <span class="arrow-inline" aria-hidden="true">←</span>
         </a>
       </div>
     </div>
@@ -339,19 +230,20 @@ const pains = [
 </SiteLayout>
 
 <style>
-  /* ═══════════ HERO ═══════════ */
+  /* ---------- Hero ---------- */
   .hero {
-    padding-block: clamp(2.5rem, 5vw, 5rem) clamp(4rem, 7vw, 7rem);
-    overflow: clip;
+    padding-top: clamp(3rem, 7vw, 7rem);
   }
-  .hero__grid {
-    display: grid;
-    grid-template-columns: 1.12fr 0.88fr;
-    gap: clamp(2.5rem, 5vw, 4.5rem);
+  .hero__type {
+    /* wider than the standard container so the display line stays on two rows */
+    max-width: 1360px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    padding-bottom: clamp(3rem, 6vw, 5rem);
   }
   .hero__eyebrow {
-    display: inline-block;
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.07em;
@@ -361,15 +253,15 @@ const pains = [
     padding: 0.5rem 1.1rem;
     margin-bottom: 1.75rem;
   }
-  /* Deliberately a step below --text-display-1: in a two column hero that
-     size breaks the Hebrew into too many short lines, which reads as
-     cramped rather than confident. This keeps the line count at two. */
   .hero__title {
-    font-size: clamp(2.5rem, 1.15rem + 3.9vw, 4.875rem);
-    line-height: 1.06;
+    font-family: var(--font-display);
+    font-size: var(--text-mega);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
     margin-bottom: 1.75rem;
   }
-  .hero__title-accent {
+  .hero__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
     -webkit-background-clip: text;
     background-clip: text;
@@ -377,44 +269,48 @@ const pains = [
   }
   .hero__lead {
     font-size: var(--text-lead);
-    line-height: 1.6;
+    line-height: 1.55;
     color: var(--color-ink-2);
-    max-width: 44ch;
+    max-width: 52ch;
     margin-bottom: 2.5rem;
   }
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
+    justify-content: center;
   }
   .hero__note {
     margin-top: 1.25rem;
     font-size: var(--text-small);
     color: var(--color-ink-3);
   }
-  .hero__visual {
-    padding: clamp(1.25rem, 3vw, 2.5rem);
-    aspect-ratio: 6 / 5;
-    display: grid;
-    place-items: center;
+  .hero__stage {
+    padding-block: clamp(1rem, 3vw, 2rem);
   }
 
-  /* ═══════════ EXPLAINER ═══════════ */
-  .explain__inner {
+  /* ---------- Explainer ---------- */
+  .explain__grid {
     display: grid;
-    grid-template-columns: 0.85fr 1.15fr;
+    grid-template-columns: 0.8fr 1.2fr;
     gap: clamp(2rem, 5vw, 5rem);
     align-items: start;
   }
-  .explain__title {
+  .explain__q {
     position: sticky;
     top: 120px;
   }
-  .explain__body {
+  .explain__a {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     max-width: 60ch;
+  }
+  .explain__lead {
+    font-size: var(--text-lead);
+    font-weight: 600;
+    line-height: 1.5;
+    max-width: none;
   }
   .explain__p {
     font-size: var(--text-body-lg);
@@ -422,164 +318,57 @@ const pains = [
     color: var(--color-ink-2);
     max-width: none;
   }
-  .explain__p--lead {
-    font-size: var(--text-lead);
-    font-weight: 600;
-    color: var(--color-ink);
-  }
-  .explain__p--strong {
-    color: var(--color-ink);
+  .explain__strong {
+    font-size: var(--text-body-lg);
+    line-height: 1.75;
     font-weight: 500;
     border-inline-start: 3px solid var(--color-electric);
     padding-inline-start: 1.25rem;
+    max-width: none;
   }
 
-  /* ═══════════ PAIN ═══════════ */
-  .pain__head {
-    max-width: 46rem;
-    margin-bottom: clamp(3rem, 5vw, 4.5rem);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .pain__list {
+  /* ---------- Pain ---------- */
+  .pains {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 6vw, 6rem);
+    gap: clamp(2.5rem, 4vw, 3.5rem) clamp(3rem, 6vw, 6rem);
   }
-  .pain__item {
+  .pain {
     display: flex;
-    gap: 1.25rem;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
       translate 600ms var(--ease-out) calc(var(--i) * 90ms);
   }
-  :global(html.reveal-ready) .pain__item {
+  :global(html.reveal-ready) .pain {
     opacity: 0;
     translate: 0 16px;
   }
-  :global(html.reveal-ready) .pain__item.is-in {
+  :global(html.reveal-ready) .pain.is-in {
     opacity: 1;
     translate: 0 0;
   }
-  .pain__num {
+  .pain__n {
     font-family: var(--font-display);
     font-size: var(--text-small);
     font-weight: 700;
     color: var(--color-electric);
-    padding-top: 0.35rem;
-    flex: 0 0 auto;
   }
-  .pain__body {
+  .pain__d {
     color: var(--color-ink-2);
-    margin-top: 0.5rem;
-    max-width: 42ch;
+    max-width: 44ch;
   }
 
-  /* ═══════════ DARK ACT ═══════════ */
-  .act-dark {
-    background: var(--color-navy);
-    color: rgba(255, 255, 255, 0.82);
-    position: relative;
-    overflow: clip;
+  /* ---------- Result ---------- */
+  .home__viz {
+    margin-top: clamp(1rem, 3vw, 2rem);
   }
-  .act-dark::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(900px 520px at 82% 4%, rgba(41, 151, 255, 0.2), transparent 62%),
-      radial-gradient(760px 520px at 10% 68%, rgba(29, 78, 216, 0.18), transparent 66%);
-  }
-  .act-dark > * {
-    position: relative;
-  }
-  .act-dark :global(.t-h2),
-  .act-dark :global(.t-h3),
-  .act-dark :global(.t-display-2) {
-    color: #fff;
-  }
-  .act-dark :global(.t-eyebrow) {
-    color: var(--color-electric);
-  }
-
-  /* The two dark sections are one continuous act, so the seam between them
-     is tighter than the gap between separate light/dark sections. */
-  .sysflow {
-    padding-bottom: clamp(2rem, 3vw, 3.5rem);
-  }
-  .services {
-    padding-top: clamp(2.5rem, 4vw, 4.5rem);
-  }
-
-  /* ---- connected system ---- */
-  .sysflow__grid {
-    display: grid;
-    grid-template-columns: 0.85fr 1.15fr;
-    gap: clamp(2.5rem, 5vw, 5rem);
-    align-items: center;
-  }
-  .sysflow__title {
-    margin-block: 1rem 1.25rem;
-  }
-  .sysflow__lead {
-    font-size: var(--text-lead);
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.72);
-    max-width: 40ch;
-  }
-  .sysflow__viz svg {
-    width: 100%;
-    height: auto;
-  }
-  :global(html.reveal-ready) .sf__spine {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-  }
-  :global(html.reveal-ready) .sysflow__viz.is-in .sf__spine {
-    animation: sf-draw 2000ms var(--ease-out) forwards;
-  }
-  @keyframes sf-draw {
-    to {
-      stroke-dashoffset: 0;
-    }
-  }
-  .sf__stop rect {
-    fill: rgba(255, 255, 255, 0.06);
-    stroke: rgba(255, 255, 255, 0.2);
-    stroke-width: 1;
-  }
-  .sf__stop text {
-    font-family: var(--font-body);
-    font-size: 15px;
-    font-weight: 600;
-    fill: rgba(255, 255, 255, 0.9);
-  }
-  :global(html.reveal-ready) .sf__stop {
-    opacity: 0;
-  }
-  :global(html.reveal-ready) .sysflow__viz.is-in .sf__stop {
-    animation: sf-stop-in 600ms var(--ease-out) calc(300ms + var(--d)) forwards;
-  }
-  @keyframes sf-stop-in {
-    from {
-      opacity: 0;
-      translate: 0 8px;
-    }
-    to {
-      opacity: 1;
-      translate: 0 0;
-    }
-  }
-
-  /* ---- B4 capability band ---- */
   .caps {
-    margin-top: clamp(2.5rem, 4vw, 4rem);
+    margin-top: clamp(3rem, 5vw, 4.5rem);
     padding-top: clamp(1.75rem, 3vw, 2.5rem);
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
@@ -625,25 +414,10 @@ const pains = [
     translate: 0 -50%;
   }
 
-  /* ---- services ---- */
-  .services__head {
-    max-width: 52rem;
-    margin-bottom: clamp(3.5rem, 6vw, 5.5rem);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .services__lead-list {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(3rem, 5vw, 4.5rem);
-  }
+  /* ---------- Services ---------- */
   .svc {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: clamp(1.25rem, 3vw, 2.5rem);
-    padding-bottom: clamp(3rem, 5vw, 4.5rem);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-block: clamp(2.5rem, 4vw, 3.5rem);
+    border-top: 1px solid var(--color-line);
     transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
   }
   :global(html.reveal-ready) .svc {
@@ -654,61 +428,50 @@ const pains = [
     opacity: 1;
     translate: 0 0;
   }
-  .svc__index {
+  .svc__head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .svc__n {
     font-family: var(--font-display);
     font-size: var(--text-h3);
     font-weight: 700;
     color: var(--color-electric);
-    opacity: 0.75;
     line-height: 1;
-    padding-top: 0.5rem;
   }
   .svc__name {
-    color: #fff;
     margin-bottom: 0.875rem;
   }
   .svc__lead {
     font-size: var(--text-lead);
-    line-height: 1.5;
-    color: var(--color-electric);
     font-weight: 600;
+    color: var(--color-royal);
+    line-height: 1.5;
     margin-bottom: 1rem;
-    max-width: 32ch;
+    max-width: 40ch;
   }
-  .svc__pain {
+  .svc__body {
     font-size: var(--text-body-lg);
     line-height: 1.7;
-    color: rgba(255, 255, 255, 0.72);
-    max-width: 56ch;
+    color: var(--color-ink-2);
+    max-width: 62ch;
     margin-bottom: 1.5rem;
   }
-  .svc__link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-body);
-    font-size: var(--text-small);
-    font-weight: 700;
-    color: var(--color-electric);
-    text-decoration: none;
-    padding-block: 0.35rem;
-    border-bottom: 1.5px solid transparent;
-    transition: border-color var(--dur) var(--ease-out);
-  }
-  .svc__link:hover {
-    border-bottom-color: currentColor;
-  }
 
-  .services__rest {
-    margin-top: clamp(3rem, 5vw, 4rem);
+  .svc-rest {
+    margin-top: clamp(2.5rem, 4vw, 3.5rem);
+    padding-top: clamp(2rem, 3vw, 2.5rem);
+    border-top: 1px solid var(--color-line-strong);
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: clamp(2rem, 4vw, 3.5rem);
+    gap: clamp(2rem, 4vw, 3rem);
   }
   .svc-min {
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
+    gap: 0.5rem;
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 110ms),
       translate 600ms var(--ease-out) calc(var(--i) * 110ms);
@@ -721,136 +484,84 @@ const pains = [
     opacity: 1;
     translate: 0 0;
   }
-  .svc-min__index {
+  .svc-min__n {
     font-family: var(--font-display);
     font-size: var(--text-micro);
     font-weight: 700;
     color: var(--color-electric);
-    opacity: 0.7;
-  }
-  .svc-min__name {
-    color: #fff;
   }
   .svc-min__lead {
     font-size: var(--text-small);
     font-weight: 600;
-    color: var(--color-electric);
+    color: var(--color-royal);
     line-height: 1.5;
   }
-  .svc-min__pain {
+  .svc-min__body {
     font-size: var(--text-small);
     line-height: 1.65;
-    color: rgba(255, 255, 255, 0.66);
+    color: var(--color-ink-2);
   }
-  .svc-min .svc__link {
+  .svc-min .link-arrow {
     margin-top: auto;
     padding-top: 0.5rem;
-    align-self: flex-start;
   }
-
-  .services__pricing {
-    margin-top: clamp(3rem, 5vw, 4rem);
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  .pricing-note {
+    margin-top: clamp(2.5rem, 4vw, 3.5rem);
     font-size: var(--text-small);
-    color: rgba(255, 255, 255, 0.6);
-    max-width: 56ch;
+    color: var(--color-ink-3);
+    border-inline-start: 3px solid var(--color-electric);
+    padding-inline-start: 1rem;
+    max-width: 60ch;
   }
 
-  /* ═══════════ PROCESS ═══════════ */
-  .process__head {
-    max-width: 40rem;
-    margin-bottom: clamp(3rem, 5vw, 4.5rem);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .process__list {
+  /* ---------- Process ---------- */
+  .steps {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: clamp(2rem, 4vw, 3rem) clamp(2rem, 4vw, 3.5rem);
+    gap: clamp(2rem, 4vw, 3rem);
   }
-  .process__item {
+  .step {
     display: flex;
-    gap: 1.125rem;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--color-line-strong);
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 100ms),
-      translate 600ms var(--ease-out) calc(var(--i) * 100ms);
+      translate 600ms var(--ease-out) calc(var(--i) * 100ms),
+      border-color 600ms var(--ease-out) calc(var(--i) * 100ms);
   }
-  :global(html.reveal-ready) .process__item {
+  :global(html.reveal-ready) .step {
     opacity: 0;
     translate: 0 18px;
   }
-  :global(html.reveal-ready) .process__item.is-in {
+  :global(html.reveal-ready) .step.is-in {
     opacity: 1;
     translate: 0 0;
+    border-top-color: var(--color-royal);
   }
-  .process__marker {
-    flex: 0 0 auto;
-    width: 46px;
-    height: 46px;
-    border-radius: var(--radius-full);
-    background: var(--color-surface);
-    border: 1.5px solid var(--color-line-strong);
-    display: grid;
-    place-items: center;
-    transition: border-color 500ms var(--ease-out), background-color 500ms var(--ease-out);
-  }
-  :global(html.reveal-ready) .process__item.is-in .process__marker {
-    border-color: var(--color-royal);
-    background: color-mix(in srgb, var(--color-royal) 7%, transparent);
-  }
-  .process__num {
+  .step__n {
     font-family: var(--font-display);
+    font-size: var(--text-small);
     font-weight: 700;
-    font-size: var(--text-body);
-    color: var(--color-royal);
+    color: var(--color-electric);
   }
-  .process__label {
-    margin-bottom: 0.375rem;
-  }
-  .process__what {
+  .step__d {
     font-size: var(--text-small);
     line-height: 1.6;
     color: var(--color-ink-2);
-    max-width: 34ch;
+    max-width: 36ch;
   }
 
-  /* ═══════════ FOUNDER ═══════════ */
+  /* ---------- Founder ---------- */
   .founder__grid {
     display: grid;
-    grid-template-columns: 0.75fr 1.25fr;
+    grid-template-columns: 0.72fr 1.28fr;
     gap: clamp(2.5rem, 5vw, 5rem);
     align-items: center;
-  }
-  .founder__portrait {
-    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
-  }
-  :global(html.reveal-ready) .founder__portrait {
-    opacity: 0;
-    translate: 0 18px;
-  }
-  :global(html.reveal-ready) .founder__portrait.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
-  .founder__frame {
-    border-radius: var(--radius-xl);
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-    padding: clamp(1.5rem, 3vw, 2.5rem);
-    display: grid;
-    place-items: center;
-    aspect-ratio: 4 / 5;
-  }
-  .founder__frame svg {
-    width: 100%;
-    max-width: 230px;
-    height: auto;
   }
   .founder__photo {
     margin: 0;
@@ -858,19 +569,22 @@ const pains = [
     overflow: hidden;
     background: var(--color-surface-3);
     aspect-ratio: 4 / 5;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
+    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
+  }
+  :global(html.reveal-ready) .founder__photo {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  :global(html.reveal-ready) .founder__photo.is-in {
+    opacity: 1;
+    translate: 0 0;
   }
   .founder__photo img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 22%;
-  }
-  .founder__caption {
-    margin-top: 0.875rem;
-    text-align: center;
-    font-size: var(--text-micro);
-    color: var(--color-ink-3);
+    object-position: center 18%;
   }
   .founder__name {
     margin-block: 0.75rem 0.25rem;
@@ -883,110 +597,59 @@ const pains = [
     text-align: start;
     margin-bottom: 1.5rem;
   }
-  .founder__body {
+  .founder__p {
     font-size: var(--text-body-lg);
     line-height: 1.75;
     color: var(--color-ink-2);
-    max-width: 52ch;
+    max-width: 54ch;
     margin-bottom: 1rem;
   }
   .founder__link {
-    color: var(--color-royal);
     margin-top: 0.75rem;
   }
 
-  /* ═══════════ RESPONSIVE ═══════════ */
+  /* ---------- Responsive ---------- */
   @media (max-width: 1024px) {
-    .hero__grid,
-    .explain__inner,
-    .sysflow__grid,
+    .explain__grid,
     .founder__grid {
       grid-template-columns: 1fr;
     }
-    .hero__grid {
-      gap: clamp(2rem, 5vw, 3rem);
-    }
-    /* Visual first on narrow screens: it explains before the words do */
-    .hero__visual {
-      order: -1;
-      aspect-ratio: 5 / 4;
-    }
-    .explain__title {
+    .explain__q {
       position: static;
     }
-    .founder__portrait {
+    .founder__photo {
       max-width: 22rem;
     }
-    .process__list {
+    .svc-rest,
+    .steps {
       grid-template-columns: repeat(2, 1fr);
     }
-    .services__rest {
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-    .svc-min {
-      padding-bottom: 2rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    }
-    .svc-min:last-child {
-      border-bottom: 0;
-      padding-bottom: 0;
-    }
   }
-
   @media (max-width: 720px) {
-    .pain__list {
+    .pains,
+    .svc-rest,
+    .steps {
       grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-    .process__list {
-      grid-template-columns: 1fr;
-      gap: 1.75rem;
-    }
-    .svc {
-      grid-template-columns: 1fr;
-      gap: 0.75rem;
-    }
-    .svc__index {
-      padding-top: 0;
     }
     .hero__actions {
       flex-direction: column;
       align-items: stretch;
+      width: 100%;
     }
-    .hero__visual {
-      aspect-ratio: 4 / 3;
-      padding: 1rem;
-    }
-    .founder__portrait {
+    .founder__photo {
       max-width: none;
     }
-    .founder__frame {
-      aspect-ratio: 3 / 2;
-    }
-    .founder__frame svg {
-      max-width: 160px;
-    }
   }
-
-  /* Reduced motion: reveal instantly, no travel */
   @media (prefers-reduced-motion: reduce) {
-    .pain__item,
+    .pain,
     .svc,
     .svc-min,
-    .process__item,
-    .founder__portrait {
-      opacity: 1;
-      translate: none;
-      transition: none;
-    }
-    .sf__spine {
-      stroke-dashoffset: 0;
-      animation: none !important;
-    }
-    .sf__stop {
-      opacity: 1;
-      animation: none !important;
+    .step,
+    .caps,
+    .founder__photo {
+      opacity: 1 !important;
+      translate: none !important;
+      transition: none !important;
     }
   }
 </style>

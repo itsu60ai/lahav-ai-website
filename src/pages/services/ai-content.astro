@@ -1,0 +1,35 @@
+---
+import ServicePage from '../../layouts/ServicePage.astro';
+import { SERVICE_PAGES } from '../../lib/site';
+const data = SERVICE_PAGES['ai-content'];
+---
+
+<ServicePage
+  slug="ai-content"
+  data={data}
+  title="יצירת תוכן באמצעות AI | LAHAV AI"
+  description="תהליך תוכן מסודר: מטרה עסקית, בריף, טיוטה בעזרת AI, בדיקה ואישור שלכם, ורק אז פרסום."
+  symptomsStyle="grid"
+>
+
+  <!-- AI content only: an explicit scope note, PL-15 is still open -->
+  <section class="section ai-scope">
+    <div class="u-container">
+      <div class="scope-note">
+        <p class="scope-note__label">בהגדרה</p>
+        <p class="scope-note__body">
+          השירות הזה נמצא כרגע בשלב הגדרה מדויקת. הדף מציג את התפיסה ואת סדר
+          העבודה, ולא רשימת מוצר סופית. נשמח לדבר על מה שהעסק שלכם צריך.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .scope-note { border: 1px solid var(--color-line); border-inline-start: 3px solid var(--color-electric);
+      border-radius: var(--radius-lg); padding: clamp(1.5rem,3vw,2.25rem); max-width: 62rem; background: var(--color-surface-2); }
+    .scope-note__label { font-size: var(--text-micro); font-weight: 700; letter-spacing:.09em; color: var(--color-royal); margin-bottom:.75rem; }
+    .scope-note__body { font-size: var(--text-body-lg); line-height:1.7; color: var(--color-ink-2); max-width:60ch; }
+  </style>
+
+</ServicePage>

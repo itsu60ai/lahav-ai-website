@@ -1,0 +1,55 @@
+---
+import ServicePage from '../../layouts/ServicePage.astro';
+import { SERVICE_PAGES } from '../../lib/site';
+const data = SERVICE_PAGES['automations'];
+---
+
+<ServicePage
+  slug="automations"
+  data={data}
+  title="אוטומציות עסקיות | LAHAV AI"
+  description="מעבירים את הפעולות שחוזרות על עצמן למערכת שעושה אותן לבד, ומשאירים לכם את ההחלטות."
+  symptomsStyle="grid"
+>
+
+  <!-- Automations only: the human control band -->
+  <section class="section section--navy auto-human">
+    <div class="u-container">
+      <div class="lede lede--center">
+        <p class="t-eyebrow">שליטה</p>
+        <h2 class="t-display-2">אוטומציה טובה<br />לא מוציאה אתכם מהתמונה</h2>
+        <p class="t-lead">
+          המטרה היא לא שהמערכת תחליט במקומכם. המטרה היא שהיא תעשה את מה שברור,
+          ותעביר אליכם את מה שדורש שיקול דעת.
+        </p>
+      </div>
+      <ul class="human">
+        <li class="human__i" data-reveal style="--i:0">
+          <span class="human__k">אתם מגדירים</span>
+          <span class="human__v">מה מותר לה לעשות לבד</span>
+        </li>
+        <li class="human__i" data-reveal style="--i:1">
+          <span class="human__k">אתם רואים</span>
+          <span class="human__v">מה רץ, מה חיכה, ומה נעצר</span>
+        </li>
+        <li class="human__i" data-reveal style="--i:2">
+          <span class="human__k">אתם מחליטים</span>
+          <span class="human__v">בכל מקרה חריג שדורש אתכם</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <style>
+    .human { list-style: none; margin: clamp(2rem,4vw,3rem) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3,1fr); gap: clamp(1.5rem,3vw,2.5rem); }
+    .human__i { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1.25rem; border-top: 2px solid rgba(41,151,255,.4);
+      transition: opacity 600ms var(--ease-out) calc(var(--i)*110ms), translate 600ms var(--ease-out) calc(var(--i)*110ms); }
+    :global(html.reveal-ready) .human__i { opacity: 0; translate: 0 16px; }
+    :global(html.reveal-ready) .human__i.is-in { opacity: 1; translate: 0 0; }
+    .human__k { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 700; color: #fff; }
+    .human__v { font-size: var(--text-small); color: rgba(255,255,255,.72); line-height: 1.6; }
+    @media (max-width: 720px) { .human { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { .human__i { opacity:1 !important; translate:none !important; transition:none !important; } }
+  </style>
+
+</ServicePage>

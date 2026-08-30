@@ -1,0 +1,299 @@
+---
+// Shared skeleton for the five service pages. It fixes the *system*
+// (typography, spacing, CTA, motion) but deliberately leaves composition
+// open: each page supplies its own visual and can insert extra sections
+// through the default slot, so the five pages do not read as one template.
+import SiteLayout from './SiteLayout.astro';
+import ClosingCta from '../components/ClosingCta.astro';
+import Viz from '../components/Viz.astro';
+import ScrollReveal from '../components/ScrollReveal.astro';
+import { SERVICES } from '../lib/site';
+
+interface Props {
+  slug: string;
+  data: {
+    viz: string;
+    eyebrow: string;
+    h1: string;
+    lead: string;
+    symptomsTitle: string;
+    symptoms: readonly string[];
+    buildTitle: string;
+    build: readonly { t: string; d: string }[];
+    closing: string;
+    note: string;
+  };
+  title: string;
+  description: string;
+  /** 'rail' = symptoms as a numbered rail, 'grid' = two column list */
+  symptomsStyle?: 'rail' | 'grid';
+}
+const { slug, data, title, description, symptomsStyle = 'rail' } = Astro.props;
+const others = SERVICES.filter((s) => s.slug !== slug);
+---
+
+<SiteLayout title={title} description={description}>
+  <ScrollReveal />
+
+  <!-- Hero: type first, then the page's own dominant visual -->
+  <section class="sp-hero">
+    <div class="u-container sp-hero__type">
+      <p class="t-eyebrow">{data.eyebrow}</p>
+      <h1 class="t-display-2 sp-hero__h1">{data.h1}</h1>
+      <p class="sp-hero__lead">{data.lead}</p>
+    </div>
+  </section>
+
+  <section class="section--navy sp-stage">
+    <div class="u-container">
+      <Viz kind={data.viz as any} />
+    </div>
+    <p class="u-container sp-stage__note">{data.note}</p>
+  </section>
+
+  <!-- Symptoms: "is this you?" -->
+  <section class="section">
+    <div class="u-container">
+      <div class="lede">
+        <h2 class="t-h2">{data.symptomsTitle}</h2>
+      </div>
+      <ul class:list={['sym', `sym--${symptomsStyle}`]}>
+        {
+          data.symptoms.map((s, i) => (
+            <li class="sym__item" data-reveal style={`--i:${i}`}>
+              <span class="sym__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              <span class="sym__t">{s}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- What we actually build -->
+  <section class="section section--gray">
+    <div class="u-container">
+      <div class="lede">
+        <h2 class="t-h2">{data.buildTitle}</h2>
+      </div>
+      <div class="build">
+        {
+          data.build.map((b, i) => (
+            <article class="build__item" data-reveal style={`--i:${i}`}>
+              <span class="build__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="t-h3">{b.t}</h3>
+              <p class="build__d">{b.d}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <slot />
+
+  <!-- Other services -->
+  <section class="section">
+    <div class="u-container">
+      <div class="lede">
+        <p class="t-eyebrow">שירותים נוספים</p>
+        <h2 class="t-h2">אולי זה מה שאתם מחפשים</h2>
+      </div>
+      <ul class="others">
+        {
+          others.map((o) => (
+            <li>
+              <a class="other" href={`/services/${o.slug}/`}>
+                <span class="other__name">{o.name}</span>
+                <span class="other__lead">{o.lead}</span>
+                <span class="arrow-inline other__arr" aria-hidden="true">←</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <ClosingCta
+    heading={data.closing}
+    body="שיחה של 30 דקות. נעבור על התהליכים שלכם, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך."
+  />
+</SiteLayout>
+
+<style>
+  .sp-hero {
+    padding-top: clamp(3rem, 6vw, 6rem);
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  .sp-hero__type {
+    max-width: 60rem;
+  }
+  .sp-hero__h1 {
+    margin-block: 1rem 1.5rem;
+  }
+  .sp-hero__lead {
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--color-ink-2);
+    max-width: 56ch;
+  }
+
+  .sp-stage {
+    padding-block: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .sp-stage__note {
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+    font-size: var(--text-small);
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 64ch;
+    border-inline-start: 3px solid rgba(41, 151, 255, 0.5);
+    padding-inline-start: 1rem;
+  }
+
+  /* Symptoms */
+  .sym {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sym--rail {
+    display: flex;
+    flex-direction: column;
+  }
+  .sym--rail .sym__item {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    padding-block: clamp(1.25rem, 2.5vw, 1.75rem);
+    border-bottom: 1px solid var(--color-line);
+  }
+  .sym--grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.5rem, 3vw, 2.5rem) clamp(2.5rem, 5vw, 4rem);
+  }
+  .sym--grid .sym__item {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .sym__item {
+    transition:
+      opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
+      translate 600ms var(--ease-out) calc(var(--i) * 90ms);
+  }
+  :global(html.reveal-ready) .sym__item {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  :global(html.reveal-ready) .sym__item.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .sym__n {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-electric);
+    flex: 0 0 auto;
+  }
+  .sym__t {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-ink);
+  }
+
+  /* Build */
+  .build {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 5vw, 5rem);
+  }
+  .build__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition:
+      opacity 600ms var(--ease-out) calc(var(--i) * 100ms),
+      translate 600ms var(--ease-out) calc(var(--i) * 100ms);
+  }
+  :global(html.reveal-ready) .build__item {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  :global(html.reveal-ready) .build__item.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .build__n {
+    font-family: var(--font-display);
+    font-size: var(--text-micro);
+    font-weight: 700;
+    color: var(--color-electric);
+  }
+  .build__d {
+    color: var(--color-ink-2);
+    max-width: 46ch;
+  }
+
+  /* Other services */
+  .others {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--color-line);
+  }
+  .other {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr auto;
+    gap: 1.5rem;
+    align-items: baseline;
+    padding-block: clamp(1.25rem, 2.5vw, 1.75rem);
+    border-bottom: 1px solid var(--color-line);
+    text-decoration: none;
+    transition: background-color var(--dur) var(--ease-out);
+  }
+  .other:hover {
+    background: var(--color-surface-2);
+  }
+  .other__name {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+  .other__lead {
+    font-size: var(--text-small);
+    color: var(--color-ink-2);
+  }
+  .other__arr {
+    color: var(--color-royal);
+    font-weight: 700;
+  }
+
+  @media (max-width: 860px) {
+    .sym--grid,
+    .build {
+      grid-template-columns: 1fr;
+    }
+    .other {
+      grid-template-columns: 1fr auto;
+    }
+    .other__lead {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sym__item,
+    .build__item {
+      opacity: 1 !important;
+      translate: none !important;
+      transition: none !important;
+    }
+  }
+</style>

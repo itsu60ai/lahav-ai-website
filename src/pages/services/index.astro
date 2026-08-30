@@ -1,0 +1,265 @@
+---
+// SERVICES INDEX. Its own job: help a visitor decide *which* service fits.
+// Composition is a chooser, not a repeat of Home: a "start from your
+// problem" table that maps a symptom to a service, then full-width
+// service rows. No hero stage, no pain grid, no process here.
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ClosingCta from '../../components/ClosingCta.astro';
+import Viz from '../../components/Viz.astro';
+import ScrollReveal from '../../components/ScrollReveal.astro';
+import { SERVICES } from '../../lib/site';
+
+// Each row: a problem stated in the owner's words, and where it leads.
+const chooser = [
+  { problem: 'לא ברור מה קורה עם הלקוחות והפניות', slug: 'crm', name: 'מערכות CRM חכמות' },
+  { problem: 'יותר מדי עבודה ידנית שחוזרת על עצמה', slug: 'automations', name: 'אוטומציות עסקיות' },
+  { problem: 'האתר לא מביא אנשים לפעולה', slug: 'web-development', name: 'פיתוח אתרים' },
+  { problem: 'אין כלי שמתאים לתהליך שלנו', slug: 'app-development', name: 'פיתוח אפליקציות' },
+  { problem: 'אין זמן ואין תהליך לתוכן', slug: 'ai-content', name: 'יצירת תוכן באמצעות AI' },
+];
+---
+
+<SiteLayout
+  title="השירותים שלנו | LAHAV AI"
+  description="חמישה תחומי שירות: מערכות CRM, אוטומציות עסקיות, פיתוח אתרים, פיתוח אפליקציות ויצירת תוכן באמצעות AI."
+>
+  <ScrollReveal />
+
+  <section class="sv-hero">
+    <div class="u-container">
+      <p class="t-eyebrow">השירותים שלנו</p>
+      <h1 class="t-display-2 sv-hero__h1">חמישה תחומים.<br />נקודת התחלה אחת: מה תקוע אצלכם.</h1>
+      <p class="sv-hero__lead">
+        אין צורך לדעת מראש איזה שירות אתם צריכים. תגידו לנו מה לא עובד היום,
+        ומשם נבין יחד מה נכון לבנות.
+      </p>
+    </div>
+  </section>
+
+  <!-- The chooser: problem on the right, service on the left -->
+  <section class="section-tight chooser-sec">
+    <div class="u-container">
+      <p class="chooser__label">מתחילים מהבעיה</p>
+      <ul class="chooser">
+        {
+          chooser.map((c, i) => (
+            <li data-reveal style={`--i:${i}`}>
+              <a class="ch" href={`/services/${c.slug}/`}>
+                <span class="ch__problem">{c.problem}</span>
+                <span class="ch__sep" aria-hidden="true">←</span>
+                <span class="ch__name">{c.name}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- One connected picture -->
+  <section class="section section--navy">
+    <div class="u-container">
+      <div class="lede lede--center">
+        <p class="t-eyebrow">איך זה מתחבר</p>
+        <h2 class="t-display-2">חמישה תחומים,<br />תשתית אחת</h2>
+        <p class="t-lead">
+          רוב העסקים לא צריכים את כל החמישה. הם צריכים את החלק שפותר את מה
+          שתקוע, בלי לשבור את מה שכבר עובד.
+        </p>
+      </div>
+      <Viz kind="services" />
+    </div>
+  </section>
+
+  <!-- The five, each with real room -->
+  <section class="section">
+    <div class="u-container">
+      {
+        SERVICES.map((s, i) => (
+          <article class:list={['row', s.featured && 'row--featured']} data-reveal>
+            <div class="row__meta">
+              <span class="row__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              {s.featured && <span class="chip">שירות מוביל</span>}
+            </div>
+            <div class="row__body">
+              <h2 class:list={[s.featured ? 't-h1' : 't-h2', 'row__name']}>{s.name}</h2>
+              <p class="row__lead">{s.lead}</p>
+              <p class="row__text">{s.pain}</p>
+              <a class="link-arrow" href={`/services/${s.slug}/`}>
+                לפרטים על השירות <span class="arrow-inline" aria-hidden="true">←</span>
+              </a>
+            </div>
+          </article>
+        ))
+      }
+      <p class="pricing">
+        אין מחירון קבוע. המחיר נקבע אחרי שיחת היכרות ואפיון, לפי מה שהעסק באמת צריך.
+      </p>
+    </div>
+  </section>
+
+  <ClosingCta
+    heading="לא בטוחים מאיפה להתחיל?"
+    body="זה בסדר גמור. שיחה של 30 דקות בדרך כלל מספיקה כדי להבין מה הדבר הראשון שכדאי לסדר."
+  />
+</SiteLayout>
+
+<style>
+  .sv-hero {
+    padding-top: clamp(3rem, 6vw, 6rem);
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+  }
+  .sv-hero__h1 {
+    margin-block: 1rem 1.5rem;
+  }
+  .sv-hero__lead {
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--color-ink-2);
+    max-width: 54ch;
+  }
+
+  .section-tight {
+    padding-block: var(--space-section-tight);
+  }
+  .chooser__label {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    color: var(--color-royal);
+    margin-bottom: 1.25rem;
+  }
+  .chooser {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--color-line);
+  }
+  .chooser li {
+    transition:
+      opacity 500ms var(--ease-out) calc(var(--i) * 80ms),
+      translate 500ms var(--ease-out) calc(var(--i) * 80ms);
+  }
+  :global(html.reveal-ready) .chooser li {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  :global(html.reveal-ready) .chooser li.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .ch {
+    display: grid;
+    grid-template-columns: 1fr auto 0.85fr;
+    align-items: center;
+    gap: 1.25rem;
+    padding-block: clamp(1.1rem, 2.2vw, 1.6rem);
+    border-bottom: 1px solid var(--color-line);
+    text-decoration: none;
+    transition: background-color var(--dur) var(--ease-out);
+  }
+  .ch:hover {
+    background: var(--color-surface-2);
+  }
+  .ch__problem {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 600;
+    color: var(--color-ink);
+    line-height: 1.35;
+  }
+  .ch__sep {
+    color: var(--color-electric);
+    font-weight: 700;
+  }
+  .ch__name {
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-royal);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: clamp(1.5rem, 3vw, 3rem);
+    padding-block: clamp(2.5rem, 4vw, 3.5rem);
+    border-top: 1px solid var(--color-line);
+    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
+  }
+  :global(html.reveal-ready) .row {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  :global(html.reveal-ready) .row.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .row--featured {
+    border-top-color: var(--color-line-strong);
+  }
+  .row__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .row__n {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 700;
+    color: var(--color-electric);
+    line-height: 1;
+  }
+  .row__name {
+    margin-bottom: 0.75rem;
+  }
+  .row__lead {
+    font-size: var(--text-lead);
+    font-weight: 600;
+    color: var(--color-royal);
+    line-height: 1.5;
+    margin-bottom: 0.875rem;
+    max-width: 42ch;
+  }
+  .row__text {
+    font-size: var(--text-body-lg);
+    line-height: 1.7;
+    color: var(--color-ink-2);
+    max-width: 62ch;
+    margin-bottom: 1.25rem;
+  }
+  .pricing {
+    margin-top: clamp(2rem, 4vw, 3rem);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-line);
+    font-size: var(--text-small);
+    color: var(--color-ink-3);
+    max-width: 60ch;
+  }
+
+  @media (max-width: 860px) {
+    .ch {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+    .ch__sep {
+      display: none;
+    }
+    .row {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .row__meta {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chooser li,
+    .row {
+      opacity: 1 !important;
+      translate: none !important;
+      transition: none !important;
+    }
+  }
+</style>

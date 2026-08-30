@@ -1,0 +1,303 @@
+---
+// HOME hero stage: the single dominant visual moment of the site.
+//
+// Full-bleed dark band, ~70vh, carrying one idea read right to left like
+// the Hebrew above it:
+//   RIGHT   scattered, tilted inputs (chaos)
+//   CENTRE  one system that takes them in
+//   LEFT    clean aligned rows (order)
+//
+// Abstract by design. No dashboards, no robots, no logos, no platform
+// names, nothing that could read as a factual claim.
+---
+
+<div class="stage hs" data-reveal>
+  <svg
+    class="stage__art hs__art"
+    viewBox="0 0 1200 620"
+    role="img"
+    aria-label="איור: פניות ומשימות מפוזרות נכנסות למערכת אחת ויוצאות ממנה מסודרות"
+  >
+    <defs>
+      <linearGradient id="hsCore" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2997FF"></stop>
+        <stop offset="100%" stop-color="#1D4ED8"></stop>
+      </linearGradient>
+      <radialGradient id="hsGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#2997FF" stop-opacity=".5"></stop>
+        <stop offset="100%" stop-color="#2997FF" stop-opacity="0"></stop>
+      </radialGradient>
+      <linearGradient id="hsBar" x1="1" y1="0" x2="0" y2="0">
+        <stop offset="0%" stop-color="#2997FF" stop-opacity=".95"></stop>
+        <stop offset="100%" stop-color="#2997FF" stop-opacity=".2"></stop>
+      </linearGradient>
+    </defs>
+
+    <circle class="hs__glow" cx="600" cy="310" r="300" fill="url(#hsGlow)"></circle>
+
+    <!-- incoming: right to centre -->
+    <g fill="none" stroke="rgba(41,151,255,.34)" stroke-width="2">
+      <path class="hs__flow" style="--d:0ms" d="M1030 96 C 900 96 880 220 742 246"></path>
+      <path class="hs__flow" style="--d:340ms" d="M1092 214 C 950 214 930 268 742 284"></path>
+      <path class="hs__flow" style="--d:680ms" d="M1074 400 C 940 400 930 350 742 330"></path>
+      <path class="hs__flow" style="--d:1020ms" d="M1016 528 C 900 528 880 400 742 366"></path>
+    </g>
+
+    <!-- scattered inputs, tilted and uneven -->
+    <g class="hs__chips">
+      <g class="hs__chip" style="--d:0ms" transform="translate(1030 96) rotate(-7)">
+        <rect x="-84" y="-30" width="168" height="60" rx="16"></rect>
+        <rect class="hs__ln" x="-58" y="-11" width="96" height="8" rx="4"></rect>
+        <rect class="hs__ln" x="-30" y="6" width="68" height="8" rx="4" opacity=".5"></rect>
+      </g>
+      <g class="hs__chip" style="--d:340ms" transform="translate(1092 214) rotate(6)">
+        <rect x="-70" y="-27" width="140" height="54" rx="15"></rect>
+        <rect class="hs__ln" x="-44" y="-8" width="78" height="8" rx="4"></rect>
+      </g>
+      <g class="hs__chip" style="--d:680ms" transform="translate(1074 400) rotate(-4)">
+        <rect x="-90" y="-30" width="180" height="60" rx="16"></rect>
+        <rect class="hs__ln" x="-62" y="-11" width="104" height="8" rx="4"></rect>
+        <rect class="hs__ln" x="-34" y="6" width="74" height="8" rx="4" opacity=".5"></rect>
+      </g>
+      <g class="hs__chip" style="--d:1020ms" transform="translate(1016 528) rotate(9)">
+        <rect x="-66" y="-27" width="132" height="54" rx="15"></rect>
+        <rect class="hs__ln" x="-40" y="-8" width="72" height="8" rx="4"></rect>
+      </g>
+    </g>
+
+    <!-- the system -->
+    <g class="hs__sys">
+      <rect x="458" y="212" width="284" height="196" rx="46" fill="url(#hsCore)"></rect>
+      <path
+        class="hs__mark"
+        d="M548 274 L548 344 Q548 364 568 364 L610 364 Q624 364 631 352 L666 274"
+        fill="none"
+        stroke="rgba(255,255,255,.96)"
+        stroke-width="14"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+      <circle class="hs__dot" cx="666" cy="340" r="10" fill="#fff"></circle>
+    </g>
+
+    <!-- outgoing: centre to left -->
+    <g fill="none" stroke="rgba(41,151,255,.4)" stroke-width="2">
+      <path class="hs__flow" style="--d:1500ms" d="M458 254 C 380 254 360 150 250 150"></path>
+      <path class="hs__flow" style="--d:1680ms" d="M458 288 C 386 288 366 250 250 250"></path>
+      <path class="hs__flow" style="--d:1860ms" d="M458 330 C 386 330 366 370 250 370"></path>
+      <path class="hs__flow" style="--d:2040ms" d="M458 366 C 380 366 360 470 250 470"></path>
+    </g>
+
+    <!-- ordered outputs, perfectly aligned -->
+    <g class="hs__rows">
+      <g class="hs__row" style="--d:1600ms" transform="translate(70 150)">
+        <rect x="0" y="-26" width="180" height="52" rx="14"></rect>
+        <rect class="hs__bar" x="22" y="-6" width="96" height="10" rx="5"></rect>
+        <circle class="hs__rdot" cx="152" cy="-1" r="6"></circle>
+      </g>
+      <g class="hs__row" style="--d:1780ms" transform="translate(70 250)">
+        <rect x="0" y="-26" width="180" height="52" rx="14"></rect>
+        <rect class="hs__bar" x="22" y="-6" width="96" height="10" rx="5"></rect>
+        <circle class="hs__rdot" cx="152" cy="-1" r="6"></circle>
+      </g>
+      <g class="hs__row" style="--d:1960ms" transform="translate(70 370)">
+        <rect x="0" y="-26" width="180" height="52" rx="14"></rect>
+        <rect class="hs__bar" x="22" y="-6" width="96" height="10" rx="5"></rect>
+        <circle class="hs__rdot" cx="152" cy="-1" r="6"></circle>
+      </g>
+      <g class="hs__row" style="--d:2140ms" transform="translate(70 470)">
+        <rect x="0" y="-26" width="180" height="52" rx="14"></rect>
+        <rect class="hs__bar" x="22" y="-6" width="96" height="10" rx="5"></rect>
+        <circle class="hs__rdot" cx="152" cy="-1" r="6"></circle>
+      </g>
+    </g>
+  </svg>
+
+  <div class="hs__caption">
+    <span class="hs__cap hs__cap--in">מפוזר וידני</span>
+    <span class="hs__cap hs__cap--out">מסודר ואוטומטי</span>
+  </div>
+</div>
+
+<style>
+  .hs {
+    min-height: min(72vh, 680px);
+  }
+  .hs__art {
+    width: min(100%, 1200px);
+  }
+  .hs__chip rect:first-child {
+    fill: rgba(255, 255, 255, 0.05);
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 1.5;
+  }
+  .hs__ln {
+    fill: rgba(255, 255, 255, 0.3);
+  }
+  .hs__row rect:first-child {
+    fill: rgba(41, 151, 255, 0.1);
+    stroke: rgba(41, 151, 255, 0.4);
+    stroke-width: 1.5;
+  }
+  .hs__bar {
+    fill: url(#hsBar);
+  }
+  .hs__rdot {
+    fill: #2997ff;
+  }
+
+  .hs__caption {
+    position: absolute;
+    inset-inline: clamp(1rem, 5vw, 4rem);
+    bottom: clamp(0.5rem, 2vw, 1.5rem);
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+  .hs__cap {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    opacity: 0;
+  }
+  .hs__cap--in {
+    color: rgba(255, 255, 255, 0.5);
+    order: 2;
+  }
+  .hs__cap--out {
+    color: var(--color-electric);
+    order: 1;
+  }
+
+  /* ---------- Motion ---------- */
+  .hs__sys {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  :global(html.reveal-ready) .hs__chip,
+  :global(html.reveal-ready) .hs__row,
+  :global(html.reveal-ready) .hs__glow,
+  :global(html.reveal-ready) .hs__sys,
+  :global(html.reveal-ready) .hs__cap {
+    opacity: 0;
+  }
+  :global(html.reveal-ready) .hs__flow {
+    stroke-dasharray: 8 12;
+    stroke-dashoffset: 260;
+    opacity: 0;
+  }
+
+  :global(html.reveal-ready) .hs.is-in .hs__glow {
+    animation: hs-in 1600ms var(--ease-out) 200ms forwards, hs-breathe 8s ease-in-out 2s infinite;
+  }
+  :global(html.reveal-ready) .hs.is-in .hs__sys {
+    animation: hs-sys 1000ms var(--ease-out) 150ms forwards;
+  }
+  :global(html.reveal-ready) .hs.is-in .hs__mark {
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+    animation: hs-draw 1200ms var(--ease-out) 600ms forwards;
+  }
+  :global(html.reveal-ready) .hs.is-in .hs__dot {
+    opacity: 0;
+    animation: hs-in 500ms var(--ease-out) 1600ms forwards;
+  }
+  :global(html.reveal-ready) .hs.is-in .hs__chip {
+    animation: hs-chip 800ms var(--ease-out) calc(650ms + var(--d)) forwards;
+  }
+  :global(html.reveal-ready) .hs.is-in .hs__row {
+    animation: hs-row 800ms var(--ease-out) calc(650ms + var(--d)) forwards;
+  }
+  :global(html.reveal-ready) .hs.is-in .hs__flow {
+    animation: hs-in 500ms linear calc(650ms + var(--d)) forwards,
+      hs-move 2.6s linear calc(1150ms + var(--d)) infinite;
+  }
+  :global(html.reveal-ready) .hs.is-in .hs__cap {
+    animation: hs-in 700ms var(--ease-out) 2400ms forwards;
+  }
+
+  @keyframes hs-in {
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes hs-breathe {
+    0%,
+    100% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes hs-sys {
+    from {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes hs-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes hs-chip {
+    from {
+      opacity: 0;
+      translate: 44px 0;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  @keyframes hs-row {
+    from {
+      opacity: 0;
+      translate: 36px 0;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+  @keyframes hs-move {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hs {
+      min-height: auto;
+    }
+    .hs__caption {
+      position: static;
+      margin-top: 1rem;
+      inset-inline: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hs__chip,
+    .hs__row,
+    .hs__glow,
+    .hs__sys,
+    .hs__cap,
+    .hs__flow {
+      opacity: 1 !important;
+      animation: none !important;
+    }
+    .hs__flow {
+      stroke-dasharray: none !important;
+      stroke-dashoffset: 0 !important;
+    }
+    .hs__mark {
+      stroke-dashoffset: 0 !important;
+    }
+  }
+</style>

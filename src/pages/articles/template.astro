@@ -1,0 +1,168 @@
+---
+// ARTICLE TEMPLATE. Built for review of the reading experience only.
+//
+// No real approved article exists yet (O-6), so this route renders the
+// template with clearly labelled sample prose and is marked noindex. It is
+// never linked from the site. When real articles arrive this becomes the
+// dynamic [slug] route.
+//
+// Composition here is unlike every other page: a single narrow measure,
+// no dark act, no cards. Reading comes first.
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ScrollReveal from '../../components/ScrollReveal.astro';
+import { ARTICLE_TEMPLATE_SAMPLE as S } from '../../lib/site';
+---
+
+<SiteLayout
+  title="תבנית מאמר | LAHAV AI"
+  description="תבנית עיצוב לעמוד מאמר. אינה מאמר שפורסם."
+>
+  <ScrollReveal />
+
+  <div class="tpl-flag">
+    <div class="u-container">
+      תבנית עיצוב לסקירה. הטקסט כאן הוא דוגמה להמחשת הקריאוּת ואינו מאמר שפורסם.
+    </div>
+  </div>
+
+  <article class="art">
+    <header class="art__head u-container">
+      <p class="art__meta tabular">{S.date}</p>
+      <h1 class="art__title">{S.title}</h1>
+      <p class="art__standfirst">
+        לא כל דבר שחוזר על עצמו כדאי לאוטמט, ולא כל דבר מסובך באמת מסובך.
+        כמה שאלות פשוטות עוזרות להחליט.
+      </p>
+    </header>
+
+    <div class="art__body u-container">
+      <p>
+        השאלה הראשונה היא לא טכנית בכלל: כמה פעמים בשבוע התהליך הזה קורה?
+        אם התשובה היא פעם בחודש, כנראה שעדיף להשאיר אותו ידני. אם זה קורה
+        כמה פעמים ביום, כבר שווה להסתכל.
+      </p>
+
+      <h2>מתי אוטומציה משתלמת</h2>
+      <p>
+        התנאי השני הוא עקביות. תהליך שמתנהג אותו דבר כל פעם מתאים לאוטומציה.
+        תהליך שדורש שיקול דעת בכל מקרה, פחות. זה לא אומר שאי אפשר לעזור לו,
+        אבל אז המטרה היא לחסוך את החלקים הטכניים ולא את ההחלטה עצמה.
+      </p>
+      <p>
+        השאלה השלישית היא מה קורה כשמשהו משתבש. תהליך שרץ לבד וגם נכשל לבד
+        בשקט הוא בעיה. לכן אנחנו תמיד בונים גם את המקרה החריג: מה עובר לאדם,
+        ומתי.
+      </p>
+
+      <h2>מה כדאי לבדוק לפני שמתחילים</h2>
+      <ul>
+        <li>כמה פעמים התהליך קורה, ומי עושה אותו היום</li>
+        <li>האם הוא מתנהג אותו דבר בכל פעם</li>
+        <li>מה קורה כשהוא נתקע, ומי שם לב</li>
+        <li>מה המידע שנכנס אליו ומאיפה הוא מגיע</li>
+      </ul>
+
+      <blockquote>
+        אוטומציה טובה לא מוציאה אתכם מהתמונה. היא לוקחת את מה שברור,
+        ומשאירה לכם את ההחלטות.
+      </blockquote>
+
+      <p>
+        אם התשובות מצביעות על תהליך תכוף, עקבי, ועם נקודת כשל שאפשר לזהות,
+        זה בדרך כלל מועמד טוב. ואם לא, עדיף להשקיע את המאמץ במקום אחר.
+      </p>
+    </div>
+
+    <footer class="art__foot u-container">
+      <a class="link-arrow" href="/articles/">
+        חזרה לכל המאמרים <span class="arrow-inline" aria-hidden="true">←</span>
+      </a>
+    </footer>
+  </article>
+</SiteLayout>
+
+<style>
+  .tpl-flag {
+    background: #fff4e5;
+    border-bottom: 1px solid #f0c98a;
+    color: #8a5300;
+    font-size: var(--text-small);
+    font-weight: 600;
+    padding-block: 0.75rem;
+  }
+
+  .art {
+    padding-block: clamp(2.5rem, 5vw, 4.5rem) clamp(3rem, 6vw, 6rem);
+  }
+  /* Reading measure, tighter than the site container */
+  .art__head,
+  .art__body,
+  .art__foot {
+    max-width: 46rem;
+  }
+  .art__meta {
+    font-size: var(--text-micro);
+    font-weight: 600;
+    color: var(--color-ink-3);
+    margin-bottom: 1rem;
+  }
+  .art__title {
+    font-size: clamp(2.25rem, 1.4rem + 3vw, 3.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin-bottom: 1.5rem;
+  }
+  .art__standfirst {
+    font-size: var(--text-lead);
+    line-height: 1.6;
+    color: var(--color-ink-2);
+    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    border-bottom: 1px solid var(--color-line);
+    max-width: none;
+  }
+
+  .art__body {
+    margin-top: clamp(1.75rem, 3vw, 2.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .art__body p {
+    font-size: 1.25rem;
+    line-height: 1.85;
+    color: var(--color-ink);
+    max-width: none;
+  }
+  .art__body h2 {
+    font-size: var(--text-h3);
+    margin-top: 1.25rem;
+  }
+  .art__body ul {
+    margin: 0;
+    padding-inline-start: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .art__body li {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+  }
+  .art__body blockquote {
+    margin: 0.75rem 0;
+    padding-inline-start: 1.5rem;
+    border-inline-start: 3px solid var(--color-electric);
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-ink);
+  }
+
+  .art__foot {
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-line);
+  }
+</style>
