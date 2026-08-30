@@ -1,0 +1,258 @@
+---
+// Stage B, step 2: copy the prepared prompt out, paste the reply back in.
+// Self-posting page (same pattern as /admin/login) so a malformed paste can
+// re-render this exact page with the pasted text preserved and a plain
+// explanation — never a dead end, never lost work. See docs/AI_ENGINE.md
+// and src/lib/ai/providers/manual.ts.
+export const prerender = false;
+
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { require_ } from '../../../../lib/cms/guard.ts';
+import { csrfFor } from '../../../../lib/cms/auth.ts';
+import { newId } from '../../../../lib/cms/context.ts';
+import { getAiStores } from '../../../../lib/ai/context.ts';
+import { parseManualResult } from '../../../../lib/ai/providers/manual.ts';
+import { contentKindToArticleKind, vizForServiceSlug } from '../../../../lib/ai/mapping.ts';
+import { runGates } from '../../../../lib/ai/gates.ts';
+import { SERVICES } from '../../../../lib/site.ts';
+
+const { id } = Astro.params;
+const aiStores = getAiStores();
+const generation = await aiStores.generations.get(String(id));
+
+if (!generation || generation.providerMode !== 'manual') {
+  return Astro.redirect('/admin/ai', 302);
+}
+if (generation.status !== 'pending') {
+  // Already submitted once — the result lives on the normal detail page.
+  return Astro.redirect(`/admin/ai/${generation.id}`, 302);
+}
+
+const opportunity = generation.opportunityId ? await aiStores.opportunities.get(generation.opportunityId) : null;
+
+let pasteError: string | null = null;
+let preservedPastedText = '';
+
+if (Astro.request.method === 'POST') {
+  const denied = require_(Astro.locals.user, 'article:create');
+  if (denied) return denied;
+
+  const f = await Astro.request.formData();
+  const pastedText = String(f.get('pastedText') ?? '');
+  preservedPastedText = pastedText;
+
+  const result = parseManualResult(pastedText, opportunity, generation.brief);
+
+  if (result.blocked || !result.output) {
+    pasteError = result.warnings[0] ?? 'לא ניתן היה לקרוא את התשובה שהודבקה.';
+  } else {
+    const { articles } = Astro.locals.stores!;
+    const output = result.output;
+    const existingArticles = await articles.list();
+    const existingSlugs = new Set(existingArticles.map((a) => a.slug));
+
+    let slug = output.seo.slug;
+    if (existingSlugs.has(slug)) slug = `${slug}-${newId().slice(0, 6)}`;
+
+    const codeGates = runGates({
+      output,
+      opportunity,
+      briefNotes: generation.brief.notes,
+      contentKind: generation.brief.contentKind,
+      existingArticles,
+    });
+    // The parser's own warnings (missing SEO section, no image supplied,
+    // no citations found, ...) are exactly the same kind of "review this
+    // before publishing" signal as a code gate, so they share the same
+    // checklist on the detail page rather than needing a second one.
+    const gates = {
+      passed: codeGates.passed && result.warnings.length === 0,
+      failures: [
+        ...codeGates.failures,
+        ...result.warnings.map((message) => ({ gate: 'paste-review', message })),
+      ],
+    };
+
+    const service = SERVICES.find((s) => s.slug === generation.brief.serviceSlug);
+    const articleId = newId();
+
+    // A disclosure line, appended once, honestly — this is real,
+    // AI-assisted content on a real publishing track, not Stage A's
+    // template placeholder, so it does not get isPlaceholder treatment.
+    const bodyWithDisclosure = [
+      ...output.body,
+      { t: 'p' as const, x: 'כתבה זו הוכנה בסיוע בינה מלאכותית ונערכה ואושרה על ידי הצוות לפני פרסום.' },
+    ];
+
+    await articles.create({
+      id: articleId,
+      slug,
+      kind: contentKindToArticleKind(generation.brief.contentKind),
+      status: 'draft',
+      title: output.title,
+      standfirst: output.standfirst,
+      excerpt: output.excerpt,
+      readingTime: output.readingTime,
+      topic: generation.brief.topic,
+      featured: false,
+      viz: vizForServiceSlug(generation.brief.serviceSlug),
+      vizCaption: output.visual.caption || output.title,
+      serviceName: service?.name ?? '',
+      serviceSlug: service?.slug ?? '',
+      body: bodyWithDisclosure,
+      isPlaceholder: false,
+    });
+
+    await aiStores.generations.update(generation.id, {
+      articleId,
+      output,
+      status: 'succeeded',
+      gates,
+    });
+    await aiStores.assets.create(generation.id, output.visual);
+    await aiStores.assets.attachToArticle(generation.id, articleId);
+    if (opportunity) await aiStores.opportunities.setStatus(opportunity.id, 'generated');
+
+    return Astro.redirect(`/admin/ai/${generation.id}`, 303);
+  }
+}
+
+const csrf = await csrfFor(Astro.locals.sessionToken);
+---
+
+<AdminLayout title={`כתיבת מאמר אמיתי: ${generation.brief.topic}`}>
+  <div class="crumbs">
+    <a href="/admin/ai">מנוע תוכן AI</a>
+    <span aria-hidden="true">›</span>
+    <span>כתיבת מאמר אמיתי</span>
+  </div>
+
+  <h1 class="hd__h">{generation.brief.topic}</h1>
+  <p class="hd__sub">מצב: הדבקה ידנית, ללא עלות</p>
+
+  <section class="card">
+    <h2 class="card__h">שלב 1: העתקת הפרומפט</h2>
+    <p class="foot-note">
+      הדביקו את הטקסט הזה בשיחה חדשה עם ChatGPT או Claude, ואז הדביקו לכאן את מה שהם עונים.
+    </p>
+    <textarea id="prompt-box" class="ad-textarea prompt-box" readonly rows={10}>{generation.promptText}</textarea>
+    <button id="copy-btn" type="button" class="ad-btn ad-btn--primary">העתקת הפרומפט</button>
+    <span id="copy-status" class="copy-status" role="status"></span>
+  </section>
+
+  <section class="card">
+    <h2 class="card__h">שלב 2: הדבקת התשובה</h2>
+
+    {
+      pasteError && (
+        <div class="paste-error" role="alert">
+          <strong>לא הצלחנו לקרוא את התשובה שהודבקה.</strong>
+          <p>{pasteError}</p>
+          <p>הטקסט שהדבקתם נשמר למטה, אין צורך להעתיק שוב. אפשר לתקן ולנסות שוב.</p>
+        </div>
+      )
+    }
+
+    <form method="post" action={`/admin/ai/manual/${generation.id}?csrf=${csrf}`}>
+      <textarea
+        name="pastedText"
+        class="ad-textarea paste-box"
+        rows={14}
+        placeholder="הדביקו כאן את התשובה המלאה מ-ChatGPT או Claude"
+        required
+      >{preservedPastedText}</textarea>
+      <button class="ad-btn ad-btn--primary" type="submit">בדיקה ויצירת טיוטה</button>
+    </form>
+  </section>
+</AdminLayout>
+
+<script>
+  const btn = document.getElementById('copy-btn');
+  const box = document.getElementById('prompt-box') as HTMLTextAreaElement | null;
+  const status = document.getElementById('copy-status');
+  btn?.addEventListener('click', async () => {
+    if (!box) return;
+    try {
+      await navigator.clipboard.writeText(box.value);
+      if (status) status.textContent = 'הועתק ✓';
+    } catch {
+      box.select();
+      if (status) status.textContent = 'סמנו והעתיקו ידנית (Ctrl+C)';
+    }
+  });
+</script>
+
+<style>
+  .crumbs {
+    font-size: 0.875rem;
+    color: var(--color-ink-3);
+    margin-bottom: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .crumbs a {
+    color: var(--color-ink-3);
+    text-decoration: none;
+  }
+  .crumbs a:hover {
+    color: var(--color-royal);
+  }
+  .hd__h {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+  .hd__sub {
+    font-size: 0.875rem;
+    color: var(--color-ink-3);
+    margin-top: 0.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 0.875rem;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .card__h {
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  .foot-note {
+    font-size: 0.875rem;
+    color: var(--color-ink-2);
+    margin-bottom: 0.875rem;
+  }
+  .prompt-box {
+    font-family: monospace;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    margin-bottom: 0.875rem;
+    direction: ltr;
+    text-align: left;
+  }
+  .paste-box {
+    margin-bottom: 0.875rem;
+  }
+  .copy-status {
+    margin-inline-start: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-success);
+    font-weight: 700;
+  }
+  .paste-error {
+    background: #fff4e5;
+    border: 1px solid #f0c98a;
+    color: #8a5300;
+    border-radius: 0.625rem;
+    padding: 0.875rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9375rem;
+  }
+  .paste-error p {
+    margin-top: 0.375rem;
+  }
+</style>

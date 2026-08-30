@@ -1,0 +1,53 @@
+---
+// PUBLIC ARTICLE PAGE.
+//
+// Rendered on demand because article content now lives in the database and
+// can change at any moment from the admin. Only PUBLISHED articles resolve;
+// a draft returns 404 exactly like a non-existent one, so an unpublished
+// article is never reachable by guessing its URL.
+export const prerender = false;
+
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ScrollReveal from '../../components/ScrollReveal.astro';
+import ArticleView from '../../components/ArticleView.astro';
+
+
+const { articles } = Astro.locals.stores!;
+const { slug } = Astro.params;
+const a = await articles.getBySlug(String(slug));
+
+if (!a || a.status !== 'published') {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+
+const more = (await articles.list({ status: 'published' }))
+  .filter((x) => x.id !== a.id)
+  .slice(0, 2);
+---
+
+<SiteLayout title={`${a.title} | LAHAV AI`} description={a.excerpt} noindex={a.isPlaceholder}>
+  <ScrollReveal />
+
+  {
+    a.isPlaceholder && (
+      <div class="rv-flag">
+        <div class="u-container">
+          מאמר לדוגמה, לצורכי סקירת העיצוב והקריאוּת בלבד. לא פורסם ולא אושר כתוכן עסקי.
+        </div>
+      </div>
+    )
+  }
+
+  <ArticleView a={a} more={more} />
+</SiteLayout>
+
+<style>
+  .rv-flag {
+    background: #fff4e5;
+    border-bottom: 1px solid #f0c98a;
+    color: #8a5300;
+    font-size: var(--text-small);
+    font-weight: 600;
+    padding-block: 0.75rem;
+  }
+</style>

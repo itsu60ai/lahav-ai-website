@@ -5,14 +5,36 @@
 //
 // The booking provider is not chosen yet (O-7), so the region is a defined
 // placeholder rather than a fake widget. No response time is promised.
+export const prerender = false;
+
+import { env } from 'cloudflare:workers';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ScrollReveal from '../components/ScrollReveal.astro';
-import { WHATSAPP_HREF, SERVICES } from '../lib/site';
+import { WHATSAPP_HREF, SERVICES, DISCOVERY_BOOKING_URL, DISCOVERY_CAL_LINK } from '../lib/site';
+import WhatsApp from '../components/icons/WhatsApp.astro';
+
+// The Turnstile SITE key is public by design (it is embedded in the page
+// HTML for every visitor's browser). Only the SECRET key, used server-side
+// in src/pages/api/contact.ts, is sensitive. Cloudflare's official
+// always-pass test key is the fallback, so the form is fully testable
+// before a real Turnstile widget is created in the client's own dashboard.
+const TURNSTILE_SITE_KEY = (env as any).TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
+
+const url = new URL(Astro.request.url);
+const sent = url.searchParams.get('sent') === '1';
+const errorCode = url.searchParams.get('error');
+const ERROR_MESSAGES: Record<string, string> = {
+  validation: 'משהו בטופס לא תקין. אפשר לבדוק את הפרטים ולנסות שוב.',
+  turnstile: 'לא הצלחנו לאמת שמדובר באדם. אפשר לרענן ולנסות שוב.',
+  rate_limited: 'יותר מדי ניסיונות בזמן קצר. אפשר לנסות שוב בעוד כמה דקות, או לכתוב לנו בוואטסאפ.',
+  bad_request: 'הבקשה לא התקבלה כמו שצריך. אפשר לנסות שוב.',
+};
+const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השתבש. אפשר לנסות שוב.') : null;
 ---
 
 <SiteLayout
-  title="צור קשר וקביעת שיחת Discovery | LAHAV AI"
-  description="קביעת שיחת היכרות של 30 דקות, או השארת פרטים ונחזור אליכם. אפשר גם בוואטסאפ."
+  title="צור קשר ותיאום שיחת היכרות | LAHAV AI"
+  description="שיחת היכרות של 30 דקות, או פשוט השאירו פרטים ונחזור אליכם. אפשר גם בוואטסאפ."
 >
   <ScrollReveal />
 
@@ -21,8 +43,8 @@ import { WHATSAPP_HREF, SERVICES } from '../lib/site';
       <p class="t-eyebrow">צור קשר</p>
       <h1 class="t-display-2 ct-hero__h1">בואו נדבר על מה שתקוע</h1>
       <p class="ct-hero__lead">
-        הדרך הכי פשוטה להתחיל היא שיחה של 30 דקות. נעבור על התהליכים שלכם,
-        ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך.
+        הדרך הכי פשוטה להתחיל היא שיחה של 30 דקות. נעבור יחד על איך שאתם
+        עובדים היום, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך.
       </p>
     </div>
   </section>
@@ -33,54 +55,72 @@ import { WHATSAPP_HREF, SERVICES } from '../lib/site';
       <div class="ct-primary" data-reveal>
         <div class="ct-primary__head">
           <span class="chip">הדרך המומלצת</span>
-          <h2 class="t-h2">קביעת שיחת Discovery</h2>
+          <h2 class="t-h2">שיחת היכרות</h2>
           <p class="ct-primary__lead">
-            30 דקות, בשיחת וידאו או טלפון. בלי מצגות ובלי הכנה מצדכם.
+            30 דקות, בזום או בטלפון. בלי מצגות, בלי הכנה מצדכם, ובלי התחייבות.
           </p>
         </div>
 
+        <!-- The live booking calendar, embedded inline via Cal.com's own
+             loader. Visitors book without leaving the site. If the widget
+             script cannot load for any reason (network policy, blocker),
+             the plain link right below it still opens the real calendar
+             in its own tab, so there is never a dead end here. -->
         <div class="ct-booking">
-          <p class="ct-booking__title">יומן ההזמנות בהקמה</p>
-          <p class="ct-booking__body">
-            בזמן הקרוב אפשר לתאם דרך הטופס שלצד או בוואטסאפ, ונחזור אליכם עם
-            מועד שמתאים לשני הצדדים.
-          </p>
+          <div id="lahav-discovery-cal" class="ct-cal"></div>
+          <a
+            class="ct-booking__fallback"
+            href={DISCOVERY_BOOKING_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            אם היומן לא נטען, אפשר לפתוח אותו ישירות בלשונית חדשה
+            <span class="arrow-inline" aria-hidden="true">←</span>
+          </a>
         </div>
 
         <ul class="ct-what">
-          <li>נבין איך העסק עובד היום</li>
-          <li>נאתר איפה נתקעת הכי הרבה עבודה ידנית</li>
-          <li>נגיד לכם מה לדעתנו שווה לעשות, וגם מה לא</li>
+          <li>נבין איך העסק שלכם עובד היום</li>
+          <li>נמצא איפה נתקעת הכי הרבה עבודה ידנית</li>
+          <li>נגיד מה לדעתנו שווה לעשות, וגם מה ממש לא</li>
         </ul>
 
         <a class="btn btn-secondary ct-wa" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
-            ><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.25 8.23Z"
-            ></path></svg
-          >
+          <WhatsApp />
           מעדיפים וואטסאפ? זה בסדר גמור
         </a>
       </div>
 
       <!-- SECONDARY: form -->
       <div class="ct-form-wrap" data-reveal>
-        <h2 class="t-h3 ct-form__title">או פשוט תשאירו פרטים</h2>
+        <h2 class="t-h3 ct-form__title">או פשוט השאירו פרטים</h2>
         <p class="ct-form__sub">נחזור אליכם ונתאם משם.</p>
 
-        <form class="ct-form" method="post" action="#" novalidate>
+        <div
+          class:list={['ct-status', sent && 'is-success', errorMessage && 'is-error']}
+          data-ct-status
+          role="status"
+          aria-live="polite"
+          hidden={!sent && !errorMessage}
+        >
+          {sent && 'הפרטים התקבלו. נחזור אליכם בהקדם.'}
+          {errorMessage}
+        </div>
+
+        <form class="ct-form" method="post" action="/api/contact" novalidate data-ct-form>
           <div class="field">
             <label class="field-label" for="name">שם מלא</label>
-            <input class="input" id="name" name="name" type="text" autocomplete="name" required />
+            <input class="input" id="name" name="name" type="text" autocomplete="name" required maxlength="120" />
           </div>
 
           <div class="field">
             <label class="field-label" for="phone">טלפון</label>
-            <input class="input input-ltr" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required />
+            <input class="input input-ltr" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="40" />
           </div>
 
           <div class="field">
             <label class="field-label" for="email">אימייל</label>
-            <input class="input input-ltr" id="email" name="email" type="email" autocomplete="email" required />
+            <input class="input input-ltr" id="email" name="email" type="email" autocomplete="email" required maxlength="200" />
           </div>
 
           <div class="field">
@@ -93,20 +133,144 @@ import { WHATSAPP_HREF, SERVICES } from '../lib/site';
 
           <div class="field">
             <label class="field-label" for="message">איך נוכל לעזור?</label>
-            <textarea class="input" id="message" name="message" rows="4"></textarea>
+            <textarea class="input" id="message" name="message" rows="4" required maxlength="4000"></textarea>
             <span class="field-hint">כמה מילים על מה שתקוע היום יעזרו לנו להתכונן.</span>
           </div>
 
-          <button class="btn btn-primary ct-submit" type="submit">שליחת הפרטים</button>
+          <!-- Honeypot: invisible to a real visitor and to screen readers,
+               but a plain text field a bot's autofill will often try to
+               complete. Filling it silently drops the submission. -->
+          <div class="ct-trap" aria-hidden="true">
+            <label for="website_url">Website</label>
+            <input
+              id="website_url"
+              name="website_url"
+              type="text"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+          <input type="hidden" name="form_rendered_at" value={Date.now()} data-ct-rendered-at />
 
-          <p class="ct-form__note">
-            הטופס עדיין לא מחובר. עד שנחבר אותו, אפשר להשאיר הודעה בוואטסאפ.
-          </p>
+          <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-ct-turnstile></div>
+
+          <button class="btn btn-primary ct-submit" type="submit" data-ct-submit>שליחת הפרטים</button>
+
+          <p class="ct-form__note">הפרטים מגיעים אלינו ישירות. אין ספאם ואין שיתוף עם צד שלישי.</p>
         </form>
       </div>
     </div>
   </section>
 </SiteLayout>
+
+<script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+
+<!-- Cal.com inline embed. This is Cal's own official loader (verified
+     against their public source, packages/embeds/embed-snippet), not a
+     custom integration: it lazily fetches their embed script the first
+     time Cal(...) is called, then renders the real calendar into the
+     target div below. Free, no server involved, no floating widget. -->
+<script is:inline define:vars={{ calLink: DISCOVERY_CAL_LINK }}>
+  (function (C, A, L) {
+    let p = function (a, ar) {
+      a.q.push(ar);
+    };
+    let d = C.document;
+    C.Cal =
+      C.Cal ||
+      function () {
+        let cal = C.Cal;
+        let ar = arguments;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          d.head.appendChild(d.createElement('script')).src = A;
+          cal.loaded = true;
+        }
+        if (ar[0] === L) {
+          const api = function () {
+            p(api, arguments);
+          };
+          const namespace = ar[1];
+          api.q = api.q || [];
+          if (typeof namespace === 'string') {
+            cal.ns[namespace] = cal.ns[namespace] || api;
+            p(cal.ns[namespace], ar);
+            p(cal, ['initNamespace', namespace]);
+          } else p(cal, ar);
+          return;
+        }
+        p(cal, ar);
+      };
+  })(window, 'https://cal.com/embed.js', 'init');
+
+  Cal('init', { origin: 'https://cal.com' });
+  Cal('inline', {
+    elementOrSelector: '#lahav-discovery-cal',
+    calLink: calLink,
+    // column_view keeps the calendar and the time slots side by side, so
+    // picking a day does not stack a long list of times underneath and
+    // push the rest of the page down. month_view did exactly that.
+    config: { layout: 'column_view' },
+  });
+</script>
+
+<script is:inline>
+  (() => {
+    const form = document.querySelector('[data-ct-form]');
+    if (!form) return;
+    const status = document.querySelector('[data-ct-status]');
+    const submitBtn = form.querySelector('[data-ct-submit]');
+    const renderedAtInput = form.querySelector('[data-ct-rendered-at]');
+    // the hidden timestamp is set from server-render time in the HTML
+    // already; nothing to do here besides leaving it untouched
+
+    function showStatus(kind, text) {
+      if (!status) return;
+      status.hidden = false;
+      status.textContent = text;
+      status.classList.toggle('is-success', kind === 'success');
+      status.classList.toggle('is-error', kind === 'error');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'שולח...';
+      }
+
+      const fd = new FormData(form);
+      const payload = Object.fromEntries(fd.entries());
+
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', accept: 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.ok) {
+          showStatus('success', 'הפרטים התקבלו. נחזור אליכם בהקדם.');
+          form.reset();
+          if (renderedAtInput) renderedAtInput.value = String(Date.now());
+          if (window.turnstile) window.turnstile.reset();
+        } else {
+          showStatus('error', data.error || 'משהו השתבש. אפשר לנסות שוב.');
+          if (window.turnstile) window.turnstile.reset();
+        }
+      } catch {
+        showStatus('error', 'הבעיה בחיבור לרשת. אפשר לנסות שוב, או לכתוב לנו בוואטסאפ.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'שליחת הפרטים';
+        }
+      }
+    });
+  })();
+</script>
 
 <style>
   .ct-hero {
@@ -177,26 +341,40 @@ import { WHATSAPP_HREF, SERVICES } from '../lib/site';
   }
   .ct-booking {
     margin-top: clamp(1.5rem, 3vw, 2rem);
-    border: 1.5px dashed rgba(41, 151, 255, 0.45);
-    border-radius: var(--radius-lg);
-    padding: clamp(1.25rem, 2.5vw, 1.75rem);
-    background: rgba(41, 151, 255, 0.06);
-    min-height: 8rem;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
-  .ct-booking__title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: var(--text-body-lg);
-    color: var(--color-electric);
+  /* The widget paints its own white background, so this is a light card
+     framed inside the dark primary panel, the same relationship the old
+     placeholder box had. Cal.com auto-resizes its iframe to the full
+     height of whatever it renders (a month grid plus every time slot for
+     the picked day stacks vertically), which was pushing the whole
+     contact page down. A fixed height with its own scrollbar keeps the
+     card a fixed, predictable size regardless of how tall Cal's content
+     gets. */
+  .ct-cal {
+    width: 100%;
+    height: 34rem;
+    border-radius: var(--radius-lg);
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #fff;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
   }
-  .ct-booking__body {
-    font-size: var(--text-small);
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.72);
+  .ct-booking__fallback {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: var(--text-micro);
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+  }
+  .ct-booking__fallback:hover {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   .ct-what {
     list-style: none;
@@ -258,12 +436,46 @@ import { WHATSAPP_HREF, SERVICES } from '../lib/site';
     padding-inline-start: 0.875rem;
   }
 
+  /* Honeypot: off-screen but not display:none, so it still reads as a
+     real field to unsophisticated bots while being unreachable and
+     invisible for a real visitor or a screen reader. */
+  .ct-trap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .ct-status {
+    font-size: var(--text-small);
+    font-weight: 600;
+    line-height: 1.6;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius-md, 0.75rem);
+    margin-bottom: 1.25rem;
+  }
+  .ct-status.is-success {
+    background: #e7f6ec;
+    color: #15803d;
+    border: 1px solid #bfe6cc;
+  }
+  .ct-status.is-error {
+    background: #fdf2f2;
+    color: var(--color-error);
+    border: 1px solid #e5b4b4;
+  }
+
   @media (max-width: 900px) {
     .ct-grid {
       grid-template-columns: 1fr;
     }
     .ct-submit {
       width: 100%;
+    }
+    .ct-cal {
+      height: 30rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {

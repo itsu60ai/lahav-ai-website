@@ -14,13 +14,15 @@ interface Props {
   data: {
     viz: string;
     eyebrow: string;
-    h1: string;
+    h1a: string;
+    h1b: string;
     lead: string;
     symptomsTitle: string;
     symptoms: readonly string[];
     buildTitle: string;
     build: readonly { t: string; d: string }[];
     closing: string;
+    closingBody: string;
     note: string;
   };
   title: string;
@@ -39,7 +41,10 @@ const others = SERVICES.filter((s) => s.slug !== slug);
   <section class="sp-hero">
     <div class="u-container sp-hero__type">
       <p class="t-eyebrow">{data.eyebrow}</p>
-      <h1 class="t-display-2 sp-hero__h1">{data.h1}</h1>
+      <h1 class="sp-hero__h1">
+        <span>{data.h1a}</span>
+        <span class="sp-hero__h1b">{data.h1b}</span>
+      </h1>
       <p class="sp-hero__lead">{data.lead}</p>
     </div>
   </section>
@@ -61,7 +66,7 @@ const others = SERVICES.filter((s) => s.slug !== slug);
         {
           data.symptoms.map((s, i) => (
             <li class="sym__item" data-reveal style={`--i:${i}`}>
-              <span class="sym__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              <span class="sym__q" aria-hidden="true">״</span>
               <span class="sym__t">{s}</span>
             </li>
           ))
@@ -92,33 +97,27 @@ const others = SERVICES.filter((s) => s.slug !== slug);
 
   <slot />
 
-  <!-- Other services -->
-  <section class="section">
-    <div class="u-container">
-      <div class="lede">
-        <p class="t-eyebrow">שירותים נוספים</p>
-        <h2 class="t-h2">אולי זה מה שאתם מחפשים</h2>
-      </div>
-      <ul class="others">
+  <!-- Other services. Deliberately small: a quiet way out of the page,
+       not a second sales pitch competing with the closing CTA. -->
+  <nav class="more-svc" aria-label="שירותים נוספים">
+    <div class="u-container more-svc__in">
+      <span class="more-svc__k">שירותים נוספים</span>
+      <ul class="more-svc__list">
         {
           others.map((o) => (
             <li>
-              <a class="other" href={`/services/${o.slug}/`}>
-                <span class="other__name">{o.name}</span>
-                <span class="other__lead">{o.lead}</span>
-                <span class="arrow-inline other__arr" aria-hidden="true">←</span>
+              <a class="more-svc__a" href={`/services/${o.slug}/`}>
+                {o.name}
+                <span class="arrow-inline" aria-hidden="true">←</span>
               </a>
             </li>
           ))
         }
       </ul>
     </div>
-  </section>
+  </nav>
 
-  <ClosingCta
-    heading={data.closing}
-    body="שיחה של 30 דקות. נעבור על התהליכים שלכם, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך."
-  />
+  <ClosingCta heading={data.closing} body={data.closingBody} />
 </SiteLayout>
 
 <style>
@@ -130,7 +129,17 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     max-width: 60rem;
   }
   .sp-hero__h1 {
-    margin-block: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 1.1rem + 4.2vw, 4.75rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    margin-block: 1.25rem 1.5rem;
+  }
+  .sp-hero__h1b {
+    color: var(--color-royal);
   }
   .sp-hero__lead {
     font-size: var(--text-lead);
@@ -151,40 +160,61 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     padding-inline-start: 1rem;
   }
 
-  /* Symptoms */
+  /* Symptoms.
+     These are sentences the visitor might say out loud, so they are set as
+     quoted fragments in bubbles rather than as a numbered list. The stagger
+     stops five bubbles from reading as a table. */
   .sym {
     list-style: none;
     margin: 0;
     padding: 0;
+    display: grid;
+    gap: clamp(0.875rem, 2vw, 1.25rem);
   }
   .sym--rail {
-    display: flex;
-    flex-direction: column;
-  }
-  .sym--rail .sym__item {
-    display: flex;
-    align-items: baseline;
-    gap: 1.25rem;
-    padding-block: clamp(1.25rem, 2.5vw, 1.75rem);
-    border-bottom: 1px solid var(--color-line);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .sym--grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(1.5rem, 3vw, 2.5rem) clamp(2.5rem, 5vw, 4rem);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .sym--grid .sym__item {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--color-line);
+  /* every other bubble sits lower, the way a conversation staggers */
+  .sym--rail .sym__item:nth-child(even) {
+    margin-block-start: clamp(1rem, 2.5vw, 2rem);
   }
+
   .sym__item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem) clamp(1.25rem, 2.5vw, 1.75rem)
+      clamp(1.375rem, 2.5vw, 1.875rem);
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line);
+    border-radius: 1.25rem;
+    border-end-end-radius: 0.25rem;
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
-      translate 600ms var(--ease-out) calc(var(--i) * 90ms);
+      translate 600ms var(--ease-out) calc(var(--i) * 90ms),
+      border-color var(--dur) var(--ease-out);
   }
+  .sym__item:hover {
+    border-color: var(--color-line-strong);
+  }
+  /* the bubble tail, on the reading-start side */
+  .sym__item::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    inset-inline-end: -1px;
+    width: 1.125rem;
+    height: 1.125rem;
+    background: var(--color-surface-2);
+    border-inline-end: 1px solid var(--color-line);
+    border-block-end: 1px solid var(--color-line);
+    border-end-start-radius: 1rem;
+  }
+
   :global(html.reveal-ready) .sym__item {
     opacity: 0;
     translate: 0 14px;
@@ -193,18 +223,20 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     opacity: 1;
     translate: 0 0;
   }
-  .sym__n {
+
+  .sym__q {
     font-family: var(--font-display);
-    font-size: var(--text-small);
-    font-weight: 700;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 0.8;
     color: var(--color-electric);
-    flex: 0 0 auto;
+    flex: none;
   }
   .sym__t {
     font-family: var(--font-display);
-    font-size: var(--text-h3);
+    font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.375rem);
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.4;
     color: var(--color-ink);
   }
 
@@ -241,51 +273,61 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     max-width: 46ch;
   }
 
-  /* Other services */
-  .others {
+  /* Other services: one compact row, not a section */
+  .more-svc {
+    border-top: 1px solid var(--color-line);
+    background: var(--color-surface-2);
+    padding-block: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  .more-svc__in {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+  }
+  .more-svc__k {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-3);
+  }
+  .more-svc__list {
     list-style: none;
     margin: 0;
     padding: 0;
-    border-top: 1px solid var(--color-line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.75rem;
   }
-  .other {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr auto;
-    gap: 1.5rem;
-    align-items: baseline;
-    padding-block: clamp(1.25rem, 2.5vw, 1.75rem);
-    border-bottom: 1px solid var(--color-line);
-    text-decoration: none;
-    transition: background-color var(--dur) var(--ease-out);
-  }
-  .other:hover {
-    background: var(--color-surface-2);
-  }
-  .other__name {
+  .more-svc__a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
     font-family: var(--font-display);
-    font-size: var(--text-h3);
+    font-size: var(--text-body-lg);
     font-weight: 700;
     color: var(--color-ink);
+    text-decoration: none;
+    transition: color var(--dur) var(--ease-out);
   }
-  .other__lead {
-    font-size: var(--text-small);
-    color: var(--color-ink-2);
-  }
-  .other__arr {
+  .more-svc__a:hover {
     color: var(--color-royal);
-    font-weight: 700;
+  }
+  .more-svc__a .arrow-inline {
+    color: var(--color-electric);
   }
 
   @media (max-width: 860px) {
+    .sym--rail,
     .sym--grid,
     .build {
       grid-template-columns: 1fr;
     }
-    .other {
-      grid-template-columns: 1fr auto;
+    .sym--rail .sym__item:nth-child(even) {
+      margin-block-start: 0;
     }
-    .other__lead {
-      grid-column: 1 / -1;
+    .more-svc__list {
+      gap: 0.5rem 1.25rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {

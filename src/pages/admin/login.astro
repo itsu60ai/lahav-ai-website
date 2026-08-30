@@ -1,0 +1,152 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { login, sessionCookieName, sessionCookieOptions } from '../../lib/cms/auth.ts';
+
+let error = '';
+const url = new URL(Astro.request.url);
+const next = url.searchParams.get('next') || '/admin';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const email = String(form.get('email') ?? '');
+  const password = String(form.get('password') ?? '');
+
+  const result = await login(Astro.locals.stores!, email, password);
+  if (result.ok) {
+    const secure = url.protocol === 'https:';
+    Astro.cookies.set(sessionCookieName, result.token, sessionCookieOptions(secure));
+    // only ever redirect to a path on this site
+    const to = next.startsWith('/') && !next.startsWith('//') ? next : '/admin';
+    return Astro.redirect(to, 302);
+  }
+  error =
+    result.reason === 'locked'
+      ? 'החשבון ננעל זמנית בעקבות ניסיונות כושלים. נסו שוב בעוד כמה דקות.'
+      : 'האימייל או הסיסמה שגויים.';
+}
+---
+
+<AdminLayout title="כניסה" bare>
+  <div class="lg">
+    <div class="lg__brand">
+      <span class="lg__logo">LA</span>
+      <div>
+        <p class="lg__name">LAHAV AI</p>
+        <p class="lg__sub">ניהול תוכן</p>
+      </div>
+    </div>
+
+    <h1 class="lg__h">כניסה למערכת</h1>
+
+    {error && <p class="lg__err" role="alert">{error}</p>}
+
+    <form class="lg__form" method="post">
+      <div class="ad-field">
+        <label class="ad-label" for="email">אימייל</label>
+        <input
+          class="ad-input"
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="username"
+          required
+          autofocus
+          dir="ltr"
+        />
+      </div>
+
+      <div class="ad-field">
+        <label class="ad-label" for="password">סיסמה</label>
+        <input
+          class="ad-input"
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+          dir="ltr"
+        />
+      </div>
+
+      <button class="ad-btn ad-btn--primary lg__go" type="submit">כניסה</button>
+    </form>
+
+    <p class="lg__note">
+      אזור זה מוגן. אין הרשמה עצמית, וחשבונות נוצרים רק על ידי מנהל המערכת.
+    </p>
+  </div>
+</AdminLayout>
+
+<style>
+  .lg {
+    width: min(24rem, 100%);
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    box-shadow: var(--shadow-lg);
+  }
+  .lg__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+  }
+  .lg__logo {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.625rem;
+    background: linear-gradient(120deg, #2997ff, #1d4ed8);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.9375rem;
+    letter-spacing: 0.04em;
+  }
+  .lg__name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 1.2;
+  }
+  .lg__sub {
+    font-size: 0.8125rem;
+    color: var(--color-ink-3);
+  }
+  .lg__h {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+  }
+  .lg__err {
+    background: #fdf2f2;
+    border: 1px solid #e5b4b4;
+    color: var(--color-error);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .lg__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .lg__go {
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+  .lg__note {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-line);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--color-ink-3);
+  }
+</style>

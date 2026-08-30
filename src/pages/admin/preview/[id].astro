@@ -1,0 +1,73 @@
+---
+// Admin preview. Renders ANY article, published or draft, using the exact
+// same component the public page uses, so preview cannot lie.
+export const prerender = false;
+
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import ScrollReveal from '../../../components/ScrollReveal.astro';
+import ArticleView from '../../../components/ArticleView.astro';
+
+
+const { articles } = Astro.locals.stores!;
+const { id } = Astro.params;
+const a = await articles.get(String(id));
+if (!a) return Astro.redirect('/admin', 302);
+
+const more = (await articles.list({ status: 'published' }))
+  .filter((x) => x.id !== a.id)
+  .slice(0, 2);
+---
+
+<SiteLayout title={`תצוגה מקדימה: ${a.title || 'ללא כותרת'}`} description={a.excerpt} noindex>
+  <ScrollReveal />
+
+  <div class="pv">
+    <div class="u-container pv__in">
+      <span class="pv__tag">תצוגה מקדימה</span>
+      <span class="pv__txt">
+        {a.status === 'published'
+          ? 'המאמר הזה מפורסם וגלוי באתר.'
+          : 'המאמר הזה בטיוטה ואינו גלוי לאף אחד מלבדכם.'}
+      </span>
+      <a class="pv__back" href={`/admin/${a.id}`}>חזרה לעריכה</a>
+    </div>
+  </div>
+
+  <ArticleView a={a} more={more} />
+</SiteLayout>
+
+<style>
+  .pv {
+    background: var(--color-navy);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+  .pv__in {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-block: 0.625rem;
+    font-size: var(--text-small);
+  }
+  .pv__tag {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    background: var(--color-electric);
+    color: var(--color-navy);
+    border-radius: 999px;
+    padding: 0.1875rem 0.625rem;
+  }
+  .pv__txt {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .pv__back {
+    margin-inline-start: auto;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+  }
+</style>

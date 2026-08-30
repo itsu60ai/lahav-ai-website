@@ -1,49 +1,232 @@
 ---
 // Bespoke page visuals. One per service story, each with its own mechanism
-// so no two pages look alike. All abstract: no vendor names, no fake
+// so no two pages look alike.
+//
+// TWO RULES THESE MUST PASS
+//  1. Direction. Hebrew reads right to left, so every story starts at the
+//     RIGHT, passes through the CENTRE and resolves on the LEFT.
+//  2. Self-explanation. Hide every paragraph on the page and a non
+//     technical business owner should still be able to say what the
+//     picture is about. That means real words on the artwork, not shapes
+//     and arrows alone.
+//
+// Everything is abstract and illustrative: no vendor names, no fake
 // dashboards, no invented metrics, nothing that reads as a factual claim.
+//
+// SIZING. These render at roughly 600px (inside an article), 700px
+// (inside the home showcase) and 1150px (a service page stage). The
+// viewBox is 860 wide so that range lands between 0.7x and 1.35x, which
+// keeps every label legible. Authoring at 1100+ and letting it shrink is
+// what made the labels unreadable before.
 interface Props {
   kind: 'crm' | 'automation' | 'web' | 'app' | 'content' | 'services' | 'about' | 'broken';
   class?: string;
 }
 const { kind, class: cls = '' } = Astro.props;
+
+// CRM: the same lead, seen at five points in its life. The card under
+// each stop shows what the business knows at that moment, and the stack
+// of bars grows as information accumulates.
+const crmStages = [
+  { x: 774, t: 'ליד חדש', s: 'שם וטלפון', bars: 1 },
+  { x: 602, t: 'שיחה', s: 'מה הוא צריך', bars: 2 },
+  { x: 430, t: 'הצעה', s: 'מה הצענו', bars: 3 },
+  { x: 258, t: 'מעקב', s: 'מתי לחזור', bars: 4 },
+  { x: 86, t: 'לקוח', s: 'סגור, ממשיכים', bars: 4 },
+];
+
+const contentStages = [
+  { x: 780, t: 'מטרה עסקית', s: 'למי כותבים ולמה' },
+  { x: 605, t: 'בריף', s: 'נושא וזווית' },
+  { x: 430, t: 'טיוטה', s: 'בסיוע AI' },
+  { x: 255, t: 'בקרה ועריכה', s: 'אתם קוראים' },
+  { x: 80, t: 'שימוש', s: 'רק אחרי אישור' },
+];
+
+const webSteps = [
+  { x: 760, t: 'נכנס', s: 'מגיע לאתר' },
+  { x: 545, t: 'מבין', s: 'איפה הוא ומה יש כאן' },
+  { x: 330, t: 'מוצא', s: 'המידע שחסר לו' },
+  { x: 115, t: 'פועל', s: 'משאיר פרטים' },
+];
+
+const ecosystem = [
+  { x: 770, t: 'CRM', s: 'הלקוחות' },
+  { x: 600, t: 'אוטומציות', s: 'העבודה החוזרת' },
+  { x: 430, t: 'אתרים', s: 'הפנים החוצה' },
+  { x: 260, t: 'אפליקציות', s: 'התהליך שלכם' },
+  { x: 90, t: 'תוכן', s: 'מה שאתם אומרים' },
+];
+// ---------------------------------------------------------------------
+// MOBILE
+//
+// Below 760px the SVGs are hidden and this data is rendered as a stacked
+// list of real HTML text instead. Same story, same words, but at a size a
+// person can actually read on a phone. Keep the two in sync: if a step
+// changes in the artwork above, change it here too.
+// ---------------------------------------------------------------------
+type MStep = { t: string; s?: string };
+type MFlow = {
+  kicker?: string;
+  steps: MStep[];
+  branch?: { label: string; items: MStep[] };
+  outcome?: MStep;
+};
+
+const MOBILE: Record<string, MFlow> = {
+  crm: {
+    kicker: 'מסלול של פנייה אחת',
+    steps: crmStages.map((c) => ({ t: c.t, s: c.s })),
+    outcome: { t: 'כרטיס לקוח אחד', s: 'תמיד ברור מה קרה ומה הצעד הבא' },
+  },
+  automation: {
+    kicker: 'איך אוטומציה מחליטה',
+    steps: [
+      { t: 'קורה משהו', s: 'נכנסת פנייה, מתקבל תשלום, מגיע תאריך' },
+      { t: 'המערכת בודקת את הכללים', s: 'אלה שהגדרתם מראש' },
+    ],
+    branch: {
+      label: 'ומכאן אחת משתיים',
+      items: [
+        { t: 'רצה לבד', s: 'כשברור מה לעשות: שולחת, מעדכנת, מזכירה' },
+        { t: 'עוברת אליכם', s: 'כשצריך שיקול דעת, אתם מחליטים' },
+      ],
+    },
+    outcome: { t: 'אתם נשארים בשליטה', s: 'המערכת לא מחליטה במקומכם' },
+  },
+  web: {
+    kicker: 'המסלול של מבקר',
+    steps: webSteps.map((w) => ({ t: w.t, s: w.s })),
+    outcome: { t: 'הפנייה נכנסת לתהליך בעסק', s: 'ומשם ממשיכים לטפל בה' },
+  },
+  app: {
+    kicker: 'איור המחשה, לא צילום מסך של מוצר',
+    steps: [
+      { t: 'צורך בעסק', s: 'משהו שאין לו כלי מתאים' },
+      { t: 'מי משתמש', s: 'ומה הוא צריך לעשות' },
+      { t: 'מסכים ופעולות', s: 'רק מה שבאמת צריך' },
+    ],
+    outcome: { t: 'תהליך שעובד', s: 'והמידע נשמר במקום אחד' },
+  },
+  content: {
+    kicker: 'סדר העבודה על תוכן',
+    steps: contentStages.map((c) => ({ t: c.t, s: c.s })),
+    outcome: { t: 'שום דבר לא יוצא בלי אישור שלכם', s: '' },
+  },
+  services: {
+    kicker: 'חמישה חלקים, מערכת אחת',
+    steps: ecosystem.map((e) => ({ t: e.t, s: e.s })),
+    outcome: { t: 'העסק שלכם', s: 'החלקים מדברים ביניהם' },
+  },
+  about: {
+    kicker: 'קודם התהליך, אחר כך הטכנולוגיה',
+    steps: [
+      { t: 'התהליך', s: 'איך העסק עובד היום' },
+      { t: 'הצוואר', s: 'איפה זה נתקע' },
+      { t: 'הפתרון', s: 'רק אז בוחרים כלים' },
+    ],
+  },
+};
+
+const m = MOBILE[kind];
 ---
 
 <div class:list={['viz', `viz--${kind}`, cls]} data-reveal>
   {
     kind === 'crm' && (
-      <svg viewBox="0 0 1100 420" role="img" aria-label="איור: מסלול לקוח מפנייה ראשונה ועד עסקה, עם המידע מרוכז במקום אחד">
+      <svg
+        viewBox="0 0 860 390"
+        role="img"
+        aria-label="איור: חיי פנייה בחמישה שלבים, ליד חדש, שיחה, הצעה, מעקב ולקוח. בכל שלב נוסף מידע, והכל נאסף לכרטיס לקוח אחד"
+      >
         <defs>
           <linearGradient id="vzCrm" x1="1" y1="0" x2="0" y2="0">
             <stop offset="0%" stop-color="#2997FF" />
             <stop offset="100%" stop-color="#1D4ED8" />
           </linearGradient>
         </defs>
-        <path class="vz-rail" d="M1030 120 L70 120" stroke="rgba(41,151,255,.28)" stroke-width="2" fill="none" />
-        {[
-          { x: 1030, label: 'פנייה' },
-          { x: 790, label: 'שיחה' },
-          { x: 550, label: 'הצעה' },
-          { x: 310, label: 'מעקב' },
-          { x: 70, label: 'לקוח' },
-        ].map((s, i) => (
-          <g class="vz-stop" style={`--d:${i * 180}ms`}>
-            <circle cx={s.x} cy="120" r="15" fill={i === 4 ? 'url(#vzCrm)' : 'rgba(255,255,255,.09)'} stroke="rgba(41,151,255,.55)" stroke-width="2" />
-            <text x={s.x} y="176" text-anchor="middle" class="vz-label">{s.label}</text>
+
+        <text x="838" y="24" text-anchor="start" class="vz-kicker">
+          מסלול של פנייה אחת
+        </text>
+
+        {/* the rail runs right to left */}
+        <path
+          class="vz-rail"
+          d="M774 58 L86 58"
+          stroke="rgba(41,151,255,.3)"
+          stroke-width="2"
+          fill="none"
+        />
+
+        {crmStages.map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 170}ms`}>
+            <circle
+              cx={s.x}
+              cy="58"
+              r="11"
+              fill={i === 4 ? 'url(#vzCrm)' : 'rgba(255,255,255,.09)'}
+              stroke="rgba(41,151,255,.6)"
+              stroke-width="2"
+            />
+            {/* what the business knows at this point */}
+            <rect
+              x={s.x - 78}
+              y="92"
+              width="156"
+              height="122"
+              rx="16"
+              fill={i === 4 ? 'rgba(41,151,255,.14)' : 'rgba(255,255,255,.05)'}
+              stroke={i === 4 ? 'rgba(41,151,255,.55)' : 'rgba(255,255,255,.18)'}
+            />
+            <text x={s.x} y="120" text-anchor="middle" class="vz-title-sm">
+              {s.t}
+            </text>
+            <text x={s.x} y="143" text-anchor="middle" class="vz-sub">
+              {s.s}
+            </text>
+            {[0, 1, 2, 3].map((b) => (
+              <rect
+                x={s.x - 52}
+                y={161 + b * 13}
+                width={b < s.bars ? 104 : 104}
+                height="7"
+                rx="3.5"
+                fill={b < s.bars ? 'rgba(41,151,255,.5)' : 'rgba(255,255,255,.08)'}
+              />
+            ))}
           </g>
         ))}
-        {/* everything feeds one record */}
-        <g class="vz-record" >
-          <rect x="330" y="252" width="440" height="128" rx="24" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" />
-          <text x="550" y="296" text-anchor="middle" class="vz-title">כרטיס לקוח אחד</text>
-          <text x="550" y="330" text-anchor="middle" class="vz-sub">כל מה שנאמר, נשלח וסוכם</text>
-          <text x="550" y="358" text-anchor="middle" class="vz-next">השלב הבא ברור</text>
+
+        {/* everything lands on one record */}
+        <g
+          class="vz-feed"
+          stroke="rgba(41,151,255,.28)"
+          stroke-width="1.5"
+          fill="none"
+          stroke-dasharray="4 6"
+        >
+          {crmStages.map((s) => (
+            <path d={`M${s.x} 214 C ${s.x} 256 ${430 + (s.x - 430) * 0.25} 258 430 288`} />
+          ))}
         </g>
-        <g class="vz-feed" stroke="rgba(41,151,255,.3)" stroke-width="1.5" fill="none" stroke-dasharray="5 7">
-          <path d="M1030 140 C 1030 220 780 210 640 252" />
-          <path d="M790 140 C 790 200 700 216 590 252" />
-          <path d="M550 140 L550 252" />
-          <path d="M310 140 C 310 200 400 216 500 252" />
+
+        <g class="vz-record">
+          <rect
+            x="215"
+            y="288"
+            width="430"
+            height="78"
+            rx="20"
+            fill="rgba(255,255,255,.06)"
+            stroke="rgba(255,255,255,.24)"
+          />
+          <text x="430" y="322" text-anchor="middle" class="vz-title">
+            כרטיס לקוח אחד
+          </text>
+          <text x="430" y="349" text-anchor="middle" class="vz-next">
+            תמיד ברור מה קרה ומה הצעד הבא
+          </text>
         </g>
       </svg>
     )
@@ -51,74 +234,295 @@ const { kind, class: cls = '' } = Astro.props;
 
   {
     kind === 'automation' && (
-      <svg viewBox="0 0 1100 460" role="img" aria-label="איור: אירוע מפעיל בדיקה, ומשם פעולה אוטומטית או העברה לאישור אנושי">
+      <svg
+        viewBox="0 0 860 430"
+        role="img"
+        aria-label="איור: משהו קורה בעסק, המערכת בודקת את הכללים שהוגדרו, ואז או שהפעולה רצה לבד או שהיא עוברת אליכם להחלטה"
+      >
         <defs>
           <linearGradient id="vzAu" x1="1" y1="0" x2="0" y2="0">
             <stop offset="0%" stop-color="#2997FF" />
             <stop offset="100%" stop-color="#1D4ED8" />
           </linearGradient>
         </defs>
-        {/* trigger */}
+
+        <text x="838" y="24" text-anchor="start" class="vz-kicker">
+          איך אוטומציה מחליטה
+        </text>
+
+        {/* 1. the trigger, on the right */}
         <g class="vz-stop" style="--d:0ms">
-          <rect x="900" y="188" width="180" height="76" rx="20" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.22)" />
-          <text x="990" y="222" text-anchor="middle" class="vz-title-sm">קורה משהו</text>
-          <text x="990" y="248" text-anchor="middle" class="vz-sub">פנייה, תשלום, תאריך</text>
+          <rect
+            x="672"
+            y="168"
+            width="172"
+            height="86"
+            rx="20"
+            fill="rgba(255,255,255,.06)"
+            stroke="rgba(255,255,255,.22)"
+          />
+          <text x="758" y="203" text-anchor="middle" class="vz-title-sm">
+            קורה משהו
+          </text>
+          <text x="758" y="228" text-anchor="middle" class="vz-sub">
+            פנייה, תשלום, תאריך
+          </text>
         </g>
-        <path class="vz-line" style="--d:200ms" d="M900 226 L706 226" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
-        {/* decision */}
+
+        <path
+          class="vz-line"
+          style="--d:220ms"
+          d="M672 211 L556 211"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="2"
+          fill="none"
+        />
+
+        {/* 2. the rule check. A soft round shape, deliberately not the
+             node-and-port look of a workflow builder. */}
         <g class="vz-stop" style="--d:400ms">
-          <path d="M600 166 L706 226 L600 286 L494 226 Z" fill="rgba(41,151,255,.12)" stroke="rgba(41,151,255,.5)" stroke-width="2" />
-          <text x="600" y="220" text-anchor="middle" class="vz-title-sm">בודק מה נכון</text>
-          <text x="600" y="244" text-anchor="middle" class="vz-sub">לפי הכללים שלכם</text>
+          <rect
+            x="384"
+            y="160"
+            width="172"
+            height="102"
+            rx="46"
+            fill="rgba(41,151,255,.13)"
+            stroke="rgba(41,151,255,.55)"
+            stroke-width="2"
+          />
+          <text x="470" y="199" text-anchor="middle" class="vz-title-sm">
+            בודקת את הכללים
+          </text>
+          <text x="470" y="224" text-anchor="middle" class="vz-sub">
+            שהגדרתם מראש
+          </text>
         </g>
-        {/* two outcomes */}
-        <path class="vz-line" style="--d:640ms" d="M494 200 C 420 200 400 120 320 120" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
-        <path class="vz-line" style="--d:820ms" d="M494 252 C 420 252 400 340 320 340" stroke="rgba(255,255,255,.3)" stroke-width="2" fill="none" stroke-dasharray="6 8" />
+
+        {/* 3. two ways out */}
+        <path
+          class="vz-line"
+          style="--d:640ms"
+          d="M384 188 C 320 188 300 112 236 112"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="2"
+          fill="none"
+        />
+        <path
+          class="vz-line"
+          style="--d:820ms"
+          d="M384 234 C 320 234 300 314 236 314"
+          stroke="rgba(255,255,255,.34)"
+          stroke-width="2"
+          fill="none"
+          stroke-dasharray="6 8"
+        />
+        <text x="330" y="140" text-anchor="middle" class="vz-tag">
+          ברור מה לעשות
+        </text>
+        <text x="330" y="300" text-anchor="middle" class="vz-tag">
+          צריך שיקול דעת
+        </text>
+
+        {/* the automatic branch */}
         <g class="vz-stop" style="--d:900ms">
-          <rect x="80" y="82" width="240" height="76" rx="20" fill="url(#vzAu)" />
-          <text x="200" y="116" text-anchor="middle" class="vz-title-sm" fill="#fff">פועל לבד</text>
-          <text x="200" y="142" text-anchor="middle" class="vz-sub" fill="rgba(255,255,255,.85)">שולח, מעדכן, מזכיר</text>
+          <rect x="36" y="72" width="200" height="80" rx="20" fill="url(#vzAu)" />
+          <text x="136" y="106" text-anchor="middle" class="vz-title-sm" fill="#fff">
+            רצה לבד
+          </text>
+          <text x="136" y="131" text-anchor="middle" class="vz-sub" fill="rgba(255,255,255,.88)">
+            שולחת, מעדכנת, מזכירה
+          </text>
         </g>
+
+        {/* the human branch, given equal visual weight on purpose */}
         <g class="vz-stop" style="--d:1080ms">
-          <rect x="80" y="302" width="240" height="76" rx="20" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.32)" />
-          <text x="200" y="336" text-anchor="middle" class="vz-title-sm">עובר אליכם</text>
-          <text x="200" y="362" text-anchor="middle" class="vz-sub">כשצריך החלטה</text>
+          <rect
+            x="36"
+            y="274"
+            width="200"
+            height="80"
+            rx="20"
+            fill="rgba(255,255,255,.07)"
+            stroke="#2997FF"
+            stroke-width="2"
+          />
+          <circle cx="70" cy="306" r="7" fill="none" stroke="#2997FF" stroke-width="2" />
+          <path
+            d="M58 328 C 58 316 82 316 82 328"
+            fill="none"
+            stroke="#2997FF"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <text x="222" y="303" text-anchor="start" class="vz-title-sm">
+            עוברת אליכם
+          </text>
+          <text x="222" y="328" text-anchor="start" class="vz-sub">
+            אתם מחליטים
+          </text>
         </g>
-        <text x="200" y="416" text-anchor="middle" class="vz-note vz-stop" style="--d:1260ms">אתם נשארים בשליטה</text>
+
+        <text x="136" y="392" text-anchor="middle" class="vz-note vz-stop" style="--d:1260ms">
+          אתם נשארים בשליטה
+        </text>
       </svg>
     )
   }
 
   {
     kind === 'web' && (
-      <svg viewBox="0 0 1100 440" role="img" aria-label="איור: מבקר מגיע לאתר, עובר מסלול ברור ומגיע לפעולה שמזינה תהליך בעסק">
+      <svg
+        viewBox="0 0 860 430"
+        role="img"
+        aria-label="איור: מסלול מבקר באתר, נכנס, מבין איפה הוא, מוצא את המידע שחסר לו, ומשאיר פרטים. משם הפנייה נכנסת לתהליך בעסק"
+      >
         <defs>
           <linearGradient id="vzWeb" x1="1" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#2997FF" />
             <stop offset="100%" stop-color="#1D4ED8" />
           </linearGradient>
         </defs>
-        {/* three stacked screens, right to left */}
-        {[
-          { x: 830, y: 60, label: 'נחיתה' },
-          { x: 490, y: 110, label: 'הבנה' },
-          { x: 150, y: 160, label: 'פעולה' },
-        ].map((s, i) => (
-          <g class="vz-stop" style={`--d:${i * 220}ms`}>
-            <rect x={s.x} y={s.y} width="220" height="180" rx="18" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" />
-            <rect x={s.x + 22} y={s.y + 26} width={i === 2 ? 120 : 150} height="12" rx="6" fill="rgba(255,255,255,.4)" />
-            <rect x={s.x + 22} y={s.y + 50} width="96" height="9" rx="4.5" fill="rgba(255,255,255,.22)" />
-            {i < 2 && <rect x={s.x + 22} y={s.y + 68} width="126" height="9" rx="4.5" fill="rgba(255,255,255,.22)" />}
-            {i === 2 && <rect x={s.x + 22} y={s.y + 74} width="140" height="34" rx="10" fill="url(#vzWeb)" />}
-            <text x={s.x + 110} y={s.y + 214} text-anchor="middle" class="vz-label">{s.label}</text>
+
+        <text x="838" y="24" text-anchor="start" class="vz-kicker">
+          המסלול של מבקר
+        </text>
+
+        {webSteps.map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 200}ms`}>
+            {/* an illustrative page, not a screenshot of anything */}
+            <rect
+              x={s.x - 90}
+              y="52"
+              width="180"
+              height="196"
+              rx="14"
+              fill="rgba(255,255,255,.05)"
+              stroke="rgba(255,255,255,.2)"
+            />
+            {/* browser chrome */}
+            <path
+              d={`M${s.x - 90} 76 L${s.x + 90} 76`}
+              stroke="rgba(255,255,255,.18)"
+              stroke-width="1"
+            />
+            <circle cx={s.x + 78} cy="64" r="3" fill="rgba(255,255,255,.3)" />
+            <circle cx={s.x + 66} cy="64" r="3" fill="rgba(255,255,255,.22)" />
+
+            {i === 0 && (
+              <>
+                <rect
+                  x={s.x - 70}
+                  y="96"
+                  width="140"
+                  height="52"
+                  rx="8"
+                  fill="rgba(41,151,255,.22)"
+                />
+                <rect x={s.x - 70} y="160" width="96" height="8" rx="4" fill="rgba(255,255,255,.22)" />
+              </>
+            )}
+            {i === 1 && (
+              <>
+                <rect x={s.x - 70} y="96" width="120" height="12" rx="6" fill="rgba(255,255,255,.4)" />
+                <rect x={s.x - 70} y="122" width="140" height="8" rx="4" fill="rgba(255,255,255,.2)" />
+                <rect x={s.x - 70} y="140" width="128" height="8" rx="4" fill="rgba(255,255,255,.2)" />
+                <rect x={s.x - 70} y="158" width="104" height="8" rx="4" fill="rgba(255,255,255,.2)" />
+              </>
+            )}
+            {i === 2 && (
+              <>
+                {[0, 1, 2].map((r) => (
+                  <>
+                    <rect
+                      x={s.x - 70}
+                      y={98 + r * 34}
+                      width="140"
+                      height="26"
+                      rx="7"
+                      fill="rgba(255,255,255,.07)"
+                    />
+                    <rect
+                      x={s.x - 60}
+                      y={107 + r * 34}
+                      width={r === 1 ? 92 : 68}
+                      height="8"
+                      rx="4"
+                      fill="rgba(255,255,255,.26)"
+                    />
+                  </>
+                ))}
+              </>
+            )}
+            {i === 3 && (
+              <>
+                <rect x={s.x - 70} y="96" width="104" height="10" rx="5" fill="rgba(255,255,255,.34)" />
+                <rect
+                  x={s.x - 70}
+                  y="118"
+                  width="140"
+                  height="22"
+                  rx="7"
+                  fill="rgba(255,255,255,.09)"
+                  stroke="rgba(255,255,255,.2)"
+                />
+                <rect
+                  x={s.x - 70}
+                  y="148"
+                  width="140"
+                  height="22"
+                  rx="7"
+                  fill="rgba(255,255,255,.09)"
+                  stroke="rgba(255,255,255,.2)"
+                />
+                <rect x={s.x - 70} y="182" width="110" height="30" rx="9" fill="url(#vzWeb)" />
+              </>
+            )}
+
+            <text x={s.x} y="278" text-anchor="middle" class="vz-title-sm">
+              {s.t}
+            </text>
+            <text x={s.x} y="301" text-anchor="middle" class="vz-sub">
+              {s.s}
+            </text>
           </g>
         ))}
-        <path class="vz-line" style="--d:180ms" d="M830 150 L710 160" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
-        <path class="vz-line" style="--d:400ms" d="M490 200 L370 210" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
-        <path class="vz-line" style="--d:660ms" d="M150 300 C 150 380 400 400 560 400" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" stroke-dasharray="6 8" />
-        <g class="vz-stop" style="--d:760ms">
-          <rect x="560" y="372" width="300" height="56" rx="16" fill="rgba(41,151,255,.12)" stroke="rgba(41,151,255,.45)" />
-          <text x="710" y="406" text-anchor="middle" class="vz-title-sm">נכנס לתהליך בעסק</text>
+
+        {/* the journey moves leftward */}
+        {[0, 1, 2].map((i) => (
+          <path
+            class="vz-line"
+            style={`--d:${180 + i * 200}ms`}
+            d={`M${webSteps[i].x - 90} 150 L${webSteps[i + 1].x + 90} 150`}
+            stroke="rgba(41,151,255,.5)"
+            stroke-width="2"
+            fill="none"
+          />
+        ))}
+
+        {/* and the result feeds the business */}
+        <path
+          class="vz-line"
+          style="--d:900ms"
+          d="M115 316 C 115 372 300 386 430 386"
+          stroke="rgba(41,151,255,.45)"
+          stroke-width="2"
+          fill="none"
+          stroke-dasharray="6 8"
+        />
+        <g class="vz-stop" style="--d:1000ms">
+          <rect
+            x="430"
+            y="360"
+            width="290"
+            height="52"
+            rx="16"
+            fill="rgba(41,151,255,.13)"
+            stroke="rgba(41,151,255,.5)"
+          />
+          <text x="575" y="392" text-anchor="middle" class="vz-title-sm">
+            הפנייה נכנסת לתהליך בעסק
+          </text>
         </g>
       </svg>
     )
@@ -126,39 +530,138 @@ const { kind, class: cls = '' } = Astro.props;
 
   {
     kind === 'app' && (
-      <svg viewBox="0 0 1100 440" role="img" aria-label="איור: צורך עסקי הופך למסכים, פעולות ומידע שזורם בתהליך">
+      <svg
+        viewBox="0 0 860 430"
+        role="img"
+        aria-label="איור: צורך בעסק, מי משתמש, המסכים והפעולות, המידע שנשמר, ובסוף תהליך שעובד"
+      >
         <defs>
           <linearGradient id="vzApp" x1="1" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#2997FF" />
             <stop offset="100%" stop-color="#1D4ED8" />
           </linearGradient>
         </defs>
+
+        <text x="838" y="24" text-anchor="start" class="vz-kicker">
+          איור המחשה, לא צילום מסך של מוצר
+        </text>
+
+        {/* 1. the business need */}
         <g class="vz-stop" style="--d:0ms">
-          <rect x="880" y="170" width="200" height="90" rx="20" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.22)" />
-          <text x="980" y="206" text-anchor="middle" class="vz-title-sm">צורך בעסק</text>
-          <text x="980" y="232" text-anchor="middle" class="vz-sub">משהו שאין לו כלי מתאים</text>
+          <rect
+            x="686"
+            y="156"
+            width="158"
+            height="94"
+            rx="20"
+            fill="rgba(255,255,255,.06)"
+            stroke="rgba(255,255,255,.22)"
+          />
+          <text x="765" y="192" text-anchor="middle" class="vz-title-sm">
+            צורך בעסק
+          </text>
+          <text x="765" y="216" text-anchor="middle" class="vz-sub">
+            אין כלי מתאים
+          </text>
         </g>
-        <path class="vz-line" style="--d:180ms" d="M880 215 L760 215" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
-        {/* wireframe fragments */}
+        <path
+          class="vz-line"
+          style="--d:160ms"
+          d="M686 203 L622 203"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="2"
+          fill="none"
+        />
+
+        {/* 2. who uses it */}
+        <g class="vz-stop" style="--d:300ms">
+          <circle
+            cx="570"
+            cy="203"
+            r="46"
+            fill="rgba(41,151,255,.12)"
+            stroke="rgba(41,151,255,.5)"
+            stroke-width="2"
+          />
+          <circle cx="570" cy="190" r="10" fill="none" stroke="#2997FF" stroke-width="2" />
+          <path
+            d="M552 220 C 552 202 588 202 588 220"
+            fill="none"
+            stroke="#2997FF"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <text x="570" y="282" text-anchor="middle" class="vz-title-sm">
+            מי משתמש
+          </text>
+          <text x="570" y="305" text-anchor="middle" class="vz-sub">
+            ומה הוא צריך לעשות
+          </text>
+        </g>
+        <path
+          class="vz-line"
+          style="--d:440ms"
+          d="M524 203 L466 203"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="2"
+          fill="none"
+        />
+
+        {/* 3. the screens, drawn as obvious wireframes */}
         {[
-          { x: 560, y: 92 },
-          { x: 560, y: 250 },
-          { x: 330, y: 170 },
+          { x: 300, y: 84 },
+          { x: 300, y: 222 },
         ].map((s, i) => (
-          <g class="vz-stop" style={`--d:${380 + i * 200}ms`}>
-            <rect x={s.x} y={s.y} width="180" height="98" rx="16" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" />
-            <rect x={s.x + 18} y={s.y + 20} width="80" height="10" rx="5" fill="rgba(255,255,255,.38)" />
-            <rect x={s.x + 18} y={s.y + 40} width="130" height="8" rx="4" fill="rgba(255,255,255,.2)" />
-            <rect x={s.x + 18} y={s.y + 56} width="104" height="8" rx="4" fill="rgba(255,255,255,.2)" />
-            <rect x={s.x + 18} y={s.y + 72} width="60" height="14" rx="7" fill="rgba(41,151,255,.55)" />
+          <g class="vz-stop" style={`--d:${520 + i * 200}ms`}>
+            <rect
+              x={s.x}
+              y={s.y}
+              width="166"
+              height="124"
+              rx="14"
+              fill="rgba(255,255,255,.05)"
+              stroke="rgba(255,255,255,.22)"
+              stroke-dasharray="7 5"
+            />
+            <rect x={s.x + 18} y={s.y + 22} width="72" height="10" rx="5" fill="rgba(255,255,255,.38)" />
+            <rect x={s.x + 18} y={s.y + 46} width="128" height="8" rx="4" fill="rgba(255,255,255,.2)" />
+            <rect x={s.x + 18} y={s.y + 64} width="98" height="8" rx="4" fill="rgba(255,255,255,.2)" />
+            <rect x={s.x + 18} y={s.y + 86} width="64" height="18" rx="9" fill="rgba(41,151,255,.6)" />
           </g>
         ))}
-        <path class="vz-line" style="--d:560ms" d="M560 141 C 520 141 520 200 510 219" stroke="rgba(41,151,255,.4)" stroke-width="2" fill="none" />
-        <path class="vz-line" style="--d:740ms" d="M560 299 C 520 299 520 240 510 221" stroke="rgba(41,151,255,.4)" stroke-width="2" fill="none" />
-        <path class="vz-line" style="--d:900ms" d="M330 219 L210 219" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        <text x="383" y="66" text-anchor="middle" class="vz-title-sm">
+          מסכים ופעולות
+        </text>
+        <text x="383" y="368" text-anchor="middle" class="vz-sub">
+          רק מה שבאמת צריך
+        </text>
+
+        <path
+          class="vz-line"
+          style="--d:700ms"
+          d="M300 146 C 260 146 250 190 236 203"
+          stroke="rgba(41,151,255,.42)"
+          stroke-width="2"
+          fill="none"
+        />
+        <path
+          class="vz-line"
+          style="--d:840ms"
+          d="M300 284 C 260 284 250 216 236 205"
+          stroke="rgba(41,151,255,.42)"
+          stroke-width="2"
+          fill="none"
+        />
+
+        {/* 4. the process that results */}
         <g class="vz-stop" style="--d:1000ms">
-          <rect x="30" y="182" width="180" height="74" rx="18" fill="url(#vzApp)" />
-          <text x="120" y="226" text-anchor="middle" class="vz-title-sm" fill="#fff">תהליך שעובד</text>
+          <rect x="34" y="164" width="202" height="78" rx="20" fill="url(#vzApp)" />
+          <text x="135" y="197" text-anchor="middle" class="vz-title-sm" fill="#fff">
+            תהליך שעובד
+          </text>
+          <text x="135" y="221" text-anchor="middle" class="vz-sub" fill="rgba(255,255,255,.88)">
+            והמידע נשמר במקום אחד
+          </text>
         </g>
       </svg>
     )
@@ -166,37 +669,73 @@ const { kind, class: cls = '' } = Astro.props;
 
   {
     kind === 'content' && (
-      <svg viewBox="0 0 1100 380" role="img" aria-label="איור: מטרה עסקית, בריף, טיוטה בעזרת AI, בדיקה ואישור אנושי, ורק אז פרסום">
+      <svg
+        viewBox="0 0 860 350"
+        role="img"
+        aria-label="איור: מטרה עסקית, בריף, טיוטה בסיוע AI, בקרה ועריכה שלכם, ורק אז שימוש בתוכן"
+      >
         <defs>
           <linearGradient id="vzCon" x1="1" y1="0" x2="0" y2="0">
             <stop offset="0%" stop-color="#2997FF" />
             <stop offset="100%" stop-color="#1D4ED8" />
           </linearGradient>
         </defs>
-        <path class="vz-rail" d="M1020 150 L80 150" stroke="rgba(41,151,255,.26)" stroke-width="2" fill="none" />
-        {[
-          { x: 1020, label: 'מטרה', sub: 'מה רוצים להשיג' },
-          { x: 785, label: 'בריף', sub: 'נושא וזווית' },
-          { x: 550, label: 'טיוטה', sub: 'בעזרת AI' },
-          { x: 315, label: 'בדיקה', sub: 'אתם קוראים' },
-          { x: 80, label: 'פרסום', sub: 'רק אחרי אישור' },
-        ].map((s, i) => (
-          <g class="vz-stop" style={`--d:${i * 200}ms`}>
+
+        <text x="838" y="24" text-anchor="start" class="vz-kicker">
+          סדר העבודה על תוכן
+        </text>
+
+        <path
+          class="vz-rail"
+          d="M780 92 L80 92"
+          stroke="rgba(41,151,255,.28)"
+          stroke-width="2"
+          fill="none"
+        />
+
+        {contentStages.map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 190}ms`}>
             <circle
               cx={s.x}
-              cy="150"
-              r={i === 3 ? 24 : 17}
-              fill={i === 4 ? 'url(#vzCon)' : i === 3 ? 'rgba(41,151,255,.2)' : 'rgba(255,255,255,.08)'}
+              cy="92"
+              r={i === 3 ? 20 : 13}
+              fill={
+                i === 4 ? 'url(#vzCon)' : i === 3 ? 'rgba(41,151,255,.24)' : 'rgba(255,255,255,.08)'
+              }
               stroke={i === 3 ? '#2997FF' : 'rgba(41,151,255,.5)'}
               stroke-width={i === 3 ? 3 : 2}
             />
-            <text x={s.x} y="212" text-anchor="middle" class="vz-title-sm">{s.label}</text>
-            <text x={s.x} y="238" text-anchor="middle" class="vz-sub">{s.sub}</text>
+            <text x={s.x} y="148" text-anchor="middle" class="vz-title-sm">
+              {s.t}
+            </text>
+            <text x={s.x} y="172" text-anchor="middle" class="vz-sub">
+              {s.s}
+            </text>
           </g>
         ))}
-        <g class="vz-stop" style="--d:1100ms">
-          <rect x="188" y="286" width="254" height="52" rx="14" fill="rgba(41,151,255,.12)" stroke="rgba(41,151,255,.45)" />
-          <text x="315" y="318" text-anchor="middle" class="vz-note">שום דבר לא מתפרסם לבד</text>
+
+        {/* the human gate, called out because it is the whole point */}
+        <path
+          class="vz-line"
+          style="--d:900ms"
+          d="M255 196 L255 236"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="2"
+          fill="none"
+        />
+        <g class="vz-stop" style="--d:1050ms">
+          <rect
+            x="118"
+            y="236"
+            width="274"
+            height="56"
+            rx="16"
+            fill="rgba(41,151,255,.13)"
+            stroke="rgba(41,151,255,.5)"
+          />
+          <text x="255" y="270" text-anchor="middle" class="vz-note">
+            שום דבר לא יוצא בלי אישור שלכם
+          </text>
         </g>
       </svg>
     )
@@ -204,42 +743,70 @@ const { kind, class: cls = '' } = Astro.props;
 
   {
     kind === 'services' && (
-      <svg viewBox="0 0 1100 400" role="img" aria-label="איור: חמישה תחומי שירות שמתחברים לתשתית אחת של העסק">
+      <svg
+        viewBox="0 0 860 400"
+        role="img"
+        aria-label="איור: חמישה תחומי שירות, CRM, אוטומציות, אתרים, אפליקציות ותוכן, שמתחברים לתשתית אחת של העסק"
+      >
         <defs>
           <linearGradient id="vzSv" x1="1" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#2997FF" />
             <stop offset="100%" stop-color="#1D4ED8" />
           </linearGradient>
         </defs>
-        <rect class="vz-record" x="400" y="290" width="300" height="76" rx="22" fill="url(#vzSv)" />
-        <text x="550" y="336" text-anchor="middle" class="vz-title" fill="#fff">העסק שלכם</text>
-        {[
-          { x: 990, label: 'CRM' },
-          { x: 770, label: 'אוטומציות' },
-          { x: 550, label: 'אתרים' },
-          { x: 330, label: 'אפליקציות' },
-          { x: 110, label: 'תוכן' },
-        ].map((s, i) => (
-          <g class="vz-stop" style={`--d:${i * 160}ms`}>
-            <rect x={s.x - 92} y="60" width="184" height="82" rx="20" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" />
-            <text x={s.x} y="110" text-anchor="middle" class="vz-title-sm">{s.label}</text>
+
+        <text x="838" y="24" text-anchor="start" class="vz-kicker">
+          חמישה חלקים, מערכת אחת
+        </text>
+
+        {ecosystem.map((s, i) => (
+          <g class="vz-stop" style={`--d:${i * 150}ms`}>
+            <rect
+              x={s.x - 78}
+              y="56"
+              width="156"
+              height="96"
+              rx="20"
+              fill="rgba(255,255,255,.05)"
+              stroke="rgba(255,255,255,.2)"
+            />
+            <text x={s.x} y="96" text-anchor="middle" class="vz-title-sm">
+              {s.t}
+            </text>
+            <text x={s.x} y="122" text-anchor="middle" class="vz-sub">
+              {s.s}
+            </text>
             <path
               class="vz-line"
-              style={`--d:${400 + i * 160}ms`}
-              d={`M${s.x} 142 C ${s.x} 230 ${550 + (s.x - 550) * 0.3} 240 550 290`}
-              stroke="rgba(41,151,255,.32)"
+              style={`--d:${380 + i * 150}ms`}
+              d={`M${s.x} 152 C ${s.x} 236 ${430 + (s.x - 430) * 0.28} 246 430 288`}
+              stroke="rgba(41,151,255,.34)"
               stroke-width="2"
               fill="none"
             />
           </g>
         ))}
+
+        <g class="vz-record">
+          <rect x="270" y="288" width="320" height="82" rx="22" fill="url(#vzSv)" />
+          <text x="430" y="324" text-anchor="middle" class="vz-title" fill="#fff">
+            העסק שלכם
+          </text>
+          <text x="430" y="352" text-anchor="middle" class="vz-sub" fill="rgba(255,255,255,.88)">
+            החלקים מדברים ביניהם
+          </text>
+        </g>
       </svg>
     )
   }
 
   {
     kind === 'about' && (
-      <svg viewBox="0 0 1100 340" role="img" aria-label="איור: מתחילים מהתהליך העסקי ורק אחר כך בוחרים טכנולוגיה">
+      <svg
+        viewBox="0 0 860 260"
+        role="img"
+        aria-label="איור: מתחילים מהתהליך העסקי, מזהים איפה הוא נתקע, ורק אחר כך בוחרים כלים"
+      >
         <defs>
           <linearGradient id="vzAb" x1="1" y1="0" x2="0" y2="0">
             <stop offset="0%" stop-color="#2997FF" />
@@ -247,35 +814,137 @@ const { kind, class: cls = '' } = Astro.props;
           </linearGradient>
         </defs>
         {[
-          { x: 940, t: 'התהליך', s: 'איך העסק עובד היום' },
-          { x: 620, t: 'הצוואר', s: 'איפה זה נתקע' },
-          { x: 300, t: 'הפתרון', s: 'רק אז בוחרים כלים' },
+          { x: 720, t: 'התהליך', s: 'איך העסק עובד היום' },
+          { x: 430, t: 'הצוואר', s: 'איפה זה נתקע' },
+          { x: 140, t: 'הפתרון', s: 'רק אז בוחרים כלים' },
         ].map((s, i) => (
           <g class="vz-stop" style={`--d:${i * 240}ms`}>
-            <rect x={s.x - 130} y="90" width="260" height="110" rx="24" fill={i === 2 ? 'url(#vzAb)' : 'rgba(255,255,255,.05)'} stroke={i === 2 ? 'none' : 'rgba(255,255,255,.2)'} />
-            <text x={s.x} y="134" text-anchor="middle" class="vz-title-sm" fill={i === 2 ? '#fff' : undefined}>{s.t}</text>
-            <text x={s.x} y="164" text-anchor="middle" class="vz-sub" fill={i === 2 ? 'rgba(255,255,255,.85)' : undefined}>{s.s}</text>
+            <rect
+              x={s.x - 116}
+              y="70"
+              width="232"
+              height="106"
+              rx="24"
+              fill={i === 2 ? 'url(#vzAb)' : 'rgba(255,255,255,.05)'}
+              stroke={i === 2 ? 'none' : 'rgba(255,255,255,.2)'}
+            />
+            <text
+              x={s.x}
+              y="114"
+              text-anchor="middle"
+              class="vz-title-sm"
+              fill={i === 2 ? '#fff' : undefined}
+            >
+              {s.t}
+            </text>
+            <text
+              x={s.x}
+              y="142"
+              text-anchor="middle"
+              class="vz-sub"
+              fill={i === 2 ? 'rgba(255,255,255,.88)' : undefined}
+            >
+              {s.s}
+            </text>
           </g>
         ))}
-        <path class="vz-line" style="--d:200ms" d="M810 145 L750 145" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
-        <path class="vz-line" style="--d:440ms" d="M490 145 L430 145" stroke="rgba(41,151,255,.45)" stroke-width="2" fill="none" />
+        <path
+          class="vz-line"
+          style="--d:200ms"
+          d="M604 123 L546 123"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="2"
+          fill="none"
+        />
+        <path
+          class="vz-line"
+          style="--d:440ms"
+          d="M314 123 L256 123"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="2"
+          fill="none"
+        />
       </svg>
     )
   }
 
   {
     kind === 'broken' && (
-      <svg viewBox="0 0 520 220" role="img" aria-label="איור: מסלול שנקטע באמצע">
-        <path class="vz-line" style="--d:0ms" d="M480 110 L320 110" stroke="rgba(41,151,255,.5)" stroke-width="3" fill="none" />
-        <path d="M300 110 L260 110" stroke="rgba(255,255,255,.22)" stroke-width="3" stroke-dasharray="7 9" fill="none" />
-        <path class="vz-line" style="--d:300ms" d="M240 110 L60 110" stroke="rgba(41,151,255,.5)" stroke-width="3" fill="none" />
-        <circle cx="480" cy="110" r="13" fill="rgba(41,151,255,.28)" stroke="#2997FF" stroke-width="2" />
-        <circle cx="60" cy="110" r="13" fill="rgba(41,151,255,.28)" stroke="#2997FF" stroke-width="2" />
+      <svg viewBox="0 0 520 200" role="img" aria-label="איור: מסלול שנקטע באמצע">
+        <path
+          class="vz-line"
+          style="--d:0ms"
+          d="M470 100 L320 100"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="3"
+          fill="none"
+        />
+        <path
+          d="M300 100 L250 100"
+          stroke="rgba(255,255,255,.22)"
+          stroke-width="3"
+          stroke-dasharray="7 9"
+          fill="none"
+        />
+        <path
+          class="vz-line"
+          style="--d:300ms"
+          d="M230 100 L50 100"
+          stroke="rgba(41,151,255,.5)"
+          stroke-width="3"
+          fill="none"
+        />
+        <circle cx="470" cy="100" r="12" fill="rgba(41,151,255,.28)" stroke="#2997FF" stroke-width="2" />
+        <circle cx="50" cy="100" r="12" fill="rgba(41,151,255,.28)" stroke="#2997FF" stroke-width="2" />
         <g class="vz-stop" style="--d:500ms">
-          <circle cx="280" cy="110" r="22" fill="rgba(11,21,48,.9)" stroke="rgba(255,255,255,.3)" stroke-width="2" />
-          <path d="M272 102 L288 118 M288 102 L272 118" stroke="rgba(255,255,255,.65)" stroke-width="2.5" stroke-linecap="round" />
+          <circle cx="275" cy="100" r="22" fill="rgba(11,21,48,.9)" stroke="rgba(255,255,255,.3)" stroke-width="2" />
+          <path
+            d="M267 92 L283 108 M283 92 L267 108"
+            stroke="rgba(255,255,255,.65)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          />
         </g>
       </svg>
+    )
+  }
+
+  {
+    m && (
+      <ol class="vzm" aria-hidden="true">
+        {m.kicker && <li class="vzm__kicker">{m.kicker}</li>}
+        {m.steps.map((st, i) => (
+          <li class="vzm__step">
+            <span class="vzm__n">{String(i + 1).padStart(2, '0')}</span>
+            <span class="vzm__body">
+              <b class="vzm__t">{st.t}</b>
+              {st.s && <span class="vzm__s">{st.s}</span>}
+            </span>
+          </li>
+        ))}
+
+        {m.branch && (
+          <>
+            <li class="vzm__branchlabel">{m.branch.label}</li>
+            {m.branch.items.map((b, i) => (
+              <li class:list={['vzm__step', 'vzm__step--branch', i === 0 && 'is-auto']}>
+                <span class="vzm__n">{i === 0 ? 'א' : 'ב'}</span>
+                <span class="vzm__body">
+                  <b class="vzm__t">{b.t}</b>
+                  {b.s && <span class="vzm__s">{b.s}</span>}
+                </span>
+              </li>
+            ))}
+          </>
+        )}
+
+        {m.outcome && (
+          <li class="vzm__out">
+            <b class="vzm__t">{m.outcome.t}</b>
+            {m.outcome.s && <span class="vzm__s">{m.outcome.s}</span>}
+          </li>
+        )}
+      </ol>
     )
   }
 </div>
@@ -287,32 +956,161 @@ const { kind, class: cls = '' } = Astro.props;
   .viz svg {
     width: 100%;
     height: auto;
+    display: block;
   }
-  .vz-label,
+
+  /* Type scale is tuned so that at the smallest place these appear
+     (roughly 0.7x) the smallest label still lands above 11px. */
   .vz-sub {
     font-family: var(--font-body);
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 500;
-    fill: rgba(255, 255, 255, 0.6);
+    fill: rgba(255, 255, 255, 0.62);
   }
   .vz-title {
     font-family: var(--font-display);
-    font-size: 26px;
-    font-weight: 700;
+    font-size: 23px;
+    font-weight: 800;
     fill: #fff;
   }
   .vz-title-sm {
     font-family: var(--font-display);
-    font-size: 21px;
+    font-size: 19px;
     font-weight: 700;
     fill: #fff;
   }
   .vz-next,
   .vz-note {
     font-family: var(--font-body);
-    font-size: 17px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
     fill: var(--color-electric);
+  }
+  /* the small line that names the whole picture */
+  .vz-kicker {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    fill: rgba(255, 255, 255, 0.42);
+  }
+  /* labels that sit on a branch rather than in a box */
+  .vz-tag {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    fill: rgba(255, 255, 255, 0.55);
+  }
+
+
+  /* ---------------- Mobile flow ----------------
+     Hidden on desktop. Below 760px it replaces the SVG entirely, because
+     the artwork scales to a point where its labels are 5-8px. The words
+     are identical, so nothing is lost, and here they are real text. */
+  .vzm {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .vzm__kicker {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.45);
+    margin-bottom: 0.875rem;
+  }
+  .vzm__step,
+  .vzm__out {
+    position: relative;
+    display: flex;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.875rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .vzm__step + .vzm__step,
+  .vzm__branchlabel,
+  .vzm__out {
+    margin-top: 1.5rem;
+  }
+  /* the connector between steps */
+  .vzm__step + .vzm__step::before,
+  .vzm__out::before {
+    content: '';
+    position: absolute;
+    top: -1.125rem;
+    inset-inline-start: 50%;
+    width: 1px;
+    height: 0.75rem;
+    background: rgba(41, 151, 255, 0.5);
+  }
+  .vzm__n {
+    flex: none;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-electric);
+    padding-top: 0.2rem;
+  }
+  .vzm__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1875rem;
+    min-width: 0;
+  }
+  .vzm__t {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .vzm__s {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.66);
+  }
+  .vzm__branchlabel {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.45);
+    text-align: center;
+  }
+  .vzm__step--branch {
+    margin-top: 0.625rem;
+  }
+  .vzm__step--branch::before {
+    display: none;
+  }
+  .vzm__step--branch.is-auto {
+    background: linear-gradient(120deg, rgba(41, 151, 255, 0.9), rgba(29, 78, 216, 0.9));
+    border-color: transparent;
+  }
+  .vzm__step--branch.is-auto .vzm__s {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  .vzm__step--branch:not(.is-auto) {
+    border-color: var(--color-electric);
+  }
+  .vzm__out {
+    background: rgba(41, 151, 255, 0.14);
+    border-color: rgba(41, 151, 255, 0.5);
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: center;
+    align-items: center;
+  }
+
+  @media (max-width: 760px) {
+    .viz svg {
+      display: none;
+    }
+    .vzm {
+      display: block;
+    }
   }
 
   /* Motion: staged reveal along the story, then rest. */
@@ -360,6 +1158,7 @@ const { kind, class: cls = '' } = Astro.props;
     .vz-record {
       opacity: 1 !important;
       animation: none !important;
+      translate: none !important;
     }
     .vz-line,
     .vz-rail,

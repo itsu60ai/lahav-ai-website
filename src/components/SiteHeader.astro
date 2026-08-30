@@ -1,4 +1,6 @@
 ---
+import WhatsApp from './icons/WhatsApp.astro';
+import { SERVICE_ICONS } from '../lib/icons';
 import { NAV, CTA_PRIMARY, WHATSAPP_HREF, SERVICES } from '../lib/site';
 
 interface Props {
@@ -66,24 +68,58 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
 
   <div class="hdr__mobile" id="mobile-nav" data-menu-panel>
     <div class="u-container hdr__mobile-inner">
-      <a class="hdr__mobile-link" href="/">בית</a>
+      <a class="hdr__mobile-link" href="/" style="--i:0">
+        בית
+        <span class="hdr__mobile-arr" aria-hidden="true">←</span>
+      </a>
 
-      <div class="hdr__mobile-group">
-        <a class="hdr__mobile-link hdr__mobile-link--head" href="/services/">שירותים</a>
+      <div class="hdr__mobile-group" style="--i:1">
+        <a class="hdr__mobile-link hdr__mobile-link--head" href="/services/">
+          שירותים
+          <span class="hdr__mobile-all">לכל השירותים</span>
+        </a>
         <div class="hdr__mobile-sub">
-          {SERVICES.map((s) => (
-            <a href={`/services/${s.slug}/`}>{s.name}</a>
-          ))}
+          {
+            SERVICES.map((sv, i) => (
+              <a href={`/services/${sv.slug}/`} style={`--j:${i}`}>
+                <span class="hdr__svc-ico" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    set:html={SERVICE_ICONS[sv.slug]}
+                  />
+                </span>
+                <span class="hdr__svc-txt">
+                  <b>{sv.name}</b>
+                  <small>{sv.lead}</small>
+                </span>
+              </a>
+            ))
+          }
         </div>
       </div>
 
-      <a class="hdr__mobile-link" href="/about/">אודות</a>
-      <a class="hdr__mobile-link" href="/contact/">צור קשר</a>
-
-      <a class="btn btn-primary" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-      <a class="btn btn-secondary" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
-        שיחה בוואטסאפ
+      <a class="hdr__mobile-link" href="/about/" style="--i:2">
+        אודות
+        <span class="hdr__mobile-arr" aria-hidden="true">←</span>
       </a>
+      <a class="hdr__mobile-link" href="/contact/" style="--i:3">
+        צור קשר
+        <span class="hdr__mobile-arr" aria-hidden="true">←</span>
+      </a>
+
+      <div class="hdr__mobile-foot" style="--i:4">
+        <p class="hdr__mobile-note">30 דקות, בלי התחייבות.</p>
+        <a class="btn btn-primary" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
+        <a class="btn btn-secondary" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+          <WhatsApp />
+          שיחה בוואטסאפ
+        </a>
+      </div>
     </div>
   </div>
 </header>
@@ -410,49 +446,141 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
   .hdr__mobile-inner {
     display: flex;
     flex-direction: column;
-    padding-block: 1rem 1.75rem;
+    padding-block: 0.5rem 2rem;
   }
+
+  /* items arrive in sequence when the panel opens */
+  .hdr__mobile.is-open .hdr__mobile-link,
+  .hdr__mobile.is-open .hdr__mobile-group,
+  .hdr__mobile.is-open .hdr__mobile-foot {
+    animation: hdr-in 380ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+  @keyframes hdr-in {
+    from {
+      opacity: 0;
+      translate: 0 10px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
   .hdr__mobile-link {
-    padding: 0.9rem 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
     font-family: var(--font-display);
-    font-weight: 600;
-    font-size: var(--text-body-lg);
+    font-weight: 700;
+    font-size: 1.375rem;
+    letter-spacing: -0.015em;
     color: var(--color-ink);
     text-decoration: none;
     border-bottom: 1px solid var(--color-line);
   }
+  .hdr__mobile-arr {
+    color: var(--color-electric);
+    font-size: 1rem;
+  }
   .hdr__mobile-link--head {
     border-bottom: 0;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.625rem;
+  }
+  .hdr__mobile-all {
+    font-family: var(--font-body);
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--color-royal);
   }
   .hdr__mobile-group {
     border-bottom: 1px solid var(--color-line);
-    padding-bottom: 0.75rem;
+    padding-bottom: 1rem;
   }
+
+  /* the five services, as real rows rather than an indented list */
   .hdr__mobile-sub {
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
-    padding-inline-start: 0.875rem;
-    border-inline-start: 2px solid var(--color-line);
-    margin-inline-start: 0.25rem;
+    gap: 0.375rem;
   }
   .hdr__mobile-sub a {
-    padding: 0.55rem 0;
-    font-size: var(--text-small);
-    font-weight: 500;
-    color: var(--color-ink-2);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.75rem;
+    background: var(--color-surface-2);
     text-decoration: none;
+    transition: background-color var(--dur) var(--ease-out);
   }
   .hdr__mobile-sub a:hover {
-    color: var(--color-royal);
+    background: color-mix(in srgb, var(--color-royal) 9%, transparent);
   }
-  .hdr__mobile-inner .btn {
-    margin-top: 0.75rem;
+  .hdr__svc-ico {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
+    border-radius: 0.625rem;
+    background: #fff;
+    color: var(--color-royal);
+    border: 1px solid var(--color-line);
+  }
+  .hdr__svc-ico svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .hdr__svc-txt {
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+    min-width: 0;
+  }
+  .hdr__svc-txt b {
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    line-height: 1.3;
+  }
+  .hdr__svc-txt small {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-ink-3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .hdr__mobile-foot {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-line);
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .hdr__mobile-note {
+    font-size: var(--text-small);
+    color: var(--color-ink-3);
+    margin-bottom: 0.125rem;
+  }
+  .hdr__mobile-foot .btn {
     width: 100%;
   }
-  .hdr__mobile-inner .btn:first-of-type {
-    margin-top: 1.5rem;
+
+  @media (prefers-reduced-motion: reduce) {
+    .hdr__mobile.is-open .hdr__mobile-link,
+    .hdr__mobile.is-open .hdr__mobile-group,
+    .hdr__mobile.is-open .hdr__mobile-foot {
+      animation: none !important;
+    }
   }
 
   @media (max-width: 980px) {

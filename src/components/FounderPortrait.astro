@@ -1,0 +1,92 @@
+---
+// The founder portrait.
+//
+// No card, no border, no rounded frame, no background block. The subject
+// stands directly on the page, which is why the source is a cut-out with a
+// real alpha channel rather than a rectangular photo.
+//
+// The photograph itself is never retouched: the background was removed
+// locally and nothing else about the image was changed. Everything below
+// is presentation only, applied in CSS.
+import { FOUNDER } from '../lib/site';
+
+interface Props {
+  /** 'home' is the supporting appearance, 'about' is the editorial one */
+  scale?: 'home' | 'about';
+  sizes?: string;
+}
+const { scale = 'home', sizes = '(max-width: 900px) 70vw, 32vw' } = Astro.props;
+---
+
+<figure class:list={['fp', `fp--${scale}`]} data-reveal>
+  <picture>
+    <source type="image/webp" srcset={FOUNDER.cutout.webpSet} sizes={sizes} />
+    <img
+      class="fp__img"
+      src={FOUNDER.cutout.png}
+      srcset={FOUNDER.cutout.pngSet}
+      sizes={sizes}
+      alt={FOUNDER.alt}
+      width={FOUNDER.cutout.width}
+      height={FOUNDER.cutout.height}
+      loading="lazy"
+      decoding="async"
+    />
+  </picture>
+</figure>
+
+<style>
+  .fp {
+    margin: 0;
+    position: relative;
+    display: flex;
+    /* The portrait stands on the baseline of its column rather than
+       floating, so the crop at the chest reads as deliberate. */
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .fp__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* Editorial black and white. Slightly lifted contrast so the portrait
+       holds against the headline weight without crushing skin detail. */
+    filter: grayscale(1) contrast(1.1) brightness(1.02);
+    /* the very bottom edge dissolves instead of ending in a hard cut */
+    -webkit-mask-image: linear-gradient(to top, transparent 0, #000 7%, #000 100%);
+    mask-image: linear-gradient(to top, transparent 0, #000 7%, #000 100%);
+  }
+
+  .fp--home .fp__img {
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+  .fp--about .fp__img {
+    max-width: 34rem;
+    margin-inline: auto;
+  }
+
+  /* reveal */
+  :global(html.reveal-ready) .fp {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  .fp {
+    transition:
+      opacity 800ms var(--ease-out),
+      translate 800ms var(--ease-out);
+  }
+  :global(html.reveal-ready) .fp.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fp {
+      opacity: 1 !important;
+      translate: none !important;
+      transition: none !important;
+    }
+  }
+</style>

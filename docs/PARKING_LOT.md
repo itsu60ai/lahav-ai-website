@@ -24,7 +24,7 @@ Nothing here is implemented in V1. Nothing here is forgotten.
 | PL-10 | Accessibility statement page | Conditional on the legal verification (O-5) |
 | PL-11 | Terms of service | Not a V1 priority; add if genuinely required |
 | PL-12 | Lead-to-CRM integration | Only when lead volume justifies it. No full CRM in V1 (F-10) |
-| PL-13 | MFA/2FA beyond the GitHub account's own 2FA | If the auth model ever changes |
+| PL-13 | **Secure admin access with MFA before launch. Prefer Cloudflare Access. Avoid building duplicate custom security features unless actually needed.** Clarified 2026-08-30: the requirement is the outcome, not a specific screen. If Cloudflare Access is adopted (free for ≤50 users, enforced at the edge, MFA included at no cost), a custom password-change screen and custom MFA are **not** separately required. Requires the domain to be on Cloudflare (PL-2 / V-2). See `docs/CMS_CLOUDFLARE_MIGRATION.md` §1 and §8, and `SOURCE_OF_TRUTH.md` O-11. | Before production launch (O-11). Does not block continued CMS or feature work |
 | PL-14 | Auto Publish (Mode 2) running truly unattended | Requires B-1 (LLM API spend approval) and O-9 (safety model approval) |
 
 ## Open definitions required before a page is designed

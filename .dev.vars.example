@@ -1,0 +1,16 @@
+# Copy this file to `.dev.vars` (gitignored) for local development with
+# `npm run dev` or `wrangler dev`. Never commit the real file.
+
+# Cloudflare's official ALWAYS-PASS test keys. Safe defaults for local
+# testing: they let every submission through without a real Turnstile
+# account. Swap for real keys (Cloudflare dashboard > Turnstile > Add
+# site) before production. The site key below is also hard-coded as the
+# fallback in contact.astro for the same reason.
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+
+# Real key required to actually deliver notification emails. Sign up free
+# at resend.com using itsu60ai@gmail.com (see docs/CONTACT_FORM.md for
+# why that specific email matters), then paste the API key here. Without
+# this, leads still save correctly; only the email step is skipped.
+RESEND_API_KEY=

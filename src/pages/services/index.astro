@@ -6,16 +6,18 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ClosingCta from '../../components/ClosingCta.astro';
 import Viz from '../../components/Viz.astro';
+import DiscoveryPitch from '../../components/DiscoveryPitch.astro';
+import { SERVICE_ICONS } from '../../lib/icons';
 import ScrollReveal from '../../components/ScrollReveal.astro';
 import { SERVICES } from '../../lib/site';
 
 // Each row: a problem stated in the owner's words, and where it leads.
 const chooser = [
-  { problem: 'לא ברור מה קורה עם הלקוחות והפניות', slug: 'crm', name: 'מערכות CRM חכמות' },
-  { problem: 'יותר מדי עבודה ידנית שחוזרת על עצמה', slug: 'automations', name: 'אוטומציות עסקיות' },
-  { problem: 'האתר לא מביא אנשים לפעולה', slug: 'web-development', name: 'פיתוח אתרים' },
-  { problem: 'אין כלי שמתאים לתהליך שלנו', slug: 'app-development', name: 'פיתוח אפליקציות' },
-  { problem: 'אין זמן ואין תהליך לתוכן', slug: 'ai-content', name: 'יצירת תוכן באמצעות AI' },
+  { problem: 'אף אחד לא באמת יודע מה קורה עם הפניות', slug: 'crm', name: 'מערכות CRM חכמות' },
+  { problem: 'חצי מהיום הולך על עבודה שחוזרת על עצמה', slug: 'automations', name: 'אוטומציות עסקיות' },
+  { problem: 'נכנסים לאתר ולא משאירים פרטים', slug: 'web-development', name: 'פיתוח אתרים' },
+  { problem: 'משלמים על מערכות ועדיין עובדים באקסל', slug: 'app-development', name: 'פיתוח אפליקציות' },
+  { problem: 'יודעים שצריך לכתוב, ואף פעם אין זמן', slug: 'ai-content', name: 'יצירת תוכן באמצעות AI' },
 ];
 ---
 
@@ -28,10 +30,10 @@ const chooser = [
   <section class="sv-hero">
     <div class="u-container">
       <p class="t-eyebrow">השירותים שלנו</p>
-      <h1 class="t-display-2 sv-hero__h1">חמישה תחומים.<br />נקודת התחלה אחת: מה תקוע אצלכם.</h1>
+      <h1 class="t-display-2 sv-hero__h1">לא צריך לדעת מה אתם צריכים.<br />רק מה לא עובד.</h1>
       <p class="sv-hero__lead">
-        אין צורך לדעת מראש איזה שירות אתם צריכים. תגידו לנו מה לא עובד היום,
-        ומשם נבין יחד מה נכון לבנות.
+        אף אחד לא אמור להגיע לכאן ולדעת אם הוא צריך CRM או אוטומציה. תגידו לנו
+        מה תקוע, ומשם נבין יחד מה נכון לבנות ובאיזה סדר.
       </p>
     </div>
   </section>
@@ -39,15 +41,26 @@ const chooser = [
   <!-- The chooser: problem on the right, service on the left -->
   <section class="section-tight chooser-sec">
     <div class="u-container">
-      <p class="chooser__label">מתחילים מהבעיה</p>
+      <div class="lede">
+        <p class="t-eyebrow">מתחילים מהבעיה</p>
+        <h2 class="t-h2 chooser__h">מה מהדברים האלה קורה אצלכם?</h2>
+        <p class="t-lead chooser__lead">
+          בחרו את המשפט שהכי מזכיר את המצב שלכם. משם כבר ברור לאן זה מוביל.
+        </p>
+      </div>
       <ul class="chooser">
         {
           chooser.map((c, i) => (
             <li data-reveal style={`--i:${i}`}>
               <a class="ch" href={`/services/${c.slug}/`}>
                 <span class="ch__problem">{c.problem}</span>
-                <span class="ch__sep" aria-hidden="true">←</span>
-                <span class="ch__name">{c.name}</span>
+                <span class="ch__to">
+                  <span class="ch__tolabel">מוביל אל</span>
+                  <span class="ch__name">
+                    {c.name}
+                    <span class="ch__sep" aria-hidden="true">←</span>
+                  </span>
+                </span>
               </a>
             </li>
           ))
@@ -56,15 +69,17 @@ const chooser = [
     </div>
   </section>
 
+  <DiscoveryPitch variant="services" />
+
   <!-- One connected picture -->
   <section class="section section--navy">
     <div class="u-container">
       <div class="lede lede--center">
         <p class="t-eyebrow">איך זה מתחבר</p>
-        <h2 class="t-display-2">חמישה תחומים,<br />תשתית אחת</h2>
+        <h2 class="t-display-2">אף אחד לא צריך<br />את כל החמישה</h2>
         <p class="t-lead">
-          רוב העסקים לא צריכים את כל החמישה. הם צריכים את החלק שפותר את מה
-          שתקוע, בלי לשבור את מה שכבר עובד.
+          כמעט תמיד מתחילים מחלק אחד, זה שפותר את מה שהכי כואב עכשיו. השאר
+          מחכה, ומתחבר בהמשך בלי לשבור את מה שכבר עובד.
         </p>
       </div>
       <Viz kind="services" />
@@ -78,6 +93,17 @@ const chooser = [
         SERVICES.map((s, i) => (
           <article class:list={['row', s.featured && 'row--featured']} data-reveal>
             <div class="row__meta">
+              <span class="row__mark" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  set:html={SERVICE_ICONS[s.slug]}
+                />
+              </span>
               <span class="row__n tabular">{String(i + 1).padStart(2, '0')}</span>
               {s.featured && <span class="chip">שירות מוביל</span>}
             </div>
@@ -122,14 +148,15 @@ const chooser = [
   .section-tight {
     padding-block: var(--space-section-tight);
   }
-  .chooser__label {
-    font-size: var(--text-micro);
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    color: var(--color-royal);
-    margin-bottom: 1.25rem;
+  .chooser__h {
+    margin-block: 1rem 1rem;
+  }
+  .chooser__lead {
+    color: var(--color-ink-2);
+    max-width: 46rem;
   }
   .chooser {
+    margin-top: clamp(1.75rem, 3.5vw, 2.75rem);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -150,7 +177,7 @@ const chooser = [
   }
   .ch {
     display: grid;
-    grid-template-columns: 1fr auto 0.85fr;
+    grid-template-columns: 1fr minmax(0, 0.7fr);
     align-items: center;
     gap: 1.25rem;
     padding-block: clamp(1.1rem, 2.2vw, 1.6rem);
@@ -161,21 +188,41 @@ const chooser = [
   .ch:hover {
     background: var(--color-surface-2);
   }
+  /* The visitor's own problem is the loudest thing on the row, because it
+     is the thing they are scanning for. The destination is second. */
   .ch__problem {
     font-family: var(--font-display);
-    font-size: var(--text-h3);
-    font-weight: 600;
+    font-size: clamp(1.375rem, 1.05rem + 1.15vw, 1.9375rem);
+    font-weight: 700;
     color: var(--color-ink);
-    line-height: 1.35;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+  }
+  .ch__to {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-start;
+  }
+  .ch__tolabel {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-3);
+  }
+  .ch__name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: var(--text-body-lg);
+    font-weight: 700;
+    color: var(--color-royal);
+    line-height: 1.3;
   }
   .ch__sep {
     color: var(--color-electric);
     font-weight: 700;
-  }
-  .ch__name {
-    font-size: var(--text-small);
-    font-weight: 700;
-    color: var(--color-royal);
   }
 
   .row {
@@ -203,11 +250,41 @@ const chooser = [
     gap: 0.75rem;
     align-items: flex-start;
   }
+  /* A visual anchor per service, so the five entries can be told apart at
+     a glance instead of being read one by one. */
+  .row__mark {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line);
+    color: var(--color-royal);
+    transition:
+      background-color var(--dur) var(--ease-out),
+      color var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+  .row__mark svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+  .row:hover .row__mark {
+    background: var(--color-navy);
+    border-color: var(--color-navy);
+    color: var(--color-electric);
+  }
+  .row--featured .row__mark {
+    background: color-mix(in srgb, var(--color-royal) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-royal) 28%, transparent);
+  }
   .row__n {
     font-family: var(--font-display);
-    font-size: var(--text-h3);
+    font-size: var(--text-small);
     font-weight: 700;
-    color: var(--color-electric);
+    letter-spacing: 0.06em;
+    color: var(--color-ink-3);
     line-height: 1;
   }
   .row__name {
@@ -242,9 +319,6 @@ const chooser = [
       grid-template-columns: 1fr;
       gap: 0.5rem;
     }
-    .ch__sep {
-      display: none;
-    }
     .row {
       grid-template-columns: 1fr;
       gap: 1rem;
@@ -252,6 +326,7 @@ const chooser = [
     .row__meta {
       flex-direction: row;
       align-items: center;
+      gap: 0.875rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {

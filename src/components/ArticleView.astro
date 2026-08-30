@@ -1,0 +1,336 @@
+---
+// One article, rendered. Used by the public article page AND by the admin
+// preview, so what an author previews is literally what visitors get.
+import Viz from './Viz.astro';
+import { ARTICLE_KINDS } from '../lib/cms/types.ts';
+import type { Article } from '../lib/cms/types.ts';
+import { CTA_PRIMARY } from '../lib/site';
+
+interface Props {
+  a: Article;
+  more?: Article[];
+}
+const { a, more = [] } = Astro.props;
+---
+
+  <article class="art">
+    <header class="art__head u-container">
+      <p class="art__kicker">
+        <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
+        <span class="art__topic">{a.topic}</span>
+        <span class="art__dot" aria-hidden="true">·</span>
+        <span class="art__time">{a.readingTime}</span>
+      </p>
+      <h1 class="art__title">{a.title}</h1>
+      <p class="art__standfirst">{a.standfirst}</p>
+    </header>
+
+    <div class="art__body u-container">
+      {
+        a.body.map((b) => {
+          if (b.t === 'h2') return <h2>{b.x}</h2>;
+          if (b.t === 'h3') return <h3>{b.x}</h3>;
+          if (b.t === 'quote') return <blockquote>{b.x}</blockquote>;
+          if (b.t === 'ul')
+            return (
+              <ul>
+                {b.items.map((li) => (
+                  <li>{li}</li>
+                ))}
+              </ul>
+            );
+          if (b.t === 'viz')
+            return (
+              <figure class="art__fig">
+                <div class="art__fig-stage on-dark">
+                  <Viz kind={a.viz as any} />
+                </div>
+                <figcaption>{a.vizCaption}</figcaption>
+              </figure>
+            );
+          return <p>{b.x}</p>;
+        })
+      }
+    </div>
+
+    <!-- The service connection, kept quiet. It reads as a related link,
+         not as a sales block interrupting the article. -->
+    <aside class="art__rel u-container" data-reveal>
+      <p class="art__rel-k">קשור לנושא</p>
+      <a class="art__rel-a" href={`/services/${a.serviceSlug}/`}>
+        {a.serviceName}
+        <span class="arrow-inline" aria-hidden="true">←</span>
+      </a>
+    </aside>
+
+    <footer class="art__foot u-container">
+      <p class="art__foot-line">
+        אם משהו כאן נגע במשהו שקורה אצלכם בעסק, שיחה קצרה בדרך כלל מקצרת את הדרך.
+      </p>
+      <a class="link-arrow art__foot-cta" href={CTA_PRIMARY.href}>
+        {CTA_PRIMARY.label} <span class="arrow-inline" aria-hidden="true">←</span>
+      </a>
+    </footer>
+  </article>
+
+  <section class="more">
+    <div class="u-container">
+      <h2 class="more__h">עוד באותו קו</h2>
+      <ul class="more__list">
+        {
+          more.map((m) => (
+            <li>
+              <a class="more__item" href={`/articles/${m.slug}/`}>
+                <span class="more__topic">{m.topic}</span>
+                <span class="more__t">{m.title}</span>
+                <span class="more__x">{m.excerpt}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="link-arrow more__all" href="/articles/">
+        כל המאמרים <span class="arrow-inline" aria-hidden="true">←</span>
+      </a>
+    </div>
+  </section>
+<style>
+
+  .art {
+    padding-block: clamp(2.5rem, 5vw, 4.5rem) clamp(2.5rem, 5vw, 4rem);
+  }
+  /* One reading measure for the whole article */
+  .art__head,
+  .art__body,
+  .art__rel,
+  .art__foot {
+    max-width: 46rem;
+  }
+
+  .art__kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+  }
+  .art__kind {
+    color: #fff;
+    background: var(--color-royal);
+    border-radius: 999px;
+    padding: 0.25rem 0.625rem;
+    letter-spacing: 0.05em;
+  }
+  .art__topic {
+    color: var(--color-royal);
+    letter-spacing: 0.06em;
+  }
+  .art__dot,
+  .art__time {
+    color: var(--color-ink-3);
+    font-weight: 600;
+  }
+
+  .art__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.375rem, 1.2rem + 4.2vw, 4.25rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+  }
+  .art__standfirst {
+    font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
+    line-height: 1.55;
+    color: var(--color-ink-2);
+    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    border-bottom: 1px solid var(--color-line);
+    max-width: none;
+  }
+
+  .art__body {
+    margin-top: clamp(1.75rem, 3vw, 2.75rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .art__body p {
+    font-size: 1.25rem;
+    line-height: 1.85;
+    color: var(--color-ink);
+    max-width: none;
+  }
+  .art__body h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.625rem, 1.3rem + 1.1vw, 2.125rem);
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin-top: 1.5rem;
+  }
+  .art__body h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.35;
+    margin-top: 1rem;
+    color: var(--color-ink);
+  }
+  .art__body ul {
+    margin: 0;
+    padding-inline-start: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .art__body li {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+  }
+  .art__body li::marker {
+    color: var(--color-electric);
+  }
+  .art__body blockquote {
+    margin: 0.75rem 0;
+    padding-inline-start: 1.5rem;
+    border-inline-start: 3px solid var(--color-electric);
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
+  /* The diagram breaks the measure deliberately: it is the one moment
+     the article opens up. */
+  .art__fig {
+    margin: 1.5rem 0;
+    width: min(100vw - 2 * var(--gutter, 1.25rem), 60rem);
+    margin-inline: calc((46rem - min(100vw - 2 * var(--gutter, 1.25rem), 60rem)) / 2);
+  }
+  .art__fig-stage {
+    background: var(--color-navy);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+  }
+  .art__fig figcaption {
+    margin-top: 0.875rem;
+    font-size: var(--text-small);
+    line-height: 1.6;
+    color: var(--color-ink-3);
+    text-align: center;
+  }
+
+  .art__rel {
+    margin-top: clamp(2.5rem, 5vw, 3.5rem);
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--color-line);
+    border-inline-start: 3px solid var(--color-electric);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-2);
+  }
+  .art__rel-k {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-3);
+    margin-bottom: 0.375rem;
+  }
+  .art__rel-a {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 700;
+    color: var(--color-royal);
+    text-decoration: none;
+  }
+  .art__rel-a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .art__foot {
+    margin-top: clamp(2rem, 4vw, 3rem);
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .art__foot-line {
+    font-size: var(--text-body-lg);
+    line-height: 1.7;
+    color: var(--color-ink-2);
+    margin-bottom: 0.875rem;
+    max-width: none;
+  }
+  .art__foot-cta {
+    font-size: var(--text-body-lg);
+    font-weight: 700;
+  }
+
+  .more {
+    background: var(--color-surface-2);
+    border-top: 1px solid var(--color-line);
+    padding-block: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .more__h {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+  }
+  .more__list {
+    list-style: none;
+    margin: 0 0 1.75rem;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  .more__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 100%;
+    padding: 1.5rem;
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition:
+      border-color var(--dur) var(--ease-out),
+      translate var(--dur) var(--ease-out);
+  }
+  .more__item:hover {
+    border-color: var(--color-electric);
+    translate: 0 -3px;
+  }
+  .more__topic {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-royal);
+  }
+  .more__t {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--color-ink);
+  }
+  .more__x {
+    font-size: var(--text-small);
+    line-height: 1.65;
+    color: var(--color-ink-2);
+  }
+
+  @media (max-width: 760px) {
+    .art__fig {
+      width: 100%;
+      margin-inline: 0;
+    }
+    .more__list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

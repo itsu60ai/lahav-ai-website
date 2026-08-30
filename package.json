@@ -7,15 +7,23 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "look": "astro build && astro preview --port 4321",
+    "cms:seed": "node scripts/cms-seed.mjs",
+    "db:local": "wrangler d1 execute lahav-cms --local --file=./migrations/0001_init.sql && wrangler d1 execute lahav-cms --local --file=./migrations/0003_seed.sql"
   },
   "dependencies": {
     "astro": "^7.2.9"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@astrojs/cloudflare": "^14.2.5",
+    "@cloudflare/workers-types": "^5.20260830.1",
     "@fontsource-variable/assistant": "^5.2.5",
     "@fontsource-variable/heebo": "^5.2.5",
     "@tailwindcss/vite": "^4.1.4",
-    "tailwindcss": "^4.1.4"
+    "tailwindcss": "^4.1.4",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.127.1"
   }
 }

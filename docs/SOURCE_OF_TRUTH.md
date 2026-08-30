@@ -118,7 +118,7 @@ single list.
 |---|---|---|
 | V-3 | WhatsApp business number | every secondary CTA |
 | V-4 | Destination email for form submissions | Contact |
-| V-5 | Scheduling provider decision | the booking region |
+| ~~V-5~~ | **CLOSED 2026-08-30.** Scheduling provider: Cal.com, tested and live at `https://cal.com/ethan-fgix0d/discovery`, embedded inline on `/contact/`. Every Discovery CTA site-wide already routed to `/contact/`, so the booking region simply started working the moment it was implemented — no CTA hrefs needed to change. See `docs/CONTACT_FORM.md` sibling notes and O-13 below. | ~~the booking region~~ resolved |
 | V-6 | Legal entity details | footer, Privacy |
 | V-7 | Final privacy text, once the stack is fixed | Privacy |
 | V-8 | Legal accessibility obligation (legacy NV-1) | accessibility statement, launch claim |
@@ -195,8 +195,12 @@ These are the newest approved decisions. Where they conflict with anything older
 | **O-8** | CMS user-experience approval before the CMS is locked (F-6) | Blocks CMS implementation |
 | **O-9** | Auto-publish safety model approval (F-7C) | Blocks Mode 2 |
 | **O-10** | Target Hebrew search terms per page | Copy quality, not blocking |
+| **O-11** | **Secure admin access with MFA before launch — MANDATORY, requirement clarified 2026-08-30.** The requirement is the outcome (MFA-protected admin access), not a specific implementation. **Prefer Cloudflare Access** (free for ≤50 users, enforced at the edge before the Worker runs, includes MFA at no cost); this requires the domain to be on Cloudflare (see V-2). **Do not build a custom password-change screen or custom MFA if Cloudflare Access already covers the need — avoid duplicate custom security features unless something Access does not cover is actually needed.** Full reasoning in `docs/CMS_CLOUDFLARE_MIGRATION.md` §1 and §8. Recorded as **PL-13** in the parking lot. | **TRUE BLOCKER — for production launch only, not for further CMS or feature work** |
 
-None of O-1..O-10 blocks starting the build. B-1 blocks only the AI tool, which is late in the sequence.
+| **O-12** | **Contact form (F-10) is implemented, tested, and email delivery is now LIVE.** Resend account created with itsu60ai@gmail.com, `RESEND_API_KEY` configured 2026-08-30, real delivery confirmed end to end (lead saved, `email_sent = 1`, no error). **One item remains**: a real Cloudflare Turnstile widget once the domain is on Cloudflare, replacing the public test keys currently in use for bot verification. The form is fully functional and safe without it — it just means bot protection is running on Cloudflare's test keys rather than the client's own. Full detail in `docs/CONTACT_FORM.md`. | Blocks real bot protection only, not the build, and not email delivery (already live) |
+
+None of O-1..O-10 or O-12 blocks starting the build. B-1 blocks only the AI tool, which is late in the sequence.
+O-11 blocks going live in production; it does not block continuing to build other features.
 
 ## 6. What changed in the architecture review
 

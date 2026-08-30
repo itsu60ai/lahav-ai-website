@@ -8,12 +8,14 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 import ClosingCta from '../components/ClosingCta.astro';
 import HeroStage from '../components/HeroStage.astro';
+import ServiceShowcase from '../components/ServiceShowcase.astro';
+import FounderPortrait from '../components/FounderPortrait.astro';
+import DiscoveryPitch from '../components/DiscoveryPitch.astro';
+import { CAPABILITY_ICONS } from '../lib/icons';
 import Viz from '../components/Viz.astro';
 import ScrollReveal from '../components/ScrollReveal.astro';
 import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, CAPABILITIES, FOUNDER } from '../lib/site';
-
-const featured = SERVICES.filter((s) => s.featured);
-const rest = SERVICES.filter((s) => !s.featured);
+import WhatsApp from '../components/icons/WhatsApp.astro';
 
 const pains = [
   { t: 'המידע מפוזר בכל מקום', d: 'חלק בוואטסאפ, חלק במייל, חלק באקסל, וחלק בראש של מישהו. אף אחד לא רואה את התמונה המלאה.' },
@@ -29,33 +31,32 @@ const pains = [
 >
   <ScrollReveal />
 
-  <!-- ══════════ HERO: statement, then a stage that dominates ══════════ -->
+  <!-- ══════════ HERO: copy and visual in ONE first-screen act ══════════ -->
   <section class="hero">
-    <div class="u-container hero__type">
-      <p class="hero__eyebrow">מערכות AI ואוטומציה לעסקים</p>
-      <h1 class="hero__title">
-        פחות עבודה ידנית.<br />
-        <span class="hero__accent">יותר שליטה בעסק.</span>
-      </h1>
-      <p class="hero__lead">
-        אנחנו בונים מערכות CRM, אוטומציות ופתרונות דיגיטליים שמחברים את התהליכים
-        בעסק, מפחיתים עבודה ידנית ועושים סדר במה שקורה ביום-יום.
-      </p>
-      <div class="hero__actions">
-        <a class="btn btn-primary btn-lg" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-        <a class="btn btn-secondary btn-lg" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
-            ><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.25 8.23Z"
-            ></path></svg
-          >
-          שיחה בוואטסאפ
-        </a>
+    <div class="u-container hero__grid">
+      <div class="hero__type">
+        <p class="hero__eyebrow">מערכות AI ואוטומציה לעסקים</p>
+        <h1 class="hero__title">
+          פחות עבודה ידנית.<br />
+          <span class="hero__accent">יותר שליטה בעסק.</span>
+        </h1>
+        <p class="hero__lead">
+          נשב, נבין איך העסק שלכם עובד היום, ונבנה מערכת שלוקחת על עצמה את
+          העבודה שחוזרת על עצמה. ההחלטות נשארות אצלכם.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn-primary btn-lg" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
+          <a class="btn btn-secondary btn-lg" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+            <WhatsApp />
+            שיחה בוואטסאפ
+          </a>
+        </div>
+        <p class="hero__note">30 דקות, בלי התחייבות. נבין יחד איפה יש מה לשפר.</p>
       </div>
-      <p class="hero__note">שיחת היכרות של 30 דקות, נבין יחד איפה יש מה לשפר.</p>
-    </div>
 
-    <div class="hero__stage section--navy">
-      <HeroStage />
+      <div class="hero__stage">
+        <HeroStage />
+      </div>
     </div>
   </section>
 
@@ -64,15 +65,16 @@ const pains = [
     <div class="u-container explain__grid">
       <h2 class="t-h2 explain__q">רגע, מה זה בעצם אומר?</h2>
       <div class="explain__a">
-        <p class="explain__lead">"אוטומציה" נשמעת כמו מילה גדולה, אבל הרעיון פשוט.</p>
+        <p class="explain__lead">"אוטומציה" נשמעת כמו מילה גדולה. הרעיון מאחוריה פשוט.</p>
         <p class="explain__p">
-          בעסקים רבים יש המון פעולות קטנות שחוזרות על עצמן: להעביר פרטים ממקום למקום,
-          לשלוח הודעות, לזכור לחזור ללקוחות ולעדכן מידע ידנית. כל פעולה קטנה בפני עצמה,
-          אבל יחד הן מצטברות להרבה עבודה שלא באמת חייבת להיעשות ביד.
+          תחשבו על יום עבודה רגיל אצלכם. יש פעולות קטנות שחוזרות שוב ושוב:
+          להעביר פרטים ממקום למקום, לשלוח הודעות מעקב, לזכור לחזור ללקוח,
+          לעדכן מידע ידנית. כל אחת קטנה בפני עצמה, אבל ביחד הן מצטברות
+          להרבה עבודה.
         </p>
         <p class="explain__strong">
-          מה שאנחנו עושים זה להעביר את הפעולות האלה למערכת שעושה אותן לבד.
-          אתם נשארים עם ההחלטות, היא לוקחת את השאר.
+          את כל אלה אפשר להגדיר פעם אחת ולתת למערכת לעשות. אתם נשארים עם
+          ההחלטות. המערכת מטפלת בפעולות שהגדרנו מראש.
         </p>
       </div>
     </div>
@@ -83,7 +85,7 @@ const pains = [
     <div class="u-container">
       <div class="lede">
         <p class="t-eyebrow">נשמע מוכר?</p>
-        <h2 class="t-h2">לרוב העסקים לא חסר עוד כלי.<br />חסר להם שהכלים ידברו ביניהם.</h2>
+        <h2 class="t-h2">לרוב העסקים לא חסר עוד כלי.<br />חסר שהכלים ידברו ביניהם.</h2>
       </div>
       <ul class="pains">
         {
@@ -104,17 +106,36 @@ const pains = [
     <div class="u-container">
       <div class="lede lede--center">
         <p class="t-eyebrow">התוצאה</p>
-        <h2 class="t-display-2">המערכות בעסק<br />מתחילות לעבוד יחד</h2>
+        <h2 class="t-display-2">ככה זה נראה<br />כשהכל מדבר</h2>
         <p class="t-lead">
-          פנייה שנכנסת מהאתר נרשמת לבד, מקבלת מענה ראשוני, נכנסת למעקב,
-          ומזכירה לכם לחזור אליה. בלי שאף אחד העתיק שורה אחת.
+          מישהו משאיר פרטים באתר. הפנייה נרשמת לבד, מקבלת מענה ראשוני, נכנסת
+          למעקב, ומזכירה לכם לחזור אליה בזמן. אף אחד לא העתיק שורה.
         </p>
       </div>
       <Viz kind="crm" class="home__viz" />
 
-      <div class="caps" data-reveal>
+      <div class="caps">
         <p class="caps__label">תחומים שאנחנו עובדים בהם</p>
-        <ul class="caps__list">{CAPABILITIES.map((c) => <li>{c}</li>)}</ul>
+        <ul class="caps__list">
+          {
+            CAPABILITIES.map((c, i) => (
+              <li class="cap" data-reveal style={`--i:${i}`}>
+                <span class="cap__ico" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    set:html={CAPABILITY_ICONS[i % CAPABILITY_ICONS.length]}
+                  />
+                </span>
+                <span class="cap__t">{c}</span>
+              </li>
+            ))
+          }
+        </ul>
       </div>
     </div>
   </section>
@@ -124,54 +145,27 @@ const pains = [
     <div class="u-container">
       <div class="lede">
         <p class="t-eyebrow">מה אנחנו בונים</p>
-        <h2 class="t-display-2">חמישה שירותים.<br />מטרה אחת: שהעסק יעבוד חלק.</h2>
+        <h2 class="t-display-2">חמישה תחומים,<br />ואפשר להתחיל מאחד.</h2>
+        <p class="t-lead services__hint">בחרו תחום כדי לראות איך הוא עובד בפועל.</p>
       </div>
 
-      {
-        featured.map((s, i) => (
-          <article class="svc" data-reveal>
-            <div class="svc__head">
-              <span class="svc__n tabular">{String(i + 1).padStart(2, '0')}</span>
-              <span class="chip">שירות מוביל</span>
-            </div>
-            <h3 class="t-h1 svc__name">{s.name}</h3>
-            <p class="svc__lead">{s.lead}</p>
-            <p class="svc__body">{s.pain}</p>
-            <a class="link-arrow" href={`/services/${s.slug}/`}>
-              לפרטים על השירות <span class="arrow-inline" aria-hidden="true">←</span>
-            </a>
-          </article>
-        ))
-      }
-
-      <div class="svc-rest">
-        {
-          rest.map((s, i) => (
-            <article class="svc-min" data-reveal style={`--i:${i}`}>
-              <span class="svc-min__n tabular">{String(i + 3).padStart(2, '0')}</span>
-              <h3 class="t-h3">{s.name}</h3>
-              <p class="svc-min__lead">{s.lead}</p>
-              <p class="svc-min__body">{s.pain}</p>
-              <a class="link-arrow" href={`/services/${s.slug}/`}>
-                לפרטים <span class="arrow-inline" aria-hidden="true">←</span>
-              </a>
-            </article>
-          ))
-        }
-      </div>
+      <ServiceShowcase />
 
       <p class="pricing-note">
-        אין מחירון קבוע. המחיר נקבע אחרי שיחת היכרות ואפיון, לפי מה שהעסק באמת צריך.
+        אין מחירון קבוע, כי אין שני עסקים זהים. המחיר נקבע אחרי שיחת היכרות
+        ואפיון, לפי מה שאתם באמת צריכים ולא לפי חבילה.
       </p>
     </div>
   </section>
+
+  <DiscoveryPitch variant="home" />
 
   <!-- ══════════ PROCESS ══════════ -->
   <section class="section section--gray">
     <div class="u-container">
       <div class="lede">
         <p class="t-eyebrow">איך זה עובד</p>
-        <h2 class="t-h2">תהליך ברור מהאפיון ועד המסירה</h2>
+        <h2 class="t-h2">מה קורה מרגע שאמרתם כן</h2>
       </div>
       <ol class="steps">
         {
@@ -190,31 +184,20 @@ const pains = [
   <!-- ══════════ FOUNDER ══════════ -->
   <section class="section founder">
     <div class="u-container founder__grid">
-      <figure class="founder__photo" data-reveal>
-        <img
-          src={FOUNDER.photo}
-          srcset={`${FOUNDER.photoSmall} 480w, ${FOUNDER.photo} 720w`}
-          sizes="(max-width: 900px) 88vw, 34vw"
-          alt={FOUNDER.alt}
-          width="720"
-          height="900"
-          loading="lazy"
-          decoding="async"
-        />
-      </figure>
+      <FounderPortrait scale="home" sizes="(max-width: 1024px) 60vw, 26rem" />
       <div class="founder__text">
         <p class="t-eyebrow">מי עומד מאחורי זה</p>
         <h2 class="t-h2 founder__name">{FOUNDER.name}</h2>
         <p class="founder__role">{FOUNDER.role}</p>
         <p class="founder__p">
-          הקמתי את LAHAV AI מתוך משהו שראיתי שוב ושוב בעסקים: הבעיה היא בדרך כלל
-          לא שחסרים כלים, אלא שהכלים והתהליכים לא עובדים יחד. מידע מתפזר, עבודה
-          ידנית מצטברת, ודברים פשוטים הופכים למסורבלים ככל שהעסק גדל.
+          הקמתי את LAHAV AI בגלל משהו שראיתי חוזר בעסק אחרי עסק: כמעט תמיד לא
+          חסרים כלים. חסר שהם ידברו. המידע מתפזר, העבודה הידנית מצטברת, ודברים
+          שהיו פשוטים כשהייתם שלושה נהיים מסורבלים כשאתם חמישה עשר.
         </p>
         <p class="founder__p">
-          לכן אני מתחיל מהעסק ולא מהטכנולוגיה. קודם מבינים איפה העבודה נתקעת, מה
-          גוזל זמן ומה צריך לעבוד פשוט יותר. רק אחר כך בוחרים את הכלים ובונים את
-          המערכת שמתאימה לתהליך.
+          לכן אני מתחיל מהעסק, לא מהטכנולוגיה. קודם נבין איפה העבודה נתקעת ומה
+          גוזל לכם את הזמן. רק אחר כך נבחר כלים ונבנה את המערכת שמתאימה לתהליך,
+          ולא להפך.
         </p>
         <a class="link-arrow founder__link" href="/about/">
           עוד עלינו <span class="arrow-inline" aria-hidden="true">←</span>
@@ -225,25 +208,29 @@ const pains = [
 
   <ClosingCta
     heading="בואו נראה איפה אפשר לעשות סדר"
-    body="שיחה של 30 דקות. נעבור על התהליכים שלכם, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך."
+    body="30 דקות. נעבור יחד על איך שאתם עובדים היום, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך."
   />
 </SiteLayout>
 
 <style>
-  /* ---------- Hero ---------- */
+  /* ---------- Hero ----------
+     Copy and visual belong to the SAME first screen. The visual is a
+     co-star, not a side illustration, so it takes the larger share. */
   .hero {
-    padding-top: clamp(3rem, 7vw, 7rem);
+    padding-block: clamp(2.5rem, 5vw, 5rem) clamp(3rem, 6vw, 6rem);
+    background:
+      radial-gradient(120% 90% at 85% 0%, rgba(41, 151, 255, 0.09), transparent 60%),
+      radial-gradient(90% 80% at 10% 20%, rgba(29, 78, 216, 0.06), transparent 60%);
   }
-  .hero__type {
-    /* wider than the standard container so the display line stays on two rows */
-    max-width: 1360px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
+  .hero__grid {
+    display: grid;
+    /* first column is the RIGHT one in RTL: the words come first */
+    grid-template-columns: minmax(0, 48fr) minmax(0, 52fr);
+    gap: clamp(2rem, 4vw, 4rem);
     align-items: center;
-    padding-bottom: clamp(3rem, 6vw, 5rem);
   }
   .hero__eyebrow {
+    display: inline-block;
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.07em;
@@ -251,15 +238,15 @@ const pains = [
     background: color-mix(in srgb, var(--color-royal) 8%, transparent);
     border-radius: var(--radius-full);
     padding: 0.5rem 1.1rem;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
   }
   .hero__title {
     font-family: var(--font-display);
-    font-size: var(--text-mega);
+    font-size: clamp(2.375rem, 1rem + 3vw, 3.5rem);
     font-weight: 800;
     line-height: 1.02;
-    letter-spacing: -0.025em;
-    margin-bottom: 1.75rem;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
   }
   .hero__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
@@ -269,24 +256,33 @@ const pains = [
   }
   .hero__lead {
     font-size: var(--text-lead);
-    line-height: 1.55;
+    line-height: 1.6;
     color: var(--color-ink-2);
-    max-width: 52ch;
-    margin-bottom: 2.5rem;
+    max-width: 34ch;
+    margin-bottom: 2rem;
   }
   .hero__actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+  }
+  /* slightly tighter than the global btn-lg so the pair fits the column */
+  .hero__actions .btn {
+    white-space: nowrap;
+    padding-inline: 1.375rem;
   }
   .hero__note {
     margin-top: 1.25rem;
     font-size: var(--text-small);
     color: var(--color-ink-3);
   }
+  /* The dark stage is its own object, not a full-bleed band, so the copy
+     and the visual read as one composition. */
   .hero__stage {
-    padding-block: clamp(1rem, 3vw, 2rem);
+    background: var(--color-navy);
+    border-radius: clamp(1.25rem, 2vw, 2rem);
+    padding: clamp(1.25rem, 2.5vw, 2.5rem);
+    box-shadow: var(--shadow-lg);
   }
 
   /* ---------- Explainer ---------- */
@@ -371,139 +367,64 @@ const pains = [
     margin-top: clamp(3rem, 5vw, 4.5rem);
     padding-top: clamp(1.75rem, 3vw, 2.5rem);
     border-top: 1px solid rgba(255, 255, 255, 0.12);
-    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
-  }
-  :global(html.reveal-ready) .caps {
-    opacity: 0;
-    translate: 0 14px;
-  }
-  :global(html.reveal-ready) .caps.is-in {
-    opacity: 1;
-    translate: 0 0;
   }
   .caps__label {
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.09em;
     color: var(--color-electric);
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
   }
   .caps__list {
     list-style: none;
     margin: 0;
     padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  .cap {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.75rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.25rem;
+    /* a hairline, not a card: nothing here is clickable */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition:
+      opacity 500ms var(--ease-out) calc(var(--i) * 70ms),
+      translate 500ms var(--ease-out) calc(var(--i) * 70ms);
   }
-  .caps__list li {
+  :global(html.reveal-ready) .cap {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  :global(html.reveal-ready) .cap.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .cap__ico {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: none;
+    color: var(--color-electric);
+  }
+  .cap__ico svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .cap__t {
     font-size: var(--text-small);
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.76);
-    position: relative;
-  }
-  .caps__list li + li::before {
-    content: '';
-    position: absolute;
-    inset-inline-end: -0.9rem;
-    top: 50%;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: rgba(41, 151, 255, 0.6);
-    translate: 0 -50%;
+    font-weight: 600;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.88);
   }
 
   /* ---------- Services ---------- */
-  .svc {
-    padding-block: clamp(2.5rem, 4vw, 3.5rem);
-    border-top: 1px solid var(--color-line);
-    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
-  }
-  :global(html.reveal-ready) .svc {
-    opacity: 0;
-    translate: 0 20px;
-  }
-  :global(html.reveal-ready) .svc.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
-  .svc__head {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .svc__n {
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    font-weight: 700;
-    color: var(--color-electric);
-    line-height: 1;
-  }
-  .svc__name {
-    margin-bottom: 0.875rem;
-  }
-  .svc__lead {
-    font-size: var(--text-lead);
-    font-weight: 600;
-    color: var(--color-royal);
-    line-height: 1.5;
-    margin-bottom: 1rem;
-    max-width: 40ch;
-  }
-  .svc__body {
-    font-size: var(--text-body-lg);
-    line-height: 1.7;
-    color: var(--color-ink-2);
-    max-width: 62ch;
-    margin-bottom: 1.5rem;
-  }
-
-  .svc-rest {
-    margin-top: clamp(2.5rem, 4vw, 3.5rem);
-    padding-top: clamp(2rem, 3vw, 2.5rem);
-    border-top: 1px solid var(--color-line-strong);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(2rem, 4vw, 3rem);
-  }
-  .svc-min {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    transition:
-      opacity 600ms var(--ease-out) calc(var(--i) * 110ms),
-      translate 600ms var(--ease-out) calc(var(--i) * 110ms);
-  }
-  :global(html.reveal-ready) .svc-min {
-    opacity: 0;
-    translate: 0 16px;
-  }
-  :global(html.reveal-ready) .svc-min.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
-  .svc-min__n {
-    font-family: var(--font-display);
-    font-size: var(--text-micro);
-    font-weight: 700;
-    color: var(--color-electric);
-  }
-  .svc-min__lead {
-    font-size: var(--text-small);
-    font-weight: 600;
-    color: var(--color-royal);
-    line-height: 1.5;
-  }
-  .svc-min__body {
-    font-size: var(--text-small);
-    line-height: 1.65;
-    color: var(--color-ink-2);
-  }
-  .svc-min .link-arrow {
-    margin-top: auto;
-    padding-top: 0.5rem;
+  .services__hint {
+    margin-top: 1rem;
+    color: var(--color-ink-3);
   }
   .pricing-note {
     margin-top: clamp(2.5rem, 4vw, 3.5rem);
@@ -557,34 +478,19 @@ const pains = [
   }
 
   /* ---------- Founder ---------- */
+  /* The portrait sits on the same baseline as the text block, with no
+     frame around it, so the section reads as one composition. */
+  .founder {
+    overflow: hidden;
+  }
   .founder__grid {
     display: grid;
-    grid-template-columns: 0.72fr 1.28fr;
-    gap: clamp(2.5rem, 5vw, 5rem);
-    align-items: center;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: end;
   }
-  .founder__photo {
-    margin: 0;
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    background: var(--color-surface-3);
-    aspect-ratio: 4 / 5;
-    box-shadow: var(--shadow-lg);
-    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
-  }
-  :global(html.reveal-ready) .founder__photo {
-    opacity: 0;
-    translate: 0 18px;
-  }
-  :global(html.reveal-ready) .founder__photo.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
-  .founder__photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center 18%;
+  .founder__text {
+    padding-bottom: clamp(0.5rem, 2vw, 2rem);
   }
   .founder__name {
     margin-block: 0.75rem 0.25rem;
@@ -610,25 +516,30 @@ const pains = [
 
   /* ---------- Responsive ---------- */
   @media (max-width: 1024px) {
+    .hero__grid,
     .explain__grid,
     .founder__grid {
       grid-template-columns: 1fr;
     }
+    /* Mobile is recomposed, not shrunk: the words land first, then the
+       visual gets the full width it needs to stay readable. */
+    .hero__lead {
+      max-width: 46ch;
+    }
     .explain__q {
       position: static;
     }
-    .founder__photo {
-      max-width: 22rem;
-    }
-    .svc-rest,
     .steps {
       grid-template-columns: repeat(2, 1fr);
+    }
+    .caps__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
   @media (max-width: 720px) {
     .pains,
-    .svc-rest,
-    .steps {
+    .steps,
+    .caps__list {
       grid-template-columns: 1fr;
     }
     .hero__actions {
@@ -636,17 +547,14 @@ const pains = [
       align-items: stretch;
       width: 100%;
     }
-    .founder__photo {
-      max-width: none;
+    .hero__stage {
+      padding: 1rem;
     }
   }
   @media (prefers-reduced-motion: reduce) {
     .pain,
-    .svc,
-    .svc-min,
     .step,
-    .caps,
-    .founder__photo {
+    .cap {
       opacity: 1 !important;
       translate: none !important;
       transition: none !important;

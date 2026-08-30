@@ -1,0 +1,271 @@
+---
+// Admin chrome. On-brand but deliberately not the marketing site: this is a
+// tool, so it is denser, calmer and has no persuasion in it.
+import '@fontsource-variable/heebo';
+import '@fontsource-variable/assistant';
+import '../styles/global.css';
+import { csrfFor } from '../lib/cms/auth.ts';
+
+interface Props {
+  title: string;
+  /** the login screen has no chrome */
+  bare?: boolean;
+}
+const { title, bare = false } = Astro.props;
+const user = Astro.locals.user;
+const csrf = await csrfFor(Astro.locals.sessionToken);
+const path = new URL(Astro.request.url).pathname;
+---
+
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- the admin is never indexed, in addition to the header set in middleware -->
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} · ניהול LAHAV AI</title>
+  </head>
+  <body class="ad" data-csrf={csrf}>
+    {
+      !bare && (
+        <header class="ad__bar">
+          <div class="ad__bar-in">
+            <a class="ad__brand" href="/admin">
+              <span class="ad__logo">LA</span>
+              <span>ניהול תוכן</span>
+            </a>
+
+            <nav class="ad__nav">
+              <a class:list={['ad__navlink', path === '/admin' && 'is-on']} href="/admin">
+                מאמרים
+              </a>
+              <a class:list={['ad__navlink', path.startsWith('/admin/ai') && 'is-on']} href="/admin/ai">
+                מנוע תוכן AI
+              </a>
+              <a class="ad__navlink" href="/articles/" target="_blank" rel="noopener">
+                צפייה באתר
+              </a>
+            </nav>
+
+            <div class="ad__who">
+              <span class="ad__name">{user?.name}</span>
+              <form method="post" action={`/api/admin/logout?csrf=${csrf}`}>
+                <button class="ad__out" type="submit">התנתקות</button>
+              </form>
+            </div>
+          </div>
+        </header>
+      )
+    }
+
+    <main class:list={['ad__main', bare && 'ad__main--bare']}>
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  .ad {
+    background: var(--color-surface-2);
+    min-height: 100dvh;
+  }
+  .ad__bar {
+    background: var(--color-navy);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .ad__bar-in {
+    max-width: 78rem;
+    margin-inline: auto;
+    padding: 0.875rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .ad__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: #fff;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+  .ad__logo {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(120deg, #2997ff, #1d4ed8);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+  }
+  .ad__nav {
+    display: flex;
+    gap: 0.25rem;
+    margin-inline-start: 1rem;
+  }
+  .ad__navlink {
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.5rem;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .ad__navlink:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+  .ad__navlink.is-on {
+    background: rgba(41, 151, 255, 0.2);
+    color: #fff;
+  }
+  .ad__who {
+    margin-inline-start: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+  }
+  .ad__name {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .ad__out {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    color: #fff;
+    border-radius: 0.5rem;
+    padding: 0.4375rem 0.75rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ad__out:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .ad__main {
+    max-width: 78rem;
+    margin-inline: auto;
+    padding: 1.75rem 1.25rem 4rem;
+  }
+  .ad__main--bare {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: 1.25rem;
+  }
+
+  /* shared admin controls */
+  .ad-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .ad-label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-ink-2);
+  }
+  .ad-hint {
+    font-size: 0.75rem;
+    color: var(--color-ink-3);
+  }
+  .ad-input,
+  .ad-select,
+  .ad-textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 0.9375rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 0.5rem;
+    background: #fff;
+    color: var(--color-ink);
+  }
+  .ad-textarea {
+    line-height: 1.6;
+    resize: vertical;
+  }
+  .ad-input:focus-visible,
+  .ad-select:focus-visible,
+  .ad-textarea:focus-visible {
+    outline: 3px solid var(--color-electric);
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+  .ad-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    padding: 0.625rem 1.125rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .ad-btn--primary {
+    background: var(--color-royal);
+    color: #fff;
+  }
+  .ad-btn--primary:hover {
+    background: #1a45c4;
+  }
+  .ad-btn--ghost {
+    background: #fff;
+    border-color: var(--color-line-strong);
+    color: var(--color-ink);
+  }
+  .ad-btn--ghost:hover {
+    background: var(--color-surface-2);
+  }
+  .ad-btn--danger {
+    background: #fff;
+    border-color: #e5b4b4;
+    color: var(--color-error);
+  }
+  .ad-btn--danger:hover {
+    background: #fdf2f2;
+  }
+  .ad-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ad-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+  }
+  .ad-pill--published {
+    background: #e7f6ec;
+    color: #15803d;
+  }
+  .ad-pill--draft {
+    background: #f1f3f7;
+    color: #55627a;
+  }
+  .ad-pill--placeholder {
+    background: #fff4e5;
+    color: #8a5300;
+  }
+  .ad-dot {
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+</style>

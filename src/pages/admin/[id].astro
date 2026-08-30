@@ -1,0 +1,686 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+import { ARTICLE_KINDS, BLOCK_LABELS, VIZ_KINDS, can } from '../../lib/cms/types.ts';
+import { SERVICES } from '../../lib/site';
+import { csrfFor } from '../../lib/cms/auth.ts';
+
+const { articles } = Astro.locals.stores!;
+const user = Astro.locals.user!;
+const { id } = Astro.params;
+const a = await articles.get(String(id));
+if (!a) return Astro.redirect('/admin', 302);
+
+const csrf = await csrfFor(Astro.locals.sessionToken);
+const mayPublish = can(user, 'article:publish');
+const mayDelete = can(user, 'article:delete');
+const vizLabels: Record<string, string> = {
+  crm: 'מסלול לקוח (CRM)',
+  automation: 'איך אוטומציה מחליטה',
+  web: 'מסלול מבקר באתר',
+  app: 'מצורך למערכת',
+  content: 'סדר העבודה על תוכן',
+  services: 'חמישה שירותים סביב העסק',
+};
+---
+
+<AdminLayout title={a.title || 'מאמר חדש'}>
+  <div class="ed" data-article-id={a.id} data-csrf={csrf}>
+    <!-- ─────────── top bar: status + actions ─────────── -->
+    <div class="ed__top">
+      <div class="ed__crumbs">
+        <a href="/admin">מאמרים</a>
+        <span aria-hidden="true">›</span>
+        <span class="ed__crumb-now">{a.title || 'ללא כותרת'}</span>
+      </div>
+
+      <div class="ed__acts">
+        <span class:list={['ad-pill', `ad-pill--${a.status}`]} data-status-pill>
+          <span class="ad-dot"></span>
+          {a.status === 'published' ? 'מפורסם' : 'טיוטה'}
+        </span>
+
+        <span class="ed__saved" data-saved aria-live="polite"></span>
+
+        <button class="ad-btn ad-btn--ghost" type="button" data-save>שמירת טיוטה</button>
+        <a class="ad-btn ad-btn--ghost" href={`/admin/preview/${a.id}`} target="_blank" rel="noopener">
+          תצוגה מקדימה
+        </a>
+        {
+          mayPublish && (
+            <button
+              class:list={['ad-btn', a.status === 'published' ? 'ad-btn--ghost' : 'ad-btn--primary']}
+              type="button"
+              data-publish
+              data-next={a.status === 'published' ? 'draft' : 'published'}
+            >
+              {a.status === 'published' ? 'הסרה מפרסום' : 'פרסום'}
+            </button>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="ed__grid">
+      <!-- ─────────── the article itself ─────────── -->
+      <div class="ed__main">
+        <div class="card">
+          <div class="ad-field">
+            <label class="ad-label" for="f-title">כותרת</label>
+            <input class="ad-input ed__title" id="f-title" data-f="title" value={a.title} />
+          </div>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-standfirst">פתיח</label>
+            <textarea class="ad-textarea" id="f-standfirst" data-f="standfirst" rows="2">{a.standfirst}</textarea>
+            <span class="ad-hint">המשפט הגדול שמופיע מתחת לכותרת בעמוד המאמר.</span>
+          </div>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-excerpt">תקציר</label>
+            <textarea class="ad-textarea" id="f-excerpt" data-f="excerpt" rows="2">{a.excerpt}</textarea>
+            <span class="ad-hint">הטקסט שמופיע בכרטיס המאמר ברשימת המאמרים.</span>
+          </div>
+        </div>
+
+        <!-- ─────────── body blocks ─────────── -->
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__h">גוף המאמר</h2>
+            <span class="ad-hint">בחרו סוג תוכן והוסיפו. אין צורך בסימוני עיצוב.</span>
+          </div>
+
+          <div class="blocks" data-blocks></div>
+
+          <div class="addbar">
+            <span class="addbar__label">הוספה:</span>
+            {
+              (['p', 'h2', 'h3', 'ul', 'quote', 'viz'] as const).map((t) => (
+                <button class="addbar__btn" type="button" data-add={t}>
+                  {BLOCK_LABELS[t]}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- ─────────── settings ─────────── -->
+      <aside class="ed__side">
+        <div class="card">
+          <h2 class="card__h">הגדרות</h2>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-kind">סוג מאמר</label>
+            <select class="ad-select" id="f-kind" data-f="kind">
+              {
+                Object.entries(ARTICLE_KINDS).map(([k, v]) => (
+                  <option value={k} selected={a.kind === k}>{v.label}</option>
+                ))
+              }
+            </select>
+            <span class="ad-hint">קובע את התווית ואת המיקום בעמוד המאמרים.</span>
+          </div>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-topic">נושא</label>
+            <input class="ad-input" id="f-topic" data-f="topic" value={a.topic} />
+          </div>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-reading">זמן קריאה</label>
+            <input class="ad-input" id="f-reading" data-f="readingTime" value={a.readingTime} />
+          </div>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-slug">כתובת בקישור</label>
+            <input class="ad-input" id="f-slug" data-f="slug" value={a.slug} dir="ltr" />
+            <span class="ad-hint" data-slug-preview>/articles/{a.slug}/</span>
+          </div>
+
+          <label class="check">
+            <input type="checkbox" data-f="featured" checked={a.featured} />
+            <span>מאמר מוצג ראשי</span>
+          </label>
+
+          <label class="check">
+            <input type="checkbox" data-f="isPlaceholder" checked={a.isPlaceholder} />
+            <span>תוכן לדוגמה (מסומן באתר)</span>
+          </label>
+        </div>
+
+        <div class="card">
+          <h2 class="card__h">תרשים ושירות</h2>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-viz">תרשים</label>
+            <select class="ad-select" id="f-viz" data-f="viz">
+              {
+                VIZ_KINDS.map((v) => (
+                  <option value={v} selected={a.viz === v}>{vizLabels[v] ?? v}</option>
+                ))
+              }
+            </select>
+            <span class="ad-hint">מופיע במקום שבו הוספתם בלוק "תרשים".</span>
+          </div>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-vizcap">כיתוב לתרשים</label>
+            <textarea class="ad-textarea" id="f-vizcap" data-f="vizCaption" rows="2">{a.vizCaption}</textarea>
+          </div>
+
+          <div class="ad-field">
+            <label class="ad-label" for="f-service">שירות קשור</label>
+            <select class="ad-select" id="f-service" data-f="serviceSlug">
+              {
+                SERVICES.map((s) => (
+                  <option value={s.slug} selected={a.serviceSlug === s.slug}>{s.name}</option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+
+        {
+          mayDelete && (
+            <div class="card card--danger">
+              <h2 class="card__h">מחיקה</h2>
+              <p class="ad-hint">המחיקה סופית ואי אפשר לשחזר.</p>
+              <button class="ad-btn ad-btn--danger" type="button" data-delete>מחיקת המאמר</button>
+            </div>
+          )
+        }
+      </aside>
+    </div>
+  </div>
+
+  <script
+    is:inline
+    define:vars={{
+      initial: a,
+      labels: BLOCK_LABELS,
+      serviceNames: Object.fromEntries(SERVICES.map((s) => [s.slug, s.name])),
+    }}
+  >
+    (() => {
+      const root = document.querySelector('.ed');
+      const csrf = root.dataset.csrf;
+      const id = root.dataset.articleId;
+      const savedEl = root.querySelector('[data-saved]');
+      const blocksEl = root.querySelector('[data-blocks]');
+
+      let body = Array.isArray(initial.body) ? structuredClone(initial.body) : [];
+      let dirty = false;
+
+      // ── block editing ────────────────────────────────────────────
+      function render() {
+        blocksEl.replaceChildren();
+        if (body.length === 0) {
+          const p = document.createElement('p');
+          p.className = 'blocks__empty';
+          p.textContent = 'עוד אין תוכן. השתמשו בכפתורי ההוספה למטה.';
+          blocksEl.appendChild(p);
+          return;
+        }
+        body.forEach((b, i) => blocksEl.appendChild(blockEl(b, i)));
+      }
+
+      function blockEl(b, i) {
+        const wrap = document.createElement('div');
+        wrap.className = 'blk blk--' + b.t;
+
+        const head = document.createElement('div');
+        head.className = 'blk__head';
+        const tag = document.createElement('span');
+        tag.className = 'blk__tag';
+        tag.textContent = labels[b.t] ?? b.t;
+        head.appendChild(tag);
+
+        const tools = document.createElement('div');
+        tools.className = 'blk__tools';
+        tools.append(
+          btn('↑', 'העלאה', () => move(i, -1), i === 0),
+          btn('↓', 'הורדה', () => move(i, 1), i === body.length - 1),
+          btn('✕', 'מחיקה', () => { body.splice(i, 1); touch(); render(); })
+        );
+        head.appendChild(tools);
+        wrap.appendChild(head);
+
+        if (b.t === 'viz') {
+          const note = document.createElement('p');
+          note.className = 'blk__viz';
+          note.textContent = 'כאן ייכנס התרשים שנבחר בהגדרות.';
+          wrap.appendChild(note);
+        } else if (b.t === 'ul') {
+          const list = document.createElement('div');
+          list.className = 'blk__list';
+          (b.items || []).forEach((item, j) => {
+            const row = document.createElement('div');
+            row.className = 'blk__li';
+            const inp = document.createElement('input');
+            inp.className = 'ad-input';
+            inp.value = item;
+            inp.addEventListener('input', () => { b.items[j] = inp.value; touch(); });
+            row.append(inp, btn('✕', 'מחיקת שורה', () => {
+              b.items.splice(j, 1); touch(); render();
+            }));
+            list.appendChild(row);
+          });
+          const add = document.createElement('button');
+          add.type = 'button';
+          add.className = 'blk__additem';
+          add.textContent = '+ שורה';
+          add.addEventListener('click', () => {
+            b.items = b.items || []; b.items.push(''); touch(); render();
+          });
+          list.appendChild(add);
+          wrap.appendChild(list);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.className = 'ad-textarea';
+          ta.rows = b.t === 'p' ? 4 : 2;
+          ta.value = b.x || '';
+          ta.addEventListener('input', () => { b.x = ta.value; touch(); autoGrow(ta); });
+          wrap.appendChild(ta);
+          queueMicrotask(() => autoGrow(ta));
+        }
+        return wrap;
+      }
+
+      function autoGrow(ta) {
+        ta.style.height = 'auto';
+        ta.style.height = Math.max(ta.scrollHeight, 44) + 'px';
+      }
+
+      function btn(label, title, fn, disabled) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'blk__tool';
+        b.textContent = label;
+        b.title = title;
+        b.disabled = !!disabled;
+        b.addEventListener('click', fn);
+        return b;
+      }
+
+      function move(i, d) {
+        const j = i + d;
+        if (j < 0 || j >= body.length) return;
+        [body[i], body[j]] = [body[j], body[i]];
+        touch();
+        render();
+      }
+
+      root.querySelectorAll('[data-add]').forEach((b) => {
+        b.addEventListener('click', () => {
+          const t = b.dataset.add;
+          body.push(t === 'ul' ? { t, items: [''] } : t === 'viz' ? { t } : { t, x: '' });
+          touch();
+          render();
+          blocksEl.lastElementChild?.querySelector('textarea, input')?.focus();
+        });
+      });
+
+      // ── field collection ─────────────────────────────────────────
+      const fields = () => {
+        const out = {};
+        root.querySelectorAll('[data-f]').forEach((el) => {
+          out[el.dataset.f] = el.type === 'checkbox' ? el.checked : el.value;
+        });
+        out.body = body;
+        out.serviceName = serviceNames[out.serviceSlug] ?? '';
+        return out;
+      };
+
+      root.querySelectorAll('[data-f]').forEach((el) => {
+        el.addEventListener('input', touch);
+        el.addEventListener('change', touch);
+      });
+
+      const slugInput = root.querySelector('[data-f="slug"]');
+      const slugPreview = root.querySelector('[data-slug-preview]');
+      slugInput?.addEventListener('input', () => {
+        slugPreview.textContent = '/articles/' + slugInput.value + '/';
+      });
+
+      function touch() {
+        dirty = true;
+        savedEl.textContent = 'יש שינויים שלא נשמרו';
+        savedEl.className = 'ed__saved is-dirty';
+      }
+
+      // ── saving ───────────────────────────────────────────────────
+      async function save(quiet) {
+        savedEl.textContent = 'שומר...';
+        savedEl.className = 'ed__saved';
+        const res = await fetch('/api/admin/article', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+          body: JSON.stringify({ id, ...fields() }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          savedEl.textContent = data.error || 'השמירה נכשלה';
+          savedEl.className = 'ed__saved is-err';
+          return false;
+        }
+        dirty = false;
+        savedEl.textContent = quiet ? '' : 'נשמר';
+        savedEl.className = 'ed__saved is-ok';
+        if (data.article?.slug && slugInput) {
+          slugInput.value = data.article.slug;
+          slugPreview.textContent = '/articles/' + data.article.slug + '/';
+        }
+        return true;
+      }
+
+      root.querySelector('[data-save]').addEventListener('click', () => save(false));
+
+      root.querySelector('[data-publish]')?.addEventListener('click', async (e) => {
+        const btn = e.currentTarget;
+        const next = btn.dataset.next;
+        btn.disabled = true;
+        // always persist edits before changing status, so publishing can
+        // never push an older version live than what is on screen
+        if (!(await save(true))) { btn.disabled = false; return; }
+        const res = await fetch('/api/admin/status', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+          body: JSON.stringify({ id, status: next }),
+        });
+        btn.disabled = false;
+        if (!res.ok) {
+          savedEl.textContent = 'הפעולה נכשלה';
+          savedEl.className = 'ed__saved is-err';
+          return;
+        }
+        location.reload();
+      });
+
+      root.querySelector('[data-delete]')?.addEventListener('click', async () => {
+        if (!confirm('למחוק את המאמר לצמיתות?')) return;
+        const res = await fetch('/api/admin/delete', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+          body: JSON.stringify({ id }),
+        });
+        if (res.ok) location.href = '/admin';
+      });
+
+      window.addEventListener('beforeunload', (e) => {
+        if (!dirty) return;
+        e.preventDefault();
+        e.returnValue = '';
+      });
+
+      render();
+    })();
+  </script>
+</AdminLayout>
+
+<style>
+  .ed__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .ed__crumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-ink-3);
+    min-width: 0;
+  }
+  .ed__crumbs a {
+    color: var(--color-royal);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .ed__crumb-now {
+    color: var(--color-ink);
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 22rem;
+  }
+  .ed__acts {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .ed__saved {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink-3);
+    min-width: 8.5rem;
+    text-align: start;
+  }
+  .ed__saved.is-ok { color: var(--color-success); }
+  .ed__saved.is-err { color: var(--color-error); }
+  .ed__saved.is-dirty { color: #8a5300; }
+
+  .ed__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .ed__main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
+  }
+  .ed__side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: sticky;
+    top: 5rem;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 0.875rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .card--danger {
+    border-color: #eddada;
+  }
+  .card__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .card__h {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 800;
+  }
+  .ed__title {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 800;
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-ink-2);
+    cursor: pointer;
+  }
+  .check input {
+    width: 1.0625rem;
+    height: 1.0625rem;
+    accent-color: var(--color-royal);
+  }
+
+  @media (max-width: 1000px) {
+    .ed__grid {
+      grid-template-columns: 1fr;
+    }
+    .ed__side {
+      position: static;
+    }
+  }
+</style>
+
+<style is:global>
+  /* ── blocks (built in JS, so these must be global) ── */
+  .ed .blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .ed .blocks__empty {
+    font-size: 0.875rem;
+    color: var(--color-ink-3);
+    background: var(--color-surface-2);
+    border: 1px dashed var(--color-line-strong);
+    border-radius: 0.625rem;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .ed .blk {
+    border: 1px solid var(--color-line);
+    border-radius: 0.625rem;
+    padding: 0.625rem 0.75rem 0.75rem;
+    background: #fdfdfe;
+  }
+  .ed .blk__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  .ed .blk__tag {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--color-royal);
+    background: color-mix(in srgb, var(--color-royal) 9%, transparent);
+    padding: 0.1875rem 0.5rem;
+    border-radius: 999px;
+  }
+  .ed .blk--h2 .blk__tag,
+  .ed .blk--h3 .blk__tag {
+    color: var(--color-ink);
+    background: var(--color-surface-3, #eef1f6);
+  }
+  .ed .blk__tools {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .ed .blk__tool {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--color-line);
+    background: #fff;
+    color: var(--color-ink-2);
+    font: inherit;
+    font-size: 0.8125rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .ed .blk__tool:hover:not(:disabled) {
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+  .ed .blk__tool:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .ed .blk--h2 textarea {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 800;
+  }
+  .ed .blk--h3 textarea {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+  .ed .blk--quote textarea {
+    font-family: var(--font-display);
+    font-weight: 700;
+    border-inline-start: 3px solid var(--color-electric);
+  }
+  .ed .blk__viz {
+    font-size: 0.875rem;
+    color: var(--color-ink-3);
+    background: var(--color-navy);
+    color: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+  }
+  .ed .blk__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .ed .blk__li {
+    display: flex;
+    gap: 0.375rem;
+    align-items: center;
+  }
+  .ed .blk__additem {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px dashed var(--color-line-strong);
+    border-radius: 0.375rem;
+    padding: 0.3125rem 0.625rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-royal);
+    cursor: pointer;
+  }
+
+  .ed .addbar {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .ed .addbar__label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-ink-3);
+    margin-inline-end: 0.25rem;
+  }
+  .ed .addbar__btn {
+    background: #fff;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 0.5rem;
+    padding: 0.4375rem 0.75rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    cursor: pointer;
+  }
+  .ed .addbar__btn:hover {
+    border-color: var(--color-royal);
+    color: var(--color-royal);
+  }
+
+</style>

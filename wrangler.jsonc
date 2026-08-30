@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lahav-ai-website",
+  "compatibility_date": "2026-08-01",
+  // The Astro Cloudflare adapter (v14) generates the worker entry and the
+  // static asset binding through the Cloudflare Vite plugin, so neither
+  // "main" nor "assets" is declared here.
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lahav-cms",
+      // Replace with the real id after `wrangler d1 create lahav-cms`.
+      // Local development uses miniflare's own database, not this id.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Native per-key rate limiting for the public contact form. Free, no
+  // domain/zone required, keyed in code by a hash of the visitor's IP.
+  // See src/lib/leads/spam.ts.
+  "ratelimits": [
+    {
+      "name": "CONTACT_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 5, "period": 60 }
+    }
+  ]
+  // RESEND_API_KEY and TURNSTILE_SECRET_KEY are SECRETS, not config, so
+  // they are never written here. Local dev reads them from `.dev.vars`
+  // (gitignored, see .dev.vars.example). Production: `wrangler secret put`.
+}

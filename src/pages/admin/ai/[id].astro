@@ -1,0 +1,274 @@
+---
+// One generation: the brief, the assembled prompt (transparent, and
+// reusable as-is for Stage B paste mode), the gate results, the SEO
+// package, and the generated visual. See docs/AI_ENGINE.md.
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { can } from '../../../lib/cms/types.ts';
+import { csrfFor } from '../../../lib/cms/auth.ts';
+import { getAiStores } from '../../../lib/ai/context.ts';
+import { isSvgSafe } from '../../../lib/ai/validate.ts';
+
+const user = Astro.locals.user!;
+const { id } = Astro.params;
+const aiStores = getAiStores();
+const generation = await aiStores.generations.get(String(id));
+if (!generation) return Astro.redirect('/admin/ai', 302);
+
+const [assets, feedback] = await Promise.all([
+  aiStores.assets.listByGeneration(generation.id),
+  aiStores.feedback.listByGeneration(generation.id),
+]);
+const visual = assets[0];
+const csrf = await csrfFor(Astro.locals.sessionToken);
+const mayCreate = can(user, 'article:create');
+
+const fmt = (iso: string) => new Date(iso).toLocaleString('he-IL', { dateStyle: 'medium', timeStyle: 'short' });
+
+// The three-tier status requested for the manual (Stage B) flow, and
+// applied uniformly to every generation — mock included — since it is a
+// strictly more informative reading of the same two fields (status, gates).
+const outcome: 'pass' | 'review' | 'blocked' =
+  generation.status !== 'succeeded' ? 'blocked' : generation.gates.passed ? 'pass' : 'review';
+const OUTCOME_LABEL = { pass: 'תקין ✓', review: 'לבדיקה', blocked: 'נחסם' } as const;
+const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholder', blocked: 'ad-pill--blocked' } as const;
+---
+
+<AdminLayout title={`יצירה: ${generation.brief.topic}`}>
+  <div class="crumbs">
+    <a href="/admin/ai">מנוע תוכן AI</a>
+    <span aria-hidden="true">›</span>
+    <span>{generation.brief.topic}</span>
+  </div>
+
+  <div class="hd">
+    <div>
+      <h1 class="hd__h">{generation.brief.topic}</h1>
+      <p class="hd__sub">
+        {fmt(generation.createdAt)} · מודל: {generation.model} · עלות: ${generation.costUsd.toFixed(4)}
+      </p>
+    </div>
+    <div class="hd__acts">
+      <span class:list={['ad-pill', 'ad-pill--outcome', OUTCOME_CLASS[outcome]]}>
+        {OUTCOME_LABEL[outcome]}
+      </span>
+      {
+        generation.articleId && (
+          <a class="ad-btn ad-btn--primary" href={`/admin/${generation.articleId}`}>עריכת הטיוטה</a>
+        )
+      }
+    </div>
+  </div>
+
+  <!-- ─────────── gates ─────────── -->
+  <section class="card">
+    <h2 class="card__h">
+      בדיקות איכות
+      <span class:list={['ad-pill', generation.gates.passed ? 'ad-pill--published' : 'ad-pill--placeholder']}>
+        {generation.gates.passed ? 'עברו הכל' : `${generation.gates.failures.length} דגלים לבדיקה`}
+      </span>
+    </h2>
+    {
+      generation.gates.failures.length === 0 ? (
+        <p class="empty__b">כל הבדיקות עברו. עדיין מומלץ לקרוא לפני פרסום, זו לא ערובה.</p>
+      ) : (
+        <ul class="gate-list">
+          {generation.gates.failures.map((f) => (
+            <li><strong>{f.gate}</strong> — {f.message}</li>
+          ))}
+        </ul>
+      )
+    }
+    <p class="foot-note">
+      הבדיקות כאן מייעצות בשלב א': הן מוצגות תמיד, אך לא חוסמות פרסום ידני קיים.
+      הן יהפכו לחסימה קשיחה כשתיבנה הפעלה אוטומטית (שלב ד', כבויה כרגע לגמרי).
+    </p>
+  </section>
+
+  <!-- ─────────── visual ─────────── -->
+  {
+    visual && (
+      <section class="card">
+        <h2 class="card__h">תמונה</h2>
+        <div class="visual-frame">
+          {isSvgSafe(visual.svgMarkup) ? (
+            <Fragment set:html={visual.svgMarkup} />
+          ) : (
+            <p class="empty__b">התמונה נחסמה משום שהכילה תוכן לא בטוח.</p>
+          )}
+        </div>
+        <dl class="kv">
+          <dt>קובץ</dt><dd dir="ltr">{visual.filename}</dd>
+          <dt>טקסט חלופי (alt)</dt><dd>{visual.altText}</dd>
+          <dt>מקור</dt><dd>{visual.source === 'mock' ? 'תבנית לדוגמה' : 'נוצר על ידי המודל'}</dd>
+        </dl>
+      </section>
+    )
+  }
+
+  <!-- ─────────── SEO package ─────────── -->
+  {
+    generation.output && (
+      <section class="card">
+        <h2 class="card__h">חבילת SEO</h2>
+        <dl class="kv">
+          <dt>כותרת SEO</dt><dd>{generation.output.seo.seoTitle}</dd>
+          <dt>meta title</dt><dd>{generation.output.seo.metaTitle}</dd>
+          <dt>meta description</dt><dd>{generation.output.seo.metaDescription}</dd>
+          <dt>slug</dt><dd dir="ltr">{generation.output.seo.slug}</dd>
+          <dt>מילת מפתח ראשית</dt><dd>{generation.output.seo.primaryKeyword}</dd>
+          <dt>כתובת קנונית</dt><dd dir="ltr">{generation.output.seo.canonicalPath}</dd>
+          <dt>ניתן לאינדוקס</dt><dd>{generation.output.seo.indexable ? 'כן' : 'לא (טיוטת דוגמה)'}</dd>
+        </dl>
+        {
+          generation.output.seo.citations.length > 0 && (
+            <>
+              <p class="kv-label">מקורות</p>
+              <ul class="cites">
+                {generation.output.seo.citations.map((c) => (
+                  <li>
+                    <a href={c.url} target="_blank" rel="noopener">{c.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+      </section>
+    )
+  }
+
+  <!-- ─────────── the assembled prompt, for transparency ─────────── -->
+  <section class="card">
+    <h2 class="card__h">הפרומפט שהורכב</h2>
+    <p class="foot-note">
+      זהו הטקסט המלא שהמערכת הכינה עבור המודל. באותו טקסט ייעשה שימוש כשמצב
+      "הדבקה ידנית" ייבנה, כדי שתוכלו להעתיק אותו לצ'אט שלכם.
+    </p>
+    <details>
+      <summary class="ad-btn ad-btn--ghost">הצגת הפרומפט המלא</summary>
+      <pre class="prompt-pre">{generation.promptText}</pre>
+    </details>
+  </section>
+
+  <!-- ─────────── feedback ─────────── -->
+  {
+    mayCreate && (
+      <section class="card">
+        <h2 class="card__h">משוב (מזין את הלמידה)</h2>
+        <form method="post" action={`/api/admin/ai/feedback?csrf=${csrf}`} class="fb-form">
+          <input type="hidden" name="generationId" value={generation.id} />
+          <input type="hidden" name="articleId" value={generation.articleId ?? ''} />
+          <div class="ad-field ad-field--wide">
+            <label class="ad-label" for="note">מה לתקן בפעם הבאה (אופציונלי, אבל הכי מועיל)</label>
+            <textarea class="ad-textarea" id="note" name="note" rows={2} />
+          </div>
+          <div class="fb-actions">
+            <button class="ad-btn ad-btn--primary" type="submit" name="kind" value="approve">אישור</button>
+            <button class="ad-btn ad-btn--danger" type="submit" name="kind" value="reject">דחייה</button>
+          </div>
+        </form>
+        {
+          feedback.length > 0 && (
+            <ul class="fb-list">
+              {feedback.map((f) => (
+                <li><strong>{f.kind}</strong>{f.note ? `: ${f.note}` : ''}</li>
+              ))}
+            </ul>
+          )
+        }
+      </section>
+    )
+  }
+</AdminLayout>
+
+<style>
+  .crumbs {
+    font-size: 0.875rem;
+    color: var(--color-ink-3);
+    margin-bottom: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .crumbs a { color: var(--color-ink-3); text-decoration: none; }
+  .crumbs a:hover { color: var(--color-royal); }
+
+  .ad-pill--outcome {
+    font-size: 0.9375rem;
+    padding: 0.375rem 0.875rem;
+  }
+  .ad-pill--blocked {
+    background: var(--color-error-soft);
+    color: var(--color-error);
+  }
+
+  .hd {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .hd__h { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; }
+  .hd__sub { font-size: 0.875rem; color: var(--color-ink-3); margin-top: 0.25rem; }
+  .hd__acts { display: flex; align-items: center; gap: 0.75rem; }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 0.875rem;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .card__h {
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    margin-bottom: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .gate-list { display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9375rem; }
+  .gate-list li { color: var(--color-ink-2); }
+
+  .foot-note {
+    font-size: 0.8125rem;
+    color: var(--color-ink-3);
+    border-inline-start: 3px solid var(--color-electric);
+    padding-inline-start: 0.875rem;
+    margin-top: 0.75rem;
+  }
+
+  .visual-frame {
+    border: 1px solid var(--color-line);
+    border-radius: 0.625rem;
+    overflow: hidden;
+    max-width: 32rem;
+  }
+  .visual-frame :global(svg) { display: block; width: 100%; height: auto; }
+
+  .kv { display: grid; grid-template-columns: 10rem 1fr; gap: 0.5rem 1rem; font-size: 0.9375rem; margin-top: 0.875rem; }
+  .kv dt { color: var(--color-ink-3); }
+  .kv dd { color: var(--color-ink); }
+  .kv-label { font-size: 0.8125rem; font-weight: 700; color: var(--color-ink-3); margin-top: 1rem; }
+  .cites { margin-top: 0.375rem; font-size: 0.9375rem; }
+  .cites a { color: var(--color-royal); }
+
+  .prompt-pre {
+    white-space: pre-wrap;
+    font-size: 0.8125rem;
+    background: var(--color-surface-2);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .fb-form { display: flex; flex-direction: column; gap: 0.875rem; }
+  .fb-actions { display: flex; gap: 0.625rem; }
+  .fb-list { margin-top: 1rem; font-size: 0.875rem; color: var(--color-ink-2); display: flex; flex-direction: column; gap: 0.375rem; }
+</style>

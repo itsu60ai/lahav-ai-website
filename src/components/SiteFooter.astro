@@ -1,5 +1,5 @@
 ---
-import { NAV, SITE, WHATSAPP_HREF } from '../lib/site';
+import { NAV, SITE, WHATSAPP_HREF, CTA_PRIMARY } from '../lib/site';
 const year = new Date().getFullYear();
 ---
 
@@ -19,7 +19,7 @@ const year = new Date().getFullYear();
 
     <div class="ftr__col">
       <h3 class="t-eyebrow ftr__heading">יצירת קשר</h3>
-      <a href="/contact/">קביעת שיחת Discovery</a>
+      <a href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
       <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">שיחה בוואטסאפ</a>
       <a href="/privacy/">מדיניות פרטיות</a>
     </div>

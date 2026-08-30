@@ -23,6 +23,21 @@ Thumbs.db
 # local scratch
 *.local
 
-# review batch exports (large binaries, regenerated on demand)
-review/*.zip
-review/**/*.png
+# review batch exports: one-time internal review deliverables (~100MB of
+# screenshots and standalone HTML snapshots), not application source,
+# regenerated on demand — never part of the live site or its repo
+review/
+
+# CMS database: content and users are data, never committed
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# generated admin credentials and seed, never commit
+data/ADMIN_PASSWORD.txt
+migrations/*_seed.sql
+.wrangler/
+
+# local Cloudflare secrets for `astro dev` / `wrangler dev`, never commit
+.dev.vars

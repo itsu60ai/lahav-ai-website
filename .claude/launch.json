@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lahav-dev",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run", "dev"],
+      "port": 4321
+    },
+    {
+      "//": "Serves the real built output from dist/. Astro's dev server has repeatedly served stale scoped CSS in this project, so visual checks are done against a production build instead.",
+      "name": "lahav-preview",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run", "preview", "--", "--port", "4330"],
+      "port": 4330
+    }
+  ]
+}

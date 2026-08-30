@@ -1,35 +1,136 @@
 ---
+// AI CONTENT service page.
+//
+// SCOPE NOTE (internal, PL-15): the exact client-facing package for this
+// service is still being defined. That is a REVIEW_NOTES item, not
+// something the marketing page announces, so this page presents only the
+// approved sequence: מטרה עסקית, בריף, טיוטה בסיוע AI, בקרה ואישור, שימוש.
+//
+// The internal Auto Publish capability is NEVER presented as a client
+// feature. Publishing always runs through the client.
 import ServicePage from '../../layouts/ServicePage.astro';
 import { SERVICE_PAGES } from '../../lib/site';
 const data = SERVICE_PAGES['ai-content'];
+
+// The line that actually differentiates the offer: where the machine
+// stops and the business owner starts.
+const boundary = [
+  {
+    side: 'ai',
+    label: 'מה AI עושה טוב',
+    items: ['מוציא אתכם מהדף הריק', 'מציע זוויות וכותרות', 'כותב טיוטה ראשונה מהר', 'שומר על מבנה עקבי'],
+  },
+  {
+    side: 'you',
+    label: 'מה נשאר אצלכם',
+    items: ['להחליט מה נכון להגיד', 'לתקן מה שלא מדויק', 'לשמור על הקול שלכם', 'לאשר לפני שזה יוצא'],
+  },
+];
 ---
 
 <ServicePage
   slug="ai-content"
   data={data}
   title="יצירת תוכן באמצעות AI | LAHAV AI"
-  description="תהליך תוכן מסודר: מטרה עסקית, בריף, טיוטה בעזרת AI, בדיקה ואישור שלכם, ורק אז פרסום."
+  description="תהליך תוכן מסודר: מטרה עסקית, בריף, טיוטה בעזרת AI, בדיקה ואישור שלכם, ורק אז שימוש."
   symptomsStyle="grid"
 >
-
-  <!-- AI content only: an explicit scope note, PL-15 is still open -->
-  <section class="section ai-scope">
+  <!-- AI content only: where the machine stops -->
+  <section class="section ai-line">
     <div class="u-container">
-      <div class="scope-note">
-        <p class="scope-note__label">בהגדרה</p>
-        <p class="scope-note__body">
-          השירות הזה נמצא כרגע בשלב הגדרה מדויקת. הדף מציג את התפיסה ואת סדר
-          העבודה, ולא רשימת מוצר סופית. נשמח לדבר על מה שהעסק שלכם צריך.
+      <div class="lede">
+        <p class="t-eyebrow">הקו שלא זז</p>
+        <h2 class="t-h2">AI כותב טיוטה.<br />אתם מחליטים מה יוצא.</h2>
+        <p class="t-lead ai-line__lead">
+          זה לא סייג משפטי, זו צורת העבודה. טקסט שיוצא בשם העסק שלכם צריך
+          לעבור דרך מישהו שמכיר את הלקוחות, ולא רק דרך מודל.
         </p>
+      </div>
+
+      <div class="ai-cols">
+        {
+          boundary.map((c) => (
+            <div class:list={['ai-col', `ai-col--${c.side}`]} data-reveal>
+              <p class="ai-col__label">{c.label}</p>
+              <ul class="ai-col__list">
+                {c.items.map((i) => (
+                  <li>{i}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
 
   <style>
-    .scope-note { border: 1px solid var(--color-line); border-inline-start: 3px solid var(--color-electric);
-      border-radius: var(--radius-lg); padding: clamp(1.5rem,3vw,2.25rem); max-width: 62rem; background: var(--color-surface-2); }
-    .scope-note__label { font-size: var(--text-micro); font-weight: 700; letter-spacing:.09em; color: var(--color-royal); margin-bottom:.75rem; }
-    .scope-note__body { font-size: var(--text-body-lg); line-height:1.7; color: var(--color-ink-2); max-width:60ch; }
+    .ai-line__lead {
+      margin-top: 1.25rem;
+      color: var(--color-ink-2);
+    }
+    .ai-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(1.25rem, 3vw, 2.5rem);
+      margin-top: clamp(2rem, 4vw, 3rem);
+    }
+    .ai-col {
+      padding: clamp(1.5rem, 3vw, 2.25rem);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--color-line);
+    }
+    /* The client side is the one that carries the brand weight. */
+    .ai-col--you {
+      background: var(--color-navy);
+      border-color: var(--color-navy);
+    }
+    .ai-col__label {
+      font-size: var(--text-micro);
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      color: var(--color-ink-3);
+      margin-bottom: 1.25rem;
+    }
+    .ai-col--you .ai-col__label {
+      color: var(--color-electric);
+    }
+    .ai-col__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+    .ai-col__list li {
+      position: relative;
+      padding-inline-start: 1.5rem;
+      font-size: var(--text-body-lg);
+      line-height: 1.55;
+      color: var(--color-ink-2);
+    }
+    .ai-col--you .ai-col__list li {
+      color: #fff;
+      font-weight: 500;
+    }
+    .ai-col__list li::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0;
+      top: 0.65em;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-line-strong);
+    }
+    .ai-col--you .ai-col__list li::before {
+      background: var(--color-electric);
+    }
+    @media (max-width: 720px) {
+      .ai-cols {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
-
 </ServicePage>

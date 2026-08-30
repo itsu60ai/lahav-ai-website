@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import WhatsApp from '../../components/icons/WhatsApp.astro';
 
 const typeScale = [
   { cls: 't-display-1', token: '--text-display-1', range: '48 → 116px', use: 'כותרת ראשית של דף הבית בלבד', sample: 'מערכות AI שעושות סדר' },
@@ -254,7 +255,7 @@ const spacing = [4, 8, 12, 16, 24, 32, 48, 64, 96];
           <p class="t-eyebrow">04</p>
           <h2 class="t-h2">כפתורים והיררכיית פעולה</h2>
           <p class="t-lead">
-            שלוש רמות בלבד. הכחול המלא שמור לפעולה הראשית, קביעת שיחת Discovery -
+            שלוש רמות בלבד. הכחול המלא שמור לפעולה הראשית, לתיאום שיחת היכרות,
             ולשום דבר אחר.
           </p>
         </div>
@@ -262,9 +263,9 @@ const spacing = [4, 8, 12, 16, 24, 32, 48, 64, 96];
         <div class="sys-grid-3">
           <div class="card sys-demo">
             <h3 class="t-h3">ראשי</h3>
-            <p class="t-small">קביעת שיחת Discovery. אחד בלבד באזור.</p>
+            <p class="t-small">לתיאום שיחת היכרות. אחד בלבד באזור.</p>
             <div class="sys-row">
-              <button class="btn btn-primary btn-lg" type="button">קביעת שיחת Discovery</button>
+              <button class="btn btn-primary btn-lg" type="button">לתיאום שיחת היכרות</button>
               <button class="btn btn-primary" type="button">קביעת שיחה</button>
               <button class="btn btn-primary" type="button" disabled>לא זמין</button>
             </div>
@@ -275,11 +276,7 @@ const spacing = [4, 8, 12, 16, 24, 32, 48, 64, 96];
             <p class="t-small">וואטסאפ. תמיד זמין, אף פעם לא חזק מהראשי.</p>
             <div class="sys-row">
               <button class="btn btn-secondary btn-lg" type="button">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
-                  ><path
-                    d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.25 8.23Z"
-                  ></path></svg
-                >
+                <WhatsApp />
                 שיחה בוואטסאפ
               </button>
               <button class="btn btn-secondary" type="button" disabled>לא זמין</button>

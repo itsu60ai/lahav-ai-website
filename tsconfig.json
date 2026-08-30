@@ -1,5 +1,18 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*.astro", "**/*.ts"],
-  "exclude": ["dist", "LAHAV_AI_Claude_Handoff_Package", "docs"]
+  "include": [
+    ".astro/types.d.ts",
+    "**/*.astro",
+    "**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "LAHAV_AI_Claude_Handoff_Package",
+    "docs",
+    "review",
+    "data"
+  ],
+  "compilerOptions": {
+    "allowImportingTsExtensions": true
+  }
 }
