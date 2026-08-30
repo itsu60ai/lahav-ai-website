@@ -1,8 +1,10 @@
 /* =============================================================
    LAHAV AI, foundation
-   Implements: docs/approved/DESIGN_BRIEF.md, 02_BRAND/BRAND_RULES.md,
-   and decision F-1 (light, spacious, large confident typography).
-   Hebrew-first, native RTL. Single committed light theme (brand default).
+   Implements: docs/approved/DESIGN_BRIEF.md, 02_BRAND/BRAND_RULES.md.
+   Hebrew-first, native RTL. Single committed DARK theme (brand default,
+   2026-08-31 decision, supersedes F-1's "never all-dark" — see
+   docs/SOURCE_OF_TRUTH.md). Same fixed brand palette and type scale as
+   before; only which tokens count as "surface" and "ink" flipped.
    ============================================================= */
 
 @import '@fontsource-variable/heebo';
@@ -20,21 +22,25 @@
   --color-cool: #f2f4f7;
   --color-white: #ffffff;
 
-  /* --- Neutrals: biased toward the brand navy, never a flat grey --- */
-  --color-ink: #0b1530; /* primary text       , 18.3:1 on white */
-  --color-ink-2: #33405c; /* secondary text     , 10.2:1 on white */
-  --color-ink-3: #6b7793; /* muted / captions   ,  4.5:1 on white */
-  --color-line: #e3e7ee; /* hairlines, borders */
-  --color-line-strong: #ccd4e0;
-  --color-surface: #ffffff;
-  --color-surface-2: #f2f4f7; /* Cool Gray, alternating sections */
-  --color-surface-3: #e9edf3;
+  /* --- Neutrals: dark-first. The same rgba(white, N%) steps already used
+     throughout the hand-built diagrams and .section--navy/.panel-dark, so
+     the whole site now reads as one consistent surface instead of "light
+     site with dark bands bolted on". --- */
+  --color-ink: rgba(255, 255, 255, 0.94); /* primary text on dark */
+  --color-ink-2: rgba(255, 255, 255, 0.74); /* secondary text */
+  --color-ink-3: rgba(255, 255, 255, 0.55); /* muted / captions */
+  --color-line: rgba(255, 255, 255, 0.12); /* hairlines, borders */
+  --color-line-strong: rgba(255, 255, 255, 0.22);
+  --color-surface: #0b1530; /* = --color-navy: the page's base now */
+  --color-surface-2: #101c3d; /* alternating-section tone, one step up */
+  --color-surface-3: #16224a; /* cards, inputs, dropdowns: one step up again */
 
-  /* --- Semantic, functional use only (D-Q1) --- */
-  --color-success: #15803d;
-  --color-error: #b91c1c;
-  --color-success-soft: #eaf5ee;
-  --color-error-soft: #fdeceb;
+  /* --- Semantic, functional use only (D-Q1). Brightened from the original
+     light-theme values so they still meet contrast on a dark surface. --- */
+  --color-success: #34d399;
+  --color-error: #f87171;
+  --color-success-soft: rgba(52, 211, 153, 0.14);
+  --color-error-soft: rgba(248, 113, 113, 0.14);
 
   /* --- Type families --- */
   --font-display: 'Heebo Variable', 'Heebo', 'Segoe UI', Arial, sans-serif;
@@ -72,10 +78,13 @@
   --radius-xl: 26px;
   --radius-full: 999px;
 
-  /* --- Elevation: navy-tinted, never generic black --- */
-  --shadow-sm: 0 1px 2px rgba(11, 21, 48, 0.05);
-  --shadow: 0 10px 30px rgba(11, 21, 48, 0.07);
-  --shadow-lg: 0 28px 70px rgba(11, 21, 48, 0.13);
+  /* --- Elevation: on a dark page a black shadow reads as almost nothing,
+     so depth now leans on the lighter surface step (surface-3) plus a
+     deeper, more opaque shadow underneath it than the old light-theme
+     values needed. --- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 28px 70px rgba(0, 0, 0, 0.45);
 
   /* --- Motion --- */
   --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -108,6 +117,23 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
+  /* One continuous canvas for the whole page, not a stack of flat-color
+     blocks — client feedback 2026-08-31: hard section-to-section color
+     cuts read as "fighting the colors between the pieces". Sections below
+     no longer paint their own opaque background; they sit as transparent
+     windows over this single gradient, the way the dark reference sites
+     do it. Scoped to the marketing site only — the admin tool (body.ad)
+     keeps its plain light background from the rule above. */
+  body:not(.ad) {
+    background: linear-gradient(
+      180deg,
+      #0b1530 0%,
+      #0d1a3d 30%,
+      #0f1f48 60%,
+      #132657 100%
+    );
+    background-repeat: no-repeat;
+  }
 
   /* Headings: Heebo, tight and confident. Hebrew gets almost no negative
      tracking, it hurts legibility, only the largest display sizes are
@@ -130,7 +156,7 @@
   }
 
   a {
-    color: var(--color-royal);
+    color: var(--color-electric);
     text-underline-offset: 3px;
   }
 
@@ -178,17 +204,22 @@
     padding-block: var(--space-section-tight);
   }
 
-  /* Section rhythm: white → gray → white (Design Brief §5.3). Every page
-     section reaches for one of these two rather than inventing a new
-     background per page. */
+  /* Section rhythm: base → alternating → base (Design Brief §5.3, now on
+     dark tones instead of white/gray). Every page section reaches for one
+     of these two rather than inventing a new background per page. */
   .section {
     padding-block: var(--space-section);
   }
+  /* No flat fill on either variant anymore (client feedback 2026-08-31):
+     both sit transparently over the single body-level gradient instead of
+     each painting its own opaque block, which is what created the hard
+     seams between sections. .section--gray keeps its name for now (every
+     page still references the class) but the rhythm it creates is a very
+     faint wash, not a color swap. */
   .section--gray {
-    background: var(--color-surface-2);
+    background: rgba(255, 255, 255, 0.025);
   }
   .section--navy {
-    background: var(--color-navy);
     color: rgba(255, 255, 255, 0.82);
     position: relative;
     overflow: clip;
@@ -298,7 +329,9 @@
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.09em;
-    color: var(--color-royal);
+    /* electric, not royal: royal-on-navy measures ~2.6:1, well under the
+       4.5:1 text floor. electric measures ~5.8:1. */
+    color: var(--color-electric);
     font-family: var(--font-body);
   }
   .t-micro {
@@ -350,13 +383,15 @@
     color: var(--color-ink-3);
   }
 
+  /* Outline button, white-on-dark by default now — this used to be the
+     ".on-dark" exception (see below); on this theme it is the norm. */
   .btn-secondary {
     background: transparent;
-    color: var(--color-royal);
-    border-color: var(--color-royal);
+    color: var(--color-white);
+    border-color: rgba(255, 255, 255, 0.5);
   }
   .btn-secondary:hover {
-    background: color-mix(in srgb, var(--color-royal) 7%, transparent);
+    background: rgba(255, 255, 255, 0.1);
   }
   .btn-secondary[disabled] {
     color: var(--color-ink-3);
@@ -365,14 +400,14 @@
 
   .btn-tertiary {
     background: transparent;
-    color: var(--color-royal);
+    color: var(--color-electric);
     padding-inline: 0.25rem;
     min-height: 40px;
     text-decoration: underline;
     text-decoration-thickness: 1.5px;
   }
   .btn-tertiary:hover {
-    color: #1741bb;
+    color: #5cb2ff;
   }
 
   .btn-lg {
@@ -381,7 +416,9 @@
     font-size: var(--text-body-lg);
   }
 
-  /* On dark surfaces */
+  /* .on-dark is now redundant for .btn-secondary specifically (the base
+     rule above already matches it) — kept as a harmless no-op alias so
+     nothing that still carries the class anywhere breaks. */
   .on-dark .btn-secondary {
     color: var(--color-white);
     border-color: rgba(255, 255, 255, 0.5);
@@ -390,9 +427,13 @@
     background: rgba(255, 255, 255, 0.1);
   }
 
-  /* --- Surfaces --- */
+  /* --- Surfaces ---
+     Cards use surface-3, not the page's own surface: on a dark page the
+     card has to be a visible step lighter than the page behind it, the
+     way it was already implicitly true (page = white, card = white) never
+     had to be said out loud on the old light theme. */
   .card {
-    background: var(--color-surface);
+    background: var(--color-surface-3);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-lg);
     padding: clamp(1.5rem, 2.5vw, 2.25rem);
@@ -489,7 +530,7 @@
     font-family: var(--font-body);
     font-size: var(--text-body);
     color: var(--color-ink);
-    background: var(--color-surface);
+    background: var(--color-surface-3);
     border: 1.5px solid var(--color-line-strong);
     border-radius: var(--radius);
     padding: 0.75rem 1rem;
@@ -549,8 +590,8 @@
     font-weight: 700;
     padding: 0.375rem 0.75rem;
     border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--color-electric) 12%, transparent);
-    color: #14509f;
+    background: color-mix(in srgb, var(--color-electric) 20%, var(--color-surface-3));
+    color: #bfe0ff;
   }
   .rule {
     height: 1px;
@@ -601,7 +642,7 @@
     font-family: var(--font-body);
     font-size: var(--text-small);
     font-weight: 700;
-    color: var(--color-royal);
+    color: var(--color-electric);
     text-decoration: none;
     padding-block: 0.35rem;
     border-bottom: 1.5px solid transparent;

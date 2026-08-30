@@ -253,6 +253,17 @@ const vizLabels: Record<string, string> = {
           note.className = 'blk__viz';
           note.textContent = 'כאן ייכנס התרשים שנבחר בהגדרות.';
           wrap.appendChild(note);
+        } else if (b.t === 'aiviz') {
+          // Not editable here by design: it's a full SVG document, not
+          // text. Shown as a real preview so nothing looks broken or
+          // invites someone to type into it and corrupt the markup.
+          const box = document.createElement('div');
+          box.className = 'blk__aiviz';
+          box.innerHTML = b.svg;
+          const note = document.createElement('p');
+          note.className = 'blk__aiviz-note';
+          note.textContent = 'תרשים שנוצר על ידי מנוע ה-AI. לא ניתן לערוך כאן, אפשר רק להסיר.';
+          wrap.append(box, note);
         } else if (b.t === 'ul') {
           const list = document.createElement('div');
           list.className = 'blk__list';
@@ -629,6 +640,22 @@ const vizLabels: Record<string, string> = {
     border-radius: 0.5rem;
     padding: 1rem;
     text-align: center;
+  }
+  .ed .blk__aiviz {
+    background: var(--color-navy);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    max-width: 28rem;
+  }
+  .ed .blk__aiviz svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .ed .blk__aiviz-note {
+    font-size: 0.8125rem;
+    color: var(--color-ink-3);
+    margin-top: 0.5rem;
   }
   .ed .blk__list {
     display: flex;

@@ -294,11 +294,11 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     transition: color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
   }
   .hdr__link:hover {
-    color: var(--color-royal);
-    background: color-mix(in srgb, var(--color-royal) 6%, transparent);
+    color: var(--color-electric);
+    background: color-mix(in srgb, var(--color-electric) 10%, transparent);
   }
   .hdr__link[aria-current='page'] {
-    color: var(--color-royal);
+    color: var(--color-electric);
     font-weight: 700;
   }
 
@@ -317,7 +317,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     top: calc(100% + 0.5rem);
     inset-inline-start: 0;
     width: min(23rem, calc(100vw - 2rem));
-    background: var(--color-surface);
+    background: var(--color-surface-3);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
@@ -370,7 +370,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.04em;
-    color: var(--color-royal);
+    color: var(--color-electric);
     text-decoration: none;
   }
   .hdr__dd-all:hover {
@@ -391,7 +391,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     height: 46px;
     border: 1px solid var(--color-line);
     border-radius: 12px;
-    background: var(--color-surface);
+    background: var(--color-surface-3);
     cursor: pointer;
     align-items: center;
     justify-content: center;
@@ -436,7 +436,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
   .hdr__mobile {
     display: none;
     border-top: 1px solid var(--color-line);
-    background: var(--color-surface);
+    background: var(--color-surface-2);
     max-height: calc(100dvh - 80px);
     overflow-y: auto;
   }
@@ -494,7 +494,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.05em;
-    color: var(--color-royal);
+    color: var(--color-electric);
   }
   .hdr__mobile-group {
     border-bottom: 1px solid var(--color-line);

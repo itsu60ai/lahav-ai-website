@@ -333,6 +333,7 @@ class D1SettingsStore implements SettingsStore {
       return {
         providerMode: 'mock',
         recommendationMode: 'heuristic',
+        disclosureEnabled: false,
         autoPublishEnabled: false,
         autoPublishExpiresAt: null,
         autoPublishWeeklyCap: 0,
@@ -347,6 +348,7 @@ class D1SettingsStore implements SettingsStore {
       // A missing column (pre-migration row) cannot mean "spend money" —
       // the safe default wins, same reasoning as the missing-row case above.
       recommendationMode: r.recommendation_mode ?? 'heuristic',
+      disclosureEnabled: !!r.disclosure_enabled,
       autoPublishEnabled: !!r.auto_publish_enabled,
       autoPublishExpiresAt: r.auto_publish_expires_at ?? null,
       autoPublishWeeklyCap: r.auto_publish_weekly_cap,

@@ -1,7 +1,9 @@
 ---
-// One generation: the brief, the assembled prompt (transparent, and
-// reusable as-is for Stage B paste mode), the gate results, the SEO
-// package, and the generated visual. See docs/AI_ENGINE.md.
+// One generation, rebuilt as a real REVIEW screen (client feedback
+// 2026-09-01): every issue is an actionable Hebrew card, not a raw gate
+// name; the article itself is always one click away; "recheck" re-runs
+// the gates against whatever the article looks like right now, without
+// recreating anything. See docs/AI_ENGINE.md.
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
@@ -9,6 +11,7 @@ import { can } from '../../../lib/cms/types.ts';
 import { csrfFor } from '../../../lib/cms/auth.ts';
 import { getAiStores } from '../../../lib/ai/context.ts';
 import { isSvgSafe } from '../../../lib/ai/validate.ts';
+import type { GateFailure } from '../../../lib/ai/types.ts';
 
 const user = Astro.locals.user!;
 const { id } = Astro.params;
@@ -16,26 +19,40 @@ const aiStores = getAiStores();
 const generation = await aiStores.generations.get(String(id));
 if (!generation) return Astro.redirect('/admin/ai', 302);
 
-const [assets, feedback] = await Promise.all([
+const { articles } = Astro.locals.stores!;
+const [assets, feedback, article] = await Promise.all([
   aiStores.assets.listByGeneration(generation.id),
   aiStores.feedback.listByGeneration(generation.id),
+  generation.articleId ? articles.get(generation.articleId) : Promise.resolve(null),
 ]);
 const visual = assets[0];
 const csrf = await csrfFor(Astro.locals.sessionToken);
 const mayCreate = can(user, 'article:create');
+const mayPublish = can(user, 'article:publish');
+const mayDelete = can(user, 'article:delete');
+const feedbackSaved = Astro.url.searchParams.get('feedback') === 'saved';
 
 const fmt = (iso: string) => new Date(iso).toLocaleString('he-IL', { dateStyle: 'medium', timeStyle: 'short' });
 
-// The three-tier status requested for the manual (Stage B) flow, and
-// applied uniformly to every generation — mock included — since it is a
-// strictly more informative reading of the same two fields (status, gates).
+// Severity, not a flat pass/fail — see src/lib/ai/gates.ts.
+const failures: GateFailure[] = generation.gates.failures;
+const blocking = failures.filter((f) => f.severity === 'blocking');
+const review = failures.filter((f) => f.severity === 'review');
+const info = failures.filter((f) => f.severity === 'info');
+const needsAttention = blocking.length + review.length;
+
 const outcome: 'pass' | 'review' | 'blocked' =
-  generation.status !== 'succeeded' ? 'blocked' : generation.gates.passed ? 'pass' : 'review';
-const OUTCOME_LABEL = { pass: 'תקין ✓', review: 'לבדיקה', blocked: 'נחסם' } as const;
+  generation.status !== 'succeeded' ? 'blocked' : blocking.length > 0 ? 'blocked' : review.length > 0 ? 'review' : 'pass';
+const OUTCOME_LABEL = { pass: 'תקין ✓', review: 'דורש בדיקה', blocked: 'חסום' } as const;
 const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholder', blocked: 'ad-pill--blocked' } as const;
+const SEVERITY_LABEL = { blocking: 'חוסם', review: 'לבדיקה', info: 'הערה' } as const;
+const SEVERITY_CLASS = { blocking: 'issue--blocking', review: 'issue--review', info: 'issue--info' } as const;
+
+// ordered so the most serious issues render first
+const orderedFailures = [...blocking, ...review, ...info];
 ---
 
-<AdminLayout title={`יצירה: ${generation.brief.topic}`}>
+<AdminLayout title={`בדיקת מאמר: ${generation.brief.topic}`}>
   <div class="crumbs">
     <a href="/admin/ai">מנוע תוכן AI</a>
     <span aria-hidden="true">›</span>
@@ -49,48 +66,136 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
         {fmt(generation.createdAt)} · מודל: {generation.model} · עלות: ${generation.costUsd.toFixed(4)}
       </p>
     </div>
-    <div class="hd__acts">
+  </div>
+
+  <!-- ─────────── this page is a REVIEW screen: say so, and put the article one click away ─────────── -->
+  <section class="card card--primary">
+    <p class="review-kicker">זהו מסך בדיקה וסקירה. עריכת התוכן עצמו נעשית במאמר.</p>
+    <div class="status-row">
       <span class:list={['ad-pill', 'ad-pill--outcome', OUTCOME_CLASS[outcome]]}>
-        {OUTCOME_LABEL[outcome]}
+        מצב המאמר: {OUTCOME_LABEL[outcome]}
       </span>
+      {needsAttention > 0 && <span class="status-note status-note--warn">{needsAttention} נושאים דורשים טיפול</span>}
+      {info.length > 0 && <span class="status-note">{info.length === 1 ? 'הערה אחת בלבד' : `${info.length} הערות בלבד`}</span>}
+      {needsAttention === 0 && info.length === 0 && <span class="status-note status-note--ok">הכל תקין</span>}
+    </div>
+
+    <div class="primary-actions">
       {
-        generation.articleId && (
-          <a class="ad-btn ad-btn--primary" href={`/admin/${generation.articleId}`}>עריכת הטיוטה</a>
+        article && (
+          <>
+            <a class="ad-btn ad-btn--primary" href={`/admin/${article.id}`}>עריכת המאמר</a>
+            <a class="ad-btn ad-btn--ghost" href={`/admin/preview/${article.id}`} target="_blank" rel="noopener">
+              תצוגה מקדימה
+            </a>
+          </>
+        )
+      }
+      {
+        mayCreate && article && (
+          <form method="post" action={`/api/admin/ai/recheck?csrf=${csrf}`}>
+            <input type="hidden" name="generationId" value={generation.id} />
+            <button class="ad-btn ad-btn--ghost" type="submit">בדיקה מחדש</button>
+          </form>
+        )
+      }
+      {
+        article && mayPublish && (
+          <button
+            class="ad-btn ad-btn--primary"
+            type="button"
+            data-publish-toggle
+            data-article-id={article.id}
+            data-target-status={article.status === 'published' ? 'draft' : 'published'}
+            data-csrf={csrf}
+            disabled={outcome !== 'pass' && article.status !== 'published'}
+          >
+            {article.status === 'published' ? 'הסרה מפרסום' : 'פרסום המאמר'}
+          </button>
         )
       }
     </div>
-  </div>
-
-  <!-- ─────────── gates ─────────── -->
-  <section class="card">
-    <h2 class="card__h">
-      בדיקות איכות
-      <span class:list={['ad-pill', generation.gates.passed ? 'ad-pill--published' : 'ad-pill--placeholder']}>
-        {generation.gates.passed ? 'עברו הכל' : `${generation.gates.failures.length} דגלים לבדיקה`}
-      </span>
-    </h2>
     {
-      generation.gates.failures.length === 0 ? (
-        <p class="empty__b">כל הבדיקות עברו. עדיין מומלץ לקרוא לפני פרסום, זו לא ערובה.</p>
-      ) : (
-        <ul class="gate-list">
-          {generation.gates.failures.map((f) => (
-            <li><strong>{f.gate}</strong> — {f.message}</li>
-          ))}
-        </ul>
+      article && outcome !== 'pass' && article.status !== 'published' && (
+        <p class="foot-note">
+          פרסום זמין רק כשהמצב הוא "תקין ✓". טפלו בנושאים למטה, לחצו "בדיקה מחדש", והכפתור ייפתח.
+        </p>
       )
     }
-    <p class="foot-note">
-      הבדיקות כאן מייעצות בשלב א': הן מוצגות תמיד, אך לא חוסמות פרסום ידני קיים.
-      הן יהפכו לחסימה קשיחה כשתיבנה הפעלה אוטומטית (שלב ד', כבויה כרגע לגמרי).
-    </p>
+    {
+      article?.status === 'published' && (
+        <p class="foot-note foot-note--ok">המאמר הזה מפורסם וגלוי באתר כרגע.</p>
+      )
+    }
+  </section>
+
+  <!-- ─────────── issue cards ─────────── -->
+  <section class="card">
+    <h2 class="card__h">בדיקות איכות</h2>
+    {
+      orderedFailures.length === 0 ? (
+        <p class="empty__b">כל הבדיקות עברו. עדיין מומלץ לקרוא את המאמר לפני פרסום, זו לא ערובה מוחלטת.</p>
+      ) : (
+        <div class="issues">
+          {orderedFailures.map((f) => (
+            <div class:list={['issue', SEVERITY_CLASS[f.severity]]}>
+              <div class="issue__head">
+                <span class:list={['issue__badge', SEVERITY_CLASS[f.severity]]}>{SEVERITY_LABEL[f.severity]}</span>
+                <h3 class="issue__title">{f.title}</h3>
+              </div>
+              <p class="issue__detail">{f.detail}</p>
+              {f.evidence && (
+                <p class="issue__evidence">
+                  <span class="issue__label">המשפט הרלוונטי:</span> “{f.evidence}”
+                </p>
+              )}
+              {f.location && (
+                <p class="issue__meta"><span class="issue__label">מיקום:</span> {f.location}</p>
+              )}
+              {f.meta?.sourceChecked && (
+                <p class="issue__meta"><span class="issue__label">מקורות שנבדקו:</span> {f.meta.sourceChecked}</p>
+              )}
+              {f.meta?.matchedArticleTitle && (
+                <p class="issue__meta">
+                  <span class="issue__label">מאמר תואם:</span> "{f.meta.matchedArticleTitle}"
+                </p>
+              )}
+              {f.suggestion && <p class="issue__suggestion">💡 {f.suggestion}</p>}
+
+              <div class="issue__actions">
+                {article && <a class="ad-btn ad-btn--ghost row__btn" href={`/admin/${article.id}`}>עריכת המאמר</a>}
+                {f.meta?.matchedArticleId && (
+                  <a class="ad-btn ad-btn--ghost row__btn" href={`/admin/${f.meta.matchedArticleId}`}>
+                    פתיחת המאמר הקיים
+                  </a>
+                )}
+                {f.gate === 'duplicate-topic' && f.severity === 'review' && mayCreate && (
+                  <form method="post" action={`/api/admin/ai/feedback?csrf=${csrf}`}>
+                    <input type="hidden" name="generationId" value={generation.id} />
+                    <input type="hidden" name="articleId" value={generation.articleId ?? ''} />
+                    <input type="hidden" name="kind" value="approve" />
+                    <input type="hidden" name="note" value={`הנושאים שונים בפועל (לא כפילות): ${f.meta?.matchedArticleTitle ?? ''}`} />
+                    <button class="ad-btn ad-btn--ghost row__btn" type="submit">הנושאים שונים, המשך</button>
+                  </form>
+                )}
+                {f.gate === 'duplicate-topic' && f.severity === 'blocking' && article && mayDelete && (
+                  <button class="ad-btn ad-btn--danger row__btn" type="button" data-discard-draft data-article-id={article.id} data-csrf={csrf}>
+                    ביטול הטיוטה
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
   </section>
 
   <!-- ─────────── visual ─────────── -->
   {
     visual && (
       <section class="card">
-        <h2 class="card__h">תמונה</h2>
+        <h2 class="card__h">תמונת הכתבה</h2>
         <div class="visual-frame">
           {isSvgSafe(visual.svgMarkup) ? (
             <Fragment set:html={visual.svgMarkup} />
@@ -101,8 +206,14 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
         <dl class="kv">
           <dt>קובץ</dt><dd dir="ltr">{visual.filename}</dd>
           <dt>טקסט חלופי (alt)</dt><dd>{visual.altText}</dd>
-          <dt>מקור</dt><dd>{visual.source === 'mock' ? 'תבנית לדוגמה' : 'נוצר על ידי המודל'}</dd>
+          <dt>מקור</dt>
+          <dd>{visual.source === 'mock' ? 'תרשים ברירת מחדל (זמני)' : 'תרשים ייחודי לכתבה'}</dd>
         </dl>
+        <p class="foot-note">
+          {visual.source === 'generated'
+            ? 'התרשים הזה ייחודי לכתבה ומופיע גם בתצוגה המקדימה ובעמוד הציבורי.'
+            : 'זהו תרשים ברירת מחדל של השירות, לא תרשים ייחודי לכתבה. אפשר לשנות את סוג התרשים בעריכת המאמר.'}
+        </p>
       </section>
     )
   }
@@ -119,7 +230,7 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
           <dt>slug</dt><dd dir="ltr">{generation.output.seo.slug}</dd>
           <dt>מילת מפתח ראשית</dt><dd>{generation.output.seo.primaryKeyword}</dd>
           <dt>כתובת קנונית</dt><dd dir="ltr">{generation.output.seo.canonicalPath}</dd>
-          <dt>ניתן לאינדוקס</dt><dd>{generation.output.seo.indexable ? 'כן' : 'לא (טיוטת דוגמה)'}</dd>
+          <dt>ניתן לאינדוקס</dt><dd>{generation.output.seo.indexable ? 'כן' : 'לא (טיוטה שאינה מפורסמת)'}</dd>
         </dl>
         {
           generation.output.seo.citations.length > 0 && (
@@ -143,8 +254,7 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
   <section class="card">
     <h2 class="card__h">הפרומפט שהורכב</h2>
     <p class="foot-note">
-      זהו הטקסט המלא שהמערכת הכינה עבור המודל. באותו טקסט ייעשה שימוש כשמצב
-      "הדבקה ידנית" ייבנה, כדי שתוכלו להעתיק אותו לצ'אט שלכם.
+      זהו הטקסט המלא שנשלח (או הוכן להדבקה) עבור המודל. שום דבר כאן לא משתנה בעריכה או בבדיקה מחדש.
     </p>
     <details>
       <summary class="ad-btn ad-btn--ghost">הצגת הפרומפט המלא</summary>
@@ -152,28 +262,35 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
     </details>
   </section>
 
-  <!-- ─────────── feedback ─────────── -->
+  <!-- ─────────── learning feedback: explicitly NOT article approval ─────────── -->
   {
     mayCreate && (
       <section class="card">
-        <h2 class="card__h">משוב (מזין את הלמידה)</h2>
+        <h2 class="card__h">כיצד הייתה התוצאה? עזרו למנוע להשתפר</h2>
+        <p class="foot-note">
+          זה לא מפרסם ולא מאשר את המאמר, זה רק מלמד את המנוע מה עבד ומה לא בפעם הבאה.
+        </p>
+        {feedbackSaved && <p class="fb-saved">✓ המשוב נשמר, תודה.</p>}
         <form method="post" action={`/api/admin/ai/feedback?csrf=${csrf}`} class="fb-form">
           <input type="hidden" name="generationId" value={generation.id} />
           <input type="hidden" name="articleId" value={generation.articleId ?? ''} />
           <div class="ad-field ad-field--wide">
-            <label class="ad-label" for="note">מה לתקן בפעם הבאה (אופציונלי, אבל הכי מועיל)</label>
+            <label class="ad-label" for="note">מה כדאי לשפר בפעם הבאה? (אופציונלי, אבל הכי מועיל)</label>
             <textarea class="ad-textarea" id="note" name="note" rows={2} />
           </div>
           <div class="fb-actions">
-            <button class="ad-btn ad-btn--primary" type="submit" name="kind" value="approve">אישור</button>
-            <button class="ad-btn ad-btn--danger" type="submit" name="kind" value="reject">דחייה</button>
+            <button class="ad-btn ad-btn--primary" type="submit" name="kind" value="approve">אהבתי את התוצאה</button>
+            <button class="ad-btn ad-btn--ghost" type="submit" name="kind" value="reject">לא אהבתי</button>
           </div>
         </form>
         {
           feedback.length > 0 && (
             <ul class="fb-list">
               {feedback.map((f) => (
-                <li><strong>{f.kind}</strong>{f.note ? `: ${f.note}` : ''}</li>
+                <li>
+                  <strong>{f.kind === 'approve' ? 'אהבו את התוצאה' : f.kind === 'reject' ? 'לא אהבו' : f.kind}</strong>
+                  {f.note ? `: ${f.note}` : ''}
+                </li>
               ))}
             </ul>
           )
@@ -182,6 +299,68 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
     )
   }
 </AdminLayout>
+
+<script>
+  // Publish / unpublish from the review screen, reusing the existing
+  // permission-safe CMS status endpoint exactly as the article editor
+  // does — this button never publishes anything by itself; it only
+  // becomes clickable once the review status is PASS (or to unpublish,
+  // always available). After it succeeds, reload this same review page.
+  document.querySelectorAll('[data-publish-toggle]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const id = el.dataset.articleId;
+      const status = el.dataset.targetStatus;
+      const csrf = el.dataset.csrf;
+      el.disabled = true;
+      try {
+        const res = await fetch(`/api/admin/status?csrf=${csrf}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id, status }),
+        });
+        if (res.ok) {
+          location.reload();
+        } else {
+          const body = (await res.json().catch(() => ({}))) as { error?: string };
+          alert(body.error || 'הפעולה נכשלה');
+          el.disabled = false;
+        }
+      } catch {
+        alert('הפעולה נכשלה, בדקו את החיבור ונסו שוב.');
+        el.disabled = false;
+      }
+    });
+  });
+
+  // Discard draft: same delete capability as the article list, just
+  // reachable from the review screen for a genuine-duplicate case.
+  document.querySelectorAll('[data-discard-draft]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      if (!confirm('לבטל את הטיוטה הזו? הפעולה אינה הפיכה.')) return;
+      const id = el.dataset.articleId;
+      const csrf = el.dataset.csrf;
+      el.disabled = true;
+      try {
+        const res = await fetch(`/api/admin/delete?csrf=${csrf}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id }),
+        });
+        if (res.ok) {
+          location.href = '/admin/ai';
+        } else {
+          alert('הפעולה נכשלה');
+          el.disabled = false;
+        }
+      } catch {
+        alert('הפעולה נכשלה, בדקו את החיבור ונסו שוב.');
+        el.disabled = false;
+      }
+    });
+  });
+</script>
 
 <style>
   .crumbs {
@@ -208,12 +387,11 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     flex-wrap: wrap;
   }
   .hd__h { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; }
   .hd__sub { font-size: 0.875rem; color: var(--color-ink-3); margin-top: 0.25rem; }
-  .hd__acts { display: flex; align-items: center; gap: 0.75rem; }
 
   .card {
     background: #fff;
@@ -221,6 +399,10 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
     border-radius: 0.875rem;
     padding: 1.25rem;
     margin-bottom: 1.25rem;
+  }
+  .card--primary {
+    border-color: var(--color-royal);
+    box-shadow: 0 0 0 1px var(--color-royal);
   }
   .card__h {
     font-family: var(--font-display);
@@ -232,8 +414,93 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
     gap: 0.625rem;
   }
 
-  .gate-list { display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9375rem; }
-  .gate-list li { color: var(--color-ink-2); }
+  .review-kicker {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.875rem;
+  }
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.125rem;
+  }
+  .status-note {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-ink-2);
+  }
+  .status-note--warn { color: #8a5300; }
+  .status-note--ok { color: var(--color-success); }
+  .primary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+  .primary-actions form { display: contents; }
+
+  .issues {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .issue {
+    border: 1px solid var(--color-line);
+    border-inline-start: 4px solid var(--color-line-strong);
+    border-radius: 0.75rem;
+    padding: 1rem 1.125rem;
+  }
+  .issue.issue--blocking { border-inline-start-color: var(--color-error); background: #fffaf9; }
+  .issue.issue--review { border-inline-start-color: #d99a1f; background: #fffdf7; }
+  .issue.issue--info { border-inline-start-color: var(--color-line-strong); background: #fafbfc; }
+  .issue__head {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-bottom: 0.5rem;
+  }
+  .issue__badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    flex: none;
+  }
+  .issue__badge.issue--blocking { background: var(--color-error-soft); color: var(--color-error); }
+  .issue__badge.issue--review { background: #fff4e0; color: #8a5300; }
+  .issue__badge.issue--info { background: var(--color-surface-2); color: var(--color-ink-3); }
+  .issue__title { font-family: var(--font-display); font-size: 1.0625rem; font-weight: 700; }
+  .issue__detail { font-size: 0.9375rem; color: var(--color-ink-2); margin-bottom: 0.5rem; }
+  .issue__evidence {
+    font-size: 0.9375rem;
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+  .issue__meta { font-size: 0.8125rem; color: var(--color-ink-3); margin-bottom: 0.25rem; }
+  .issue__label { font-weight: 700; color: var(--color-ink-2); }
+  .issue__suggestion {
+    font-size: 0.875rem;
+    color: var(--color-ink-2);
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    margin-top: 0.5rem;
+  }
+  .issue__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .issue__actions form { display: contents; }
+  .row__btn { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
 
   .foot-note {
     font-size: 0.8125rem;
@@ -242,6 +509,7 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
     padding-inline-start: 0.875rem;
     margin-top: 0.75rem;
   }
+  .foot-note--ok { border-inline-start-color: var(--color-success); }
 
   .visual-frame {
     border: 1px solid var(--color-line);
@@ -268,6 +536,15 @@ const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholde
     line-height: 1.6;
   }
 
+  .fb-saved {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--color-success);
+    background: var(--color-success-soft);
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    margin-bottom: 0.875rem;
+  }
   .fb-form { display: flex; flex-direction: column; gap: 0.875rem; }
   .fb-actions { display: flex; gap: 0.625rem; }
   .fb-list { margin-top: 1rem; font-size: 0.875rem; color: var(--color-ink-2); display: flex; flex-direction: column; gap: 0.375rem; }

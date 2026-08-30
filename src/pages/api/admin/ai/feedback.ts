@@ -28,5 +28,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     });
   }
 
-  return redirect(`/admin/ai/${generationId}`, 303);
+  return redirect(`/admin/ai/${generationId}?feedback=saved`, 303);
 };

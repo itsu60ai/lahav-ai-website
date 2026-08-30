@@ -14,7 +14,12 @@ export type Block =
   | { t: 'h3'; x: string }
   | { t: 'quote'; x: string }
   | { t: 'ul'; items: string[] }
-  | { t: 'viz' };
+  | { t: 'viz' }
+  /** an article-specific SVG the AI engine produced (see src/lib/ai/).
+   *  Self-contained — the markup lives on the block itself, not looked up
+   *  from another table at render time — so it round-trips through the
+   *  block editor exactly like every other block. */
+  | { t: 'aiviz'; svg: string; alt: string; caption: string };
 
 export const BLOCK_LABELS: Record<Block['t'], string> = {
   p: 'פסקה',
@@ -23,6 +28,7 @@ export const BLOCK_LABELS: Record<Block['t'], string> = {
   quote: 'ציטוט',
   ul: 'רשימה',
   viz: 'תרשים',
+  aiviz: 'תרשים AI',
 };
 
 /** guide = a considered piece; hack = a short practical tip */

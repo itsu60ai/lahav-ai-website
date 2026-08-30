@@ -234,8 +234,8 @@ const pains = [
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.07em;
-    color: var(--color-royal);
-    background: color-mix(in srgb, var(--color-royal) 8%, transparent);
+    color: var(--color-electric);
+    background: color-mix(in srgb, var(--color-electric) 14%, var(--color-surface-3));
     border-radius: var(--radius-full);
     padding: 0.5rem 1.1rem;
     margin-bottom: 1.5rem;
@@ -323,22 +323,35 @@ const pains = [
     max-width: none;
   }
 
-  /* ---------- Pain ---------- */
+  /* ---------- Pain ----------
+     Bordered tiles, not a bare text list — closer to the numbered feature
+     grids on the reference sites (client request 2026-08-31). Same copy,
+     just given a card's weight and a hover lift. */
   .pains {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: clamp(2.5rem, 4vw, 3.5rem) clamp(3rem, 6vw, 6rem);
+    gap: clamp(1.25rem, 2vw, 1.75rem);
   }
   .pain {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.625rem;
+    padding: clamp(1.5rem, 2.5vw, 2rem);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.02);
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
-      translate 600ms var(--ease-out) calc(var(--i) * 90ms);
+      translate 600ms var(--ease-out) calc(var(--i) * 90ms),
+      border-color var(--dur) var(--ease-out),
+      background-color var(--dur) var(--ease-out);
+  }
+  .pain:hover {
+    border-color: var(--color-line-strong);
+    background: rgba(255, 255, 255, 0.045);
   }
   :global(html.reveal-ready) .pain {
     opacity: 0;
@@ -347,6 +360,13 @@ const pains = [
   :global(html.reveal-ready) .pain.is-in {
     opacity: 1;
     translate: 0 0;
+  }
+  /* Higher specificity than the .is-in rule above on purpose — by the
+     time a visitor can hover a card it has already revealed, so without
+     this the lift would be silently overridden by is-in's own translate. */
+  :global(html.reveal-ready) .pain.is-in:hover,
+  .pain:hover {
+    translate: 0 -3px;
   }
   .pain__n {
     font-family: var(--font-display);
@@ -442,18 +462,26 @@ const pains = [
     padding: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: clamp(2rem, 4vw, 3rem);
+    gap: clamp(1.25rem, 2vw, 1.75rem);
   }
+  /* Same bordered-tile treatment as .pain above, for consistency. */
   .step {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding-top: 1.25rem;
-    border-top: 2px solid var(--color-line-strong);
+    padding: clamp(1.5rem, 2.5vw, 1.875rem) clamp(1.25rem, 2vw, 1.5rem);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.02);
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 100ms),
       translate 600ms var(--ease-out) calc(var(--i) * 100ms),
-      border-color 600ms var(--ease-out) calc(var(--i) * 100ms);
+      border-color var(--dur) var(--ease-out),
+      background-color var(--dur) var(--ease-out);
+  }
+  .step:hover {
+    border-color: var(--color-electric);
+    background: rgba(255, 255, 255, 0.045);
   }
   :global(html.reveal-ready) .step {
     opacity: 0;
@@ -462,7 +490,10 @@ const pains = [
   :global(html.reveal-ready) .step.is-in {
     opacity: 1;
     translate: 0 0;
-    border-top-color: var(--color-royal);
+  }
+  :global(html.reveal-ready) .step.is-in:hover,
+  .step:hover {
+    translate: 0 -3px;
   }
   .step__n {
     font-family: var(--font-display);
@@ -498,7 +529,7 @@ const pains = [
   .founder__role {
     font-size: var(--text-small);
     font-weight: 600;
-    color: var(--color-royal);
+    color: var(--color-electric);
     direction: ltr;
     text-align: start;
     margin-bottom: 1.5rem;

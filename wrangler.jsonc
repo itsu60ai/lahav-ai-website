@@ -11,9 +11,9 @@
     {
       "binding": "DB",
       "database_name": "lahav-cms",
-      // Replace with the real id after `wrangler d1 create lahav-cms`.
-      // Local development uses miniflare's own database, not this id.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // Created 2026-08-31 via `wrangler d1 create lahav-cms` (region WEUR).
+      // Local development still uses miniflare's own separate database.
+      "database_id": "b4af5779-63f6-4290-a483-aee5a4b2d0b2",
       "migrations_dir": "migrations"
     }
   ],

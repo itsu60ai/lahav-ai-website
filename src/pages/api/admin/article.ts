@@ -6,6 +6,7 @@ import type { APIRoute } from 'astro';
 import { slugify } from '../../../lib/cms/context.ts';
 import { require_ } from '../../../lib/cms/guard.ts';
 import { VIZ_KINDS, type Block } from '../../../lib/cms/types.ts';
+import { isSvgSafe } from '../../../lib/ai/validate.ts';
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -21,7 +22,16 @@ function cleanBody(input: unknown): Block[] {
     if (!b || typeof b !== 'object') continue;
     const t = (b as any).t;
     if (t === 'viz') out.push({ t: 'viz' });
-    else if (t === 'ul') {
+    else if (t === 'aiviz') {
+      // An AI-generated diagram, produced by src/lib/ai and untouched by
+      // the block editor (see admin/[id].astro) — survives a normal save
+      // exactly like any other block, re-validated here defensively so
+      // this route never depends on validation done somewhere upstream.
+      const svg = str((b as any).svg, 20000);
+      if (svg && isSvgSafe(svg)) {
+        out.push({ t: 'aiviz', svg, alt: str((b as any).alt, 300), caption: str((b as any).caption, 300) });
+      }
+    } else if (t === 'ul') {
       const items = Array.isArray((b as any).items)
         ? (b as any).items.map((i: unknown) => str(i, 400)).filter((i: string) => i.trim() !== '')
         : [];

@@ -291,12 +291,24 @@ export function parseManualResult(
 
   const visual = buildVisual(sections.IMAGE || '', sections.IMAGE_SVG || '', brief, slug, warnings);
 
+  // A real, article-specific diagram replaces the generic placeholder
+  // marker in the body — the generic site diagram stays as the fallback
+  // (visual.source === 'mock') exactly when no valid SVG was supplied.
+  let finalBody = body.length > 0 ? body : [{ t: 'p' as const, x: '(לא נמצא תוכן, יש לערוך את הטיוטה)' }, { t: 'viz' as const }];
+  if (visual.source === 'generated') {
+    const vizIndex = finalBody.findIndex((b) => b.t === 'viz');
+    if (vizIndex !== -1) {
+      finalBody = [...finalBody];
+      finalBody[vizIndex] = { t: 'aiviz', svg: visual.svgMarkup, alt: visual.altText, caption: visual.caption };
+    }
+  }
+
   const output: GeneratorOutput = {
     title: finalTitle,
     standfirst: sections.STANDFIRST?.trim() || brief.goal || '',
     excerpt: sections.EXCERPT?.trim() || (realBodyBlocks[0] && 'x' in realBodyBlocks[0] ? (realBodyBlocks[0] as any).x.slice(0, 140) : ''),
     readingTime: sections.READING_TIME?.trim() || 'כמה דקות קריאה',
-    body: body.length > 0 ? body : [{ t: 'p', x: '(לא נמצא תוכן, יש לערוך את הטיוטה)' }, { t: 'viz' }],
+    body: finalBody,
     seo: {
       searchIntent: seoKv.SEARCH_INTENT || '',
       primaryKeyword: seoKv.PRIMARY_KEYWORD || finalTitle,

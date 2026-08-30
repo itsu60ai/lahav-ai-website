@@ -1,6 +1,7 @@
 # LAHAV AI Website — Consolidated Source of Truth
 
 STATUS: CURRENT. Reconciliation complete. Final decisions F-1..F-18 approved by the client 2026-08-29.
+F-19 (2026-08-31) supersedes F-1's "never all-dark" clause — see section 5.
 Date: 2026-08-29 (revision 2)
 Replaces: the ambiguity between the legacy Stage 1–4 documents and the handoff package.
 
@@ -166,6 +167,7 @@ These are the newest approved decisions. Where they conflict with anything older
 | **F-16** | **No response-time promise** unless explicitly approved later. |
 | **F-17** | **Founder photo:** use the original supplied asset. **Do not AI-generate or materially alter the founder's face.** Responsive sizing and compression are fine. |
 | **F-18** | **Parking lot preserved:** Projects/Case Studies, custom paid domain, GA4, additional admin/editor users. Not implemented in V1, not forgotten. |
+| **F-19** | **Full dark theme, client, 2026-08-31.** **Supersedes F-1's "primarily LIGHT... never all-dark" clause** — the site is now dark throughout, not light-with-dark-bands. Reference material: two live sites (vice-studio.com, hatchworks.com) plus a Stitch-generated LAHAV concept the client supplied, for section rhythm and contrast level, not for typography or color. Explicitly **not** adopted from the references: any accent/script typeface, any color outside the existing fixed brand palette (navy/royal/electric/cool gray) — stays Heebo + Assistant only, same palette, same type scale (already larger than the Stitch reference's own scale). The admin/CMS tool is explicitly out of scope and keeps its original light theme (a tool, not the marketing site — see `src/layouts/AdminLayout.astro`). Rollout: Home page first as the approved checkpoint (this pass); the remaining pages inherit the shared tokens and chrome automatically but have not each been individually reviewed yet. |
 
 ### 5.1 Conflicts these decisions create with older approved requirements
 

@@ -27,8 +27,20 @@ const { heading, body } = Astro.props;
 </section>
 
 <style>
+  /* Fades IN to the brand gradient rather than starting with it: the
+     section begins transparent (showing whatever the body's own gradient
+     looks like at that scroll position) and only reaches full brand
+     vividness by its lower half, where the buttons sit. This is what
+     removes the hard horizontal seam the flat gradient used to create
+     against the section above it. */
   .cta-band {
-    background: var(--gradient-brand);
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(29, 78, 216, 0.4) 45%,
+      #1d4ed8 75%,
+      #2997ff 100%
+    );
     text-align: center;
     padding-block: var(--space-section);
   }

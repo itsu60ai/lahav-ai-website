@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "look": "astro build && astro preview --port 4321",
+    "deploy": "astro build && wrangler deploy",
     "cms:seed": "node scripts/cms-seed.mjs",
     "db:local": "wrangler d1 execute lahav-cms --local --file=./migrations/0001_init.sql && wrangler d1 execute lahav-cms --local --file=./migrations/0003_seed.sql"
   },

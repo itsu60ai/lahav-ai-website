@@ -61,28 +61,34 @@ if (Astro.request.method === 'POST') {
       contentKind: generation.brief.contentKind,
       existingArticles,
     });
-    // The parser's own warnings (missing SEO section, no image supplied,
-    // no citations found, ...) are exactly the same kind of "review this
-    // before publishing" signal as a code gate, so they share the same
-    // checklist on the detail page rather than needing a second one.
+    // The parser's own warnings (missing SEO section, no citations found,
+    // a defaulted title, ...) are background notes about how the paste
+    // was interpreted — real, but never blocking on their own — so they
+    // share the same review checklist as a code gate, tagged 'info'.
     const gates = {
-      passed: codeGates.passed && result.warnings.length === 0,
+      passed: codeGates.passed,
       failures: [
         ...codeGates.failures,
-        ...result.warnings.map((message) => ({ gate: 'paste-review', message })),
+        ...result.warnings.map((message) => ({
+          gate: 'paste-review',
+          severity: 'info' as const,
+          title: 'הערה על אופן קריאת התשובה שהודבקה',
+          detail: message,
+          location: 'התשובה שהודבקה',
+        })),
       ],
     };
 
     const service = SERVICES.find((s) => s.slug === generation.brief.serviceSlug);
     const articleId = newId();
 
-    // A disclosure line, appended once, honestly — this is real,
-    // AI-assisted content on a real publishing track, not Stage A's
-    // template placeholder, so it does not get isPlaceholder treatment.
-    const bodyWithDisclosure = [
-      ...output.body,
-      { t: 'p' as const, x: 'כתבה זו הוכנה בסיוע בינה מלאכותית ונערכה ואושרה על ידי הצוות לפני פרסום.' },
-    ];
+    // The disclosure line is a capability, not something forced onto every
+    // article — off by default (client feedback 2026-09-01). No invented
+    // legal requirement either way; this is purely an admin choice.
+    const settings = await aiStores.settings.get();
+    const finalBody = settings.disclosureEnabled
+      ? [...output.body, { t: 'p' as const, x: 'כתבה זו הוכנה בסיוע בינה מלאכותית ונערכה ואושרה על ידי הצוות לפני פרסום.' }]
+      : output.body;
 
     await articles.create({
       id: articleId,
@@ -99,7 +105,7 @@ if (Astro.request.method === 'POST') {
       vizCaption: output.visual.caption || output.title,
       serviceName: service?.name ?? '',
       serviceSlug: service?.slug ?? '',
-      body: bodyWithDisclosure,
+      body: finalBody,
       isPlaceholder: false,
     });
 

@@ -66,7 +66,27 @@ const path = new URL(Astro.request.url).pathname;
 </html>
 
 <style is:global>
+  /* The admin is a TOOL, not the marketing site (see the top-of-file
+     comment). It keeps the original light palette regardless of the
+     marketing site's dark redesign (2026-08-31) — redefining the tokens
+     here, scoped to .ad, means every existing admin style below still
+     resolves to exactly what it always did. */
   .ad {
+    --color-ink: #0b1530;
+    --color-ink-2: #33405c;
+    --color-ink-3: #6b7793;
+    --color-line: #e3e7ee;
+    --color-line-strong: #ccd4e0;
+    --color-surface: #ffffff;
+    --color-surface-2: #f2f4f7;
+    --color-surface-3: #e9edf3;
+    --color-success: #15803d;
+    --color-error: #b91c1c;
+    --color-success-soft: #eaf5ee;
+    --color-error-soft: #fdeceb;
+    --shadow-sm: 0 1px 2px rgba(11, 21, 48, 0.05);
+    --shadow: 0 10px 30px rgba(11, 21, 48, 0.07);
+    --shadow-lg: 0 28px 70px rgba(11, 21, 48, 0.13);
     background: var(--color-surface-2);
     min-height: 100dvh;
   }

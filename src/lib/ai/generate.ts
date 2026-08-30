@@ -13,7 +13,14 @@ import { runGates } from './gates.ts';
 import { contentKindToArticleKind, vizForServiceSlug } from './mapping.ts';
 import { mockGenerator } from './providers/mock.ts';
 import { validateGeneratorOutput } from './validate.ts';
-import type { AiStores, Brief, Generation, TextGenerator } from './types.ts';
+import type { AiStores, Brief, GateResult, Generation, TextGenerator } from './types.ts';
+
+function internalFailure(message: string): GateResult {
+  return {
+    passed: false,
+    failures: [{ gate: 'internal', severity: 'blocking', title: 'שגיאה פנימית', detail: message }],
+  };
+}
 
 function pickProvider(mode: string): TextGenerator {
   if (mode === 'mock') return mockGenerator;
@@ -58,7 +65,7 @@ export async function generateDraft(args: GenerateArgs): Promise<GenerateResult>
   let outputTokens = 0;
   let costUsd = 0;
   let model: string = provider.mode;
-  let gates = { passed: false, failures: [{ gate: 'internal', message: 'לא הושלם' }] };
+  let gates = internalFailure('לא הושלם');
 
   try {
     const { output, meta } = await provider.generate({ brief, opportunity, promptText });
@@ -70,7 +77,15 @@ export async function generateDraft(args: GenerateArgs): Promise<GenerateResult>
 
     const validation = validateGeneratorOutput(output);
     if (!validation.ok) {
-      gates = { passed: false, failures: validation.errors.map((message) => ({ gate: 'validation', message })) };
+      gates = {
+        passed: false,
+        failures: validation.errors.map((message) => ({
+          gate: 'validation',
+          severity: 'blocking' as const,
+          title: 'התוצר לא תקין',
+          detail: message,
+        })),
+      };
     } else {
       gates = runGates({
         output,
@@ -115,10 +130,7 @@ export async function generateDraft(args: GenerateArgs): Promise<GenerateResult>
       status = 'succeeded';
     }
   } catch (e) {
-    gates = {
-      passed: false,
-      failures: [{ gate: 'internal', message: e instanceof Error ? e.message : 'שגיאה לא צפויה' }],
-    };
+    gates = internalFailure(e instanceof Error ? e.message : 'שגיאה לא צפויה');
   }
 
   const generation = await aiStores.generations.create({

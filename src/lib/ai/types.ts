@@ -175,12 +175,41 @@ export interface TextGenerator {
 
 // ─────────────────────────────────────────────── gates
 
+/**
+ * blocking — a real problem; publishing from this review page is withheld
+ *   until it's resolved (a genuine duplicate, unusable content).
+ * review — worth a human look before publishing, not withheld (an
+ *   unverified number, a related-but-different existing article, SEO gaps).
+ * info — minor, background-shown, never blocks anything.
+ */
+export type GateSeverity = 'blocking' | 'review' | 'info';
+
 export interface GateFailure {
+  /** internal id (e.g. "invented-numbers") — kept for logs/debugging, never shown as the primary label */
   gate: string;
-  message: string;
+  severity: GateSeverity;
+  /** short Hebrew headline, e.g. "נמצא מספר שדורש אימות" */
+  title: string;
+  /** the fuller explanation of why this was flagged */
+  detail: string;
+  /** the exact sentence/number/field this is about, quoted verbatim */
+  evidence?: string;
+  /** where in the article, e.g. "בגוף הכתבה", "בכותרת ה-SEO" */
+  location?: string;
+  /** what to actually do about it, in plain Hebrew */
+  suggestion?: string;
+  meta?: {
+    matchedArticleId?: string;
+    matchedArticleSlug?: string;
+    matchedArticleTitle?: string;
+    matchedNumber?: string;
+    sourceUrl?: string;
+    sourceChecked?: string;
+  };
 }
 
 export interface GateResult {
+  /** true only when there are zero BLOCKING failures — review/info items don't count against this */
   passed: boolean;
   failures: GateFailure[];
 }
@@ -320,6 +349,9 @@ export interface Recommender {
 export interface AiSettings {
   providerMode: ProviderMode;
   recommendationMode: RecommendationMode;
+  /** off by default — the AI-disclosure line is a capability, not a forced
+   *  insertion. See docs/AI_ENGINE.md, client feedback 2026-09-01. */
+  disclosureEnabled: boolean;
   autoPublishEnabled: boolean;
   autoPublishExpiresAt: string | null;
   autoPublishWeeklyCap: number;
