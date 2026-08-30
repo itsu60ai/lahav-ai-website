@@ -154,19 +154,18 @@
      system, ordered rows settle out the other side. Then a slow ambient
      drift remains so the page feels alive without demanding attention. */
 
-  .hv__chip,
-  .hv__row {
-    opacity: 0;
-  }
-  .hv__glow {
-    opacity: 0;
-  }
   .hv__system {
-    opacity: 0;
     transform-box: fill-box;
     transform-origin: center;
   }
-  .hv__flow {
+  /* Hidden only once ScrollReveal has confirmed JS is running. */
+  :global(html.reveal-ready) .hv__chip,
+  :global(html.reveal-ready) .hv__row,
+  :global(html.reveal-ready) .hv__glow,
+  :global(html.reveal-ready) .hv__system {
+    opacity: 0;
+  }
+  :global(html.reveal-ready) .hv__flow {
     stroke-dasharray: 6 10;
     stroke-dashoffset: 200;
     opacity: 0;

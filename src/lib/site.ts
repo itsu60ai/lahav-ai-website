@@ -50,8 +50,8 @@ export const SERVICES = [
     slug: 'crm',
     name: 'מערכות CRM חכמות',
     featured: true,
-    lead: 'כל הלקוחות, הלידים והמשימות במקום אחד',
-    pain: 'היום המידע מפוזר בין וואטסאפ, מייל, אקסל וראש של מישהו. אנחנו בונים מערכת אחת שרואה הכל, ויודעת מה השלב הבא של כל לקוח.',
+    lead: 'הלקוחות, הלידים והמשימות במקום אחד',
+    pain: 'היום המידע מפוזר בין וואטסאפ, מייל, אקסל וראש של מישהו. אנחנו בונים מערכת שמרכזת את המידע החשוב ונותנת תמונה ברורה של כל לקוח ומה צריך לקרות עכשיו.',
   },
   {
     slug: 'automations',
@@ -64,8 +64,8 @@ export const SERVICES = [
     slug: 'web-development',
     name: 'פיתוח אתרים',
     featured: false,
-    lead: 'אתר שמביא פניות, לא רק נראה טוב',
-    pain: 'אתר עסקי שבנוי סביב מטרה ברורה, ומחובר לתהליך שקורה אחרי שמישהו משאיר פרטים.',
+    lead: 'אתר שבנוי להוביל אנשים לפעולה, לא רק להיראות טוב',
+    pain: 'מתחילים ממטרה עסקית ברורה: מי נכנס לאתר, מה הוא מחפש, ולאן הוא אמור להגיע. משם בונים את המבנה, התוכן, הטפסים והחיבור לתהליך שקורה אחרי שמישהו משאיר פרטים.',
   },
   {
     slug: 'app-development',
@@ -92,6 +92,21 @@ export const NAV = [
   { href: '/contact/', label: 'צור קשר' },
 ] as const;
 
+// B4 (PRD): the capabilities LAHAV AI genuinely works with, expressed as
+// disciplines and system types only. No vendor, platform, framework or API
+// name appears here or anywhere public until each one is separately
+// verified (PL-16). Course curriculum is a training roadmap, never a
+// public capability claim (client decision, 2026-08-30).
+export const CAPABILITIES = [
+  'ניהול לקוחות ולידים',
+  'אוטומציה של תהליכים ומשימות',
+  'טפסים וקליטת מידע',
+  'חיבור בין תהליכים ומידע',
+  'מערכות עסקיות מותאמות',
+  'אתרים ואפליקציות סביב תהליך עסקי',
+  'תהליכי תוכן בסיוע AI',
+] as const;
+
 // Delivery journey (WEBSITE_PRD §7 Home). Six stages, RTL-ordered.
 // `what` is written for a business owner, not a project manager.
 export const PROCESS = [
@@ -99,6 +114,6 @@ export const PROCESS = [
   { n: 2, label: 'תכנון', what: 'מחליטים מה נבנה, באיזה סדר, ומה נשאר לשלב הבא' },
   { n: 3, label: 'הקמה', what: 'בונים את המערכת ומחברים בין החלקים' },
   { n: 4, label: 'בדיקות', what: 'עוברים על התהליכים ומוודאים שהכל עובד כמו שצריך' },
-  { n: 5, label: 'הטמעה', what: 'מעבירים את הצוות למערכת החדשה, בלי לעצור את העסק' },
+  { n: 5, label: 'הטמעה', what: 'מעבירים את הצוות לעבוד עם המערכת החדשה' },
   { n: 6, label: 'מסירה', what: 'אתם מקבלים מערכת שאתם יודעים לתפעל לבד' },
 ] as const;

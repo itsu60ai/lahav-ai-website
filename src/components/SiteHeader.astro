@@ -96,6 +96,10 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
 
   if (dd && ddBtn && ddPanel) {
     let closeTimer: number | undefined;
+    // Hover opens the panel transiently. A click "pins" it so moving the
+    // pointer away no longer closes it. Without this, hovering opens the
+    // panel and the click that follows immediately toggles it shut.
+    let pinned = false;
 
     const openDd = () => {
       window.clearTimeout(closeTimer);
@@ -103,18 +107,25 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
       ddBtn.setAttribute('aria-expanded', 'true');
     };
     const closeDd = () => {
+      pinned = false;
       dd.classList.remove('is-open');
       ddBtn.setAttribute('aria-expanded', 'false');
     };
 
     ddBtn.addEventListener('click', () => {
-      dd.classList.contains('is-open') ? closeDd() : openDd();
+      if (pinned) {
+        closeDd();
+      } else {
+        pinned = true;
+        openDd();
+      }
     });
 
     // Mouse users get hover, with a small grace period so the pointer can
     // travel from the button to the panel without it snapping shut.
     dd.addEventListener('mouseenter', openDd);
     dd.addEventListener('mouseleave', () => {
+      if (pinned) return;
       closeTimer = window.setTimeout(closeDd, 160);
     });
 

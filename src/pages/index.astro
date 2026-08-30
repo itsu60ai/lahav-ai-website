@@ -11,7 +11,7 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import ClosingCta from '../components/ClosingCta.astro';
 import HeroVisual from '../components/HeroVisual.astro';
 import ScrollReveal from '../components/ScrollReveal.astro';
-import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, FOUNDER } from '../lib/site';
+import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, FOUNDER, CAPABILITIES } from '../lib/site';
 
 const featured = SERVICES.filter((s) => s.featured);
 const rest = SERVICES.filter((s) => !s.featured);
@@ -27,11 +27,11 @@ const pains = [
   },
   {
     title: 'פניות שנשכחות',
-    body: 'מישהו השאיר פרטים ולא חזרו אליו בזמן. עד שנזכרים, הוא כבר סגר עם מישהו אחר.',
+    body: 'מישהו השאיר פרטים ולא חזרו אליו בזמן. עד שנזכרים, הפנייה כבר התקררה.',
   },
   {
     title: 'קשה לדעת מה קורה',
-    body: 'שאלה פשוטה כמו "כמה פניות היו החודש" דורשת חצי שעה של חיפושים.',
+    body: 'שאלה פשוטה כמו "כמה פניות היו החודש" דורשת לעבור בין כמה מקומות רק כדי להבין את התמונה.',
   },
 ];
 ---
@@ -52,8 +52,8 @@ const pains = [
           <span class="hero__title-accent">יותר שליטה בעסק.</span>
         </h1>
         <p class="hero__lead">
-          אנחנו בונים מערכות CRM ואוטומציות לעסקים קטנים ובינוניים בישראל.
-          במקום עשרה כלים שלא מדברים ביניהם, מערכת אחת שעושה סדר ועובדת בשבילכם.
+          אנחנו בונים מערכות CRM, אוטומציות ופתרונות דיגיטליים שמחברים את התהליכים
+          בעסק, מפחיתים עבודה ידנית ועושים סדר במה שקורה ביום-יום.
         </p>
         <div class="hero__actions">
           <a class="btn btn-primary btn-lg" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
@@ -83,9 +83,9 @@ const pains = [
           "אוטומציה" נשמעת כמו מילה גדולה, אבל הרעיון פשוט.
         </p>
         <p class="explain__p">
-          בכל עסק יש עשרות פעולות קטנות שנעשות ביד, כל יום: להעתיק פרטים של פנייה
-          ממקום למקום, לשלוח את אותה הודעה בפעם המאה, לזכור לחזור למישהו, לעדכן טבלה.
-          כל פעולה כזו לוקחת דקה. ביחד הן לוקחות לכם את היום.
+          בעסקים רבים יש המון פעולות קטנות שחוזרות על עצמן: להעביר פרטים ממקום למקום,
+          לשלוח הודעות, לזכור לחזור ללקוחות ולעדכן מידע ידנית. כל פעולה קטנה בפני עצמה,
+          אבל יחד הן מצטברות להרבה עבודה שלא באמת חייבת להיעשות ביד.
         </p>
         <p class="explain__p explain__p--strong">
           מה שאנחנו עושים זה להעביר את הפעולות האלה למערכת שעושה אותן לבד.
@@ -176,6 +176,16 @@ const pains = [
           </svg>
         </div>
       </div>
+
+      <!-- B4: capability categories only. Disciplines and system types, no
+           vendor, platform or framework names (PL-16). A slim band inside
+           the existing dark act, not a new section. -->
+      <div class="u-container caps" data-reveal>
+        <p class="caps__label">תחומים שאנחנו עובדים בהם</p>
+        <ul class="caps__list">
+          {CAPABILITIES.map((c) => <li>{c}</li>)}
+        </ul>
+      </div>
     </section>
 
     <!-- ---- services: the major moment ---- -->
@@ -236,7 +246,7 @@ const pains = [
     <div class="u-container">
       <div class="process__head">
         <p class="t-eyebrow">איך זה עובד</p>
-        <h2 class="t-h2">שישה שלבים, בלי הפתעות באמצע</h2>
+        <h2 class="t-h2">תהליך ברור מהאפיון ועד המסירה</h2>
       </div>
 
       <ol class="process__list">
@@ -305,12 +315,14 @@ const pains = [
         <h2 class="t-h2 founder__name">{FOUNDER.name}</h2>
         <p class="founder__role">{FOUNDER.role}</p>
         <p class="founder__body">
-          הקמתי את LAHAV AI מתוך דבר אחד שראיתי חוזר בעסקים: לא חסרים כלים.
-          חסר חיבור. יש יותר מדי עבודה ידנית, ותהליכים שמסתבכים ככל שהעסק גדל.
+          הקמתי את LAHAV AI מתוך משהו שראיתי שוב ושוב בעסקים: הבעיה היא בדרך כלל
+          לא שחסרים כלים, אלא שהכלים והתהליכים לא עובדים יחד. מידע מתפזר, עבודה
+          ידנית מצטברת, ודברים פשוטים הופכים למסורבלים ככל שהעסק גדל.
         </p>
         <p class="founder__body">
-          לכן אני מתחיל תמיד מאותה נקודה: איפה העבודה נתקעת, מה גוזל זמן, ואיפה
-          מידע הולך לאיבוד. רק אחרי שזה ברור, בוחרים טכנולוגיה ובונים.
+          לכן אני מתחיל מהעסק ולא מהטכנולוגיה. קודם מבינים איפה העבודה נתקעת, מה
+          גוזל זמן ומה צריך לעבוד פשוט יותר. רק אחר כך בוחרים את הכלים ובונים את
+          המערכת שמתאימה לתהליך.
         </p>
         <a class="svc__link founder__link" href="/about/">
           עוד עלינו
@@ -442,13 +454,15 @@ const pains = [
     display: flex;
     gap: 1.25rem;
     align-items: flex-start;
-    opacity: 0;
-    translate: 0 16px;
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
       translate 600ms var(--ease-out) calc(var(--i) * 90ms);
   }
-  .pain__item.is-in {
+  :global(html.reveal-ready) .pain__item {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  :global(html.reveal-ready) .pain__item.is-in {
     opacity: 1;
     translate: 0 0;
   }
@@ -523,11 +537,11 @@ const pains = [
     width: 100%;
     height: auto;
   }
-  .sf__spine {
+  :global(html.reveal-ready) .sf__spine {
     stroke-dasharray: 1000;
     stroke-dashoffset: 1000;
   }
-  .sysflow__viz.is-in .sf__spine {
+  :global(html.reveal-ready) .sysflow__viz.is-in .sf__spine {
     animation: sf-draw 2000ms var(--ease-out) forwards;
   }
   @keyframes sf-draw {
@@ -546,10 +560,10 @@ const pains = [
     font-weight: 600;
     fill: rgba(255, 255, 255, 0.9);
   }
-  .sf__stop {
+  :global(html.reveal-ready) .sf__stop {
     opacity: 0;
   }
-  .sysflow__viz.is-in .sf__stop {
+  :global(html.reveal-ready) .sysflow__viz.is-in .sf__stop {
     animation: sf-stop-in 600ms var(--ease-out) calc(300ms + var(--d)) forwards;
   }
   @keyframes sf-stop-in {
@@ -561,6 +575,54 @@ const pains = [
       opacity: 1;
       translate: 0 0;
     }
+  }
+
+  /* ---- B4 capability band ---- */
+  .caps {
+    margin-top: clamp(2.5rem, 4vw, 4rem);
+    padding-top: clamp(1.75rem, 3vw, 2.5rem);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
+  }
+  :global(html.reveal-ready) .caps {
+    opacity: 0;
+    translate: 0 14px;
+  }
+  :global(html.reveal-ready) .caps.is-in {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .caps__label {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    color: var(--color-electric);
+    margin-bottom: 1rem;
+  }
+  .caps__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.75rem;
+  }
+  .caps__list li {
+    font-size: var(--text-small);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.76);
+    position: relative;
+  }
+  .caps__list li + li::before {
+    content: '';
+    position: absolute;
+    inset-inline-end: -0.9rem;
+    top: 50%;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(41, 151, 255, 0.6);
+    translate: 0 -50%;
   }
 
   /* ---- services ---- */
@@ -582,11 +644,13 @@ const pains = [
     gap: clamp(1.25rem, 3vw, 2.5rem);
     padding-bottom: clamp(3rem, 5vw, 4.5rem);
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    opacity: 0;
-    translate: 0 20px;
     transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
   }
-  .svc.is-in {
+  :global(html.reveal-ready) .svc {
+    opacity: 0;
+    translate: 0 20px;
+  }
+  :global(html.reveal-ready) .svc.is-in {
     opacity: 1;
     translate: 0 0;
   }
@@ -645,13 +709,15 @@ const pains = [
     display: flex;
     flex-direction: column;
     gap: 0.625rem;
-    opacity: 0;
-    translate: 0 16px;
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 110ms),
       translate 600ms var(--ease-out) calc(var(--i) * 110ms);
   }
-  .svc-min.is-in {
+  :global(html.reveal-ready) .svc-min {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  :global(html.reveal-ready) .svc-min.is-in {
     opacity: 1;
     translate: 0 0;
   }
@@ -711,13 +777,15 @@ const pains = [
     display: flex;
     gap: 1.125rem;
     align-items: flex-start;
-    opacity: 0;
-    translate: 0 18px;
     transition:
       opacity 600ms var(--ease-out) calc(var(--i) * 100ms),
       translate 600ms var(--ease-out) calc(var(--i) * 100ms);
   }
-  .process__item.is-in {
+  :global(html.reveal-ready) .process__item {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  :global(html.reveal-ready) .process__item.is-in {
     opacity: 1;
     translate: 0 0;
   }
@@ -732,7 +800,7 @@ const pains = [
     place-items: center;
     transition: border-color 500ms var(--ease-out), background-color 500ms var(--ease-out);
   }
-  .process__item.is-in .process__marker {
+  :global(html.reveal-ready) .process__item.is-in .process__marker {
     border-color: var(--color-royal);
     background: color-mix(in srgb, var(--color-royal) 7%, transparent);
   }
@@ -760,11 +828,13 @@ const pains = [
     align-items: center;
   }
   .founder__portrait {
-    opacity: 0;
-    translate: 0 18px;
     transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out);
   }
-  .founder__portrait.is-in {
+  :global(html.reveal-ready) .founder__portrait {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  :global(html.reveal-ready) .founder__portrait.is-in {
     opacity: 1;
     translate: 0 0;
   }

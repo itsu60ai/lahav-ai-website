@@ -8,6 +8,11 @@
 ---
 
 <script>
+  // Fail-safe: the reveal animations hide their elements, so that hiding is
+  // applied only once this script has confirmed it is running. If JS fails,
+  // is blocked, or the observer never fires, every section stays visible.
+  document.documentElement.classList.add('reveal-ready');
+
   const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
