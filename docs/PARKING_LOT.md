@@ -27,6 +27,13 @@ Nothing here is implemented in V1. Nothing here is forgotten.
 | PL-13 | MFA/2FA beyond the GitHub account's own 2FA | If the auth model ever changes |
 | PL-14 | Auto Publish (Mode 2) running truly unattended | Requires B-1 (LLM API spend approval) and O-9 (safety model approval) |
 
+## Open definitions required before a page is designed
+
+| # | Item | Why it is recorded here |
+|---|---|---|
+| **PL-15** | **The client-facing AI Content Creation offer must be defined separately.** The internal AI article system being built for this website is NOT automatically the same product LAHAV AI sells to clients. Before the AI Content Creation service page is designed, the actual client-facing offer must be defined from scratch. Do not silently inherit assumptions from the internal tool, from F-7, or from any earlier draft. | Client instruction, 2026-08-30. Prevents an internal build decision from quietly becoming a commercial promise |
+| **PL-16** | **B4 capabilities and technologies.** The PRD requires the site to communicate the capabilities and technologies LAHAV AI genuinely works with. No platform, vendor or framework name is verified anywhere in the source of truth today. Until specific names are confirmed by the client, capability communication stays at the level of disciplines and outcomes, never vendor logos | Truth rule R9 and CONTENT_CLEANUP both forbid unsupported platform or integration names |
+
 ## Review discipline
 This file is re-read at the QA gate and again before production launch. An item may only be closed
 by an explicit client decision, never by being quietly implemented or quietly dropped.

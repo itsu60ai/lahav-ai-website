@@ -12,6 +12,21 @@ export const SITE = {
   legalLine: 'Ethan Lahav · LAHAV AI',
 };
 
+// F-14 / F-17: approved founder identity. The photo is the client's own
+// supplied asset. It must never be AI generated or materially altered;
+// cropping, compression and responsive sizing are the only edits allowed.
+//
+// photoReady stays false until the real file exists at `photo`. While it is
+// false the About block renders an intentional branded placeholder rather
+// than a broken image or a stock stand-in.
+export const FOUNDER = {
+  name: 'איתן להב',
+  role: 'Founder & AI Systems Builder',
+  photo: '/founder/ethan-lahav.jpg',
+  photoReady: false,
+  alt: 'איתן להב, מייסד LAHAV AI',
+};
+
 export const CTA_PRIMARY = {
   label: 'קביעת שיחת Discovery',
   href: '/contact/',

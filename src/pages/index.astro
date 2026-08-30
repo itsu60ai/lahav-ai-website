@@ -11,7 +11,7 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import ClosingCta from '../components/ClosingCta.astro';
 import HeroVisual from '../components/HeroVisual.astro';
 import ScrollReveal from '../components/ScrollReveal.astro';
-import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY } from '../lib/site';
+import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, FOUNDER } from '../lib/site';
 
 const featured = SERVICES.filter((s) => s.featured);
 const rest = SERVICES.filter((s) => !s.featured);
@@ -261,6 +261,19 @@ const pains = [
   <section class="section section--gray founder">
     <div class="u-container founder__grid">
       <div class="founder__portrait" data-reveal>
+        {FOUNDER.photoReady ? (
+          <figure class="founder__photo">
+            <img
+              src={FOUNDER.photo}
+              alt={FOUNDER.alt}
+              width="600"
+              height="750"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+        ) : (
+        <>
         <div class="founder__frame">
           <svg viewBox="0 0 300 340" role="img" aria-label="מקום שמור לתמונת המייסד">
             <defs>
@@ -283,12 +296,14 @@ const pains = [
           </svg>
         </div>
         <p class="founder__caption">תמונת המייסד תתווסף בהמשך</p>
+        </>
+        )}
       </div>
 
       <div class="founder__text">
         <p class="t-eyebrow">מי עומד מאחורי זה</p>
-        <h2 class="t-h2 founder__name">איתן להב</h2>
-        <p class="founder__role">Founder &amp; AI Systems Builder</p>
+        <h2 class="t-h2 founder__name">{FOUNDER.name}</h2>
+        <p class="founder__role">{FOUNDER.role}</p>
         <p class="founder__body">
           הקמתי את LAHAV AI מתוך דבר אחד שראיתי חוזר בעסקים: לא חסרים כלים.
           חסר חיבור. יש יותר מדי עבודה ידנית, ותהליכים שמסתבכים ככל שהעסק גדל.
@@ -766,6 +781,20 @@ const pains = [
     width: 100%;
     max-width: 230px;
     height: auto;
+  }
+  .founder__photo {
+    margin: 0;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--color-surface-3);
+    aspect-ratio: 4 / 5;
+    box-shadow: var(--shadow);
+  }
+  .founder__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 22%;
   }
   .founder__caption {
     margin-top: 0.875rem;
