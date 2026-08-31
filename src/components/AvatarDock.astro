@@ -1,37 +1,21 @@
 ---
-// THE PERSISTENT CHARACTER DOCK.
+// PERSISTENT PAGE FURNITURE.
 //
-// In the reference recordings the presenter does not end with the hero:
-// a small version of the same character stays docked in the corner for
-// the whole scroll, on every page, and clicking it opens the character's
-// talk surface. Alongside it sit a WhatsApp shortcut and a back-to-top
-// control. That persistent furniture is a big part of why the reference
-// feels like a guided site rather than a brochure, so LAHAV gets the same
-// behaviour with its own character.
+// Back-to-top, and nothing else.
 //
-// Rules kept:
-//  · same original drawn character as the hero, never a third-party asset
-//  · captions are the source of truth; no audio is attached and nothing
-//    autoplays (an approved synthetic track can be passed later through
-//    Avatar's own `audioSrc`, which stays untouched here)
-//  · the dock hides itself while the hero character is on screen, so the
-//    character is never duplicated in one view
-//  · everything is a real <button>/<a>, reachable by keyboard, and the
-//    whole dock disappears for `prefers-reduced-motion` users only in its
-//    movement, never in its function
-import Avatar from './Avatar.astro';
-import WhatsApp from './icons/WhatsApp.astro';
-import { WHATSAPP_HREF } from '../lib/site';
-
-// Short, honest, and the same voice as the rest of the site.
-const dockScript = [
-  { text: 'שלום. אני לַהַב.' },
-  { text: 'אני הדמות של LAHAV AI, ואני כאן כדי לפשט.' },
-  { text: 'רוב העסקים לא צריכים עוד כלי. הם צריכים סדר.' },
-  { text: 'מערכת אחת שיודעת מה קרה עם כל לקוח.' },
-  { text: 'והעבודה שחוזרת על עצמה, שתרוץ לבד ברקע.' },
-  { text: 'אם משהו מזה נשמע מוכר, שיחה קצרה תעשה סדר.' },
-];
+// TWO THINGS WERE DELIBERATELY REMOVED FROM THIS CORNER:
+//
+// 1. A floating WhatsApp button. The reference has one on every page, but
+//    SOURCE_OF_TRUTH.md D-Q2 says "no floating WhatsApp" and that is an
+//    approved product decision. The reference is the visual and motion
+//    authority, not the product-requirements authority.
+//
+// 2. The character, as a circular portrait that opened its own scripted
+//    introduction. A face in the corner of a website promises a chat, and
+//    replaying a hero monologue instead is a broken promise.
+//
+// WhatsApp still appears where it belongs: inside the contact block, on
+// the contact page, and in the footer.
 ---
 
 <div class="dock" data-dock hidden>
@@ -39,57 +23,21 @@ const dockScript = [
     <button class="dock__top" type="button" data-dock-top aria-label="חזרה לראש העמוד">
       <span aria-hidden="true">↑</span>
     </button>
-    <div class="dock__av">
-      <span class="dock__nudge" data-dock-nudge aria-hidden="true">אפשר לשאול אותי</span>
-      <Avatar size="sm" script={dockScript} talkable talkLabel="דברו איתי" class="dock__avatar" />
-    </div>
   </div>
 
-  <a
-    class="dock__wa"
-    href={WHATSAPP_HREF}
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="שיחה בוואטסאפ"
-  >
-    <WhatsApp />
-  </a>
 </div>
 
 <script>
   (() => {
     const dock = document.querySelector<HTMLElement>('[data-dock]');
     if (!dock) return;
-
-    // The hero character, when this page has one. While it is on screen
-    // the dock stays away: two of the same character in one view reads as
-    // a bug, not as a guide.
-    const heroAv = document.querySelector<HTMLElement>('.hero__figure [data-avatar]');
     const topBtn = dock.querySelector<HTMLButtonElement>('[data-dock-top]');
-    const nudge = dock.querySelector<HTMLElement>('[data-dock-nudge]');
-
     dock.hidden = false;
-
-    let heroVisible = false;
-    if (heroAv) {
-      const io = new IntersectionObserver(
-        (entries) => {
-          heroVisible = entries.some((e) => e.isIntersecting);
-          update();
-        },
-        { threshold: 0.12 }
-      );
-      io.observe(heroAv);
-    }
 
     let raf = 0;
     const update = () => {
       raf = 0;
-      const y = window.scrollY;
-      // shown once the visitor has actually started reading, and never
-      // while the hero character is still in view
-      dock.classList.toggle('is-on', y > 420 && !heroVisible);
-      dock.classList.toggle('is-top', y > 900);
+      dock.classList.toggle('is-top', window.scrollY > 900);
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
     addEventListener('scroll', onScroll, { passive: true });
@@ -100,30 +48,6 @@ const dockScript = [
       const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
     });
-
-    // The nudge introduces the character once per visit, then gets out of
-    // the way. sessionStorage, so it is not a permanent nag.
-    if (nudge) {
-      let shown = false;
-      try { shown = sessionStorage.getItem('lahav-dock-nudge') === '1'; } catch {}
-      if (shown) nudge.remove();
-      else {
-        const arm = () => {
-          if (!dock.classList.contains('is-on')) return;
-          removeEventListener('scroll', arm);
-          setTimeout(() => {
-            nudge.classList.add('is-on');
-            try { sessionStorage.setItem('lahav-dock-nudge', '1'); } catch {}
-            setTimeout(() => nudge.classList.remove('is-on'), 5200);
-          }, 900);
-        };
-        addEventListener('scroll', arm, { passive: true });
-      }
-    }
-
-    // Opening the talk surface should not leave the dock hovering over it.
-    const talkBtn = dock.querySelector<HTMLElement>('[data-av-talk]');
-    talkBtn?.addEventListener('click', () => nudge?.classList.remove('is-on'));
   })();
 </script>
 
@@ -131,38 +55,16 @@ const dockScript = [
   .dock {
     position: fixed;
     inset-block-end: clamp(1rem, 2.5vw, 1.75rem);
-    inset-inline: clamp(1rem, 2.5vw, 1.75rem);
+    inset-inline-end: clamp(1rem, 2.5vw, 1.75rem);
     z-index: 50;
     pointer-events: none;
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
   .dock > * { pointer-events: auto; }
 
-  /* WhatsApp keeps the reading-start corner, the character the far one,
-     mirroring the reference's split of "talk to a person" and "talk to
-     the guide". */
-  .dock__wa {
-    display: grid;
-    place-items: center;
-    width: 3.25rem;
-    height: 3.25rem;
-    border-radius: 50%;
-    background: #25d366;
-    color: #fff;
-    box-shadow: 0 10px 26px rgba(15, 30, 60, 0.22);
-    transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out);
-  }
-  .dock__wa:hover { transform: scale(1.07); }
-  .dock__wa :global(svg) { width: 1.5rem; height: 1.5rem; }
-
-  .dock__side {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.6rem;
-  }
+  .dock__side { display: flex; flex-direction: column; align-items: center; }
   .dock__top {
     width: 2.75rem;
     height: 2.75rem;
@@ -179,115 +81,10 @@ const dockScript = [
       color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
   }
   .dock.is-top .dock__top { opacity: 1; transform: none; pointer-events: auto; }
-  /* it must not hold layout space while hidden, or the character sits
-     lower on a page the visitor has not scrolled yet */
-  .dock:not(.is-top) .dock__top { margin-block-end: -3.35rem; }
   .dock__top:hover { color: var(--color-royal); border-color: var(--color-royal); }
 
-  /* ---- the character ---- */
-  .dock__av {
-    position: relative;
-    opacity: 0;
-    transform: translateY(14px) scale(0.94);
-    pointer-events: none;
-    transition: opacity 520ms var(--ease-out), transform 520ms var(--ease-out);
-  }
-  .dock.is-on .dock__av { opacity: 1; transform: none; pointer-events: auto; }
-
-  .dock__av :global(.av) { gap: 0; width: auto; }
-  .dock__av :global(.av.av--sm) { --av-w: clamp(4.5rem, 7vw, 6rem); }
-
-  /* The whole figure is the button: a separate disc beside a 5rem
-     character would be bigger than the character itself. */
-  /* A circular head-and-shoulders crop, not the whole standing figure:
-     a full-length character 96px tall is unreadable, and the reference
-     docks a portrait too. The 165% width is what maps the head region of
-     the 260x460 viewBox onto the circle. */
-  /* The extra `.av` in these selectors is deliberate: Avatar owns its own
-     scoped `.av__svg { width: 100% }`, which has the same specificity as a
-     one-class override here, so the winner would depend on component
-     stylesheet order. */
-  .dock__av :global(.av .av__figure) {
-    position: relative;
-    display: block;
-    width: var(--av-w);
-    height: var(--av-w);
-    border-radius: 50%;
-    overflow: hidden;
-    /* light, so the navy character reads against it */
-    background: linear-gradient(180deg, #eef3ff 0%, #dce8ff 100%);
-    border: 1px solid rgba(29, 78, 216, 0.16);
-    box-shadow: 0 12px 30px rgba(15, 30, 60, 0.2);
-  }
-  /* Absolutely positioned, not a flex child: as a flex item the SVG gets
-     stretched to the container's height, which defeats the crop and
-     letterboxes the whole figure back into the circle. Physical left/
-     transform on purpose, so the crop stays centred in both directions. */
-  .dock__av :global(.av .av__svg) {
-    position: absolute;
-    top: 4%;
-    left: 50%;
-    transform: translateX(-50%);
-    /* max-width:none matters: the base reset caps every svg at 100% of
-       its box, which silently undoes the crop's oversize width */
-    width: 172%;
-    max-width: none;
-    height: auto;
-  }
-  /* the ambient glow circle is sized for the full figure and would fill
-     the crop with haze */
-  .dock__av :global(.av .av__glow) { display: none; }
-  .dock__av :global(.av__talk) {
-    position: absolute;
-    inset: -0.5rem;
-    width: auto;
-    aspect-ratio: auto;
-    border-radius: 1.5rem;
-    background: transparent;
-    box-shadow: none;
-    color: transparent;
-    font-size: 0;
-    padding: 0;
-    cursor: pointer;
-  }
-  .dock__av :global(.av__talk):hover { transform: none; box-shadow: none; }
-  .dock__av :global(.av__talk):focus-visible {
-    outline: 3px solid var(--color-royal);
-    outline-offset: 2px;
-  }
-  .dock__av:hover :global(.av__figure) { transform: translateY(-3px); }
-  .dock__av :global(.av__figure) { transition: transform var(--dur) var(--ease-out); }
-
-  .dock__nudge {
-    position: absolute;
-    inset-block-end: 100%;
-    inset-inline-end: 0;
-    margin-block-end: 0.5rem;
-    white-space: nowrap;
-    background: var(--color-ink);
-    color: #fff;
-    font-size: var(--text-micro);
-    font-weight: 700;
-    padding: 0.5rem 0.85rem;
-    border-radius: 999px;
-    box-shadow: 0 10px 26px rgba(15, 30, 60, 0.22);
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out);
-    pointer-events: none;
-  }
-  .dock__nudge.is-on { opacity: 1; transform: none; }
-
   @media (max-width: 720px) {
-    .dock__av :global(.av.av--sm) { --av-w: 3.5rem; }
-    .dock__wa { width: 2.875rem; height: 2.875rem; }
-    .dock__top { width: 2.375rem; height: 2.375rem; }
-    .dock:not(.is-top) .dock__top { margin-block-end: -2.975rem; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .dock__av,
-    .dock__top,
-    .dock__nudge { transition: none; }
+    @media (prefers-reduced-motion: reduce) {
+    .dock__top { transition: none; }
   }
 </style>

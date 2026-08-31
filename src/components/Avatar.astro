@@ -48,7 +48,7 @@ const {
   audioSrc,
   size = 'lg',
   talkable = false,
-  talkLabel = 'דברו איתי',
+  talkLabel = 'לחצו עליי',
   class: cls = '',
 } = Astro.props;
 
@@ -59,26 +59,30 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   <div class="av__figure">
     <!-- The character. Drawn, not rendered: it stays crisp at any size,
          recolours with the brand, and costs a few KB. -->
-    <svg class="av__svg" viewBox="0 0 260 460" role="img" aria-label="לַהַב, הדמות המנחה של LAHAV AI" data-av-svg>
+    <svg class="av__svg" viewBox="0 0 260 460" role="img" aria-label="לַהַב, המנחה של LAHAV AI" data-av-svg>
       <defs>
-        <linearGradient id={`${uid}-body`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#1b2b52" />
-          <stop offset="1" stop-color="#0b1530" />
+        <linearGradient id={`${uid}-skin`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f6d3b6" />
+          <stop offset="1" stop-color="#e6ba97" />
         </linearGradient>
-        <linearGradient id={`${uid}-limb`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#263a66" />
-          <stop offset="1" stop-color="#101d40" />
+        <linearGradient id={`${uid}-hair`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#3c2d22" />
+          <stop offset="1" stop-color="#241a13" />
         </linearGradient>
-        <linearGradient id={`${uid}-visor`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#0d1c3f" />
-          <stop offset="1" stop-color="#132a5c" />
+        <linearGradient id={`${uid}-jacket`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#22386f" />
+          <stop offset="1" stop-color="#12224a" />
         </linearGradient>
-        <linearGradient id={`${uid}-accent`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#2997ff" />
-          <stop offset="1" stop-color="#1d4ed8" />
+        <linearGradient id={`${uid}-sleeve`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2c4886" />
+          <stop offset="1" stop-color="#1a2c5b" />
+        </linearGradient>
+        <linearGradient id={`${uid}-trouser`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3c4b6d" />
+          <stop offset="1" stop-color="#2a3555" />
         </linearGradient>
         <radialGradient id={`${uid}-glow`} cx="50%" cy="50%">
-          <stop offset="0" stop-color="#2997ff" stop-opacity="0.5" />
+          <stop offset="0" stop-color="#2997ff" stop-opacity="0.40" />
           <stop offset="1" stop-color="#2997ff" stop-opacity="0" />
         </radialGradient>
         <filter id={`${uid}-soft`} x="-50%" y="-50%" width="200%" height="200%">
@@ -86,62 +90,59 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
         </filter>
       </defs>
 
-      <!-- ground shadow: grounds the figure the way the reference's
-           presenter stands on a soft floor -->
-      <ellipse class="av__shadow" cx="130" cy="430" rx="66" ry="11" fill="#0b1530" opacity="0.18" filter={`url(#${uid}-soft)`} />
+      <ellipse class="av__shadow" cx="130" cy="432" rx="70" ry="11" fill="#0b1530" opacity="0.18" filter={`url(#${uid}-soft)`} />
+      <circle cx="130" cy="180" r="132" fill={`url(#${uid}-glow)`} class="av__glow" />
 
-      <!-- ambient glow -->
-      <circle cx="130" cy="170" r="130" fill={`url(#${uid}-glow)`} class="av__glow" />
-
-      <!-- the whole body bobs gently as one unit -->
       <g class="av__body">
-        <!-- Legs and feet. Two clearly separated limbs with a real gap
-             between them: a single dark column reads as a bust on a pole
-             at hero size, which is not a standing character. -->
-        <path d="M114 296 L104 392 Q103 400 111 400 L122 400 Q128 400 128 392 L128 296 Z" fill={`url(#${uid}-limb)`} />
-        <path d="M146 296 L156 392 Q157 400 149 400 L138 400 Q132 400 132 392 L132 296 Z" fill={`url(#${uid}-limb)`} opacity="0.94" />
-        <rect x="92" y="394" width="38" height="17" rx="8.5" fill={`url(#${uid}-limb)`} />
-        <rect x="130" y="394" width="38" height="17" rx="8.5" fill={`url(#${uid}-limb)`} opacity="0.94" />
+        <g class="av__legs">
+          <path d="M112 266 L104 400 Q103 410 113 410 L124 410 Q130 410 130 400 L130 266 Z" fill={`url(#${uid}-trouser)`} />
+          <path d="M148 266 L156 400 Q157 410 147 410 L136 410 Q130 410 130 400 L130 266 Z" fill={`url(#${uid}-trouser)`} opacity="0.9" />
+          <path d="M101 402 q-7 13 4 15 h29 q6 0 6 -6 v-9 z" fill="#161f36" />
+          <path d="M159 402 q7 13 -4 15 h-29 q-6 0 -6 -6 v-9 z" fill="#161f36" opacity="0.92" />
+        </g>
 
-        <!-- torso -->
-        <path
-          d="M130 150
-             C 168 150 186 176 186 214
-             L 186 286 C 186 306 170 316 150 316
-             L 110 316 C 90 316 74 306 74 286
-             L 74 214 C 74 176 92 150 130 150 Z"
-          fill={`url(#${uid}-body)`}
-        />
-        <!-- chest light: the LAHAV dot, used as the character's core -->
-        <circle class="av__core-dot" cx="130" cy="216" r="13" fill={`url(#${uid}-accent)`} />
-        <circle class="av__core-ring" cx="130" cy="216" r="22" fill="none" stroke="#2997ff" stroke-opacity="0.45" stroke-width="1.5" />
-
-        <!-- arms -->
+        <!-- Sleeves are drawn before the torso and in their own, lighter
+             tone: same-colour arms flush against the jacket turn the whole
+             upper body into one rectangle at small sizes. -->
         <g class="av__arm av__arm--r">
-          <path d="M76 204 C 56 214 48 246 52 280 C 54 296 68 300 75 289 C 82 274 80 236 86 218 Z" fill={`url(#${uid}-limb)`} />
+          <path d="M86 146 C 64 158 54 206 58 252 C 59 266 73 269 79 257 C 85 238 82 188 96 164 Z" fill={`url(#${uid}-sleeve)`} />
+          <circle cx="68" cy="259" r="10.5" fill={`url(#${uid}-skin)`} />
         </g>
         <g class="av__arm av__arm--l">
-          <path d="M184 204 C 204 214 212 246 208 280 C 206 296 192 300 185 289 C 178 274 180 236 174 218 Z" fill={`url(#${uid}-limb)`} />
+          <path d="M174 146 C 196 158 206 206 202 252 C 201 266 187 269 181 257 C 175 238 178 188 164 164 Z" fill={`url(#${uid}-sleeve)`} />
+          <circle cx="192" cy="259" r="10.5" fill={`url(#${uid}-skin)`} />
         </g>
 
-        <!-- neck: without it the head reads as a detached balloon -->
-        <rect x="119" y="128" width="22" height="34" rx="10" fill={`url(#${uid}-body)`} opacity="0.9" />
+        <!-- Torso: sloped shoulders, a waist, and a hem that is not a
+             straight horizontal cut. -->
+        <path d="M130 122 C 158 122 174 136 180 160 L 188 232 C 191 254 180 268 160 268 L 100 268 C 80 268 69 254 72 232 L 80 160 C 86 136 102 122 130 122 Z" fill={`url(#${uid}-jacket)`} />
+        <!-- shirt + lapels -->
+        <path d="M113 125 L130 178 L147 125 C 141 121 119 121 113 125 Z" fill="#f8fafe" />
+        <path d="M113 125 L130 178 L118 128 Z" fill="#0b1530" opacity="0.22" />
+        <path d="M147 125 L130 178 L142 128 Z" fill="#0b1530" opacity="0.14" />
+        <path d="M130 178 L123 198 L130 216 L137 198 Z" fill="#2997ff" />
 
-        <!-- head -->
+        <rect x="118" y="98" width="24" height="34" rx="11" fill={`url(#${uid}-skin)`} />
+        <path d="M106 128 C 116 140 144 140 154 128 L 152 124 C 142 134 118 134 108 124 Z" fill="#0d1a38" opacity="0.16" />
+
         <g class="av__head">
-          <rect x="88" y="44" width="84" height="94" rx="40" fill={`url(#${uid}-body)`} />
-          <!-- visor: the face plate -->
-          <rect class="av__visor" x="97" y="59" width="66" height="64" rx="28" fill={`url(#${uid}-visor)`} />
-          <!-- eyes -->
+          <ellipse cx="130" cy="72" rx="36" ry="42" fill={`url(#${uid}-skin)`} />
+          <path d="M95 68 C 94 34 117 22 130 22 C 143 22 166 34 165 68 C 163 57 155 49 145 47 C 134 45 116 49 107 57 C 101 61 97 65 95 68 Z" fill={`url(#${uid}-hair)`} />
+          <path d="M94 64 C 91 78 93 88 96 94 C 91 82 91 70 94 64 Z" fill={`url(#${uid}-hair)`} />
+          <path d="M166 64 C 169 78 167 88 164 94 C 169 82 169 70 166 64 Z" fill={`url(#${uid}-hair)`} />
+
           <g class="av__eyes">
-            <rect class="av__eye" x="110" y="80" width="11" height="18" rx="5.5" fill="#7cc4ff" />
-            <rect class="av__eye" x="139" y="80" width="11" height="18" rx="5.5" fill="#7cc4ff" />
+            <ellipse class="av__eye" cx="116" cy="74" rx="5" ry="6" fill="#22303f" />
+            <ellipse class="av__eye" cx="144" cy="74" rx="5" ry="6" fill="#22303f" />
+            <circle cx="117.6" cy="71.8" r="1.7" fill="#fff" opacity="0.92" />
+            <circle cx="145.6" cy="71.8" r="1.7" fill="#fff" opacity="0.92" />
           </g>
-          <!-- mouth: a level bar at rest, opens while speaking -->
-          <rect class="av__mouth" x="119" y="106" width="22" height="4" rx="2" fill="#2997ff" />
-          <!-- antenna: the logo's arc, and the "listening" tell -->
-          <path d="M130 44 L130 28" stroke="#2997ff" stroke-width="3" stroke-linecap="round" />
-          <circle class="av__antenna" cx="130" cy="23" r="5.5" fill="#2997ff" />
+          <path d="M108 62 q8 -5 16 -1" stroke="#2a1f17" stroke-width="2.4" stroke-linecap="round" fill="none" />
+          <path d="M136 61 q8 -4 16 1" stroke="#2a1f17" stroke-width="2.4" stroke-linecap="round" fill="none" />
+          <path d="M130 78 q-3 8 2 10" stroke="#cf9d78" stroke-width="2" stroke-linecap="round" fill="none" />
+          <ellipse class="av__mouth" cx="130" cy="96" rx="9" ry="2.6" fill="#a54f52" />
+          <ellipse cx="110" cy="88" rx="6.5" ry="4" fill="#e8a385" opacity="0.3" />
+          <ellipse cx="150" cy="88" rx="6.5" ry="4" fill="#e8a385" opacity="0.3" />
         </g>
       </g>
     </svg>
@@ -159,7 +160,7 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   )}
 
   {talkable && script.length > 0 && (
-    <button class="av__talk btn-disc" type="button" data-av-talk aria-expanded="false" data-magnetic="0.18">
+    <button class="av__talk btn-disc" type="button" data-av-talk aria-expanded="false">
       {talkLabel}
     </button>
   )}
@@ -178,6 +179,7 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
       <p class="avtalk__caption" data-av-caption aria-live="polite"></p>
       <div class="avtalk__bar">
         <button class="btn btn-primary avtalk__replay" type="button" data-av-replay>שוב</button>
+        <button class="btn btn-secondary avtalk__mute" type="button" data-av-mute aria-pressed="false">השתקה</button>
         <a class="btn btn-secondary" href="/contact/">לתיאום שיחת היכרות</a>
       </div>
       {audioSrc && <audio data-av-audio src={audioSrc} preload="none"></audio>}
@@ -196,10 +198,12 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   .av--sm   { --av-w: clamp(5rem, 9vw, 7rem); }
 
   /* ---------- idle life ---------- */
+  /* A person standing still is not motionless, but they do not float:
+     this is a breath, roughly 5s in and out, not the old hover. */
   .av__body { animation: av-bob 5200ms var(--ease-inout) infinite; transform-origin: 130px 440px; }
   @keyframes av-bob {
-    0%, 100% { transform: translateY(0) }
-    50%      { transform: translateY(-9px) }
+    0%, 100% { transform: translateY(0) scaleY(1) }
+    50%      { transform: translateY(-3px) scaleY(1.006) }
   }
   .av__shadow { animation: av-shadow 5200ms var(--ease-inout) infinite; }
   @keyframes av-shadow {
@@ -211,32 +215,21 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
     0%, 100% { opacity: 0.55; transform: scale(1) }
     50%      { opacity: 0.9;  transform: scale(1.08) }
   }
-  .av__core-dot { animation: av-core 3200ms var(--ease-inout) infinite; transform-origin: 130px 216px; }
-  @keyframes av-core {
-    0%, 100% { transform: scale(1) }
-    50%      { transform: scale(1.14) }
-  }
-  .av__core-ring { animation: av-ring 3200ms var(--ease-inout) infinite; transform-origin: 130px 216px; }
-  @keyframes av-ring {
-    0%, 100% { transform: scale(1); opacity: 0.45 }
-    50%      { transform: scale(1.16); opacity: 0.12 }
-  }
-  .av__antenna { animation: av-core 2400ms var(--ease-inout) infinite; transform-origin: 130px 23px; }
 
   /* blink: scaleY on the eye group, on an irregular-feeling cycle */
-  .av__eyes { animation: av-blink 6100ms steps(1, end) infinite; transform-origin: 130px 89px; }
+  .av__eyes { animation: av-blink 6100ms steps(1, end) infinite; transform-origin: 130px 74px; }
   @keyframes av-blink {
     0%, 96%   { transform: scaleY(1) }
     97%, 98%  { transform: scaleY(0.12) }
     99%, 100% { transform: scaleY(1) }
   }
-  .av__arm--r { animation: av-arm 6800ms var(--ease-inout) infinite; transform-origin: 84px 210px; }
-  .av__arm--l { animation: av-arm 6800ms var(--ease-inout) infinite reverse; transform-origin: 176px 210px; }
+  .av__arm--r { animation: av-arm 6800ms var(--ease-inout) infinite; transform-origin: 88px 156px; }
+  .av__arm--l { animation: av-arm 6800ms var(--ease-inout) infinite reverse; transform-origin: 172px 156px; }
   @keyframes av-arm {
     0%, 100% { transform: rotate(0deg) }
-    50%      { transform: rotate(3.5deg) }
+    50%      { transform: rotate(2.2deg) }
   }
-  .av__head { animation: av-head 8200ms var(--ease-inout) infinite; transform-origin: 130px 138px; }
+  .av__head { animation: av-head 8200ms var(--ease-inout) infinite; transform-origin: 130px 118px; }
   @keyframes av-head {
     0%, 100% { transform: rotate(0deg) translateY(0) }
     35%      { transform: rotate(-1.6deg) translateY(-2px) }
@@ -246,13 +239,15 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   /* ---------- speaking ---------- */
   /* The mouth is driven by a class rather than a fixed loop, so it only
      moves while there is actually something being said. */
-  .av.is-talking .av__mouth { animation: av-talk 320ms var(--ease-inout) infinite; transform-origin: 130px 108px; }
+  .av.is-talking .av__mouth { animation: av-talk 300ms var(--ease-inout) infinite; transform-origin: 130px 96px; }
   @keyframes av-talk {
-    0%, 100% { transform: scaleY(1)   translateY(0) }
-    30%      { transform: scaleY(4.2) translateY(-1px) }
-    60%      { transform: scaleY(2.2) translateY(0) }
+    0%, 100% { transform: scaleY(1)   scaleX(1) }
+    28%      { transform: scaleY(3.4) scaleX(0.86) }
+    56%      { transform: scaleY(1.9) scaleX(0.96) }
+    78%      { transform: scaleY(2.7) scaleX(0.9) }
   }
-  .av.is-talking .av__core-dot { animation-duration: 1100ms; }
+  /* the head settles while speaking, so the mouth is the moving part */
+  .av.is-talking .av__head { animation-duration: 5200ms; }
 
   /* ---------- entrance ---------- */
   html.mo-ready .av__figure { opacity: 0; transform: translateY(26px) scale(0.94); }
@@ -321,8 +316,8 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   .avtalk__bar .btn { min-height: 46px; padding-inline: 1.2rem; font-size: var(--text-small); }
 
   @media (prefers-reduced-motion: reduce) {
-    .av__body, .av__shadow, .av__glow, .av__core-dot, .av__core-ring,
-    .av__antenna, .av__eyes, .av__arm--r, .av__arm--l, .av__head { animation: none; }
+    .av__body, .av__shadow, .av__glow, .av__mouth,
+    .av__eyes, .av__arm--r, .av__arm--l, .av__head { animation: none; }
     .av.is-talking .av__mouth { animation: none; }
     html.mo-ready .av__figure { opacity: 1; transform: none; }
     .av__line, .avtalk__scrim, .avtalk__box { transition: none; }
@@ -382,35 +377,101 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
     try { script = JSON.parse(host.dataset.script || '[]'); } catch {}
 
     let timer: number | undefined;
+    // Each play gets its own token. An older run that is still waiting on
+    // `speak()` checks the token when it wakes up and bails, so pressing
+    // "שוב" twice cannot leave two scripts racing each other. Declared
+    // here, above stop(), so stop() can never read it in its dead zone.
+    let runToken = 0;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // SPEECH.
+    //
+    // The browser's own speech engine reads the script out loud in
+    // Hebrew. No API, no key, no per-visit cost, and it works offline.
+    // Every device ships at least one he-IL voice (Carmit on Apple,
+    // Asaf on Windows, Google's on Android); if none is installed the
+    // captions still carry the whole script, so nothing is lost.
+    //
+    // An `audioSrc` recording, when one is supplied, always wins: a real
+    // narration track is better than a synthesiser.
+    const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+    let heVoice: SpeechSynthesisVoice | null = null;
+    const pickVoice = () => {
+      if (!synth) return;
+      const voices = synth.getVoices();
+      heVoice =
+        voices.find((v) => v.lang === 'he-IL') ??
+        voices.find((v) => v.lang?.toLowerCase().startsWith('he')) ??
+        null;
+    };
+    pickVoice();
+    // Chrome populates the voice list asynchronously.
+    synth?.addEventListener?.('voiceschanged', pickVoice);
+
+    // Muting is remembered, so a visitor who does not want sound is not
+    // asked twice in the same session.
+    let muted = false;
+    try { muted = sessionStorage.getItem('lahav-av-muted') === '1'; } catch {}
+
+    // Resolves when the line has finished being spoken. If there is no
+    // speech engine, no Hebrew voice, or the visitor muted it, it
+    // resolves immediately and the caller falls back to a timer.
+    const speak = (text: string): Promise<boolean> =>
+      new Promise((resolve) => {
+        if (!synth || muted || audio) { resolve(false); return; }
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'he-IL';
+        if (heVoice) u.voice = heVoice;
+        u.rate = 0.98;
+        u.pitch = 1.0;
+        let settled = false;
+        const done = (ok: boolean) => { if (!settled) { settled = true; resolve(ok); } };
+        u.onend = () => done(true);
+        u.onerror = () => done(false);
+        // Some engines never fire onend on a long utterance. This is the
+        // escape hatch so the script can never hang half way through.
+        window.setTimeout(() => done(false), Math.max(6000, text.length * 220));
+        synth.speak(u);
+      });
+
     const stop = () => {
+      runToken += 1;
       window.clearTimeout(timer);
       panelAv?.classList.remove('is-talking');
       if (audio) { audio.pause(); audio.currentTime = 0; }
+      synth?.cancel();
     };
 
-    const play = () => {
+    const play = async () => {
       stop();
       if (!script.length) return;
-      let i = 0;
+      const myRun = ++runToken;
       panelAv?.classList.add('is-talking');
       if (audio) audio.play().catch(() => { /* no track, captions carry it */ });
 
-      const step = () => {
-        if (i >= script.length) {
-          panelAv?.classList.remove('is-talking');
-          return;
-        }
-        const line = script[i];
+      for (const line of script) {
+        if (myRun !== runToken) return;
         caption.textContent = line.text;
-        // Reduced motion still gets the full script, just without the
-        // mouth animation, and with a calmer pace.
-        const hold = line.hold ?? Math.max(1800, line.text.length * 70);
-        i += 1;
-        timer = window.setTimeout(step, reduced ? hold + 400 : hold);
-      };
-      step();
+
+        // CAPTION SYNC. The caption used to advance on a fixed timer while
+        // the voice spoke at its own pace, so the two drifted apart within
+        // two lines. Now the caption waits for the line to actually finish
+        // being spoken, and only falls back to the timer when there is no
+        // speech to wait for.
+        const spoken = await speak(line.text);
+        if (myRun !== runToken) return;
+
+        if (spoken) {
+          // a short beat between lines, the way a person pauses
+          await new Promise((r) => { timer = window.setTimeout(r, reduced ? 700 : 380); });
+        } else {
+          const hold = line.hold ?? Math.max(1800, line.text.length * 70);
+          await new Promise((r) => { timer = window.setTimeout(r, reduced ? hold + 400 : hold); });
+        }
+        if (myRun !== runToken) return;
+      }
+
+      panelAv?.classList.remove('is-talking');
     };
 
     const setOpen = (open: boolean) => {
@@ -429,6 +490,23 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
 
     btn.addEventListener('click', () => setOpen(true));
     replay.addEventListener('click', play);
+
+    const muteBtn = panel.querySelector<HTMLButtonElement>('[data-av-mute]');
+    const paintMute = () => {
+      if (!muteBtn) return;
+      muteBtn.textContent = muted ? 'הפעלת קול' : 'השתקה';
+      muteBtn.setAttribute('aria-pressed', String(muted));
+    };
+    paintMute();
+    // No speech engine at all: hide the control rather than offer a
+    // toggle that does nothing.
+    if (!synth && muteBtn) muteBtn.hidden = true;
+    muteBtn?.addEventListener('click', () => {
+      muted = !muted;
+      try { sessionStorage.setItem('lahav-av-muted', muted ? '1' : '0'); } catch {}
+      if (muted) synth?.cancel();
+      paintMute();
+    });
     panel.querySelectorAll('[data-av-close]').forEach((c) =>
       c.addEventListener('click', () => { setOpen(false); btn.focus(); })
     );

@@ -15,10 +15,12 @@ export const prerender = false;
 // Data contract is unchanged: published articles only, straight from the
 // CMS store, drafts invisible by construction.
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import ClosingCta from '../../components/ClosingCta.astro';
+import ContactBlock from '../../components/ContactBlock.astro';
+import { turnstileSiteKey } from '../../lib/turnstile.ts';
 import Viz from '../../components/Viz.astro';
 import { ARTICLE_KINDS } from '../../lib/cms/types.ts';
 
+const SITE_KEY = turnstileSiteKey();
 const ARTICLES = await Astro.locals.stores!.articles.list({ status: 'published' });
 const guides = ARTICLES.filter((a) => a.kind === 'guide');
 const featured = guides.find((a) => a.featured) ?? guides[0] ?? ARTICLES[0];
@@ -28,7 +30,7 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
 
 <SiteLayout
   title="מאמרים | LAHAV AI"
-  description="כתיבה קצרה ומעשית על סדר בעסק, אוטומציה ומערכות. בלי ז׳רגון."
+  description="מאמרים על AI, אוטומציה ומערכות עסקיות, עם דגש על מה שאפשר לקחת לעבודה."
   noindex={anyPlaceholder}
 >
   {anyPlaceholder && (
@@ -44,13 +46,12 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
     <div class="u-container u-container--wide">
       <p class="t-eyebrow" data-reveal>מאמרים</p>
       <h1 class="ar-hero__h1 t-display-1">
-        <span class="mo-line" style="--mo-delay:70ms"><span class="t-latin ar-hero__latin">Notes, not noise.</span></span>
-        <span class="mo-line" style="--mo-delay:170ms"><span>דברים שכדאי לדעת</span></span>
-        <span class="mo-line" style="--mo-delay:270ms"><span class="ar-hero__accent">לפני שבונים.</span></span>
+        <span class="mo-line" style="--mo-delay:80ms"><span>דברים שכדאי לדעת</span></span>
+        <span class="mo-line" style="--mo-delay:190ms"><span class="ar-hero__accent">לפני שבונים.</span></span>
       </h1>
       <p class="ar-hero__lead" data-reveal style="--mo-delay:380ms">
-        לא בלוג שמפרסם כל יום. כשיש משהו מעשי להגיד, כותבים אותו כאן.
-        בשפה של בעל עסק, לא של מתכנת.
+        מאמרים על AI, אוטומציה ומערכות עסקיות, עם דגש על מה שאפשר לקחת
+        לעבודה.
       </p>
     </div>
   </section>
@@ -87,7 +88,7 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
   {rest.length > 0 && (
     <section class="rows u-section band band--soft">
       <div class="u-container u-container--wide">
-        <p class="t-eyebrow rows__k" data-reveal>עוד לקריאה</p>
+        <p class="t-eyebrow rows__k" data-reveal>עוד באותו נושא</p>
         <ul class="rows__list" data-stagger style="--mo-step:80ms">
           {rest.map((a, i) => (
             <li class="rows__row" data-reveal>
@@ -114,14 +115,12 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
   {ARTICLES.length === 0 && (
     <section class="u-section band">
       <div class="u-container u-container--wide">
-        <p class="t-lead">עוד אין מאמרים שפורסמו. בקרוב.</p>
+        <p class="t-lead">עוד אין כאן מאמרים.</p>
       </div>
     </section>
   )}
 
-  <ClosingCta
-    heading="יש משהו שתקוע אצלכם?"
-    body="30 דקות, בלי התחייבות. נעבור על איך שאתם עובדים היום ונגיד בכנות איפה יש מה לשפר."
+  <ContactBlock siteKey={SITE_KEY}
   />
 </SiteLayout>
 
@@ -144,7 +143,6 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
   }
   .rv-flag + .ar-hero { padding-top: clamp(3rem, 6vw, 5rem); }
   .ar-hero__h1 { display: flex; flex-direction: column; margin-block: 1rem 2rem; }
-  .ar-hero__latin { font-size: 0.42em; opacity: 0.4; }
   .ar-hero__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;

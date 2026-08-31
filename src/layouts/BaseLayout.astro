@@ -1,13 +1,44 @@
 ---
+// Thin document wrapper: <head>, the SEO essentials, and nothing else.
+// SiteLayout adds the header/footer chrome on top of this; /system/ uses
+// BaseLayout on its own so an internal review page does not inherit
+// public navigation.
+//
+// TRUTH DISCIPLINE in the structured data: LAHAV AI is a brand, not a
+// registered entity (F-15). The Organization block therefore carries a
+// name, a logo, a description and contact routes only. It must never
+// grow an address, a company number, a founding date, a rating or an
+// employee count, because none of those are established facts.
 import '../styles/global.css';
+import { SITE, WHATSAPP_HREF } from '../lib/site';
 
 interface Props {
   title: string;
   description?: string;
   noindex?: boolean;
+  /** absolute or root-relative image for link previews */
+  image?: string;
+  /** 'website' for pages, 'article' for a post */
+  ogType?: 'website' | 'article';
 }
 
-const { title, description = '', noindex = false } = Astro.props;
+const { title, description = '', noindex = false, image = '/brand/og-default.png', ogType = 'website' } = Astro.props;
+
+// Canonical is derived from the request, with query and fragment dropped:
+// /contact/?sent=1 and /contact/ are the same document.
+const requestUrl = new URL(Astro.request.url);
+const canonical = `${requestUrl.origin}${requestUrl.pathname}`;
+const ogImage = new URL(image, requestUrl.origin).href;
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE.name,
+  url: requestUrl.origin,
+  logo: new URL('/brand/lahav-primary-lockup.svg', requestUrl.origin).href,
+  description: 'מערכות AI ואוטומציה לעסקים: סדר בפניות, פחות עבודה ידנית, יותר שליטה.',
+  sameAs: [WHATSAPP_HREF],
+};
 ---
 
 <!doctype html>
@@ -17,10 +48,31 @@ const { title, description = '', noindex = false } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <link rel="canonical" href={canonical} />
+    {noindex
+      ? <meta name="robots" content="noindex, nofollow" />
+      : <meta name="robots" content="index, follow, max-image-preview:large" />}
+
+    <!-- link previews -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={ogImage} />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#0B1530" />
+    <meta name="theme-color" content="#1D4ED8" />
+
+    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(organization)} />}
   </head>
   <body>
     <a class="skip-link" href="#main">דילוג לתוכן הראשי</a>

@@ -25,26 +25,26 @@ const errorCode = url.searchParams.get('error');
 const ERROR_MESSAGES: Record<string, string> = {
   validation: 'משהו בטופס לא תקין. אפשר לבדוק את הפרטים ולנסות שוב.',
   turnstile: 'לא הצלחנו לאמת שמדובר באדם. אפשר לרענן ולנסות שוב.',
-  rate_limited: 'יותר מדי ניסיונות בזמן קצר. אפשר לנסות שוב בעוד כמה דקות, או לכתוב לנו בוואטסאפ.',
-  bad_request: 'הבקשה לא התקבלה כמו שצריך. אפשר לנסות שוב.',
+  rate_limited: 'יותר מדי ניסיונות בזמן קצר. אפשר לנסות שוב בעוד כמה דקות.',
+  bad_request: 'הבקשה לא התקבלה. אפשר לנסות שוב.',
 };
-const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השתבש. אפשר לנסות שוב.') : null;
+const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'לא הצלחנו לשלוח. אפשר לנסות שוב.') : null;
 ---
 
 <SiteLayout
   title="צור קשר ותיאום שיחת היכרות | LAHAV AI"
-  description="שיחת היכרות של 30 דקות, או פשוט השאירו פרטים ונחזור אליכם. אפשר גם בוואטסאפ."
+  description="תכתבו לנו איפה זה נתקע. שיחת היכרות של 30 דקות, או פשוט השאירו פרטים ונחזור אליכם."
 >
   <section class="ct-hero band band--hero">
     <div class="u-container u-container--wide">
       <p class="t-eyebrow" data-reveal>צור קשר</p>
       <h1 class="t-display-1 ct-hero__h1">
-        <span class="mo-line" style="--mo-delay:80ms"><span>בואו נדבר</span></span>
-        <span class="mo-line" style="--mo-delay:180ms"><span class="ct-hero__accent">על מה שתקוע.</span></span>
+        <span class="mo-line" style="--mo-delay:80ms"><span>תכתבו לנו</span></span>
+        <span class="mo-line" style="--mo-delay:180ms"><span class="ct-hero__accent">איפה זה נתקע.</span></span>
       </h1>
       <p class="ct-hero__lead" data-reveal style="--mo-delay:300ms">
-        הדרך הכי פשוטה להתחיל היא שיחה של 30 דקות. נעבור יחד על איך שאתם
-        עובדים היום, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך.
+        לא צריך להתכונן או לדעת מראש מה רוצים לבנות. מספיק לספר מה קורה
+        היום.
       </p>
     </div>
   </section>
@@ -81,13 +81,13 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השת�
 
         <ul class="ct-what">
           <li>נבין איך העסק שלכם עובד היום</li>
-          <li>נמצא איפה נתקעת הכי הרבה עבודה ידנית</li>
+          <li>נבין איפה מצטברת העבודה הידנית</li>
           <li>נגיד מה לדעתנו שווה לעשות, וגם מה ממש לא</li>
         </ul>
 
         <a class="btn btn-secondary ct-wa" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
           <WhatsApp />
-          מעדיפים וואטסאפ? זה בסדר גמור
+          מעדיפים וואטסאפ? זה בסדר גמור.
         </a>
       </div>
 
@@ -103,7 +103,7 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השת�
           aria-live="polite"
           hidden={!sent && !errorMessage}
         >
-          {sent && 'הפרטים התקבלו. נחזור אליכם בהקדם.'}
+          {sent && 'קיבלנו. נחזור אליכם.'}
           {errorMessage}
         </div>
 
@@ -132,9 +132,9 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השת�
           </div>
 
           <div class="field">
-            <label class="field-label" for="message">איך נוכל לעזור?</label>
+            <label class="field-label" for="message">מה תקוע היום?</label>
             <textarea class="input" id="message" name="message" rows="4" required maxlength="4000"></textarea>
-            <span class="field-hint">כמה מילים על מה שתקוע היום יעזרו לנו להתכונן.</span>
+            <span class="field-hint">כמה מילים על מה שקורה היום יעזרו לנו להתכונן.</span>
           </div>
 
           <!-- Honeypot: invisible to a real visitor and to screen readers,
@@ -154,9 +154,9 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השת�
 
           <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-ct-turnstile></div>
 
-          <button class="btn btn-primary ct-submit" type="submit" data-ct-submit>שליחת הפרטים</button>
+          <button class="btn btn-primary ct-submit" type="submit" data-ct-submit>שלחו ונחזור אליכם</button>
 
-          <p class="ct-form__note">הפרטים מגיעים אלינו ישירות. אין ספאם ואין שיתוף עם צד שלישי.</p>
+          <p class="ct-form__note">הפרטים מגיעים אלינו ישירות.</p>
         </form>
       </div>
     </div>
@@ -252,20 +252,20 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השת�
         const data = await res.json().catch(() => ({}));
 
         if (res.ok && data.ok) {
-          showStatus('success', 'הפרטים התקבלו. נחזור אליכם בהקדם.');
+          showStatus('success', 'קיבלנו. נחזור אליכם.');
           form.reset();
           if (renderedAtInput) renderedAtInput.value = String(Date.now());
           if (window.turnstile) window.turnstile.reset();
         } else {
-          showStatus('error', data.error || 'משהו השתבש. אפשר לנסות שוב.');
+          showStatus('error', data.error || 'לא הצלחנו לשלוח. אפשר לנסות שוב.');
           if (window.turnstile) window.turnstile.reset();
         }
       } catch {
-        showStatus('error', 'הבעיה בחיבור לרשת. אפשר לנסות שוב, או לכתוב לנו בוואטסאפ.');
+        showStatus('error', 'לא הצלחנו לשלוח. אפשר לנסות שוב.');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'שליחת הפרטים';
+          submitBtn.textContent = 'שלחו ונחזור אליכם';
         }
       }
     });

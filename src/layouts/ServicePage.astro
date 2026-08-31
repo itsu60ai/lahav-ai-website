@@ -1,23 +1,28 @@
 ---
-// Shared skeleton for the five service pages, V3.
+// SHARED SKELETON FOR THE FIVE SERVICE PAGES, V4.
 //
-// It fixes the *system* (typography, spacing, CTA, motion) but deliberately
-// leaves composition open: each page supplies its own visual and can insert
-// extra sections through the default slot, so the five pages do not read as
-// one template.
+// Layout taken from the reference's own inner service template (the
+// mirrored /expretise/web-experience page in docs/reference/stg/v2):
 //
-// Rebuilt into the site's editorial language:
-//   opener      display type on the hero gradient
-//   stage       the page's own diagram, full width on navy
-//   symptoms    sentences the visitor might say, at real scale
-//   build       what we actually build, as numbered hairline rows
-//   more        a quiet rail out of the page
+//   opener   a full-bleed block in the service's own colour, carrying the
+//            service name as oversized HEBREW and a hairline rule. The
+//            reference sets this in Latin; we do not. Giant English
+//            display words came off the site on 31.08.2026.
+//   stage    the page's own diagram
+//   symptoms sentences the visitor might say
+//   process  numbered rows on a dark band, /01 style
+//   slot     each page's own bespoke section, so the five never read as
+//            one template
+//   more     a quiet rail out of the page
+//   contact  the same form the rest of the site uses
 //
 // `symptomsStyle` is kept: 'rail' staggers the statements into two
 // alternating columns, 'grid' keeps them in one straight stack.
 import SiteLayout from './SiteLayout.astro';
-import ClosingCta from '../components/ClosingCta.astro';
+import Curve from '../components/Curve.astro';
+import ContactBlock from '../components/ContactBlock.astro';
 import Viz from '../components/Viz.astro';
+import { turnstileSiteKey } from '../lib/turnstile.ts';
 import { SERVICES } from '../lib/site';
 
 interface Props {
@@ -38,40 +43,47 @@ interface Props {
   };
   title: string;
   description: string;
-  /** 'rail' = staggered two-column statements, 'grid' = one straight stack */
   symptomsStyle?: 'rail' | 'grid';
 }
 const { slug, data, title, description, symptomsStyle = 'rail' } = Astro.props;
+const index = SERVICES.findIndex((s) => s.slug === slug);
+const me = SERVICES[index];
 const others = SERVICES.filter((s) => s.slug !== slug);
+const SITE_KEY = turnstileSiteKey();
 ---
 
-<SiteLayout title={title} description={description}>
-  <!-- ═════════ opener ═════════ -->
-  <section class="sp-hero band band--hero">
+<SiteLayout title={title} description={description} headerSolid>
+  <!-- ========= opener: the service's own colour block ========= -->
+  <section class={`sp-hero sp-hero--${me.tone}`}>
     <div class="u-container u-container--wide">
-      <p class="t-eyebrow" data-reveal>{data.eyebrow}</p>
-      <h1 class="sp-hero__h1">
-        <span class="mo-line" style="--mo-delay:80ms"><span>{data.h1a}</span></span>
-        <span class="mo-line" style="--mo-delay:180ms"><span class="sp-hero__h1b">{data.h1b}</span></span>
+      <p class="sp-hero__eyebrow" data-reveal>שירות {String(index + 1).padStart(2, '0')}</p>
+      <h1 class="sp-hero__name">
+        <span class="mo-line" style="--mo-delay:70ms"><span>{me.name}</span></span>
       </h1>
-      <p class="sp-hero__lead" data-reveal style="--mo-delay:300ms">{data.lead}</p>
+      <span class="sp-hero__rule" aria-hidden="true"></span>
+      <p class="sp-hero__lead" data-reveal style="--mo-delay:250ms">{data.lead}</p>
     </div>
   </section>
 
-  <!-- ═════════ the page's own picture ═════════ -->
-  <section class="sp-stage band band--navy">
-    <div class="u-container u-container--wide">
-      <div class="sp-stage__art" data-clip>
+  <!-- ========= the promise, in the page's own words ========= -->
+  <section class="sp-say u-section band">
+    <div class="u-container u-container--wide sp-say__grid">
+      <h2 class="sp-say__h">
+        <span class="mo-line" style="--mo-delay:60ms"><span>{data.h1a}</span></span>
+        <span class="mo-line" style="--mo-delay:160ms"><span class="sp-say__accent">{data.h1b}</span></span>
+      </h2>
+      <div class="sp-say__art" data-clip>
         <Viz kind={data.viz as any} />
+        <p class="sp-say__note">{data.note}</p>
       </div>
-      <p class="sp-stage__note" data-reveal>{data.note}</p>
     </div>
   </section>
 
-  <!-- ═════════ symptoms: "is this you?" ═════════ -->
-  <section class="sp-sym u-section band">
+  <!-- ========= symptoms ========= -->
+  <section class="sp-sym u-section band band--warm">
+    <Curve tone="warm" shape="wave" />
     <div class="u-container u-container--wide">
-      <p class="t-eyebrow" data-reveal>נשמע מוכר?</p>
+      <p class="t-eyebrow" data-reveal>ככה זה נראה ביום יום</p>
       <h2 class="sp-sym__h t-display-3" data-reveal style="--mo-delay:90ms">{data.symptomsTitle}</h2>
       <ul class:list={['sym', `sym--${symptomsStyle}`]}>
         {
@@ -86,8 +98,9 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     </div>
   </section>
 
-  <!-- ═════════ what we actually build ═════════ -->
-  <section class="sp-build u-section band band--soft">
+  <!-- ========= what we build, /01 rows on a dark band ========= -->
+  <section class="sp-build u-section band band--navy">
+    <Curve tone="navy" shape="slope" flip />
     <div class="u-container u-container--wide">
       <p class="t-eyebrow" data-reveal>מה נבנה בפועל</p>
       <h2 class="sp-build__h t-display-3" data-reveal style="--mo-delay:90ms">{data.buildTitle}</h2>
@@ -95,11 +108,9 @@ const others = SERVICES.filter((s) => s.slug !== slug);
         {
           data.build.map((b, i) => (
             <li class="build__item" data-reveal style={`--mo-delay:${i * 70}ms`}>
-              <span class="build__n tabular">{String(i + 1).padStart(2, '0')}</span>
-              <span class="build__main">
-                <span class="build__t">{b.t}</span>
-                <span class="build__d">{b.d}</span>
-              </span>
+              <span class="build__n tabular">/{String(i + 1).padStart(2, '0')}</span>
+              <span class="build__t">{b.t}</span>
+              <span class="build__d">{b.d}</span>
             </li>
           ))
         }
@@ -110,7 +121,7 @@ const others = SERVICES.filter((s) => s.slug !== slug);
   <slot />
 
   <!-- Other services. Deliberately small: a quiet way out of the page,
-       not a second sales pitch competing with the closing CTA. -->
+       not a second sales pitch competing with the contact block. -->
   <nav class="more-svc" aria-label="שירותים נוספים">
     <div class="u-container u-container--wide more-svc__in">
       <span class="more-svc__k">שירותים נוספים</span>
@@ -129,56 +140,96 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     </div>
   </nav>
 
-  <ClosingCta heading={data.closing} body={data.closingBody} />
+  <ContactBlock
+    siteKey={SITE_KEY}
+    service={slug}
+    heading={data.closing}
+    body={data.closingBody}
+  />
 </SiteLayout>
 
 <style>
-  /* ══════ opener ══════ */
-  /* Display type at the same scale as the home hero, so a service page
-     reads as a chapter of the same publication. */
+  /* ====== opener ====== */
   .sp-hero {
-    padding-top: clamp(9rem, 20svh, 14rem);
-    padding-bottom: clamp(3rem, 7vw, 6rem);
+    padding-block: clamp(9rem, 20svh, 14rem) clamp(3rem, 7vw, 6rem);
+    text-align: center;
   }
-  .sp-hero__h1 {
+  .sp-hero--royal    { background: var(--color-royal); color: #fff; }
+  .sp-hero--navy     { background: var(--color-navy);  color: #fff; }
+  .sp-hero--electric { background: #2997ff; color: #fff; }
+  .sp-hero--warm     { background: var(--color-warm-2); color: var(--color-ink); }
+  .sp-hero--deep     { background: #16308c; color: #fff; }
+
+  .sp-hero__eyebrow {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    opacity: 0.75;
+  }
+  .sp-hero__name {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 8vw, 7rem);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    margin-top: 0.35em;
+    color: inherit;
+  }
+  .sp-hero__rule {
+    display: block;
+    width: min(18rem, 42%);
+    height: 1px;
+    margin: clamp(1.25rem, 3vw, 2rem) auto;
+    background: currentColor;
+    opacity: 0.4;
+  }
+  .sp-hero__lead {
+    max-width: 52ch;
+    margin-inline: auto;
+    font-size: var(--text-lead);
+    line-height: 1.6;
+    opacity: 0.92;
+  }
+
+  /* ====== the promise ====== */
+  .sp-say__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .sp-say__h {
     display: flex;
     flex-direction: column;
     font-family: var(--font-display);
-    font-size: var(--text-display-2);
+    font-size: var(--text-display-3);
     font-weight: 900;
     line-height: 0.98;
-    letter-spacing: -0.03em;
-    margin-block: 1.25rem 2rem;
+    letter-spacing: -0.035em;
   }
-  .sp-hero__h1b {
+  .sp-say__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  .sp-hero__lead {
-    font-size: var(--text-lead);
-    line-height: 1.55;
-    color: var(--color-ink-2);
-    max-width: 48ch;
+  .sp-say__art {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--color-navy);
+    padding: clamp(1rem, 2.5vw, 2rem);
   }
-
-  /* ══════ stage ══════ */
-  .sp-stage { padding-block: clamp(2.5rem, 5vw, 5rem); }
-  .sp-stage__art { border-radius: var(--radius-xl); overflow: hidden; }
-  .sp-stage__note {
-    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  .sp-say__note {
+    margin-top: 1.25rem;
     font-size: var(--text-small);
-    line-height: 1.7;
+    line-height: 1.65;
     color: rgba(255, 255, 255, 0.62);
-    max-width: 62ch;
     border-inline-start: 2px solid rgba(41, 151, 255, 0.55);
-    padding-inline-start: 1rem;
+    padding-inline-start: 0.875rem;
   }
 
-  /* ══════ symptoms ══════ */
-  /* These are sentences the visitor might say out loud, so they are set
-     as oversized quoted statements rather than bubbles in a card grid. */
+  /* ====== symptoms ====== */
+  .sp-sym { position: relative; overflow: visible; }
   .sp-sym__h { margin-block: 0.75rem clamp(2rem, 4vw, 3.5rem); }
   .sym { list-style: none; margin: 0; padding: 0; display: grid; }
   .sym--rail { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(2rem, 5vw, 5rem); }
@@ -191,14 +242,8 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     padding-block: clamp(1.25rem, 2.4vw, 2rem);
     border-top: 1px solid var(--color-line-strong);
   }
-  /* in the staggered rail the last row of each column closes itself */
   .sym--grid .sym__item:last-child { border-bottom: 1px solid var(--color-line-strong); }
-  .sym__n {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: var(--text-small);
-    color: var(--color-electric);
-  }
+  .sym__n { font-family: var(--font-display); font-weight: 700; font-size: var(--text-small); color: var(--color-electric); }
   .sym__t {
     font-family: var(--font-display);
     font-size: clamp(1.25rem, 2.1vw, 2rem);
@@ -208,62 +253,52 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     color: var(--color-ink);
   }
 
-  /* ══════ build ══════ */
-  .sp-build__h { margin-block: 0.75rem clamp(2rem, 4vw, 3.5rem); }
+  /* ====== build ====== */
+  .sp-build { position: relative; overflow: visible; }
+  .sp-build__h { margin-block: 0.75rem clamp(2rem, 4vw, 3.5rem); color: #fff; }
   .build { list-style: none; margin: 0; padding: 0; }
+  /* the reference's own shape: a slashed number, the step name beside it,
+     and the description in its own column across a hairline */
   .build__item {
     display: grid;
-    grid-template-columns: 3rem minmax(0, 1fr);
-    gap: clamp(1rem, 3vw, 2.5rem);
+    grid-template-columns: 5rem minmax(0, 0.7fr) minmax(0, 1.3fr);
+    gap: clamp(1rem, 3vw, 3rem);
     align-items: start;
-    padding-block: clamp(1.5rem, 2.8vw, 2.5rem);
-    border-top: 1px solid var(--color-line-strong);
+    padding-block: clamp(1.5rem, 3vw, 2.75rem);
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
   }
-  .build__item:last-child { border-bottom: 1px solid var(--color-line-strong); }
+  .build__item:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.22); }
   .build__n {
+    direction: ltr;
     font-family: var(--font-display);
-    font-size: var(--text-small);
-    font-weight: 700;
-    color: var(--color-electric);
-    padding-top: 0.35rem;
+    font-size: clamp(1.25rem, 2.2vw, 2rem);
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.45);
   }
-  .build__main { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
   .build__t {
     font-family: var(--font-display);
-    font-size: clamp(1.375rem, 2.4vw, 2.25rem);
+    font-size: clamp(1.25rem, 2.2vw, 2rem);
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.025em;
-    color: var(--color-ink);
+    color: #fff;
   }
-  .build__d { color: var(--color-ink-2); line-height: 1.7; max-width: 56ch; }
+  .build__d { color: rgba(255, 255, 255, 0.78); line-height: 1.7; }
 
-  /* ══════ other services ══════ */
+  /* ====== other services ====== */
   .more-svc {
     border-top: 1px solid var(--color-line);
     background: var(--color-surface);
     padding-block: clamp(1.75rem, 3.5vw, 2.75rem);
   }
-  .more-svc__in {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.75rem 2rem;
-  }
+  .more-svc__in { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.75rem 2rem; }
   .more-svc__k {
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.08em;
     color: var(--color-ink-3);
   }
-  .more-svc__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 2rem;
-  }
+  .more-svc__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; }
   .more-svc__a {
     display: inline-flex;
     align-items: center;
@@ -279,9 +314,11 @@ const others = SERVICES.filter((s) => s.slug !== slug);
   .more-svc__a:hover { color: var(--color-royal); }
   .more-svc__a .arrow-inline { color: var(--color-electric); }
 
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
+    .sp-say__grid { grid-template-columns: 1fr; }
     .sym--rail { grid-template-columns: 1fr; }
     .sym--rail .sym__item:last-child { border-bottom: 1px solid var(--color-line-strong); }
-    .build__item { grid-template-columns: 2.25rem minmax(0, 1fr); gap: 0.875rem; }
+    .build__item { grid-template-columns: 3rem minmax(0, 1fr); gap: 0.5rem 0.875rem; }
+    .build__d { grid-column: 2; }
   }
 </style>

@@ -16,13 +16,16 @@ interface Props {
   title: string;
   description: string;
   noindex?: boolean;
+  /** Pages whose first section is a saturated colour block need a solid
+      header from the start: a royal CTA on a royal hero is invisible. */
+  headerSolid?: boolean;
 }
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, headerSolid = false } = Astro.props;
 const currentPath = new URL(Astro.request.url).pathname;
 ---
 
 <BaseLayout title={title} description={description} noindex={noindex}>
-  <SiteHeader currentPath={currentPath} />
+  <SiteHeader currentPath={currentPath} solid={headerSolid} />
   <main id="main">
     <slot />
   </main>

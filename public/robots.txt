@@ -1,0 +1,12 @@
+# LAHAV AI
+
+User-agent: *
+Allow: /
+
+# Admin, internal review and the API are not public surfaces.
+Disallow: /admin
+Disallow: /admin/
+Disallow: /system/
+Disallow: /api/
+
+Sitemap: https://lahav-ai-website.itsu60ai.workers.dev/sitemap.xml

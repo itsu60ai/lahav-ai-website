@@ -8,7 +8,14 @@ import { SITE, NAV, SERVICES, WHATSAPP_HREF, CTA_PRIMARY } from '../lib/site';
 const year = new Date().getFullYear();
 ---
 
-<footer class="ftr band band--navy">
+<footer class="ftr band band--blue">
+  <!-- The footer arrives on a curve, not a hard horizontal seam. -->
+  <span class="ftr__curve" aria-hidden="true">
+    <svg viewBox="0 0 1440 90" preserveAspectRatio="none" focusable="false">
+      <path d="M0 90 C 280 90 380 0 720 0 C 1060 0 1160 90 1440 90 Z" fill="currentColor" />
+    </svg>
+  </span>
+
   <div class="u-container u-container--wide">
     <!-- oversized closing statement -->
     <div class="ftr__top">
@@ -19,7 +26,7 @@ const year = new Date().getFullYear();
         <span class="ftr__arrow" aria-hidden="true">←</span>
       </a>
       <p class="ftr__note" data-reveal style="--mo-delay:160ms">
-        30 דקות, בלי התחייבות. נבין יחד איפה יש מה לשפר.
+        30 דקות, בלי התחייבות.
       </p>
     </div>
 
@@ -29,7 +36,7 @@ const year = new Date().getFullYear();
       <div class="ftr__col ftr__col--brand">
         <img class="ftr__logo" src="/brand/lahav-white-lockup.svg" alt="LAHAV AI" width="120" height="89" />
         <p class="ftr__blurb">
-          מערכות ואוטומציות שעושות סדר בעסק. פחות עבודה ידנית, יותר שליטה.
+          מערכות ואוטומציות שעושות סדר בעסק.
         </p>
       </div>
 
@@ -71,7 +78,28 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
-  .ftr { padding-block: clamp(4rem, 8vw, 8rem) 2.5rem; }
+  .ftr {
+    position: relative;
+    /* Flat brand blue, not the band gradient: the curve above has to be
+       painted in one solid colour to line up seamlessly, and the
+       reference's footer is a single bright blue too. */
+    background: var(--color-royal);
+    /* .band--blue clips, which would eat the curve sitting above it */
+    overflow: visible;
+    padding-block: clamp(5rem, 9vw, 9rem) 2.5rem;
+  }
+  /* the curve is painted in the footer's own colour and pulled up over
+     whatever section sits above it */
+  .ftr__curve {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 100%;
+    display: block;
+    height: clamp(48px, 6vw, 90px);
+    color: var(--color-royal);
+    pointer-events: none;
+  }
+  .ftr__curve svg { display: block; width: 100%; height: 100%; }
 
   .ftr__top { padding-bottom: clamp(2.5rem, 5vw, 4.5rem); }
   .ftr__big {
@@ -88,17 +116,17 @@ const year = new Date().getFullYear();
     color: #fff;
     text-decoration: none;
   }
-  .ftr__dot { color: var(--color-electric); }
+  .ftr__dot { color: #bfe0ff; }
   .ftr__arrow {
     display: inline-block;
     font-size: 0.55em;
-    color: var(--color-electric);
+    color: #bfe0ff;
     transition: transform var(--dur) var(--ease-out);
   }
   .ftr__big:hover .ftr__arrow { transform: translateX(-0.35em); }
-  .ftr__note { margin-top: 1.25rem; color: rgba(255, 255, 255, 0.62); font-size: var(--text-small); }
+  .ftr__note { margin-top: 1.25rem; color: rgba(255, 255, 255, 0.86); font-size: var(--text-small); }
 
-  .ftr__rule { border: 0; height: 1px; background: rgba(255, 255, 255, 0.14); margin: 0; }
+  .ftr__rule { border: 0; height: 1px; background: rgba(255, 255, 255, 0.28); margin: 0; }
 
   .ftr__cols {
     display: grid;
@@ -107,18 +135,18 @@ const year = new Date().getFullYear();
     padding-block: clamp(2.5rem, 5vw, 4rem);
   }
   .ftr__logo { width: clamp(92px, 8vw, 120px); height: auto; margin-bottom: 1rem; }
-  .ftr__blurb { color: rgba(255, 255, 255, 0.62); font-size: var(--text-small); max-width: 32ch; }
+  .ftr__blurb { color: rgba(255, 255, 255, 0.88); font-size: var(--text-small); max-width: 32ch; }
   .ftr__h {
     font-size: var(--text-micro);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.7);
     margin-bottom: 0.875rem;
   }
   .ftr__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
   .ftr__list a {
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(255, 255, 255, 0.92);
     text-decoration: none;
     font-size: var(--text-small);
     transition: color var(--dur) var(--ease-out);
@@ -131,9 +159,9 @@ const year = new Date().getFullYear();
     gap: 1rem;
     flex-wrap: wrap;
     padding-top: 1.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    border-top: 1px solid rgba(255, 255, 255, 0.28);
   }
-  .ftr__base :global(.t-micro) { color: rgba(255, 255, 255, 0.5); }
+  .ftr__base :global(.t-micro) { color: rgba(255, 255, 255, 0.72); }
 
   @media (max-width: 900px) {
     .ftr__cols { grid-template-columns: 1fr 1fr; }

@@ -13,7 +13,6 @@
 //   [data-stagger]             index-based delay for children
 //   .mo-marquee                seamless looping type
 //   [data-swap-root]           scroll-state machine for sticky sections
-//   [data-magnetic]            pointer-follow hover
 //
 // SAFETY: the "hidden" start states in CSS are gated behind
 // html.mo-ready, which this script adds. If JS never runs, or throws,
@@ -148,20 +147,9 @@
       });
     }
 
-    // ---------- magnetic hover ----------
-    if (!reduced && window.matchMedia('(hover: hover)').matches) {
-      document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach((el) => {
-        const strength = parseFloat(el.dataset.magnetic || '0.25');
-        el.addEventListener('pointermove', (e) => {
-          const r = el.getBoundingClientRect();
-          const dx = (e.clientX - (r.left + r.width / 2)) * strength;
-          const dy = (e.clientY - (r.top + r.height / 2)) * strength;
-          el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-        });
-        el.addEventListener('pointerleave', () => {
-          el.style.transform = '';
-        });
-      });
-    }
+    // NOTE: there is deliberately no magnetic/pointer-follow hover here.
+    // A CTA that slides away from the cursor reads as a bug to everyone
+    // who is not already expecting the effect, and it makes the button
+    // genuinely harder to hit.
   })();
 </script>

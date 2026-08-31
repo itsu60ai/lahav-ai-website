@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 // ABOUT, V3.
 //
 // Rebuilt to the same editorial language as Home, using the reference's
@@ -12,7 +14,10 @@
 // numbers of any kind.
 import SiteLayout from '../layouts/SiteLayout.astro';
 import SplitLines from '../components/SplitLines.astro';
-import ClosingCta from '../components/ClosingCta.astro';
+import ContactBlock from '../components/ContactBlock.astro';
+
+const SITE_KEY = turnstileSiteKey();
+import { turnstileSiteKey } from '../lib/turnstile.ts';
 import Viz from '../components/Viz.astro';
 import FounderPortrait from '../components/FounderPortrait.astro';
 import Avatar from '../components/Avatar.astro';
@@ -23,17 +28,17 @@ import { FOUNDER, PROCESS, SERVICES } from '../lib/site';
 // supporting line underneath.
 const beliefs = [
   {
-    k: 'Process first',
+    k: 'קודם התהליך',
     t: 'קודם התהליך.',
     d: 'לא מתחילים מכלי. מתחילים מאיפה העבודה נתקעת, מה גוזל זמן, ומה חייב להיות פשוט יותר.',
   },
   {
-    k: 'You decide',
+    k: 'אתם מחליטים',
     t: 'ההחלטות שלכם.',
     d: 'מה שחוזר על עצמו רץ לבד. כל מה שדורש שיקול דעת ממשיך להגיע אליכם, לא למערכת.',
   },
   {
-    k: 'Say it straight',
+    k: 'אומרים את זה ישר',
     t: 'בלי מילים גדולות.',
     d: 'נגיד מה שווה לעשות, וגם מה ממש לא. גם כשהתשובה היא שלא צריך אותנו.',
   },
@@ -55,12 +60,12 @@ const guideLines = [
     <div class="u-container u-container--wide">
       <p class="t-eyebrow" data-reveal>אודות</p>
       <h1 class="ab-hero__h1 t-display-1">
-        <span class="mo-line" style="--mo-delay:70ms"><span class="t-latin ab-hero__latin">Tools were never the problem.</span></span>
-        <span class="mo-line" style="--mo-delay:170ms"><span>לא חסרים כלים.</span></span>
-        <span class="mo-line" style="--mo-delay:270ms"><span class="ab-hero__accent">חסר שהם ידברו.</span></span>
+        <span class="mo-line" style="--mo-delay:80ms"><span>מתחילים ממה</span></span>
+        <span class="mo-line" style="--mo-delay:190ms"><span class="ab-hero__accent">שקורה בעסק.</span></span>
       </h1>
       <p class="ab-hero__lead" data-reveal style="--mo-delay:380ms">
-        מהמשפט הזה נולדה LAHAV AI, והוא עדיין נקודת הפתיחה של כל פרויקט.
+        לפני שבוחרים כלי, עוברים על התהליך, מבינים איפה הוא מסתבך ומה באמת
+        צריך להשתנות.
       </p>
     </div>
     <span class="ab-hero__cue" aria-hidden="true"></span>
@@ -81,16 +86,14 @@ const guideLines = [
 
       <div class="ab-story__text">
         <p class="ab-story__p ab-story__p--lead" data-swap-index="0" data-reveal>
-          הקמתי את LAHAV AI בגלל משהו שראיתי חוזר בעסק אחרי עסק: כמעט תמיד לא
-          חסרים כלים. חסר שהם ידברו.
+          הקמתי את LAHAV AI כדי להתחיל מהעסק ולא מהטכנולוגיה.
         </p>
         <p class="ab-story__p" data-swap-index="1" data-reveal>
-          המידע מתפזר. העבודה הידנית מצטברת. ודברים שהיו פשוטים כשהייתם שלושה
-          נהיים מסורבלים כשאתם חמישה עשר.
+          המידע מתפזר בין מערכות. העבודה הידנית מצטברת. וקשה לדעת מה באמת
+          קורה בלי לאסוף את זה ביד.
         </p>
         <p class="ab-story__p" data-swap-index="2" data-reveal>
-          לכן אני מתחיל מהעסק, לא מהטכנולוגיה. קודם נשב ונבין איפה העבודה
-          נתקעת ומה גוזל לכם את הזמן.
+          לכן קודם נשב ונבין איפה העבודה נתקעת ומה גוזל לכם את הזמן.
         </p>
         <p class="ab-story__p" data-reveal>
           רק אחר כך נבחר כלים ונבנה את המערכת שמתאימה לתהליך, ולא הפוך. זה
@@ -115,7 +118,7 @@ const guideLines = [
           <li class="ab-belief__row" data-reveal>
             <span class="ab-belief__n tabular">{String(i + 1).padStart(2, '0')}</span>
             <div class="ab-belief__body">
-              <p class="ab-belief__k t-latin">{b.k}</p>
+              <p class="ab-belief__k">{b.k}</p>
               <h3 class="ab-belief__t t-display-3">{b.t}</h3>
             </div>
             <p class="ab-belief__d">{b.d}</p>
@@ -133,7 +136,7 @@ const guideLines = [
       </div>
       <div class="ab-guide__copy">
         <p class="t-eyebrow" data-reveal>הגישה</p>
-        <SplitLines class="t-display-2 ab-guide__h" lines={['קודם התהליך.', 'אחר כך הטכנולוגיה.']} step={100} />
+        <SplitLines class="t-display-2 ab-guide__h" lines={['אף פעם לא', 'מתחילים מהכלי.']} step={100} />
         <p class="t-lead ab-guide__lead" data-reveal style="--mo-delay:240ms">
           זה הסדר. לא הפוך. וכשעובדים ככה, המערכת מתאימה לעסק במקום שהעסק
           יתכופף לכלי.
@@ -151,7 +154,7 @@ const guideLines = [
     <div class="u-container u-container--wide">
       <div class="ab-eco__head">
         <p class="t-eyebrow" data-reveal>מה אנחנו בונים</p>
-        <SplitLines class="t-display-2" lines={['חמישה חלקים.', 'תהליך אחד.']} step={100} />
+        <SplitLines class="t-display-2" lines={['מתחילים במה', 'שהכי מציק.']} step={100} />
         <p class="t-lead ab-eco__lead" data-reveal style="--mo-delay:240ms">
           כמעט אף עסק לא צריך את כולם. מתחילים מהחלק שפותר את מה שהכי תקוע,
           והשאר מתחבר בהמשך.
@@ -178,7 +181,7 @@ const guideLines = [
     <div class="u-container u-container--wide">
       <div class="ab-proc__head">
         <p class="t-eyebrow" data-reveal>מה קורה בפועל</p>
-        <SplitLines class="t-display-2" lines={['מרגע שאמרתם כן.']} step={100} />
+        <SplitLines class="t-display-2" lines={['מה קורה', 'מרגע שאמרתם כן.']} step={100} />
       </div>
       <ol class="ab-proc__list" data-stagger style="--mo-step:80ms">
         {PROCESS.map((p) => (
@@ -192,10 +195,7 @@ const guideLines = [
     </div>
   </section>
 
-  <ClosingCta
-    heading="נתחיל משיחה קצרה"
-    body="30 דקות. נעבור על איך שאתם עובדים היום, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך."
-  />
+  <ContactBlock siteKey={SITE_KEY} />
 </SiteLayout>
 
 <style>

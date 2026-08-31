@@ -131,11 +131,16 @@
   @media (max-width: 900px) {
     .fc__card--a, .fc__card--b { display: none; }
     .fc__card { width: clamp(8.5rem, 40vw, 11rem); font-size: 0.7rem; padding: 0.7rem 0.8rem; }
-    /* One high beside the statement and one low beside the character,
-       so the first screen has no dead band between the two, which is how
-       the reference's mobile hero is composed. */
-    .fc__card--c { bottom: 26%; inset-inline-start: -0.75rem; }
-    .fc__card--d { top: 27%; inset-inline-end: -0.75rem; bottom: auto; }
+    /* Two cards survive on a tablet, pulled fully inside the viewport.
+       Negative insets used to push the document ~16px wider than the
+       screen and the card sat on top of the hero's supporting line. */
+    .fc__card--c { bottom: 24%; inset-inline-start: 0.5rem; }
+    .fc__card--d { top: 30%; inset-inline-end: 0.5rem; bottom: auto; }
+  }
+  /* On a phone the hero is the headline, the line under it and the
+     character. Cards there either cover the copy or crowd the figure. */
+  @media (max-width: 640px) {
+    .fc { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .fc__card { animation: none; }

@@ -1,0 +1,255 @@
+---
+// THE CONTACT BLOCK.
+//
+// The reference closes almost every page with the same short form on a
+// full-bleed brand band, so a visitor never has to go and find the
+// contact page. This is that block, and it is the ONLY contact form
+// component on the site, so the fields, the anti-spam and the endpoint
+// can never drift between pages.
+//
+// It posts to the existing /api/contact endpoint with the existing
+// field names, honeypot and timing trap. Nothing about the backend
+// changed for this component.
+//
+// The page that renders it must be server-rendered (`prerender = false`)
+// so the Turnstile site key can be read at request time.
+import { WHATSAPP_HREF, SERVICES, CTA_PRIMARY } from '../lib/site';
+import WhatsApp from './icons/WhatsApp.astro';
+import Curve from './Curve.astro';
+
+export interface Props {
+  /** public Turnstile site key, from the page's own env read */
+  siteKey: string;
+  heading?: string;
+  body?: string;
+  /** preselect the service dropdown on a service page */
+  service?: string;
+  /** the curve that introduces the band, false on a page that follows a blue band */
+  curve?: boolean;
+  id?: string;
+}
+
+const {
+  siteKey,
+  heading = 'תכתבו לנו איפה זה נתקע.',
+  body = 'לא צריך להתכונן או לדעת מראש מה רוצים לבנות. מספיק לספר מה קורה היום.',
+  service = '',
+  curve = true,
+  id = 'contact-block',
+} = Astro.props;
+---
+
+<section class="cb band band--blue" id={id}>
+  {curve && <Curve tone="blue" shape="wave" />}
+
+  <div class="u-container u-container--wide cb__inner">
+    <div class="cb__type">
+      <p class="t-eyebrow cb__k" data-reveal>צור קשר</p>
+      <h2 class="cb__h">
+        <span class="mo-line" style="--mo-delay:80ms"><span>{heading}</span></span>
+      </h2>
+      <p class="cb__body" data-reveal style="--mo-delay:240ms">{body}</p>
+
+      <div class="cb__routes" data-reveal style="--mo-delay:360ms">
+        <a class="cb__route" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+          <WhatsApp />
+          <span>מעדיפים וואטסאפ? זה בסדר גמור.</span>
+        </a>
+        <a class="cb__route" href={CTA_PRIMARY.href}>
+          <span>לתיאום שיחת היכרות</span>
+          <span class="arrow-inline" aria-hidden="true">←</span>
+        </a>
+      </div>
+    </div>
+
+    <form class="cb__form" method="post" action="/api/contact" novalidate data-cb-form>
+      <div class="cb__row">
+        <div class="field">
+          <label class="field-label" for={`${id}-name`}>שם מלא</label>
+          <input class="input" id={`${id}-name`} name="name" type="text" autocomplete="name" required maxlength="120" />
+        </div>
+        <div class="field">
+          <label class="field-label" for={`${id}-phone`}>טלפון</label>
+          <input class="input input-ltr" id={`${id}-phone`} name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="40" />
+        </div>
+      </div>
+
+      <div class="cb__row">
+        <div class="field">
+          <label class="field-label" for={`${id}-email`}>אימייל</label>
+          <input class="input input-ltr" id={`${id}-email`} name="email" type="email" autocomplete="email" required maxlength="200" />
+        </div>
+        <div class="field">
+          <label class="field-label" for={`${id}-service`}>מה מעניין אתכם</label>
+          <select class="input" id={`${id}-service`} name="service">
+            <option value="">עוד לא בטוח</option>
+            {SERVICES.map((s) => (
+              <option value={s.slug} selected={s.slug === service}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for={`${id}-message`}>מה תקוע היום?</label>
+        <textarea class="input" id={`${id}-message`} name="message" rows="3" required maxlength="4000"></textarea>
+      </div>
+
+      <!-- Honeypot: invisible to a real visitor and to screen readers,
+           but a plain text field a bot's autofill will often complete. -->
+      <div class="cb__trap" aria-hidden="true">
+        <label for={`${id}-website`}>Website</label>
+        <input id={`${id}-website`} name="website_url" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+      <input type="hidden" name="form_rendered_at" value={Date.now()} />
+
+      <div class="cf-turnstile cb__turnstile" data-sitekey={siteKey}></div>
+
+      <div class="cb__status" data-cb-status role="status" aria-live="polite" hidden></div>
+
+      <button class="btn btn-primary btn-lg cb__submit" type="submit" data-cb-submit>שלחו ונחזור אליכם</button>
+    </form>
+  </div>
+</section>
+
+<script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
+
+<script is:inline>
+  (() => {
+    // One handler per form on the page, so a page may carry more than one
+    // block without them fighting over each other.
+    document.querySelectorAll('[data-cb-form]').forEach((form) => {
+      const status = form.querySelector('[data-cb-status]');
+      const submit = form.querySelector('[data-cb-submit]');
+
+      const show = (kind, text) => {
+        if (!status) return;
+        status.hidden = false;
+        status.textContent = text;
+        status.classList.toggle('is-success', kind === 'success');
+        status.classList.toggle('is-error', kind === 'error');
+      };
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (submit) { submit.disabled = true; submit.textContent = 'שולח...'; }
+        try {
+          const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { accept: 'application/json' },
+            body: new FormData(form),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.ok) {
+            form.reset();
+            show('success', 'קיבלנו. נחזור אליכם.');
+          } else {
+            show('error', data.error || 'לא הצלחנו לשלוח. אפשר לנסות שוב.');
+            if (window.turnstile) window.turnstile.reset();
+          }
+        } catch {
+          show('error', 'לא הצלחנו לשלוח. אפשר לנסות שוב.');
+        } finally {
+          if (submit) { submit.disabled = false; submit.textContent = 'שלחו ונחזור אליכם'; }
+        }
+      });
+    });
+  })();
+</script>
+
+<style>
+  .cb {
+    position: relative;
+    padding-block: var(--space-section);
+    overflow: visible;
+  }
+  .cb__inner {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: clamp(2rem, 6vw, 5.5rem);
+    align-items: start;
+  }
+
+  .cb__k { color: rgba(255, 255, 255, 0.72); }
+  .cb__h {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.75rem;
+    font-family: var(--font-display);
+    font-size: var(--text-display-3);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    color: #fff;
+  }
+  .cb__body {
+    margin-top: 0.75rem;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    max-width: 40ch;
+  }
+  .cb__routes { display: flex; flex-wrap: wrap; gap: 0.75rem 1.75rem; margin-top: clamp(1.5rem, 3vw, 2.25rem); }
+  .cb__route {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: #fff;
+    font-weight: 700;
+    font-size: var(--text-small);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    padding-bottom: 0.2rem;
+    transition: border-color var(--dur) var(--ease-out);
+  }
+  .cb__route:hover { border-bottom-color: #fff; }
+  .cb__route :global(svg) { width: 1.15rem; height: 1.15rem; }
+
+  /* The form panel is the one light surface on the band, so it reads as
+     the thing to act on. */
+  .cb__form {
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: var(--radius-xl);
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 30px 70px rgba(9, 22, 54, 0.22);
+  }
+  .cb__row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  /* The form panel is a light surface sitting on a blue band, so the
+     band's "buttons go white here" rule has to be undone inside it. */
+  .cb__form :global(.btn-primary) { background: var(--color-royal); color: #fff; }
+  .cb__form :global(.btn-primary:hover) { background: #1741bb; }
+  .cb__submit { align-self: flex-start; margin-top: 0.25rem; }
+
+  .cb__status {
+    font-size: var(--text-small);
+    font-weight: 600;
+    line-height: 1.6;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius);
+  }
+  .cb__status.is-success { background: #e7f6ec; color: #15803d; border: 1px solid #bfe6cc; }
+  .cb__status.is-error { background: #fdf2f2; color: var(--color-error); border: 1px solid #e5b4b4; }
+
+  /* off-screen but not display:none, so it still reads as a real field to
+     unsophisticated bots while being unreachable for a real visitor */
+  .cb__trap {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 900px) {
+    .cb__inner { grid-template-columns: 1fr; gap: 2rem; }
+  }
+  @media (max-width: 560px) {
+    .cb__row { grid-template-columns: 1fr; }
+    .cb__submit { align-self: stretch; width: 100%; }
+  }
+</style>

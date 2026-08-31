@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 // FAQ.
 //
 // Composed as an editorial list rather than an accordion grid: large
@@ -9,7 +11,10 @@
 // is keyboard operable for free, and stays findable by in-page search.
 import SiteLayout from '../layouts/SiteLayout.astro';
 import SplitLines from '../components/SplitLines.astro';
-import ClosingCta from '../components/ClosingCta.astro';
+import ContactBlock from '../components/ContactBlock.astro';
+
+const SITE_KEY = turnstileSiteKey();
+import { turnstileSiteKey } from '../lib/turnstile.ts';
 import { FAQ } from '../lib/site';
 
 // FAQPage structured data. Mirrors exactly what is on the page, so it
@@ -37,13 +42,12 @@ const faqJsonLd = {
       <SplitLines
         as="h1"
         class="fq-hero__h1 t-display-2"
-        lines={['מה שבאמת', 'שואלים אותנו.']}
+        lines={['מה שכדאי לדעת', 'לפני שמתחילים.']}
         step={100}
         delay={80}
       />
       <p class="fq-hero__lead t-lead" data-reveal style="--mo-delay:280ms">
-        התשובות שמעניינות בעל עסק לפני שיחה ראשונה. בלי הבטחות שאי אפשר
-        לעמוד בהן.
+        התשובות שמעניינות בעל עסק לפני שיחה ראשונה.
       </p>
     </div>
   </section>
@@ -66,14 +70,15 @@ const faqJsonLd = {
       </ul>
 
       <p class="fq__more" data-reveal>
-        לא מצאתם את מה שחיפשתם? זו בדיוק סיבה טובה לשיחה קצרה.
+        לא מצאתם את מה שחיפשתם? זו סיבה טובה לשיחה קצרה.
       </p>
     </div>
   </section>
 
-  <ClosingCta
-    heading="יש שאלה שלא ענינו עליה?"
-    body="30 דקות, בלי התחייבות. נענה בכנות, גם כשהתשובה היא שלא צריך אותנו."
+  <ContactBlock
+    siteKey={SITE_KEY}
+    heading="יש משהו שלא ענינו עליו?"
+    body="תכתבו את השאלה. נענה בכנות, גם כשהתשובה היא שלא צריך אותנו."
   />
 </SiteLayout>
 

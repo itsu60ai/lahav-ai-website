@@ -1,20 +1,28 @@
 ---
-// SERVICES INDEX, V3.
+// SERVICES INDEX, V4.
 //
-// Its own job: help a visitor decide *which* service fits. Composition is
-// a chooser, not a repeat of Home. Rebuilt into the site's editorial
-// language: type-led opener, a marquee of the five names, symptoms as
-// oversized hairline rows, the אפיון position, one connected picture on
-// navy, then the five services at real scale.
+// Layout taken from the reference's own services template (the mirrored
+// /expertise page in docs/reference/stg/v2): a giant ghost word fixed
+// behind the page, and full-bleed colour blocks scrolling over it.
+//
+// One deliberate departure: the reference sets the service name in
+// oversized LATIN. LAHAV sets it in oversized HEBREW. Giant English
+// display words were removed from this site on 31.08.2026, and the point
+// of the exercise is that Hebrew typography carries the composition on
+// its own.
 //
 // CLAIM DISCIPLINE unchanged: no prices, no timelines, no results, no
-// client names, and the אפיון block says what WE do without ever
-// characterising anyone else.
+// client names.
+export const prerender = false;
+
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import ClosingCta from '../../components/ClosingCta.astro';
+import Curve from '../../components/Curve.astro';
+import ContactBlock from '../../components/ContactBlock.astro';
 import Viz from '../../components/Viz.astro';
-import { SERVICE_ICONS } from '../../lib/icons';
+import { turnstileSiteKey } from '../../lib/turnstile.ts';
 import { SERVICES } from '../../lib/site';
+
+const SITE_KEY = turnstileSiteKey();
 
 // Each row: a problem stated in the owner's words, and where it leads.
 const chooser = [
@@ -25,8 +33,7 @@ const chooser = [
   { problem: 'יודעים שצריך לכתוב, ואף פעם אין זמן', slug: 'ai-content', name: 'יצירת תוכן באמצעות AI' },
 ];
 
-// The אפיון position, previously its own component. It is the one thing
-// that has to be visible on this page before a visitor picks a service.
+// The אפיון position. It has to be visible before a visitor picks.
 const discovery = [
   { t: 'נשאל הרבה שאלות', d: 'איך פנייה מגיעה אליכם, מי נוגע בה, איפה היא נתקעת, ומה קורה כשמישהו בחופש.' },
   { t: 'נגיד גם מה לא לבנות', d: 'לפעמים המסקנה היא שחצי מהרעיון מיותר, או שעדיף להתחיל ממשהו אחר לגמרי.' },
@@ -38,36 +45,48 @@ const discovery = [
   title="השירותים שלנו | LAHAV AI"
   description="חמישה תחומי שירות: מערכות CRM, אוטומציות עסקיות, פיתוח אתרים, פיתוח אפליקציות ויצירת תוכן באמצעות AI."
 >
-  <!-- ═════════ opener ═════════ -->
+  <!-- ========= opener ========= -->
   <section class="sv-hero band band--hero">
-    <div class="u-container u-container--wide">
-      <p class="t-eyebrow" data-reveal>השירותים שלנו</p>
-      <h1 class="sv-hero__h1 t-display-1">
-        <span class="mo-line" style="--mo-delay:70ms"><span>לא צריך לדעת</span></span>
-        <span class="mo-line" style="--mo-delay:170ms"><span>מה אתם צריכים.</span></span>
-        <span class="mo-line" style="--mo-delay:270ms"><span class="sv-hero__accent">רק מה לא עובד.</span></span>
-      </h1>
-      <p class="sv-hero__lead" data-reveal style="--mo-delay:380ms">
-        אף אחד לא אמור להגיע לכאן ולדעת אם הוא צריך CRM או אוטומציה. תגידו לנו
-        מה תקוע, ומשם נבין יחד מה נכון לבנות ובאיזה סדר.
-      </p>
+    <div class="u-container u-container--wide sv-hero__grid">
+      <div>
+        <p class="t-eyebrow" data-reveal>השירותים שלנו</p>
+        <h1 class="sv-hero__h1 t-display-1">
+          <span class="mo-line" style="--mo-delay:70ms"><span>לא צריך לדעת</span></span>
+          <span class="mo-line" style="--mo-delay:170ms"><span class="sv-hero__accent">מה אתם צריכים.</span></span>
+        </h1>
+        <p class="sv-hero__lead" data-reveal style="--mo-delay:300ms">
+          תגידו לנו מה תקוע, ומשם נבין יחד מה נכון לבנות ובאיזה סדר.
+        </p>
+      </div>
+      <div class="sv-hero__art" data-clip>
+        <Viz kind="services" />
+      </div>
     </div>
   </section>
 
-  <!-- ═════════ the five, as a moving rail ═════════ -->
-  <div class="mo-marquee sv-rail" aria-hidden="true">
-    <div class="mo-marquee__track">
-      {SERVICES.map((s) => (
-        <span class="sv-rail__item">
-          {s.name}
-          <span class="sv-rail__dot">•</span>
-        </span>
+  <!-- ========= the five, as colour blocks over a ghost word ========= -->
+  <section class="blocks" aria-label="השירותים">
+    <span class="blocks__ghost" aria-hidden="true">שירותים</span>
+    <ul class="blocks__list">
+      {SERVICES.map((s, i) => (
+        <li class={`blocks__item blocks__item--${s.tone}`}>
+          <a class="blocks__a" href={`/services/${s.slug}/`}>
+            <span class="blocks__n tabular">{String(i + 1).padStart(2, '0')}</span>
+            <span class="blocks__name">{s.name}</span>
+            <span class="blocks__rule" aria-hidden="true"></span>
+            <span class="blocks__lead">{s.lead}</span>
+            <span class="blocks__go">
+              לראות איך זה עובד <span class="arrow-inline" aria-hidden="true">←</span>
+            </span>
+          </a>
+        </li>
       ))}
-    </div>
-  </div>
+    </ul>
+  </section>
 
-  <!-- ═════════ chooser ═════════ -->
+  <!-- ========= chooser ========= -->
   <section class="chooser-sec u-section band">
+    <Curve tone="surface" shape="slope" />
     <div class="u-container u-container--wide">
       <p class="t-eyebrow" data-reveal>מתחילים מהבעיה</p>
       <h2 class="chooser__h t-display-3" data-reveal style="--mo-delay:90ms">
@@ -91,81 +110,30 @@ const discovery = [
     </div>
   </section>
 
-  <!-- ═════════ the אפיון position ═════════ -->
-  <section class="disc band band--blue u-section">
+  <!-- ========= the אפיון position ========= -->
+  <section class="disc band band--navy u-section">
+    <Curve tone="navy" shape="wave" flip />
     <div class="u-container u-container--wide disc__grid">
       <div class="disc__intro">
         <p class="t-eyebrow" data-reveal>לפני שבוחרים שירות</p>
         <h2 class="disc__title">
-          <span class="mo-line" style="--mo-delay:60ms"><span>קודם מבינים.</span></span>
-          <span class="mo-line" style="--mo-delay:160ms"><span class="disc__accent">רק אחר כך בונים.</span></span>
+          <span class="mo-line" style="--mo-delay:60ms"><span>אף פעם לא</span></span>
+          <span class="mo-line" style="--mo-delay:160ms"><span class="disc__accent">מתחילים מהכלי.</span></span>
         </h2>
         <p class="disc__lead" data-reveal style="--mo-delay:260ms">
           לכן אף אחד לא צריך להגיע לכאן ולדעת איזה שירות הוא צריך. זה מה
           שנברר יחד.
         </p>
       </div>
-      <ol class="disc__points" data-stagger style="--mo-step:90ms">
+      <ol class="disc__points">
         {discovery.map((p, i) => (
-          <li class="disc__point" data-reveal>
+          <li class="disc__point" data-reveal style={`--mo-delay:${i * 90}ms`}>
             <span class="disc__pn tabular">{String(i + 1).padStart(2, '0')}</span>
             <h3 class="disc__pt">{p.t}</h3>
             <p class="disc__pd">{p.d}</p>
           </li>
         ))}
       </ol>
-    </div>
-  </section>
-
-  <!-- ═════════ one connected picture ═════════ -->
-  <section class="sv-map band band--navy u-section">
-    <div class="u-container u-container--wide">
-      <div class="sv-map__head">
-        <p class="t-eyebrow" data-reveal>איך זה מתחבר</p>
-        <h2 class="sv-map__h t-display-3" data-reveal style="--mo-delay:90ms">
-          אף אחד לא צריך<br />את כל החמישה
-        </h2>
-        <p class="sv-map__lead t-lead" data-reveal style="--mo-delay:180ms">
-          כמעט תמיד מתחילים מחלק אחד, זה שפותר את מה שהכי כואב עכשיו. השאר
-          מחכה, ומתחבר בהמשך בלי לשבור את מה שכבר עובד.
-        </p>
-      </div>
-      <div class="sv-map__art" data-clip>
-        <Viz kind="services" />
-      </div>
-    </div>
-  </section>
-
-  <!-- ═════════ the five, each with real room ═════════ -->
-  <section class="rows-sec u-section band">
-    <div class="u-container u-container--wide">
-      <p class="t-eyebrow rows-sec__k" data-reveal>מה אנחנו בונים</p>
-      <ul class="svc-rows">
-        {SERVICES.map((s, i) => (
-          <li class="svc-row" data-reveal style={`--mo-delay:${i * 60}ms`}>
-            <a class="svc" href={`/services/${s.slug}/`}>
-              <span class="svc__n tabular">{String(i + 1).padStart(2, '0')}</span>
-              <span class="svc__mark" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  set:html={SERVICE_ICONS[s.slug]}
-                />
-              </span>
-              <span class="svc__main">
-                <span class="svc__name">{s.name}</span>
-                <span class="svc__lead">{s.lead}</span>
-                <span class="svc__text">{s.pain}</span>
-              </span>
-              <span class="svc__arrow arrow-inline" aria-hidden="true">←</span>
-            </a>
-          </li>
-        ))}
-      </ul>
       <p class="pricing" data-reveal>
         אין מחירון קבוע. המחיר נקבע אחרי שיחת היכרות ואפיון, לפי מה שהעסק
         באמת צריך.
@@ -173,43 +141,137 @@ const discovery = [
     </div>
   </section>
 
-  <ClosingCta
-    heading="לא בטוחים מאיפה להתחיל?"
-    body="זה בסדר גמור. שיחה של 30 דקות בדרך כלל מספיקה כדי להבין מה הדבר הראשון שכדאי לסדר."
+  <ContactBlock
+    siteKey={SITE_KEY}
+    heading="תכתבו לנו איפה זה נתקע."
+    body="לא צריך להתכונן או לדעת מראש מה רוצים לבנות. מספיק לספר מה קורה היום."
+    curve={false}
   />
 </SiteLayout>
 
 <style>
-  /* ══════ opener ══════ */
+  /* ====== opener ====== */
   .sv-hero {
     padding-top: clamp(9rem, 20svh, 14rem);
     padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+  .sv-hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
   }
   .sv-hero__h1 { display: flex; flex-direction: column; margin-block: 1rem 2rem; }
   .sv-hero__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .sv-hero__lead { font-size: var(--text-lead); color: var(--color-ink-2); max-width: 48ch; }
+  .sv-hero__lead { font-size: var(--text-lead); color: var(--color-ink-2); max-width: 46ch; }
+  .sv-hero__art {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--color-navy);
+    padding: clamp(1rem, 2vw, 1.75rem);
+  }
 
-  /* ══════ marquee rail ══════ */
-  .sv-rail {
-    border-block: 1px solid var(--color-line);
-    padding-block: clamp(0.75rem, 1.6vw, 1.25rem);
+  /* ====== colour blocks over a ghost word ====== */
+  /* The reference fixes an enormous word behind the page and scrolls the
+     blocks over it, so the gaps between blocks reveal a slice of it. */
+  .blocks {
+    position: relative;
     background: var(--color-surface);
+    isolation: isolate;
   }
-  .sv-rail__item {
+  .blocks__ghost {
+    position: sticky;
+    top: 38vh;
+    display: block;
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3.4vw, 3.25rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-size: clamp(4rem, 16vw, 16rem);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 0.8;
+    text-align: center;
     color: var(--color-ink);
-    opacity: 0.16;
-    white-space: nowrap;
+    opacity: 0.07;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
   }
-  .sv-rail__dot { color: var(--color-electric); opacity: 1; margin-inline: 0.5em; }
+  .blocks__list {
+    position: relative;
+    z-index: 1;
+    list-style: none;
+    margin: -22vh 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3rem, 8vw, 9rem);
+  }
+  .blocks__a {
+    display: block;
+    padding: clamp(2.5rem, 6vw, 5.5rem) clamp(1.25rem, 6vw, 6rem);
+    text-decoration: none;
+    color: inherit;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .blocks__item:hover .blocks__a { transform: scale(1.008); }
+  .blocks__n {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    opacity: 0.65;
+  }
+  /* The service name IS the display type here, in Hebrew. */
+  .blocks__name {
+    display: block;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 7vw, 6.5rem);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    margin-top: 0.3em;
+  }
+  .blocks__rule {
+    display: block;
+    width: min(18rem, 40%);
+    height: 1px;
+    margin: clamp(1rem, 2.5vw, 1.75rem) auto;
+    background: currentColor;
+    opacity: 0.35;
+  }
+  .blocks__lead {
+    display: block;
+    text-align: center;
+    max-width: 46ch;
+    margin-inline: auto;
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    opacity: 0.9;
+  }
+  .blocks__go {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    margin-top: clamp(1.25rem, 2.5vw, 2rem);
+    font-weight: 700;
+    font-size: var(--text-small);
+  }
+  .blocks__item:hover .blocks__go .arrow-inline { transform: translateX(-6px); }
 
-  /* ══════ chooser ══════ */
+  /* one colour per service, all drawn from the brand palette */
+  .blocks__item--royal    { background: var(--color-royal); color: #fff; }
+  .blocks__item--navy     { background: var(--color-navy);  color: #fff; }
+  .blocks__item--electric { background: #2997ff; color: #fff; }
+  .blocks__item--warm     { background: var(--color-warm-2); color: var(--color-ink); }
+  .blocks__item--deep     { background: #16308c; color: #fff; }
+
+  /* ====== chooser ====== */
+  .chooser-sec { position: relative; overflow: visible; }
   .chooser__h { margin-block: 0.75rem clamp(2rem, 4vw, 3.5rem); }
   .chooser { list-style: none; margin: 0; padding: 0; }
   .ch-row { border-top: 1px solid var(--color-line-strong); }
@@ -239,7 +301,8 @@ const discovery = [
   .ch__arrow { color: var(--color-royal); justify-self: end; }
   .ch-row:hover .ch__arrow { transform: translateX(-5px); }
 
-  /* ══════ the אפיון position ══════ */
+  /* ====== the אפיון position ====== */
+  .disc { position: relative; overflow: visible; }
   .disc__grid {
     display: grid;
     grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
@@ -275,68 +338,21 @@ const discovery = [
     margin-block: 0.35rem 0.5rem;
   }
   .disc__pd { color: rgba(255, 255, 255, 0.78); line-height: 1.65; max-width: 52ch; }
-
-  /* ══════ connected picture ══════ */
-  .sv-map__head { max-width: 46rem; margin-bottom: clamp(2rem, 4vw, 3.5rem); }
-  .sv-map__h { color: #fff; margin-block: 0.75rem 1.25rem; }
-  .sv-map__art { border-radius: var(--radius-xl); overflow: hidden; }
-
-  /* ══════ the five ══════ */
-  .rows-sec__k { margin-bottom: clamp(1.5rem, 3vw, 2.5rem); }
-  .svc-rows { list-style: none; margin: 0; padding: 0; }
-  .svc-row { border-top: 1px solid var(--color-line-strong); }
-  .svc-row:last-child { border-bottom: 1px solid var(--color-line-strong); }
-  .svc {
-    display: grid;
-    grid-template-columns: 3rem 3rem minmax(0, 1fr) 2rem;
-    gap: clamp(1rem, 2.5vw, 2.25rem);
-    align-items: start;
-    padding-block: clamp(1.75rem, 3.2vw, 3rem);
-    text-decoration: none;
-    color: inherit;
-  }
-  .svc__n { font-family: var(--font-display); font-weight: 700; font-size: var(--text-small); color: var(--color-electric); padding-top: 0.5rem; }
-  .svc__mark {
-    display: grid; place-items: center;
-    width: 3rem; height: 3rem;
-    border: 1px solid var(--color-line-strong);
-    border-radius: 50%;
-    color: var(--color-royal);
-    transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
-  }
-  .svc__mark :global(svg) { width: 1.375rem; height: 1.375rem; }
-  .svc-row:hover .svc__mark { background: var(--color-royal); border-color: var(--color-royal); color: #fff; }
-  .svc__main { display: flex; flex-direction: column; gap: 0.6rem; min-width: 0; }
-  .svc__name {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3vw, 3rem);
-    font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    transition: color var(--dur) var(--ease-out);
-  }
-  .svc-row:hover .svc__name { color: var(--color-royal); }
-  .svc__lead { font-size: var(--text-lead); color: var(--color-ink-2); max-width: 44ch; }
-  .svc__text { font-size: var(--text-small); line-height: 1.7; color: var(--color-ink-3); max-width: 64ch; }
-  .svc__arrow { color: var(--color-royal); justify-self: end; padding-top: 0.5rem; }
-  .svc-row:hover .svc__arrow { transform: translateX(-5px); }
-
   .pricing {
-    margin-top: clamp(2rem, 4vw, 3rem);
+    grid-column: 1 / -1;
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
     font-size: var(--text-small);
-    color: var(--color-ink-3);
+    color: rgba(255, 255, 255, 0.62);
     max-width: 60ch;
   }
 
   @media (max-width: 900px) {
-    .ch {
-      grid-template-columns: 2.25rem 1fr 1.25rem;
-      gap: 0.875rem;
-    }
-    /* the destination moves under the problem instead of beside it */
+    .sv-hero__grid { grid-template-columns: 1fr; }
+    .sv-hero__art { order: -1; max-width: 30rem; }
+    .blocks__ghost { top: 30vh; }
+    .blocks__list { margin-top: -18vh; gap: 2.5rem; }
+    .ch { grid-template-columns: 2.25rem 1fr 1.25rem; gap: 0.875rem; }
     .ch__to { grid-column: 2; }
     .disc__grid { grid-template-columns: 1fr; }
-    .svc { grid-template-columns: 2.25rem minmax(0, 1fr) 1.25rem; gap: 0.875rem; }
-    .svc__mark { display: none; }
   }
 </style>

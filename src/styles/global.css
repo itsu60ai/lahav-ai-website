@@ -508,8 +508,6 @@
      surrounding section scrolls. --- */
   .mo-sticky { position: sticky; top: var(--mo-sticky-top, 12vh); }
 
-  /* --- magnetic hover surface --- */
-  [data-magnetic] { transition: transform var(--dur) var(--ease-out); }
 }
 
 /* -------------------------------------------------------------

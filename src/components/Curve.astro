@@ -1,0 +1,63 @@
+---
+// SECTION TRANSITION.
+//
+// A straight horizontal seam between two colour bands is the flattest
+// thing a long scrolling page can do. The reference never does it: every
+// band arrives on a curve, and the curve is painted in the colour of the
+// band it introduces.
+//
+// Usage: drop it as the FIRST child of the section it introduces.
+//
+//   <section class="band band--blue">
+//     <Curve tone="blue" />
+//     ...
+//
+// `flip` mirrors the wave so consecutive transitions do not rhyme.
+export type CurveTone = 'blue' | 'navy' | 'warm' | 'soft' | 'surface' | 'hero';
+
+export interface Props {
+  tone?: CurveTone;
+  /** mirror the wave horizontally */
+  flip?: boolean;
+  /** 'wave' = symmetric swell, 'slope' = one long diagonal sweep */
+  shape?: 'wave' | 'slope';
+  class?: string;
+}
+const { tone = 'surface', flip = false, shape = 'wave', class: cls = '' } = Astro.props;
+
+const PATHS = {
+  wave: 'M0 90 C 280 90 380 0 720 0 C 1060 0 1160 90 1440 90 Z',
+  slope: 'M0 90 C 420 90 640 4 1000 2 C 1180 1 1320 30 1440 62 L 1440 90 Z',
+};
+---
+
+<span class:list={['curve', `curve--${tone}`, flip && 'is-flipped', cls]} aria-hidden="true">
+  <svg viewBox="0 0 1440 90" preserveAspectRatio="none" focusable="false">
+    <path d={PATHS[shape]} fill="currentColor" />
+  </svg>
+</span>
+
+<style>
+  /* Pulled up over the section above, so the band it belongs to appears
+     to rise into it rather than butt against it. */
+  .curve {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 100%;
+    display: block;
+    height: clamp(40px, 5.5vw, 84px);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .curve svg { display: block; width: 100%; height: 100%; }
+  .is-flipped svg { transform: scaleX(-1); }
+
+  /* currentColor is the paint, so each tone is one declaration */
+  .curve--surface { color: var(--color-surface); }
+  .curve--soft { color: var(--color-surface-2); }
+  .curve--warm { color: var(--color-warm); }
+  .curve--navy { color: var(--color-navy); }
+  .curve--blue { color: var(--color-royal); }
+  /* the hero gradient is vertical, so its top edge is a flat colour */
+  .curve--hero { color: #faf8fb; }
+</style>

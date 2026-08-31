@@ -7,14 +7,14 @@
 // a persistent primary CTA. Labels and structure stay LAHAV's own.
 import { NAV, CTA_PRIMARY, SERVICES } from '../lib/site';
 
-interface Props { currentPath: string }
-const { currentPath } = Astro.props;
+interface Props { currentPath: string; solid?: boolean }
+const { currentPath, solid = false } = Astro.props;
 const isActive = (href: string) => (href === '/' ? currentPath === '/' : currentPath.startsWith(href));
 ---
 
 <a class="skip-link" href="#main">דילוג לתוכן</a>
 
-<header class="hdr" data-header>
+<header class:list={['hdr', solid && 'is-solid']} data-header>
   <div class="u-container u-container--wide hdr__inner">
     <a class="hdr__brand" href="/" aria-label="LAHAV AI, לדף הבית">
       <img src="/brand/lahav-primary-lockup.svg" alt="LAHAV AI" width="104" height="77" />
@@ -78,23 +78,33 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     transition: background-color var(--dur) var(--ease-out),
                 border-color var(--dur) var(--ease-out);
   }
-  /* Solid only once scrolled, so the hero reads full-bleed. */
+  /* Solid once scrolled, so the hero reads full-bleed, or from the start
+     on a page that opens on a colour block. */
+  .hdr.is-solid,
   :global(body.is-scrolled) .hdr {
     background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom-color: var(--color-line);
   }
+  /* Reading order, not source order. The reference puts the mark at the
+     far LEFT and the navigation at the reading-start (right) edge, so on
+     an RTL page the brand has to be the LAST flex item. `order` does that
+     without moving the logo out of first position in the DOM, where it
+     belongs for keyboard and screen-reader users. */
   .hdr__inner {
     display: flex;
     align-items: center;
     gap: clamp(1rem, 3vw, 2.5rem);
     min-height: 84px;
   }
+  .hdr__nav   { order: 1; }
+  .hdr__end   { order: 2; }
+  .hdr__brand { order: 3; margin-inline-start: auto; min-width: 0; }
   .hdr__brand { flex: none; display: block; }
   .hdr__brand img { width: clamp(74px, 6vw, 104px); height: auto; }
 
-  .hdr__nav { display: flex; align-items: center; gap: 0.25rem; margin-inline-start: auto; }
+  .hdr__nav { display: flex; align-items: center; gap: 0.25rem; }
   .hdr__link {
     position: relative;
     padding: 0.6rem 0.9rem;
