@@ -1,19 +1,22 @@
 /* =============================================================
-   LAHAV AI, foundation
-   Implements: docs/approved/DESIGN_BRIEF.md, 02_BRAND/BRAND_RULES.md.
-   Hebrew-first, native RTL. Single committed DARK theme (brand default,
-   2026-08-31 decision, supersedes F-1's "never all-dark" — see
-   docs/SOURCE_OF_TRUTH.md). Same fixed brand palette and type scale as
-   before; only which tokens count as "surface" and "ink" flipped.
+   LAHAV AI, foundation — V3 design system.
+   Rebuilt 2026-08-31 (decision F-20) as a LIGHT, editorial,
+   large-format system. Supersedes the dark V2 theme (F-19).
+
+   Design language reference: the client-supplied STG.AI package.
+   What is reproduced: the typographic SCALE (display type runs on
+   viewport units with no small max cap), the light warm-neutral
+   surface family, full-bleed contrast bands, oversized watermark
+   headings, editorial hairline lists, and the motion density.
+   What is NOT taken: any STG copy, asset, logo or brand colour.
+
+   Hebrew-first, native RTL.
    ============================================================= */
 
 @import '@fontsource-variable/heebo';
 @import '@fontsource-variable/assistant';
 @import 'tailwindcss';
 
-/* -------------------------------------------------------------
-   1. Tokens
-   ------------------------------------------------------------- */
 @theme {
   /* --- Brand palette (fixed, R12 / BRAND_RULES) --- */
   --color-navy: #0b1530;
@@ -22,79 +25,86 @@
   --color-cool: #f2f4f7;
   --color-white: #ffffff;
 
-  /* --- Neutrals: dark-first. The same rgba(white, N%) steps already used
-     throughout the hand-built diagrams and .section--navy/.panel-dark, so
-     the whole site now reads as one consistent surface instead of "light
-     site with dark bands bolted on". --- */
-  --color-ink: rgba(255, 255, 255, 0.94); /* primary text on dark */
-  --color-ink-2: rgba(255, 255, 255, 0.74); /* secondary text */
-  --color-ink-3: rgba(255, 255, 255, 0.55); /* muted / captions */
-  --color-line: rgba(255, 255, 255, 0.12); /* hairlines, borders */
-  --color-line-strong: rgba(255, 255, 255, 0.22);
-  --color-surface: #0b1530; /* = --color-navy: the page's base now */
-  --color-surface-2: #101c3d; /* alternating-section tone, one step up */
-  --color-surface-3: #16224a; /* cards, inputs, dropdowns: one step up again */
+  /* --- Light surface family. Warm off-whites, never a flat grey:
+     the reference's light sections sit slightly warm so the blue
+     bands read as a deliberate temperature shift, not a theme break. */
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f7f9;   /* alternating sections */
+  --color-surface-3: #f0f1f5;   /* cards, inputs, wells */
+  --color-warm: #faf7f4;        /* warm editorial band */
+  --color-warm-2: #f4eeea;      /* warm, one step deeper */
 
-  /* --- Semantic, functional use only (D-Q1). Brightened from the original
-     light-theme values so they still meet contrast on a dark surface. --- */
-  --color-success: #34d399;
-  --color-error: #f87171;
-  --color-success-soft: rgba(52, 211, 153, 0.14);
-  --color-error-soft: rgba(248, 113, 113, 0.14);
+  /* --- Ink --- */
+  --color-ink: #0b1530;         /* 18.3:1 on white */
+  --color-ink-2: #414d68;       /* 8.6:1  on white */
+  --color-ink-3: #6a748c;       /* 4.6:1  on white */
+  --color-line: #e6e8ee;
+  --color-line-strong: #ccd1dc;
 
-  /* --- Type families --- */
+  /* --- Semantic --- */
+  --color-success: #15803d;
+  --color-error: #b91c1c;
+  --color-success-soft: #eaf5ee;
+  --color-error-soft: #fdeceb;
+
+  /* --- Type families (unchanged: LAHAV identity) --- */
   --font-display: 'Heebo Variable', 'Heebo', 'Segoe UI', Arial, sans-serif;
   --font-body: 'Assistant Variable', 'Assistant', 'Segoe UI', Arial, sans-serif;
 
-  /* --- Type scale: Apple-grade presence. Fluid, never below the a11y floor.
-     Revised per client refinement (post design-system approval): section
-     headings (h2) carry noticeably more editorial weight, and every
-     supporting/body size has a raised floor so nothing on the real site
-     ever reads as small or thin. --- */
-  --text-display-1: clamp(3rem, 1.1rem + 7.2vw, 7.25rem); /*  48 → 116 */
-  --text-mega: clamp(3.125rem, 0.9rem + 8vw, 8rem); /*  50 → 128, hero only */
-  --text-display-2: clamp(2.5rem, 1.35rem + 4.4vw, 5.25rem); /*  40 →  84 */
-  --text-h1: clamp(2.25rem, 1.4rem + 3.1vw, 4rem); /*  36 →  64 */
-  --text-h2: clamp(2rem, 1.35rem + 2.4vw, 3.25rem); /*  32 →  52 */
-  --text-h3: clamp(1.375rem, 1.2rem + 0.7vw, 1.875rem); /*  22 →  30 */
-  --text-lead: clamp(1.1875rem, 1.05rem + 0.55vw, 1.625rem); /*  19 →  26 */
-  --text-body-lg: 1.25rem; /*  20 */
-  --text-body: 1.125rem; /*  18 */
-  --text-small: 1rem; /*  16 */
-  --text-micro: 0.875rem; /*  14 */
+  /* --- TYPE SCALE — the core of this redesign.
+     The reference drives display type off the viewport (8vw–12vw) with
+     no small ceiling, which is what produces the editorial impact. These
+     mirror that, with a floor so small screens stay readable and a
+     ceiling only high enough to stop absurdity on ultrawide. --- */
+  --text-mega: clamp(3.25rem, 12vw, 15rem);      /* one-word statements */
+  --text-display-1: clamp(2.75rem, 9vw, 11rem);  /* hero lines */
+  --text-display-2: clamp(2.25rem, 7vw, 8.5rem); /* section openers */
+  --text-display-3: clamp(1.875rem, 5vw, 5.5rem);/* large sub-statements */
+  --text-h1: clamp(1.875rem, 3.6vw, 3.75rem);
+  --text-h2: clamp(1.625rem, 2.8vw, 3rem);
+  --text-h3: clamp(1.25rem, 1.5vw, 1.75rem);
+  --text-lead: clamp(1.125rem, 1.35vw, 1.5rem);
+  --text-body-lg: 1.1875rem;
+  --text-body: 1.0625rem;
+  --text-small: 0.9375rem;
+  --text-micro: 0.8125rem;
 
-  /* --- Spacing: 4px base, generous at the top end (whitespace is the premium signal) --- */
+  /* --- Spacing --- */
   --spacing: 0.25rem;
-  --space-section: clamp(4.5rem, 3rem + 7vw, 10rem);
-  --space-section-tight: clamp(3rem, 2rem + 4vw, 6rem);
-  --container-max: 1200px;
-  --container-wide: 1440px;
-  --measure: 68ch;
+  --space-section: clamp(5rem, 10vw, 12rem);
+  --space-section-tight: clamp(3rem, 5vw, 6rem);
+  --container-max: 1320px;
+  --container-wide: 1560px;
+  --measure: 62ch;
 
   /* --- Radii --- */
   --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 26px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 32px;
   --radius-full: 999px;
 
-  /* --- Elevation: on a dark page a black shadow reads as almost nothing,
-     so depth now leans on the lighter surface step (surface-3) plus a
-     deeper, more opaque shadow underneath it than the old light-theme
-     values needed. --- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 28px 70px rgba(0, 0, 0, 0.45);
+  /* --- Elevation: soft, wide, navy-tinted --- */
+  --shadow-sm: 0 1px 2px rgba(11, 21, 48, 0.05);
+  --shadow: 0 12px 34px rgba(11, 21, 48, 0.08);
+  --shadow-lg: 0 30px 80px rgba(11, 21, 48, 0.14);
+  --shadow-card: 0 18px 50px rgba(11, 21, 48, 0.10);
 
-  /* --- Motion --- */
-  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* --- Motion. One easing family across the whole site so every
+     reveal, hover and state change feels like one system. --- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);      /* expo-out: the signature */
   --ease-inout: cubic-bezier(0.65, 0.05, 0.36, 1);
-  --dur-fast: 140ms;
-  --dur: 220ms;
-  --dur-slow: 420ms;
+  --dur-fast: 180ms;
+  --dur: 420ms;
+  --dur-slow: 900ms;
+  --dur-reveal: 1100ms;
 
-  /* --- Brand gradient --- */
+  /* --- Brand gradients --- */
   --gradient-brand: linear-gradient(118deg, #0b1530 0%, #1d4ed8 56%, #2997ff 100%);
+  --gradient-blue: linear-gradient(160deg, #1d4ed8 0%, #2997ff 100%);
+  --gradient-hero: radial-gradient(120% 90% at 78% 8%, rgba(41,151,255,0.16), transparent 58%),
+                   radial-gradient(100% 80% at 12% 22%, rgba(29,78,216,0.10), transparent 60%),
+                   linear-gradient(180deg, #faf8fb 0%, #f4f2f7 55%, #eef1f8 100%);
 }
 
 /* -------------------------------------------------------------
@@ -112,242 +122,175 @@
     color: var(--color-ink);
     font-family: var(--font-body);
     font-size: var(--text-body);
-    line-height: 1.7; /* Hebrew needs room */
+    line-height: 1.7;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-  }
-  /* One continuous canvas for the whole page, not a stack of flat-color
-     blocks — client feedback 2026-08-31: hard section-to-section color
-     cuts read as "fighting the colors between the pieces". Sections below
-     no longer paint their own opaque background; they sit as transparent
-     windows over this single gradient, the way the dark reference sites
-     do it. Scoped to the marketing site only — the admin tool (body.ad)
-     keeps its plain light background from the rule above. */
-  body:not(.ad) {
-    background: linear-gradient(
-      180deg,
-      #0b1530 0%,
-      #0d1a3d 30%,
-      #0f1f48 60%,
-      #132657 100%
-    );
-    background-repeat: no-repeat;
+    overflow-x: hidden;
   }
 
-  /* Headings: Heebo, tight and confident. Hebrew gets almost no negative
-     tracking, it hurts legibility, only the largest display sizes are
-     optically corrected. */
-  h1,
-  h2,
-  h3,
-  h4 {
+  /* Display type is set tight and heavy. Hebrew takes almost no negative
+     tracking (it hurts legibility), so only the largest optical sizes get
+     any, and even then very little. */
+  h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-weight: 700;
-    line-height: 1.12;
-    letter-spacing: -0.005em;
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.01em;
     margin: 0;
     text-wrap: balance;
   }
 
-  p {
-    margin: 0;
-    max-width: var(--measure);
-  }
+  p { margin: 0; max-width: var(--measure); }
 
-  a {
-    color: var(--color-electric);
-    text-underline-offset: 3px;
-  }
+  a { color: var(--color-royal); text-underline-offset: 3px; }
 
-  /* One focus treatment for the whole site */
   :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
     outline: 3px solid var(--color-electric);
     outline-offset: 3px;
     border-radius: 4px;
   }
 
-  img,
-  svg {
-    max-width: 100%;
-    height: auto;
-    display: block;
-  }
+  img, svg, video { max-width: 100%; height: auto; display: block; }
 
-  /* Numbers line up in tables and stat rows */
-  table,
-  .tabular {
-    font-variant-numeric: tabular-nums;
-  }
+  table, .tabular { font-variant-numeric: tabular-nums; }
 
-  ::selection {
-    background: color-mix(in srgb, var(--color-electric) 24%, transparent);
-  }
+  ::selection { background: color-mix(in srgb, var(--color-electric) 24%, transparent); }
 }
 
 /* -------------------------------------------------------------
-   3. Utilities used across the site
+   3. Layout + type utilities
    ------------------------------------------------------------- */
 @layer components {
   .u-container {
     width: 100%;
     max-width: var(--container-max);
     margin-inline: auto;
-    padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
   }
+  .u-container--wide { max-width: var(--container-wide); }
+  .u-container--full { max-width: none; padding-inline: clamp(1.25rem, 3vw, 2.5rem); }
 
-  .u-section {
-    padding-block: var(--space-section);
-  }
+  .u-section { padding-block: var(--space-section); }
+  .u-section-tight { padding-block: var(--space-section-tight); }
 
-  .u-section-tight {
-    padding-block: var(--space-section-tight);
-  }
+  /* --- Surface bands. A page is a sequence of these. --- */
+  .band { position: relative; }
+  .band--warm { background: var(--color-warm); }
+  .band--soft { background: var(--color-surface-2); }
+  .band--hero { background: var(--gradient-hero); }
 
-  /* Section rhythm: base → alternating → base (Design Brief §5.3, now on
-     dark tones instead of white/gray). Every page section reaches for one
-     of these two rather than inventing a new background per page. */
-  .section {
-    padding-block: var(--space-section);
-  }
-  /* No flat fill on either variant anymore (client feedback 2026-08-31):
-     both sit transparently over the single body-level gradient instead of
-     each painting its own opaque block, which is what created the hard
-     seams between sections. .section--gray keeps its name for now (every
-     page still references the class) but the rhythm it creates is a very
-     faint wash, not a color swap. */
-  .section--gray {
-    background: rgba(255, 255, 255, 0.025);
-  }
-  .section--navy {
-    color: rgba(255, 255, 255, 0.82);
-    position: relative;
+  /* The full-bleed contrast band: the reference's signature move for
+     breaking a long light page. Text inside flips to white automatically. */
+  .band--blue {
+    background: var(--gradient-blue);
+    color: rgba(255, 255, 255, 0.9);
     overflow: clip;
   }
-  .section--navy::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(900px 520px at 82% 4%, rgba(41, 151, 255, 0.2), transparent 62%),
-      radial-gradient(760px 520px at 10% 74%, rgba(29, 78, 216, 0.17), transparent 66%);
+  .band--blue :where(h1, h2, h3, h4) { color: #fff; }
+  .band--navy {
+    background: var(--color-navy);
+    color: rgba(255, 255, 255, 0.86);
+    overflow: clip;
   }
-  .section--navy > * {
-    position: relative;
-  }
-  .section--navy :where(h1, h2, h3, h4) {
-    color: #fff;
-  }
-  .section--navy .t-eyebrow {
-    color: var(--color-electric);
-  }
-  .section--navy .t-lead {
-    color: rgba(255, 255, 255, 0.74);
-  }
+  .band--navy :where(h1, h2, h3, h4) { color: #fff; }
+  .band--blue .t-eyebrow,
+  .band--navy .t-eyebrow { color: rgba(255, 255, 255, 0.72); }
+  .band--blue .t-lead,
+  .band--navy .t-lead { color: rgba(255, 255, 255, 0.82); }
+  .band--blue a,
+  .band--navy a { color: #fff; }
 
-  /* A visual that is allowed to dominate: full-bleed, viewport-scale. */
-  .stage {
-    position: relative;
-    width: 100%;
-    min-height: min(78vh, 720px);
-    display: grid;
-    place-items: center;
-    padding-block: clamp(2rem, 5vw, 4rem);
+  /* --- Type roles --- */
+  .t-mega {
+    font-family: var(--font-display);
+    font-size: var(--text-mega);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
   }
-  .stage__art {
-    width: min(100%, 1180px);
-    height: auto;
-  }
-
-  /* Section intro used site-wide. Wide enough for display type. */
-  .lede {
-    max-width: 52rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: clamp(3rem, 5vw, 4.5rem);
-  }
-  .lede--center {
-    margin-inline: auto;
-    text-align: center;
-    align-items: center;
-  }
-
-  /* Type roles, the scale above, applied */
   .t-display-1 {
     font-family: var(--font-display);
     font-size: var(--text-display-1);
-    font-weight: 800;
-    line-height: 1.02;
-    letter-spacing: -0.022em;
+    font-weight: 900;
+    line-height: 0.94;
+    letter-spacing: -0.025em;
   }
   .t-display-2 {
     font-family: var(--font-display);
     font-size: var(--text-display-2);
     font-weight: 800;
-    line-height: 1.06;
-    letter-spacing: -0.016em;
+    line-height: 0.98;
+    letter-spacing: -0.02em;
   }
-  .t-h1 {
+  .t-display-3 {
     font-family: var(--font-display);
-    font-size: var(--text-h1);
-    font-weight: 700;
-    line-height: 1.12;
-    letter-spacing: -0.01em;
-  }
-  .t-h2 {
-    font-family: var(--font-display);
-    font-size: var(--text-h2);
+    font-size: var(--text-display-3);
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.02;
     letter-spacing: -0.015em;
   }
-  .t-h3 {
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    font-weight: 700;
-    line-height: 1.25;
-  }
-  .t-lead {
-    font-size: var(--text-lead);
-    line-height: 1.55;
-    color: var(--color-ink-2);
-    font-weight: 400;
-  }
-  .t-body {
-    font-size: var(--text-body);
-    line-height: 1.7;
-  }
-  .t-small {
-    font-size: var(--text-small);
-    line-height: 1.6;
-    font-weight: 500;
-    color: var(--color-ink-2);
-  }
+  .t-h1 { font-family: var(--font-display); font-size: var(--text-h1); font-weight: 800; line-height: 1.1; }
+  .t-h2 { font-family: var(--font-display); font-size: var(--text-h2); font-weight: 800; line-height: 1.12; }
+  .t-h3 { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 700; line-height: 1.25; }
+  .t-lead { font-size: var(--text-lead); line-height: 1.55; color: var(--color-ink-2); font-weight: 400; }
+  .t-body { font-size: var(--text-body); line-height: 1.7; }
+  .t-small { font-size: var(--text-small); line-height: 1.6; color: var(--color-ink-2); }
+  .t-micro { font-size: var(--text-micro); color: var(--color-ink-3); }
+
+  /* The small all-caps editorial label that opens most sections. */
   .t-eyebrow {
+    font-family: var(--font-body);
     font-size: var(--text-micro);
     font-weight: 700;
-    letter-spacing: 0.09em;
-    /* electric, not royal: royal-on-navy measures ~2.6:1, well under the
-       4.5:1 text floor. electric measures ~5.8:1. */
-    color: var(--color-electric);
-    font-family: var(--font-body);
-  }
-  .t-micro {
-    font-size: var(--text-micro);
-    font-weight: 500;
+    letter-spacing: 0.16em;
     color: var(--color-ink-3);
+    text-transform: uppercase;
+    display: block;
   }
 
-  /* --- Buttons: three levels only (CTA hierarchy, R2 / DESIGN_BRIEF §7) --- */
+  /* Latin display accent, used the way the reference uses an English
+     line above a Hebrew statement. Latin only, never Hebrew: Hebrew has
+     no italic tradition and a synthesised slant looks wrong. */
+  .t-latin {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  /* Oversized watermark heading sitting behind content. */
+  .t-ghost {
+    font-family: var(--font-display);
+    font-size: var(--text-mega);
+    font-weight: 900;
+    line-height: 0.86;
+    letter-spacing: -0.03em;
+    color: color-mix(in srgb, var(--color-ink) 7%, transparent);
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .band--blue .t-ghost,
+  .band--navy .t-ghost { color: rgba(255, 255, 255, 0.1); }
+
+  .u-measure { max-width: var(--measure); }
+  .u-stack { display: flex; flex-direction: column; }
+}
+
+/* -------------------------------------------------------------
+   4. Buttons, cards, forms
+   ------------------------------------------------------------- */
+@layer components {
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    min-height: 48px;
-    padding-inline: 1.5rem;
+    min-height: 54px;
+    padding-inline: 1.75rem;
     border: 1.5px solid transparent;
     border-radius: var(--radius-full);
     font-family: var(--font-body);
@@ -356,100 +299,284 @@
     line-height: 1;
     text-decoration: none;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
     transition:
       background-color var(--dur) var(--ease-out),
       border-color var(--dur) var(--ease-out),
       color var(--dur) var(--ease-out),
       transform var(--dur-fast) var(--ease-out);
   }
-  .btn:active {
-    transform: translateY(1px);
-  }
-  .btn[disabled],
-  .btn[aria-disabled='true'] {
-    cursor: not-allowed;
-    opacity: 1;
-  }
+  .btn:active { transform: translateY(1px) scale(0.99); }
+  .btn[disabled], .btn[aria-disabled='true'] { cursor: not-allowed; opacity: 0.55; }
 
-  .btn-primary {
+  .btn-primary { background: var(--color-royal); color: #fff; }
+  .btn-primary:hover { background: #1741bb; }
+  .btn-secondary { background: transparent; color: var(--color-royal); border-color: var(--color-line-strong); }
+  .btn-secondary:hover { background: color-mix(in srgb, var(--color-royal) 6%, transparent); border-color: var(--color-royal); }
+  .btn-tertiary { background: transparent; color: var(--color-royal); padding-inline: 0.25rem; min-height: 40px; text-decoration: underline; text-decoration-thickness: 1.5px; }
+  .btn-lg { min-height: 62px; padding-inline: 2.25rem; font-size: var(--text-body-lg); }
+
+  .band--blue .btn-primary, .band--navy .btn-primary { background: #fff; color: var(--color-royal); }
+  .band--blue .btn-primary:hover, .band--navy .btn-primary:hover { background: #eaf1ff; }
+  .band--blue .btn-secondary, .band--navy .btn-secondary { color: #fff; border-color: rgba(255,255,255,0.5); }
+  .band--blue .btn-secondary:hover, .band--navy .btn-secondary:hover { background: rgba(255,255,255,0.12); border-color: #fff; }
+
+  /* The round CTA disc from the reference hero. */
+  .btn-disc {
+    display: inline-grid;
+    place-items: center;
+    text-align: center;
+    width: clamp(7.5rem, 11vw, 10.5rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
     background: var(--color-royal);
-    color: var(--color-white);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--text-body);
+    line-height: 1.15;
+    text-decoration: none;
+    padding: 1rem;
+    box-shadow: 0 18px 44px rgba(29, 78, 216, 0.34);
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
   }
-  .btn-primary:hover {
-    background: #1741bb;
-  }
-  .btn-primary[disabled] {
-    background: var(--color-surface-3);
-    color: var(--color-ink-3);
-  }
+  .btn-disc:hover { transform: scale(1.06); box-shadow: 0 24px 60px rgba(29, 78, 216, 0.42); }
 
-  /* Outline button, white-on-dark by default now — this used to be the
-     ".on-dark" exception (see below); on this theme it is the norm. */
-  .btn-secondary {
-    background: transparent;
-    color: var(--color-white);
-    border-color: rgba(255, 255, 255, 0.5);
-  }
-  .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-  .btn-secondary[disabled] {
-    color: var(--color-ink-3);
-    border-color: var(--color-line-strong);
-  }
-
-  .btn-tertiary {
-    background: transparent;
-    color: var(--color-electric);
-    padding-inline: 0.25rem;
-    min-height: 40px;
-    text-decoration: underline;
-    text-decoration-thickness: 1.5px;
-  }
-  .btn-tertiary:hover {
-    color: #5cb2ff;
-  }
-
-  .btn-lg {
-    min-height: 58px;
-    padding-inline: 2rem;
-    font-size: var(--text-body-lg);
-  }
-
-  /* .on-dark is now redundant for .btn-secondary specifically (the base
-     rule above already matches it) — kept as a harmless no-op alias so
-     nothing that still carries the class anywhere breaks. */
-  .on-dark .btn-secondary {
-    color: var(--color-white);
-    border-color: rgba(255, 255, 255, 0.5);
-  }
-  .on-dark .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  /* --- Surfaces ---
-     Cards use surface-3, not the page's own surface: on a dark page the
-     card has to be a visible step lighter than the page behind it, the
-     way it was already implicitly true (page = white, card = white) never
-     had to be said out loud on the old light theme. */
   .card {
-    background: var(--color-surface-3);
+    background: var(--color-surface);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-lg);
     padding: clamp(1.5rem, 2.5vw, 2.25rem);
-    transition:
-      border-color var(--dur) var(--ease-out),
-      box-shadow var(--dur) var(--ease-out);
+    transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
   }
-  .card:hover {
-    border-color: var(--color-line-strong);
-    box-shadow: var(--shadow);
+  .card:hover { border-color: var(--color-line-strong); box-shadow: var(--shadow-card); transform: translateY(-3px); }
+
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-size: var(--text-small); font-weight: 700; color: var(--color-ink); }
+  .field-hint { font-size: var(--text-micro); color: var(--color-ink-3); }
+  .input {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-line-strong);
+    border-radius: var(--radius);
+    padding: 0.875rem 1.125rem;
+    min-height: 56px;
+    width: 100%;
+    transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  }
+  .input::placeholder { color: var(--color-ink-3); }
+  .input:hover { border-color: #b6c0d1; }
+  .input:focus { outline: none; border-color: var(--color-royal); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-electric) 20%, transparent); }
+  .input[aria-invalid='true'] { border-color: var(--color-error); }
+  .input-ltr { direction: ltr; text-align: start; }
+  .field-error { display: flex; align-items: center; gap: 0.4rem; font-size: var(--text-small); color: var(--color-error); font-weight: 600; }
+  .field-success { display: flex; align-items: center; gap: 0.4rem; font-size: var(--text-small); color: var(--color-success); font-weight: 600; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    font-size: var(--text-micro); font-weight: 700;
+    padding: 0.4rem 0.85rem; border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-electric) 12%, transparent);
+    color: #14509f;
+  }
+  .band--blue .chip, .band--navy .chip { background: rgba(255,255,255,0.16); color: #fff; }
+
+  .rule { height: 1px; border: 0; background: var(--color-line); margin: 0; }
+
+  .arrow-inline { display: inline-block; transition: transform var(--dur) var(--ease-out); }
+  a:hover > .arrow-inline, .btn:hover > .arrow-inline { transform: translateX(-4px); }
+
+  .link-arrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: var(--font-body); font-size: var(--text-small); font-weight: 700;
+    color: var(--color-royal); text-decoration: none;
+    padding-block: 0.35rem; border-bottom: 1.5px solid transparent;
+    align-self: flex-start;
+    transition: border-color var(--dur) var(--ease-out);
+  }
+  .link-arrow:hover { border-bottom-color: currentColor; }
+  .band--blue .link-arrow, .band--navy .link-arrow { color: #fff; }
+
+  .skip-link {
+    position: absolute; inset-inline-start: 1rem; top: -100px; z-index: 100;
+    background: var(--color-navy); color: #fff;
+    padding: 0.75rem 1.25rem; border-radius: var(--radius);
+    transition: top var(--dur) var(--ease-out);
+  }
+  .skip-link:focus { top: 1rem; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+}
+
+/* -------------------------------------------------------------
+   5. MOTION PRIMITIVES
+   Every animation on the public site is one of these, so the whole
+   thing reads as a single motion language rather than per-page
+   invention. All are opt-in via data attributes and all are driven
+   by src/components/Motion.astro.
+
+   Nothing here hides content permanently: the "hidden" start state
+   is only applied once JS has confirmed it can run (html.mo-ready),
+   so a no-JS or failed-JS visitor sees the finished layout.
+   ------------------------------------------------------------- */
+@layer components {
+
+  /* --- reveal: fade + rise. The workhorse. --- */
+  html.mo-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(var(--mo-y, 28px));
+    transition:
+      opacity var(--dur-reveal) var(--ease-out) var(--mo-delay, 0ms),
+      transform var(--dur-reveal) var(--ease-out) var(--mo-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  html.mo-ready [data-reveal].is-in { opacity: 1; transform: none; }
+
+  /* --- reveal-line: a masked line that wipes up into place. Used on
+     display headings, one element per visual line. --- */
+  .mo-line { display: block; overflow: hidden; }
+  .mo-line > span { display: block; }
+  html.mo-ready .mo-line > span {
+    transform: translateY(105%);
+    transition: transform var(--dur-reveal) var(--ease-out) var(--mo-delay, 0ms);
+    will-change: transform;
+  }
+  html.mo-ready .mo-line.is-in > span { transform: none; }
+
+  /* --- clip reveal: an image/panel unmasking from the bottom edge. --- */
+  html.mo-ready [data-clip] {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path var(--dur-reveal) var(--ease-out) var(--mo-delay, 0ms);
+    will-change: clip-path;
+  }
+  html.mo-ready [data-clip].is-in { clip-path: inset(0 0 0 0); }
+
+  /* --- scale-in: media settling from slightly oversized. Pairs with
+     clip on hero art. --- */
+  html.mo-ready [data-scale-in] {
+    transform: scale(1.12);
+    transition: transform 1400ms var(--ease-out) var(--mo-delay, 0ms);
+    will-change: transform;
+  }
+  html.mo-ready [data-scale-in].is-in { transform: scale(1); }
+
+  /* --- parallax: y-offset driven by scroll progress, set as a CSS
+     variable by JS so the browser only does compositing. --- */
+  [data-parallax] { will-change: transform; transform: translate3d(0, var(--mo-py, 0px), 0); }
+
+  /* --- marquee: continuous horizontal type. Duplicated content is
+     inserted by JS so the loop is seamless at any width. --- */
+  .mo-marquee { overflow: hidden; display: flex; width: 100%; }
+  .mo-marquee__track {
+    display: flex;
+    flex: none;
+    gap: var(--mo-gap, 3rem);
+    padding-inline-end: var(--mo-gap, 3rem);
+    min-width: max-content;
+    animation: mo-marquee var(--mo-speed, 38s) linear infinite;
+    will-change: transform;
+  }
+  .mo-marquee:hover .mo-marquee__track { animation-play-state: paused; }
+  .mo-marquee--reverse .mo-marquee__track { animation-direction: reverse; }
+  @keyframes mo-marquee {
+    /* RTL-safe: the track is laid out in the document's own direction,
+       so a single -50% translate loops correctly either way. */
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+  }
+  [dir='rtl'] .mo-marquee__track { animation-name: mo-marquee-rtl; }
+  @keyframes mo-marquee-rtl {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(50%, 0, 0); }
   }
 
-  /* Dark system panel, the reusable base for every "bespoke system graphic"
-     on production pages (Home hero visual, service diagrams, etc). Built-in
-     depth and lighting so no page has to reinvent it; each page then adds
-     its own diagram content on top. */
+  /* --- counter/stagger helper: children inherit an index-based delay. --- */
+  [data-stagger] > * { --mo-delay: calc(var(--i, 0) * var(--mo-step, 90ms)); }
+
+  /* --- sticky storytelling: a pinned column whose panels swap as the
+     surrounding section scrolls. --- */
+  .mo-sticky { position: sticky; top: var(--mo-sticky-top, 12vh); }
+
+  /* --- magnetic hover surface --- */
+  [data-magnetic] { transition: transform var(--dur) var(--ease-out); }
+}
+
+/* -------------------------------------------------------------
+   6. Motion preferences.
+   Reduced motion keeps the full composition and simply removes
+   movement — nothing is left invisible or unreachable.
+   ------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html.mo-ready [data-reveal],
+  html.mo-ready .mo-line > span,
+  html.mo-ready [data-clip],
+  html.mo-ready [data-scale-in] {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+  .mo-marquee__track { animation: none !important; }
+  [data-parallax] { transform: none !important; }
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* -------------------------------------------------------------
+   7. Compatibility layer.
+   The service/about pages carry composition classes from V2. Rather
+   than rewrite every one of those bespoke sections (and risk losing
+   their individual compositions, which are still good), the old names
+   are mapped onto the new system here. New work should use .band /
+   .u-section / .t-* directly.
+   ------------------------------------------------------------- */
+@layer components {
+  .section { padding-block: var(--space-section); position: relative; }
+  .section-tight { padding-block: var(--space-section-tight); position: relative; }
+  .section--gray { background: var(--color-surface-2); }
+  .section--navy {
+    background: var(--color-navy);
+    color: rgba(255, 255, 255, 0.86);
+    position: relative;
+    overflow: clip;
+  }
+  .section--navy :where(h1, h2, h3, h4) { color: #fff; }
+  .section--navy .t-eyebrow { color: rgba(255, 255, 255, 0.62); }
+  .section--navy .t-lead { color: rgba(255, 255, 255, 0.8); }
+  .section--navy .link-arrow { color: #fff; }
+
+  /* Section intro block. */
+  .lede {
+    max-width: 56rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .lede--center { margin-inline: auto; text-align: center; align-items: center; }
+
+  /* A visual allowed to dominate its section. */
+  .stage {
+    position: relative;
+    width: 100%;
+    min-height: min(72vh, 700px);
+    display: grid;
+    place-items: center;
+    padding-block: clamp(2rem, 5vw, 4rem);
+  }
+  .stage__art { width: min(100%, 1180px); height: auto; }
+
+  /* Dark panel used behind diagrams. */
   .panel-dark {
     background: var(--color-navy);
     color: rgba(255, 255, 255, 0.86);
@@ -468,239 +595,29 @@
       radial-gradient(760px 420px at 88% 6%, rgba(41, 151, 255, 0.24), transparent 60%),
       radial-gradient(520px 360px at 8% 96%, rgba(29, 78, 216, 0.22), transparent 65%);
   }
-  .panel-dark::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.5;
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(120% 100% at 70% 20%, #000 0%, transparent 72%);
-  }
-  .panel-dark > * {
-    position: relative;
-    z-index: 1;
-  }
+  .panel-dark > * { position: relative; z-index: 1; }
 
-  /* Restrained motion for system diagrams: a soft breathing pulse on
-     connection points. Disabled globally under prefers-reduced-motion
-     (see section 4 below). */
-  .panel-node-pulse {
-    animation: panel-pulse 3200ms ease-in-out infinite;
-  }
+  .panel-node-pulse { animation: panel-pulse 3200ms ease-in-out infinite; }
   @keyframes panel-pulse {
-    0%,
-    100% {
-      opacity: 0.55;
-    }
-    50% {
-      opacity: 1;
-    }
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
   }
-  .panel-flow-line {
-    stroke-dasharray: 5 7;
-    animation: panel-flow 2600ms linear infinite;
-  }
-  @keyframes panel-flow {
-    to {
-      stroke-dashoffset: -24;
-    }
-  }
+  .panel-flow-line { stroke-dasharray: 5 7; animation: panel-flow 2600ms linear infinite; }
+  @keyframes panel-flow { to { stroke-dashoffset: -24; } }
 
-  /* --- Forms --- */
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .field-label {
-    font-size: var(--text-small);
-    font-weight: 600;
-    color: var(--color-ink);
-  }
-  .field-hint {
-    font-size: var(--text-micro);
-    color: var(--color-ink-3);
-  }
-  .input {
-    font-family: var(--font-body);
-    font-size: var(--text-body);
-    color: var(--color-ink);
-    background: var(--color-surface-3);
-    border: 1.5px solid var(--color-line-strong);
-    border-radius: var(--radius);
-    padding: 0.75rem 1rem;
-    min-height: 50px;
-    width: 100%;
-    transition:
-      border-color var(--dur) var(--ease-out),
-      box-shadow var(--dur) var(--ease-out);
-  }
-  .input::placeholder {
-    color: var(--color-ink-3);
-  }
-  .input:hover {
-    border-color: #b6c0d1;
-  }
-  .input:focus {
-    outline: none;
-    border-color: var(--color-royal);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-electric) 22%, transparent);
-  }
-  .input[aria-invalid='true'] {
-    border-color: var(--color-error);
-  }
-  .input[disabled] {
-    background: var(--color-surface-2);
-    color: var(--color-ink-3);
-    cursor: not-allowed;
-  }
-  /* Phone/email are LTR content inside an RTL layout */
-  .input-ltr {
-    direction: ltr;
-    text-align: start;
-  }
-  .field-error {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: var(--text-small);
-    color: var(--color-error);
-    font-weight: 600;
-  }
-  .field-success {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: var(--text-small);
-    color: var(--color-success);
-    font-weight: 600;
-  }
-
-  /* --- Small parts --- */
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: var(--text-micro);
-    font-weight: 700;
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--color-electric) 20%, var(--color-surface-3));
-    color: #bfe0ff;
-  }
-  .rule {
-    height: 1px;
-    border: 0;
-    background: var(--color-line);
-    margin: 0;
-  }
-  .rule-gradient {
-    height: 2px;
-    border: 0;
-    background: var(--gradient-brand);
-    margin: 0;
-  }
-
-  /* Directional arrow: flips with the writing direction */
-  .arrow-inline {
-    display: inline-block;
-    transition: transform var(--dur) var(--ease-out);
-  }
-  [dir='rtl'] .arrow-inline {
-    transform: scaleX(1);
-  }
-  a:hover > .arrow-inline,
-  .btn:hover > .arrow-inline {
-    transform: translateX(-3px);
-  }
-
-  .skip-link {
-    position: absolute;
-    inset-inline-start: 1rem;
-    top: -100px;
-    z-index: 100;
-    background: var(--color-navy);
-    color: var(--color-white);
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--radius);
-    transition: top var(--dur) var(--ease-out);
-  }
-  .skip-link:focus {
-    top: 1rem;
-  }
-
-  /* Standard inline "read more" link, used on every page. */
-  .link-arrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-body);
-    font-size: var(--text-small);
-    font-weight: 700;
-    color: var(--color-electric);
-    text-decoration: none;
-    padding-block: 0.35rem;
-    border-bottom: 1.5px solid transparent;
-    align-self: flex-start;
-    transition: border-color var(--dur) var(--ease-out);
-  }
-  .link-arrow:hover {
-    border-bottom-color: currentColor;
-  }
-  .section--navy .link-arrow,
-  .on-dark .link-arrow {
-    color: var(--color-electric);
-  }
-
-  /* --- Editorial composition primitives ---
-     Cards are a component option for when a grid is genuinely the right
-     shape (e.g. five parallel services). They are NOT the default page
-     layout. Home and service pages should reach for asymmetric,
-     editorial arrangements first, these two utilities are that
-     alternative, built on the same tokens as everything else. */
+  /* Asymmetric editorial pair. */
   .u-editorial {
     display: grid;
     grid-template-columns: 7fr 5fr;
     gap: clamp(2rem, 5vw, 5rem);
     align-items: center;
   }
-  .u-editorial--reverse {
-    grid-template-columns: 5fr 7fr;
-  }
-  .u-editorial--offset > :first-child {
-    padding-inline-end: clamp(0rem, 4vw, 3rem);
-  }
-  .u-editorial--offset > :last-child {
-    margin-block-start: clamp(1.5rem, 5vw, 4rem);
-  }
+  .u-editorial--reverse { grid-template-columns: 5fr 7fr; }
+  .u-editorial--offset > :first-child { padding-inline-end: clamp(0rem, 4vw, 3rem); }
+  .u-editorial--offset > :last-child { margin-block-start: clamp(1.5rem, 5vw, 4rem); }
   @media (max-width: 900px) {
-    .u-editorial,
-    .u-editorial--reverse {
-      grid-template-columns: 1fr;
-    }
+    .u-editorial, .u-editorial--reverse { grid-template-columns: 1fr; }
     .u-editorial--offset > :first-child,
-    .u-editorial--offset > :last-child {
-      padding-inline-end: 0;
-      margin-block-start: 0;
-    }
-  }
-}
-
-/* -------------------------------------------------------------
-   4. Motion preferences
-   ------------------------------------------------------------- */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
+    .u-editorial--offset > :last-child { padding-inline-end: 0; margin-block-start: 0; }
   }
 }

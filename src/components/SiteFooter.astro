@@ -1,92 +1,145 @@
 ---
-import { NAV, SITE, WHATSAPP_HREF, CTA_PRIMARY } from '../lib/site';
+// Site footer, V3.
+//
+// The reference ends on a large, quiet, type-led block rather than a
+// dense link farm: an oversized closing statement, then small columns.
+// Same shape here, with LAHAV's own content and legal line.
+import { SITE, NAV, SERVICES, WHATSAPP_HREF, CTA_PRIMARY } from '../lib/site';
 const year = new Date().getFullYear();
 ---
 
-<footer class="ftr">
-  <div class="u-container ftr__top">
-    <div class="ftr__brand">
-      <img src="/brand/lahav-white-lockup.svg" alt="LAHAV AI" width="130" height="96" />
-      <p class="t-small ftr__tagline">
-        מערכות CRM, אוטומציות ותוכנה מותאמת לעסקים קטנים ובינוניים בישראל.
+<footer class="ftr band band--navy">
+  <div class="u-container u-container--wide">
+    <!-- oversized closing statement -->
+    <div class="ftr__top">
+      <p class="t-eyebrow" data-reveal>בואו נתחיל</p>
+      <a class="ftr__big" href={CTA_PRIMARY.href} data-reveal style="--mo-delay:80ms">
+        <span>נדבר על מה</span>
+        <span>שתקוע<span class="ftr__dot">.</span></span>
+        <span class="ftr__arrow" aria-hidden="true">←</span>
+      </a>
+      <p class="ftr__note" data-reveal style="--mo-delay:160ms">
+        30 דקות, בלי התחייבות. נבין יחד איפה יש מה לשפר.
       </p>
     </div>
 
-    <nav class="ftr__col" aria-label="ניווט בתחתית העמוד">
-      <h3 class="t-eyebrow ftr__heading">ניווט</h3>
-      {NAV.map((item) => <a href={item.href}>{item.label}</a>)}
-    </nav>
+    <hr class="ftr__rule" />
 
-    <div class="ftr__col">
-      <h3 class="t-eyebrow ftr__heading">יצירת קשר</h3>
-      <a href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-      <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">שיחה בוואטסאפ</a>
-      <a href="/privacy/">מדיניות פרטיות</a>
+    <div class="ftr__cols">
+      <div class="ftr__col ftr__col--brand">
+        <img class="ftr__logo" src="/brand/lahav-white-lockup.svg" alt="LAHAV AI" width="120" height="89" />
+        <p class="ftr__blurb">
+          מערכות ואוטומציות שעושות סדר בעסק. פחות עבודה ידנית, יותר שליטה.
+        </p>
+      </div>
+
+      <nav class="ftr__col" aria-label="ניווט תחתון">
+        <p class="ftr__h">ניווט</p>
+        <ul class="ftr__list">
+          {NAV.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <nav class="ftr__col" aria-label="שירותים">
+        <p class="ftr__h">שירותים</p>
+        <ul class="ftr__list">
+          {SERVICES.map((s) => (
+            <li><a href={`/services/${s.slug}/`}>{s.name}</a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <div class="ftr__col">
+        <p class="ftr__h">יצירת קשר</p>
+        <ul class="ftr__list">
+          <li><a href="/contact/">תיאום שיחת היכרות</a></li>
+          <li>
+            <a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">שיחה בוואטסאפ</a>
+          </li>
+          <li><a href="/privacy/">מדיניות פרטיות</a></li>
+        </ul>
+      </div>
     </div>
-  </div>
 
-  <div class="u-container ftr__bottom">
-    <span>© {year} {SITE.name}. כל הזכויות שמורות.</span>
-    <span>{SITE.legalLine}</span>
+    <div class="ftr__base">
+      <p class="t-micro">© {year} {SITE.name}. כל הזכויות שמורות.</p>
+      <p class="t-micro">{SITE.legalLine}</p>
+    </div>
   </div>
 </footer>
 
 <style>
-  .ftr {
-    background: var(--color-navy);
-    color: rgba(255, 255, 255, 0.68);
-    padding-block: clamp(3.5rem, 6vw, 5.5rem) 2rem;
-  }
-  .ftr__top {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr;
-    gap: clamp(2rem, 5vw, 4rem);
-    padding-bottom: clamp(2.5rem, 4vw, 3.5rem);
-  }
-  .ftr__brand img {
-    width: 130px;
-    height: auto;
-    margin-bottom: 1rem;
-  }
-  .ftr__tagline {
-    color: rgba(255, 255, 255, 0.62);
-    max-width: 34ch;
-  }
-  .ftr__heading {
-    color: var(--color-electric);
-    margin-bottom: 1rem;
-  }
-  .ftr__col {
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
-  }
-  .ftr__col a {
-    color: rgba(255, 255, 255, 0.78);
-    text-decoration: none;
-    font-size: var(--text-small);
-  }
-  .ftr__col a:hover {
-    color: #fff;
-    text-decoration: underline;
-  }
-  .ftr__bottom {
-    padding-top: clamp(1.5rem, 3vw, 2rem);
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  .ftr { padding-block: clamp(4rem, 8vw, 8rem) 2.5rem; }
+
+  .ftr__top { padding-bottom: clamp(2.5rem, 5vw, 4.5rem); }
+  .ftr__big {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.75rem;
-    font-size: var(--text-micro);
-    color: rgba(255, 255, 255, 0.55);
+    align-items: baseline;
+    gap: 0 0.35em;
+    margin-top: 1rem;
+    font-family: var(--font-display);
+    font-size: var(--text-display-2);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    color: #fff;
+    text-decoration: none;
   }
+  .ftr__dot { color: var(--color-electric); }
+  .ftr__arrow {
+    display: inline-block;
+    font-size: 0.55em;
+    color: var(--color-electric);
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .ftr__big:hover .ftr__arrow { transform: translateX(-0.35em); }
+  .ftr__note { margin-top: 1.25rem; color: rgba(255, 255, 255, 0.62); font-size: var(--text-small); }
 
-  @media (max-width: 760px) {
-    .ftr__top {
-      grid-template-columns: 1fr 1fr;
-    }
-    .ftr__brand {
-      grid-column: 1 / -1;
-    }
+  .ftr__rule { border: 0; height: 1px; background: rgba(255, 255, 255, 0.14); margin: 0; }
+
+  .ftr__cols {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(3, 1fr);
+    gap: clamp(1.75rem, 4vw, 3.5rem);
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+  }
+  .ftr__logo { width: clamp(92px, 8vw, 120px); height: auto; margin-bottom: 1rem; }
+  .ftr__blurb { color: rgba(255, 255, 255, 0.62); font-size: var(--text-small); max-width: 32ch; }
+  .ftr__h {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.875rem;
+  }
+  .ftr__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
+  .ftr__list a {
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+    font-size: var(--text-small);
+    transition: color var(--dur) var(--ease-out);
+  }
+  .ftr__list a:hover { color: #fff; }
+
+  .ftr__base {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-top: 1.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+  .ftr__base :global(.t-micro) { color: rgba(255, 255, 255, 0.5); }
+
+  @media (max-width: 900px) {
+    .ftr__cols { grid-template-columns: 1fr 1fr; }
+    .ftr__col--brand { grid-column: 1 / -1; }
+  }
+  @media (max-width: 560px) {
+    .ftr__cols { grid-template-columns: 1fr; }
   }
 </style>

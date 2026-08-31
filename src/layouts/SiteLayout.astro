@@ -3,9 +3,13 @@
 // BaseLayout stays a thin document wrapper (head/meta) so /system/ can keep
 // using it without inheriting nav/footer that don't belong on an internal
 // review page.
+//
+// Motion is mounted once here rather than per page, so every public page
+// gets the same motion language automatically and no page can drift.
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import Motion from '../components/Motion.astro';
 
 interface Props {
   title: string;
@@ -22,4 +26,5 @@ const currentPath = new URL(Astro.request.url).pathname;
     <slot />
   </main>
   <SiteFooter />
+  <Motion />
 </BaseLayout>

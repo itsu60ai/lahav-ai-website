@@ -1,0 +1,151 @@
+---
+// The single motion engine for the whole public site.
+//
+// Everything animated on the site is driven from here, so the motion
+// language stays consistent instead of each page inventing its own.
+// It powers the primitives defined in global.css section 5:
+//
+//   [data-reveal]              fade + rise on enter
+//   .mo-line > span            masked line wipe (display headings)
+//   [data-clip]                clip-path unmask
+//   [data-scale-in]            settle from oversized
+//   [data-parallax="0.2"]      scroll-linked y offset
+//   [data-stagger]             index-based delay for children
+//   .mo-marquee                seamless looping type
+//   [data-swap-root]           scroll-state machine for sticky sections
+//   [data-magnetic]            pointer-follow hover
+//
+// SAFETY: the "hidden" start states in CSS are gated behind
+// html.mo-ready, which this script adds. If JS never runs, or throws,
+// the page renders fully visible and static. Content is never left
+// permanently hidden by JS.
+---
+
+<script>
+  (() => {
+    const root = document.documentElement;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Only now do the start states apply. Before this line the page is
+    // complete and visible, which is what a no-JS visitor keeps.
+    root.classList.add('mo-ready');
+
+    // ---------- enter animations ----------
+    const enterTargets = document.querySelectorAll<HTMLElement>(
+      '[data-reveal], .mo-line, [data-clip], [data-scale-in]'
+    );
+
+    if (reduced) {
+      enterTargets.forEach((el) => el.classList.add('is-in'));
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.classList.add('is-in');
+            io.unobserve(entry.target);
+          }
+        },
+        // Fire a little before the element is fully on screen, and only
+        // once a real slice of it is visible, so reveals feel intentional
+        // rather than triggering at the very edge of the viewport.
+        { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+      );
+      enterTargets.forEach((el) => io.observe(el));
+    }
+
+    // ---------- stagger indices ----------
+    document.querySelectorAll<HTMLElement>('[data-stagger]').forEach((group) => {
+      Array.from(group.children).forEach((child, i) => {
+        (child as HTMLElement).style.setProperty('--i', String(i));
+      });
+    });
+
+    // ---------- scroll-linked effects ----------
+    const parallaxEls = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-parallax]')
+    ).map((el) => ({ el, rate: parseFloat(el.dataset.parallax || '0.15') }));
+
+    // Sticky state machine: mirrors how the reference swaps a pinned
+    // panel's content as you pass through a tall section. The root gets
+    // data-swap="N" and children [data-swap-index] match against it.
+    const swapRoots = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-swap-root]')
+    ).map((el) => ({
+      el,
+      steps: el.querySelectorAll('[data-swap-index]').length,
+      current: -1,
+    }));
+
+    let ticking = false;
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const vh = window.innerHeight;
+
+        if (!reduced) {
+          for (const { el, rate } of parallaxEls) {
+            const r = el.getBoundingClientRect();
+            if (r.bottom < -200 || r.top > vh + 200) continue;
+            // progress: -1 (just below viewport) .. 1 (just above)
+            const progress = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+            el.style.setProperty('--mo-py', `${(progress * rate * 100).toFixed(2)}px`);
+          }
+        }
+
+        for (const s of swapRoots) {
+          if (!s.steps) continue;
+          const r = s.el.getBoundingClientRect();
+          const total = r.height - vh;
+          if (total <= 0) continue;
+          const p = Math.min(Math.max(-r.top / total, 0), 0.9999);
+          const idx = Math.floor(p * s.steps);
+          if (idx !== s.current) {
+            s.current = idx;
+            s.el.setAttribute('data-swap', String(idx));
+          }
+        }
+
+        ticking = false;
+      });
+    };
+
+    if (parallaxEls.length || swapRoots.length) {
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      onScroll();
+    }
+
+    // ---------- marquee: duplicate content for a seamless loop ----------
+    if (!reduced) {
+      document.querySelectorAll<HTMLElement>('.mo-marquee').forEach((m) => {
+        const track = m.querySelector<HTMLElement>('.mo-marquee__track');
+        if (!track || track.dataset.moCloned === '1') return;
+        // The keyframes translate by exactly 50%, so the track must hold
+        // precisely two copies of the content for the loop to be seamless.
+        const copies = Array.from(track.children).map((c) => c.cloneNode(true) as Node);
+        copies.forEach((c) => track.appendChild(c));
+        track.dataset.moCloned = '1';
+        track.setAttribute('aria-hidden', 'false');
+      });
+    }
+
+    // ---------- magnetic hover ----------
+    if (!reduced && window.matchMedia('(hover: hover)').matches) {
+      document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach((el) => {
+        const strength = parseFloat(el.dataset.magnetic || '0.25');
+        el.addEventListener('pointermove', (e) => {
+          const r = el.getBoundingClientRect();
+          const dx = (e.clientX - (r.left + r.width / 2)) * strength;
+          const dy = (e.clientY - (r.top + r.height / 2)) * strength;
+          el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        });
+        el.addEventListener('pointerleave', () => {
+          el.style.transform = '';
+        });
+      });
+    }
+  })();
+</script>

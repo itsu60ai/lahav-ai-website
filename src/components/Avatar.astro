@@ -1,0 +1,187 @@
+---
+// LAHAV's guide character: an ORIGINAL abstract AI presence.
+//
+// Why abstract and not a rendered person:
+//   1. F-17 forbids AI-generating or altering the founder's likeness,
+//      and no approved character asset exists.
+//   2. The reference's own character is its proprietary asset and is
+//      explicitly out of scope to copy.
+// So this is a LAHAV-specific construct built from the brand's own
+// geometry: the concentric-ring "core" already used across the site's
+// diagrams, given a face-like focus, breathing motion, and a voice.
+//
+// It fills the same STORYTELLING role as the reference's presenter:
+// it is pinned inside its section, it reacts to scroll, its speech
+// changes per state, and it is part of the composition rather than a
+// chat widget bolted to a corner.
+//
+// SPEECH IS DATA. Lines come in as a prop and each maps to a scroll
+// state, so changing what it says later (or wiring it to a real
+// script/audio track) is a content edit, not a rebuild.
+export interface Props {
+  /** Speech states. One per scroll step of the enclosing
+   *  [data-swap-root]. Pass [] to render the core with no speech. */
+  lines?: string[];
+  /** visual size of the core */
+  size?: 'sm' | 'lg';
+  class?: string;
+}
+const { lines = [], size = 'lg', class: cls = '' } = Astro.props;
+---
+
+<div class:list={['av', `av--${size}`, cls]} data-avatar>
+  <div class="av__core" aria-hidden="true">
+    <span class="av__halo av__halo--1"></span>
+    <span class="av__halo av__halo--2"></span>
+    <span class="av__halo av__halo--3"></span>
+    <span class="av__pupil"></span>
+    <span class="av__scan"></span>
+  </div>
+
+  <!-- The speech is real text in the DOM (not painted into canvas or
+       an image) so it is selectable, translatable and read by screen
+       readers. aria-live announces state changes as they happen. -->
+  {lines.length > 0 && (
+    <p class="av__speech" data-avatar-speech aria-live="polite">
+      {lines.map((line: string, i: number) => (
+        <span class="av__line" data-line-index={i} data-active={i === 0 ? 'true' : 'false'}>{line}</span>
+      ))}
+    </p>
+  )}
+</div>
+
+<style>
+  .av {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.25rem, 2.5vw, 2rem);
+    /* an explicit width: inside a centring grid/flex parent this element
+       would otherwise shrink to min-content and break every word onto
+       its own line. */
+    width: min(100%, 32rem);
+  }
+
+  /* ---------- the core ---------- */
+  .av__core {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--av-size);
+    aspect-ratio: 1;
+    flex: none;
+  }
+  .av--lg { --av-size: clamp(11rem, 22vw, 20rem); }
+  .av--sm { --av-size: clamp(6rem, 10vw, 8.5rem); }
+
+  .av__halo {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--color-electric) 42%, transparent);
+    animation: av-breathe 5200ms var(--ease-inout) infinite;
+  }
+  .av__halo--2 { inset: 12%; border-color: color-mix(in srgb, var(--color-royal) 34%, transparent); animation-delay: -1700ms; }
+  .av__halo--3 {
+    inset: 24%;
+    border-color: transparent;
+    background: radial-gradient(circle at 38% 32%, rgba(41,151,255,0.30), rgba(29,78,216,0.16) 55%, transparent 72%);
+    animation-delay: -3400ms;
+  }
+
+  /* the focal point: reads as attention/gaze without being a face */
+  .av__pupil {
+    position: relative;
+    width: 22%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--gradient-blue);
+    box-shadow: 0 0 38px rgba(41,151,255,0.55);
+    animation: av-pulse 3400ms var(--ease-inout) infinite;
+  }
+
+  /* a slow vertical sweep: the "thinking" tell */
+  .av__scan {
+    position: absolute;
+    inset: 24%;
+    border-radius: 50%;
+    overflow: hidden;
+    mask-image: radial-gradient(circle, #000 60%, transparent 72%);
+  }
+  .av__scan::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    height: 22%;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: av-scan 4200ms var(--ease-inout) infinite;
+  }
+
+  @keyframes av-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50%      { transform: scale(1.055); opacity: 1; }
+  }
+  @keyframes av-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.16); }
+  }
+  @keyframes av-scan {
+    0%   { transform: translateY(-120%); }
+    100% { transform: translateY(460%); }
+  }
+
+  /* ---------- speech ---------- */
+  .av__speech {
+    position: relative;
+    margin: 0;
+    max-width: 26ch;
+    min-height: 4.5em;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 1.7vw, 1.6rem);
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .av__line {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 620ms var(--ease-out), transform 620ms var(--ease-out);
+  }
+  .av__line[data-active='true'] { opacity: 1; transform: none; }
+
+  /* Without JS every line would stack invisibly, so the first one is
+     laid out normally and the rest are simply not shown. */
+  html:not(.mo-ready) .av__line { position: static; opacity: 1; transform: none; }
+  html:not(.mo-ready) .av__line:not(:first-child) { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .av__halo, .av__pupil, .av__scan::after { animation: none; }
+    .av__line { transition: none; }
+  }
+</style>
+
+<script>
+  // Binds the avatar's speech to the scroll state of its nearest
+  // [data-swap-root] section, which Motion.astro already maintains.
+  // If it is not inside one, it simply keeps its first line.
+  document.querySelectorAll<HTMLElement>('[data-avatar]').forEach((av) => {
+    const root = av.closest<HTMLElement>('[data-swap-root]');
+    if (!root) return;
+    const lines = Array.from(av.querySelectorAll<HTMLElement>('.av__line'));
+    if (lines.length < 2) return;
+
+    const apply = () => {
+      const raw = Number(root.getAttribute('data-swap') ?? '0');
+      const idx = Math.min(Math.max(raw, 0), lines.length - 1);
+      lines.forEach((l, i) => l.setAttribute('data-active', String(i === idx)));
+    };
+
+    new MutationObserver(apply).observe(root, {
+      attributes: true,
+      attributeFilter: ['data-swap'],
+    });
+    apply();
+  });
+</script>

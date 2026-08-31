@@ -1,0 +1,167 @@
+---
+// FAQ.
+//
+// Composed as an editorial list rather than an accordion grid: large
+// numbered questions on hairlines, answers alongside, matching the
+// section rhythm used on Home and the service pages.
+//
+// Native <details> is used for the open/close so it works with no JS,
+// is keyboard operable for free, and stays findable by in-page search.
+import SiteLayout from '../layouts/SiteLayout.astro';
+import SplitLines from '../components/SplitLines.astro';
+import ClosingCta from '../components/ClosingCta.astro';
+import { FAQ } from '../lib/site';
+
+// FAQPage structured data. Mirrors exactly what is on the page, so it
+// stays truthful if the copy is edited.
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+
+<SiteLayout
+  title="שאלות נפוצות | LAHAV AI"
+  description="התשובות לשאלות שבעלי עסקים שואלים לפני שמתחילים: עלות, זמנים, מה קורה למידע, ואיך בכלל מתחילים."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
+
+  <section class="fq-hero band band--hero">
+    <div class="u-container u-container--wide">
+      <p class="t-eyebrow" data-reveal>שאלות נפוצות</p>
+      <SplitLines
+        as="h1"
+        class="fq-hero__h1 t-display-2"
+        lines={['מה שבאמת', 'שואלים אותנו.']}
+        step={100}
+        delay={80}
+      />
+      <p class="fq-hero__lead t-lead" data-reveal style="--mo-delay:280ms">
+        התשובות שמעניינות בעל עסק לפני שיחה ראשונה. בלי הבטחות שאי אפשר
+        לעמוד בהן.
+      </p>
+    </div>
+  </section>
+
+  <section class="u-section band">
+    <div class="u-container u-container--wide">
+      <ul class="fq" data-stagger style="--mo-step:70ms">
+        {FAQ.map((item, i) => (
+          <li class="fq__item" data-reveal>
+            <details class="fq__d" name="faq">
+              <summary class="fq__q">
+                <span class="fq__n tabular">{String(i + 1).padStart(2, '0')}</span>
+                <span class="fq__qt">{item.q}</span>
+                <span class="fq__ico" aria-hidden="true"></span>
+              </summary>
+              <div class="fq__a"><p>{item.a}</p></div>
+            </details>
+          </li>
+        ))}
+      </ul>
+
+      <p class="fq__more" data-reveal>
+        לא מצאתם את מה שחיפשתם? זו בדיוק סיבה טובה לשיחה קצרה.
+      </p>
+    </div>
+  </section>
+
+  <ClosingCta
+    heading="יש שאלה שלא ענינו עליה?"
+    body="30 דקות, בלי התחייבות. נענה בכנות, גם כשהתשובה היא שלא צריך אותנו."
+  />
+</SiteLayout>
+
+<style>
+  .fq-hero {
+    padding-top: clamp(8rem, 16vh, 12rem);
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+  .fq-hero__h1 { margin-block: 1.25rem 2rem; }
+  .fq-hero__lead { max-width: 46ch; }
+
+  .fq { list-style: none; margin: 0; padding: 0; }
+  .fq__item { border-top: 1px solid var(--color-line); }
+  .fq__item:last-child { border-bottom: 1px solid var(--color-line); }
+
+  .fq__d { }
+  .fq__q {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr) 2rem;
+    gap: clamp(0.75rem, 2vw, 2rem);
+    align-items: center;
+    padding-block: clamp(1.5rem, 2.6vw, 2.25rem);
+    cursor: pointer;
+    list-style: none;
+  }
+  .fq__q::-webkit-details-marker { display: none; }
+  .fq__n {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-electric);
+  }
+  .fq__qt {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    transition: color var(--dur) var(--ease-out);
+  }
+  .fq__d:hover .fq__qt, .fq__d[open] .fq__qt { color: var(--color-royal); }
+
+  /* plus that becomes a minus */
+  .fq__ico {
+    position: relative;
+    width: 1.5rem;
+    height: 1.5rem;
+    justify-self: end;
+    flex: none;
+  }
+  .fq__ico::before, .fq__ico::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: 2px;
+    background: var(--color-ink);
+    border-radius: 2px;
+    transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out);
+  }
+  .fq__ico::after { transform: rotate(90deg); }
+  .fq__d[open] .fq__ico::after { transform: rotate(0deg); opacity: 0; }
+
+  .fq__a {
+    grid-column: 2;
+    padding-inline-start: calc(3.5rem + clamp(0.75rem, 2vw, 2rem));
+    padding-bottom: clamp(1.5rem, 2.6vw, 2.25rem);
+  }
+  .fq__a p { color: var(--color-ink-2); font-size: var(--text-body-lg); max-width: 62ch; }
+  /* the answer eases open rather than snapping */
+  .fq__d[open] .fq__a { animation: fq-open 520ms var(--ease-out); }
+  @keyframes fq-open {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .fq__more {
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+    font-size: var(--text-lead);
+    color: var(--color-ink-3);
+    max-width: 46ch;
+  }
+
+  @media (max-width: 700px) {
+    .fq__q { grid-template-columns: 2.25rem minmax(0, 1fr) 1.5rem; gap: 0.75rem; }
+    .fq__a { padding-inline-start: calc(2.25rem + 0.75rem); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fq__d[open] .fq__a { animation: none; }
+  }
+</style>

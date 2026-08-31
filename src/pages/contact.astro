@@ -41,7 +41,10 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השת�
   <section class="ct-hero">
     <div class="u-container">
       <p class="t-eyebrow">צור קשר</p>
-      <h1 class="t-display-2 ct-hero__h1">בואו נדבר על מה שתקוע</h1>
+      <h1 class="t-display-2 ct-hero__h1">
+        <span class="mo-line" style="--mo-delay:80ms"><span>בואו נדבר</span></span>
+        <span class="mo-line" style="--mo-delay:180ms"><span>על מה שתקוע.</span></span>
+      </h1>
       <p class="ct-hero__lead">
         הדרך הכי פשוטה להתחיל היא שיחה של 30 דקות. נעבור יחד על איך שאתם
         עובדים היום, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך.
@@ -274,11 +277,14 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'משהו השת�
 
 <style>
   .ct-hero {
-    padding-top: clamp(3rem, 6vw, 6rem);
-    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    padding-top: clamp(8rem, 16vh, 12rem);
+    padding-bottom: clamp(2rem, 4vw, 3.5rem);
+    background: var(--gradient-hero);
   }
   .ct-hero__h1 {
-    margin-block: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    margin-block: 1.25rem 1.75rem;
   }
   .ct-hero__lead {
     font-size: var(--text-lead);

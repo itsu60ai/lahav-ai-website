@@ -25,8 +25,11 @@ import { FOUNDER, PROCESS } from '../lib/site';
     <div class="u-container ab-open__grid">
       <FounderPortrait scale="about" sizes="(max-width: 900px) 78vw, 34rem" />
       <div class="ab-open__text">
-        <p class="t-eyebrow">אודות</p>
-        <h1 class="t-display-2 ab-open__h1">לא חסרים כלים.<br />חסר שהם יעבדו יחד.</h1>
+        <p class="t-eyebrow" data-reveal>אודות</p>
+        <h1 class="t-display-2 ab-open__h1">
+          <span class="mo-line" style="--mo-delay:80ms"><span>לא חסרים כלים.</span></span>
+          <span class="mo-line" style="--mo-delay:180ms"><span>חסר שהם יעבדו יחד.</span></span>
+        </h1>
         <p class="ab-open__lead">
           מהמשפט הזה נולדה LAHAV AI, והוא עדיין נקודת הפתיחה של כל פרויקט שאנחנו לוקחים.
         </p>
@@ -139,10 +142,12 @@ import { FOUNDER, PROCESS } from '../lib/site';
   /* The opening is a portrait and a statement sharing one baseline. No
      frame, no card: the cut-out subject stands on the page. */
   .ab-open {
-    padding-top: clamp(2rem, 4vw, 4rem);
+    padding-top: clamp(8rem, 16vh, 12rem);
     padding-bottom: 0;
     overflow: hidden;
+    background: var(--gradient-hero);
   }
+  .ab-open__h1 { display: flex; flex-direction: column; }
   .ab-open__grid {
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;

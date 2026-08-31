@@ -166,18 +166,19 @@ const rest = guides.filter((a) => a.slug !== featured?.slug);
 
   /* ---- Hero ---- */
   .ar-hero {
-    padding-top: clamp(3rem, 6vw, 6rem);
-    padding-bottom: clamp(2rem, 4vw, 3.5rem);
+    padding-top: clamp(8rem, 16vh, 12rem);
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+    background: var(--gradient-hero);
   }
   .ar-hero__h1 {
     display: flex;
     flex-direction: column;
     font-family: var(--font-display);
-    font-size: clamp(2.75rem, 1.2rem + 5.4vw, 5.5rem);
-    font-weight: 800;
-    line-height: 1.02;
+    font-size: var(--text-display-2);
+    font-weight: 900;
+    line-height: 0.98;
     letter-spacing: -0.025em;
-    margin-block: 1.25rem 1.5rem;
+    margin-block: 1.25rem 1.75rem;
   }
   .ar-hero__h1b {
     color: var(--color-electric);

@@ -1,596 +1,255 @@
 ---
+// Site header, V3.
+//
+// Behaviour taken from the reference: a transparent bar over the hero
+// that gains a solid surface and a hairline once you scroll, an
+// oversized full-screen overlay menu rather than a dropdown drawer, and
+// a persistent primary CTA. Labels and structure stay LAHAV's own.
 import WhatsApp from './icons/WhatsApp.astro';
-import { SERVICE_ICONS } from '../lib/icons';
 import { NAV, CTA_PRIMARY, WHATSAPP_HREF, SERVICES } from '../lib/site';
 
-interface Props {
-  currentPath: string;
-}
+interface Props { currentPath: string }
 const { currentPath } = Astro.props;
-
 const isActive = (href: string) => (href === '/' ? currentPath === '/' : currentPath.startsWith(href));
 ---
 
+<a class="skip-link" href="#main">דילוג לתוכן</a>
+
 <header class="hdr" data-header>
-  <div class="u-container hdr__inner">
+  <div class="u-container u-container--wide hdr__inner">
     <a class="hdr__brand" href="/" aria-label="LAHAV AI, לדף הבית">
-      <img src="/brand/lahav-primary-lockup.svg" alt="LAHAV AI" width="118" height="87" />
+      <img src="/brand/lahav-primary-lockup.svg" alt="LAHAV AI" width="104" height="77" />
     </a>
 
     <nav class="hdr__nav" aria-label="ניווט ראשי">
-      {
-        NAV.map((item) =>
-          'children' in item ? (
-            <div class="hdr__dd" data-dropdown>
-              <button
-                class="hdr__link hdr__dd-btn"
-                type="button"
-                aria-expanded="false"
-                aria-controls="services-menu"
-                aria-current={isActive(item.href) ? 'page' : undefined}
-                data-dropdown-btn
-              >
-                {item.label}
-                <svg class="hdr__caret" width="11" height="7" viewBox="0 0 11 7" fill="none" aria-hidden="true">
-                  <path d="M1 1.5 5.5 5.5 10 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button>
-
-              <div class="hdr__dd-panel" id="services-menu" data-dropdown-panel>
-                <a class="hdr__dd-all" href={item.href}>
-                  כל השירותים
-                  <span class="arrow-inline" aria-hidden="true">←</span>
-                </a>
-                {SERVICES.map((s) => (
-                  <a class="hdr__dd-item" href={`/services/${s.slug}/`}>
-                    <span class="hdr__dd-name">{s.name}</span>
-                    <span class="hdr__dd-lead">{s.lead}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <a class="hdr__link" href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
-              {item.label}
-            </a>
-          )
-        )
-      }
+      {NAV.map((item) => (
+        <a
+          class:list={['hdr__link', isActive(item.href) && 'is-on']}
+          href={item.href}
+          aria-current={isActive(item.href) ? 'page' : undefined}
+        >
+          <span>{item.label}</span>
+        </a>
+      ))}
     </nav>
 
-    <a class="btn btn-primary hdr__cta" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-
-    <button class="hdr__burger" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-toggle>
-      <span class="hdr__burger-bars" aria-hidden="true"></span>
-      <span class="sr-only">פתיחת תפריט</span>
-    </button>
-  </div>
-
-  <div class="hdr__mobile" id="mobile-nav" data-menu-panel>
-    <div class="u-container hdr__mobile-inner">
-      <a class="hdr__mobile-link" href="/" style="--i:0">
-        בית
-        <span class="hdr__mobile-arr" aria-hidden="true">←</span>
+    <div class="hdr__end">
+      <a class="hdr__wa" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer" aria-label="שיחה בוואטסאפ">
+        <WhatsApp />
       </a>
+      <a class="btn btn-primary hdr__cta" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
 
-      <div class="hdr__mobile-group" style="--i:1">
-        <a class="hdr__mobile-link hdr__mobile-link--head" href="/services/">
-          שירותים
-          <span class="hdr__mobile-all">לכל השירותים</span>
-        </a>
-        <div class="hdr__mobile-sub">
-          {
-            SERVICES.map((sv, i) => (
-              <a href={`/services/${sv.slug}/`} style={`--j:${i}`}>
-                <span class="hdr__svc-ico" aria-hidden="true">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    set:html={SERVICE_ICONS[sv.slug]}
-                  />
-                </span>
-                <span class="hdr__svc-txt">
-                  <b>{sv.name}</b>
-                  <small>{sv.lead}</small>
-                </span>
-              </a>
-            ))
-          }
-        </div>
-      </div>
-
-      <a class="hdr__mobile-link" href="/about/" style="--i:2">
-        אודות
-        <span class="hdr__mobile-arr" aria-hidden="true">←</span>
-      </a>
-      <a class="hdr__mobile-link" href="/contact/" style="--i:3">
-        צור קשר
-        <span class="hdr__mobile-arr" aria-hidden="true">←</span>
-      </a>
-
-      <div class="hdr__mobile-foot" style="--i:4">
-        <p class="hdr__mobile-note">30 דקות, בלי התחייבות.</p>
-        <a class="btn btn-primary" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-        <a class="btn btn-secondary" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
-          <WhatsApp />
-          שיחה בוואטסאפ
-        </a>
-      </div>
+      <button class="hdr__burger" type="button" aria-expanded="false" aria-controls="site-menu" data-menu-btn>
+        <span class="hdr__burger-bars" aria-hidden="true"></span>
+        <span class="sr-only">פתיחת תפריט</span>
+      </button>
     </div>
   </div>
 </header>
 
-<script>
-  // ---- Services dropdown: pointer + keyboard, both first class ----
-  const dd = document.querySelector<HTMLElement>('[data-dropdown]');
-  const ddBtn = document.querySelector<HTMLButtonElement>('[data-dropdown-btn]');
-  const ddPanel = document.querySelector<HTMLElement>('[data-dropdown-panel]');
+<!-- Full-screen overlay menu: oversized type, staggered entrance. -->
+<div class="menu" id="site-menu" data-menu hidden>
+  <div class="menu__inner u-container">
+    <nav class="menu__nav" aria-label="ניווט">
+      {NAV.map((item, i) => (
+        <a class="menu__link" href={item.href} style={`--i:${i}`}>
+          <span class="menu__num">{String(i + 1).padStart(2, '0')}</span>
+          <span class="menu__label">{item.label}</span>
+        </a>
+      ))}
+    </nav>
 
-  if (dd && ddBtn && ddPanel) {
-    let closeTimer: number | undefined;
-    // Hover opens the panel transiently. A click "pins" it so moving the
-    // pointer away no longer closes it. Without this, hovering opens the
-    // panel and the click that follows immediately toggles it shut.
-    let pinned = false;
-
-    const openDd = () => {
-      window.clearTimeout(closeTimer);
-      dd.classList.add('is-open');
-      ddBtn.setAttribute('aria-expanded', 'true');
-    };
-    const closeDd = () => {
-      pinned = false;
-      dd.classList.remove('is-open');
-      ddBtn.setAttribute('aria-expanded', 'false');
-    };
-
-    ddBtn.addEventListener('click', () => {
-      if (pinned) {
-        closeDd();
-      } else {
-        pinned = true;
-        openDd();
-      }
-    });
-
-    // Mouse users get hover, with a small grace period so the pointer can
-    // travel from the button to the panel without it snapping shut.
-    dd.addEventListener('mouseenter', openDd);
-    dd.addEventListener('mouseleave', () => {
-      if (pinned) return;
-      closeTimer = window.setTimeout(closeDd, 160);
-    });
-
-    // Keyboard: close on Escape, and close once focus leaves the group.
-    dd.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeDd();
-        ddBtn.focus();
-      }
-    });
-    dd.addEventListener('focusout', () => {
-      window.setTimeout(() => {
-        if (!dd.contains(document.activeElement)) closeDd();
-      }, 0);
-    });
-    document.addEventListener('click', (e) => {
-      if (!dd.contains(e.target as Node)) closeDd();
-    });
-  }
-
-  // ---- Mobile menu ----
-  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  const panel = document.querySelector<HTMLElement>('[data-menu-panel]');
-
-  if (toggle && panel) {
-    const close = () => {
-      panel.classList.remove('is-open');
-      toggle.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
-    };
-    const open = () => {
-      panel.classList.add('is-open');
-      toggle.classList.add('is-open');
-      toggle.setAttribute('aria-expanded', 'true');
-      panel.querySelector<HTMLElement>('a, button')?.focus();
-    };
-
-    toggle.addEventListener('click', () => {
-      panel.classList.contains('is-open') ? close() : open();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && panel.classList.contains('is-open')) {
-        close();
-        toggle.focus();
-      }
-    });
-    panel.addEventListener('keydown', (e) => {
-      if (e.key !== 'Tab') return;
-      const f = panel.querySelectorAll<HTMLElement>('a, button');
-      if (!f.length) return;
-      const first = f[0];
-      const last = f[f.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    });
-  }
-
-  // ---- Header gains a hairline + stronger blur once the page scrolls ----
-  const header = document.querySelector<HTMLElement>('[data-header]');
-  if (header) {
-    const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 8);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-  }
-</script>
+    <div class="menu__side">
+      <p class="t-eyebrow">שירותים</p>
+      <ul class="menu__svc">
+        {SERVICES.map((s) => (
+          <li><a href={`/services/${s.slug}/`}>{s.name}</a></li>
+        ))}
+      </ul>
+      <a class="btn btn-primary btn-lg menu__cta" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
+    </div>
+  </div>
+</div>
 
 <style>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
   .hdr {
-    position: sticky;
+    position: fixed;
+    inset-inline: 0;
     top: 0;
     z-index: 60;
-    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
-    backdrop-filter: blur(14px);
+    background: transparent;
     border-bottom: 1px solid transparent;
-    transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+    transition: background-color var(--dur) var(--ease-out),
+                border-color var(--dur) var(--ease-out);
   }
-  .hdr.is-scrolled {
+  /* Solid only once scrolled, so the hero reads full-bleed. */
+  :global(body.is-scrolled) .hdr {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-bottom-color: var(--color-line);
-    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
   }
   .hdr__inner {
     display: flex;
     align-items: center;
     gap: clamp(1rem, 3vw, 2.5rem);
-    min-height: 80px;
+    min-height: 84px;
   }
-  .hdr__brand {
-    flex: 0 0 auto;
-    line-height: 0;
-  }
-  .hdr__brand img {
-    width: 116px;
-    height: auto;
-  }
+  .hdr__brand { flex: none; display: block; }
+  .hdr__brand img { width: clamp(74px, 6vw, 104px); height: auto; }
 
-  .hdr__nav {
-    display: flex;
-    align-items: center;
-    gap: clamp(0.5rem, 1.6vw, 1.5rem);
-    margin-inline-start: auto;
-  }
+  .hdr__nav { display: flex; align-items: center; gap: 0.25rem; margin-inline-start: auto; }
   .hdr__link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+    position: relative;
+    padding: 0.6rem 0.9rem;
+    font-size: var(--text-small);
+    font-weight: 600;
     color: var(--color-ink);
     text-decoration: none;
-    font-weight: 600;
-    font-size: var(--text-small);
-    font-family: var(--font-body);
-    padding: 0.6rem 0.75rem;
-    border: 0;
-    background: none;
     border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
   }
-  .hdr__link:hover {
-    color: var(--color-electric);
-    background: color-mix(in srgb, var(--color-electric) 10%, transparent);
-  }
-  .hdr__link[aria-current='page'] {
-    color: var(--color-electric);
-    font-weight: 700;
-  }
-
-  /* ---------- Services dropdown ---------- */
-  .hdr__dd {
-    position: relative;
-  }
-  .hdr__caret {
+  /* underline grows from the inline-start edge, direction-aware */
+  .hdr__link > span { position: relative; display: inline-block; }
+  .hdr__link > span::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 2px;
+    background: var(--color-royal);
+    transform: scaleX(0);
+    transform-origin: right;
     transition: transform var(--dur) var(--ease-out);
   }
-  .hdr__dd.is-open .hdr__caret {
-    transform: rotate(180deg);
-  }
-  .hdr__dd-panel {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    inset-inline-start: 0;
-    width: min(23rem, calc(100vw - 2rem));
-    background: var(--color-surface-3);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    visibility: hidden;
-    translate: 0 -6px;
-    transition:
-      opacity var(--dur) var(--ease-out),
-      translate var(--dur) var(--ease-out),
-      visibility var(--dur);
-  }
-  .hdr__dd.is-open .hdr__dd-panel {
-    opacity: 1;
-    visibility: visible;
-    translate: 0 0;
-  }
-  .hdr__dd-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    padding: 0.75rem 0.875rem;
-    border-radius: var(--radius);
-    text-decoration: none;
-    transition: background-color var(--dur) var(--ease-out);
-  }
-  .hdr__dd-item:hover {
-    background: var(--color-surface-2);
-  }
-  .hdr__dd-name {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: var(--text-small);
+  .hdr__link:hover > span::after,
+  .hdr__link.is-on > span::after { transform: scaleX(1); }
+
+  .hdr__end { display: flex; align-items: center; gap: 0.625rem; flex: none; }
+  .hdr__wa {
+    display: grid; place-items: center;
+    width: 44px; height: 44px; border-radius: 50%;
     color: var(--color-ink);
+    border: 1px solid var(--color-line-strong);
+    transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
   }
-  .hdr__dd-lead {
-    font-size: var(--text-micro);
-    color: var(--color-ink-3);
-    line-height: 1.45;
-  }
-  .hdr__dd-all {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.625rem 0.875rem 0.75rem;
-    margin-bottom: 0.25rem;
-    border-bottom: 1px solid var(--color-line);
-    font-size: var(--text-micro);
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--color-electric);
-    text-decoration: none;
-  }
-  .hdr__dd-all:hover {
-    text-decoration: underline;
-  }
+  .hdr__wa:hover { background: #25d366; color: #fff; border-color: #25d366; }
+  .hdr__wa :global(svg) { width: 20px; height: 20px; }
+  .hdr__cta { min-height: 46px; padding-inline: 1.25rem; font-size: var(--text-small); }
 
-  .hdr__cta {
-    flex: 0 0 auto;
-    min-height: 46px;
-    font-size: var(--text-small);
-    padding-inline: 1.375rem;
-  }
-
-  /* ---------- Burger ---------- */
   .hdr__burger {
     display: none;
-    width: 46px;
-    height: 46px;
-    border: 1px solid var(--color-line);
-    border-radius: 12px;
-    background: var(--color-surface-3);
+    width: 46px; height: 46px;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 50%;
+    background: transparent;
     cursor: pointer;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
+    place-items: center;
   }
   .hdr__burger-bars,
   .hdr__burger-bars::before,
   .hdr__burger-bars::after {
-    display: block;
-    width: 20px;
-    height: 2px;
-    background: var(--color-ink);
-    border-radius: 2px;
+    display: block; width: 18px; height: 2px;
+    background: var(--color-ink); border-radius: 2px;
     transition: transform var(--dur) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
   }
-  .hdr__burger-bars {
-    position: relative;
-  }
-  .hdr__burger-bars::before,
-  .hdr__burger-bars::after {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-  }
-  .hdr__burger-bars::before {
-    top: -6px;
-  }
-  .hdr__burger-bars::after {
-    top: 6px;
-  }
-  .hdr__burger.is-open .hdr__burger-bars {
-    background: transparent;
-  }
-  .hdr__burger.is-open .hdr__burger-bars::before {
-    transform: translateY(6px) rotate(45deg);
-  }
-  .hdr__burger.is-open .hdr__burger-bars::after {
-    transform: translateY(-6px) rotate(-45deg);
-  }
+  .hdr__burger-bars { position: relative; }
+  .hdr__burger-bars::before, .hdr__burger-bars::after { content: ''; position: absolute; inset-inline: 0; }
+  .hdr__burger-bars::before { top: -6px; }
+  .hdr__burger-bars::after { top: 6px; }
+  :global(body.menu-open) .hdr__burger-bars { background: transparent; }
+  :global(body.menu-open) .hdr__burger-bars::before { transform: translateY(6px) rotate(45deg); }
+  :global(body.menu-open) .hdr__burger-bars::after { transform: translateY(-6px) rotate(-45deg); }
 
-  /* ---------- Mobile panel ---------- */
-  .hdr__mobile {
-    display: none;
-    border-top: 1px solid var(--color-line);
-    background: var(--color-surface-2);
-    max-height: calc(100dvh - 80px);
-    overflow-y: auto;
-  }
-  .hdr__mobile.is-open {
-    display: block;
-  }
-  .hdr__mobile-inner {
-    display: flex;
-    flex-direction: column;
-    padding-block: 0.5rem 2rem;
-  }
-
-  /* items arrive in sequence when the panel opens */
-  .hdr__mobile.is-open .hdr__mobile-link,
-  .hdr__mobile.is-open .hdr__mobile-group,
-  .hdr__mobile.is-open .hdr__mobile-foot {
-    animation: hdr-in 380ms var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 55ms);
-  }
-  @keyframes hdr-in {
-    from {
-      opacity: 0;
-      translate: 0 10px;
-    }
-    to {
-      opacity: 1;
-      translate: 0 0;
-    }
-  }
-
-  .hdr__mobile-link {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 0;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.375rem;
-    letter-spacing: -0.015em;
-    color: var(--color-ink);
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-line);
-  }
-  .hdr__mobile-arr {
-    color: var(--color-electric);
-    font-size: 1rem;
-  }
-  .hdr__mobile-link--head {
-    border-bottom: 0;
-    padding-bottom: 0.625rem;
-  }
-  .hdr__mobile-all {
-    font-family: var(--font-body);
-    font-size: var(--text-micro);
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--color-electric);
-  }
-  .hdr__mobile-group {
-    border-bottom: 1px solid var(--color-line);
-    padding-bottom: 1rem;
-  }
-
-  /* the five services, as real rows rather than an indented list */
-  .hdr__mobile-sub {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-  .hdr__mobile-sub a {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.625rem 0.75rem;
-    border-radius: 0.75rem;
-    background: var(--color-surface-2);
-    text-decoration: none;
-    transition: background-color var(--dur) var(--ease-out);
-  }
-  .hdr__mobile-sub a:hover {
-    background: color-mix(in srgb, var(--color-royal) 9%, transparent);
-  }
-  .hdr__svc-ico {
+  /* ---------- overlay menu ---------- */
+  .menu {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: var(--color-surface);
     display: grid;
     place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    flex: none;
-    border-radius: 0.625rem;
-    background: #fff;
-    color: var(--color-royal);
-    border: 1px solid var(--color-line);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease-out);
   }
-  .hdr__svc-ico svg {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-  .hdr__svc-txt {
-    display: flex;
-    flex-direction: column;
-    gap: 0.0625rem;
-    min-width: 0;
-  }
-  .hdr__svc-txt b {
-    font-family: var(--font-display);
-    font-size: 0.9375rem;
-    font-weight: 700;
-    color: var(--color-ink);
-    line-height: 1.3;
-  }
-  .hdr__svc-txt small {
-    font-size: 0.8125rem;
-    line-height: 1.4;
-    color: var(--color-ink-3);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .hdr__mobile-foot {
-    margin-top: 1.5rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--color-line);
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
-  }
-  .hdr__mobile-note {
-    font-size: var(--text-small);
-    color: var(--color-ink-3);
-    margin-bottom: 0.125rem;
-  }
-  .hdr__mobile-foot .btn {
+  .menu[data-open='true'] { opacity: 1; pointer-events: auto; }
+  .menu__inner {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
     width: 100%;
+    padding-block: 6rem 3rem;
+  }
+  .menu__nav { display: flex; flex-direction: column; }
+  .menu__link {
+    display: flex; align-items: baseline; gap: 1rem;
+    padding-block: clamp(0.5rem, 1.4vw, 1rem);
+    text-decoration: none; color: var(--color-ink);
+    border-bottom: 1px solid var(--color-line);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 620ms var(--ease-out) calc(var(--i) * 70ms + 120ms),
+                transform 620ms var(--ease-out) calc(var(--i) * 70ms + 120ms),
+                color var(--dur) var(--ease-out);
+  }
+  .menu[data-open='true'] .menu__link { opacity: 1; transform: none; }
+  .menu__link:hover { color: var(--color-royal); }
+  .menu__num { font-size: var(--text-micro); font-weight: 700; color: var(--color-ink-3); flex: none; }
+  .menu__label {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 4.5rem);
+    font-weight: 900; line-height: 1; letter-spacing: -0.02em;
   }
 
+  .menu__side { display: flex; flex-direction: column; gap: 0.75rem; }
+  .menu__svc { list-style: none; margin: 0 0 1.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .menu__svc a { color: var(--color-ink-2); text-decoration: none; font-size: var(--text-small); }
+  .menu__svc a:hover { color: var(--color-royal); }
+  .menu__cta { align-self: flex-start; }
+
+  @media (max-width: 1024px) {
+    .hdr__nav, .hdr__cta { display: none; }
+    .hdr__burger { display: grid; }
+    .hdr__end { margin-inline-start: auto; }
+    .menu__inner { grid-template-columns: 1fr; align-content: start; gap: 2rem; }
+    .menu__side { border-top: 1px solid var(--color-line); padding-top: 1.5rem; }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .hdr__mobile.is-open .hdr__mobile-link,
-    .hdr__mobile.is-open .hdr__mobile-group,
-    .hdr__mobile.is-open .hdr__mobile-foot {
-      animation: none !important;
-    }
-  }
-
-  @media (max-width: 980px) {
-    .hdr__nav,
-    .hdr__cta {
-      display: none;
-    }
-    .hdr__burger {
-      display: flex;
-      margin-inline-start: auto;
-    }
+    .menu__link { transition: opacity 1ms, transform 1ms; }
   }
 </style>
+
+<script>
+  // Scroll state for the header surface.
+  const setScrolled = () => document.body.classList.toggle('is-scrolled', window.scrollY > 12);
+  setScrolled();
+  window.addEventListener('scroll', setScrolled, { passive: true });
+
+  // Overlay menu. `hidden` is only removed on first open, so the panel is
+  // not in the accessibility tree at all until it is actually used.
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+  if (btn && menu) {
+    const setOpen = (open: boolean) => {
+      if (open) menu.hidden = false;
+      menu.dataset.open = String(open);
+      btn.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('menu-open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (!open) {
+        window.setTimeout(() => {
+          if (menu.dataset.open !== 'true') menu.hidden = true;
+        }, 420);
+      }
+    };
+    btn.addEventListener('click', () => setOpen(menu.dataset.open !== 'true'));
+    menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.dataset.open === 'true') {
+        setOpen(false);
+        btn.focus();
+      }
+    });
+  }
+</script>

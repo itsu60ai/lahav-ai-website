@@ -1,0 +1,142 @@
+---
+// The hero's floating "proof" cards.
+//
+// The reference surrounds its hero character with small product-UI
+// fragments so the promise is shown rather than described. These are
+// LAHAV's own equivalents, drawn as real DOM (not screenshots) so they
+// stay crisp, translatable and weightless.
+//
+// TRUTH RULE: every card shows a MECHANISM, never a metric. No counts,
+// no percentages, no time saved, no results — those would be invented
+// numbers, which the project forbids.
+---
+
+<div class="fc" aria-hidden="true">
+  <!-- lead captured -->
+  <article class="fc__card fc__card--a" data-parallax="0.10">
+    <header class="fc__head">
+      <span class="fc__dot"></span>
+      <span>פנייה חדשה</span>
+    </header>
+    <p class="fc__title">נרשמה אוטומטית</p>
+    <p class="fc__sub">מהטופס באתר, ישירות למערכת</p>
+  </article>
+
+  <!-- automation running -->
+  <article class="fc__card fc__card--b" data-parallax="-0.14">
+    <header class="fc__head">
+      <span class="fc__dot fc__dot--live"></span>
+      <span>אוטומציה פעילה</span>
+    </header>
+    <ul class="fc__steps">
+      <li><span class="fc__tick">✓</span> נשלח אישור ללקוח</li>
+      <li><span class="fc__tick">✓</span> נפתחה משימת מעקב</li>
+      <li><span class="fc__tick fc__tick--now"></span> ממתין לאישורכם</li>
+    </ul>
+  </article>
+
+  <!-- pipeline -->
+  <article class="fc__card fc__card--c" data-parallax="0.16">
+    <header class="fc__head"><span>מסלול הלקוח</span></header>
+    <div class="fc__bars">
+      <span style="--h:38%"></span>
+      <span style="--h:62%"></span>
+      <span style="--h:80%"></span>
+      <span style="--h:54%"></span>
+    </div>
+    <p class="fc__sub">תמיד ברור מה קרה ומה הצעד הבא</p>
+  </article>
+
+  <!-- reminder -->
+  <article class="fc__card fc__card--d" data-parallax="-0.09">
+    <header class="fc__head">
+      <span class="fc__dot"></span>
+      <span>תזכורת</span>
+    </header>
+    <p class="fc__title">לחזור ללקוח היום</p>
+    <p class="fc__sub">נקבעה כשהפנייה נכנסה</p>
+  </article>
+</div>
+
+<style>
+  .fc {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .fc__card {
+    position: absolute;
+    width: clamp(11rem, 15vw, 15rem);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 0.875rem 1rem;
+    font-size: var(--text-micro);
+    animation: fc-float 9s var(--ease-inout) infinite;
+  }
+  .fc__card--a { top: 14%; inset-inline-end: 4%; animation-delay: -1s; }
+  .fc__card--b { top: 30%; inset-inline-start: 3%; animation-delay: -3s; }
+  .fc__card--c { bottom: 20%; inset-inline-start: 9%; animation-delay: -5s; }
+  .fc__card--d { bottom: 25%; inset-inline-end: 6%; animation-delay: -7s; }
+
+  .fc__head {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-weight: 700; color: var(--color-ink-3);
+    letter-spacing: 0.02em; margin-bottom: 0.5rem;
+  }
+  .fc__dot {
+    width: 0.5rem; height: 0.5rem; border-radius: 50%;
+    background: var(--color-electric); flex: none;
+  }
+  .fc__dot--live { background: var(--color-success); animation: fc-blink 2s var(--ease-inout) infinite; }
+  .fc__title { font-family: var(--font-display); font-weight: 800; font-size: var(--text-small); color: var(--color-ink); }
+  .fc__sub { color: var(--color-ink-3); margin-top: 0.2rem; line-height: 1.45; }
+
+  .fc__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .fc__steps li { display: flex; align-items: center; gap: 0.45rem; color: var(--color-ink-2); }
+  .fc__tick {
+    display: grid; place-items: center; flex: none;
+    width: 1rem; height: 1rem; border-radius: 50%;
+    background: var(--color-success-soft); color: var(--color-success);
+    font-size: 0.6rem; font-weight: 700;
+  }
+  .fc__tick--now { background: color-mix(in srgb, var(--color-electric) 22%, transparent); }
+
+  .fc__bars { display: flex; align-items: flex-end; gap: 0.35rem; height: 2.75rem; margin-bottom: 0.5rem; }
+  .fc__bars span {
+    flex: 1; height: var(--h);
+    background: var(--gradient-blue);
+    border-radius: 3px 3px 0 0;
+    opacity: 0.85;
+  }
+
+  @keyframes fc-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-14px); }
+  }
+  @keyframes fc-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+  }
+
+  /* Below the hero's two-column break the cards would collide with the
+     type, so only the two most legible survive and they reposition. */
+  /* Below the hero's two-column break the cards would collide with the
+     statement, so only two survive, they shrink, and they sit clear of
+     both the fixed header and the headline. */
+  @media (max-width: 900px) {
+    .fc__card--a, .fc__card--b { display: none; }
+    .fc__card { width: clamp(8.5rem, 40vw, 11rem); font-size: 0.7rem; padding: 0.7rem 0.8rem; }
+    /* pinned low, beside the character, clear of the CTA row above */
+    .fc__card--c { bottom: 8%; inset-inline-start: -0.75rem; }
+    .fc__card--d { bottom: 30%; inset-inline-end: -0.75rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fc__card { animation: none; }
+    .fc__dot--live { animation: none; }
+  }
+</style>

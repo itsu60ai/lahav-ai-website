@@ -1,0 +1,36 @@
+---
+// Renders a heading as masked lines that wipe up on enter.
+//
+// Lines are authored EXPLICITLY (an array of strings) rather than being
+// split automatically at render width. That is deliberate: Hebrew line
+// breaks carry meaning, and an auto-splitter would rewrap them badly at
+// some viewport and break the phrasing. Authoring them means every
+// break on the site is a decision.
+export type SplitLine = string | { text: string; class?: string };
+
+export interface Props {
+  lines: SplitLine[];
+  as?: 'h1' | 'h2' | 'h3' | 'p' | 'div';
+  class?: string;
+  /** ms between each line starting */
+  step?: number;
+  /** ms before the first line starts */
+  delay?: number;
+}
+
+const { lines, as: Tag = 'h2', class: cls = '', step = 90, delay = 0 } = Astro.props;
+---
+
+<Tag class={cls}>
+  {
+    lines.map((line: SplitLine, i: number) => {
+      const text = typeof line === 'string' ? line : line.text;
+      const lineCls = typeof line === 'string' ? '' : (line.class ?? '');
+      return (
+        <span class="mo-line" style={`--mo-delay:${delay + i * step}ms`}>
+          <span class={lineCls}>{text}</span>
+        </span>
+      );
+    })
+  }
+</Tag>

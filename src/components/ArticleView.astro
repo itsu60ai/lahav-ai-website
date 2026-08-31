@@ -122,7 +122,8 @@ const { a, more = [] } = Astro.props;
 <style>
 
   .art {
-    padding-block: clamp(2.5rem, 5vw, 4.5rem) clamp(2.5rem, 5vw, 4rem);
+    /* top value clears the fixed header */
+    padding-block: clamp(8rem, 15vh, 11rem) clamp(2.5rem, 5vw, 4rem);
   }
   /* One reading measure for the whole article */
   .art__head,

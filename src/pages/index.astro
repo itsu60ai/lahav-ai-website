@@ -1,27 +1,44 @@
 ---
-// HOME. Composition: big type statement, then a full-bleed dark stage that
-// dominates the viewport, then the story runs problem -> result -> services
-// -> process -> founder -> CTA.
+// HOME, V3.
 //
-// Unique to this page: the hero stage, the pain grid and the numbered
-// editorial service act. No other page repeats this composition.
+// Section rhythm mapped from the reference package, with LAHAV content
+// in each slot:
+//   1  hero        full-viewport, oversized stacked statement, guide
+//                  character centred, floating product cards, disc CTA
+//   2  marquee     continuous type strip, breaks the hero cleanly
+//   3  problem     editorial hairline list (the reference's two-column
+//                  pattern: heavy heading one side, prose the other)
+//   4  core        full-bleed blue contrast band, orbit diagram
+//   5  services    pinned storytelling: sticky index, panels swap
+//   6  process     numbered editorial rows
+//   7  founder     asymmetric portrait + statement
+//   8  cta         handled by the footer's oversized closing block
 import SiteLayout from '../layouts/SiteLayout.astro';
-import ClosingCta from '../components/ClosingCta.astro';
-import HeroStage from '../components/HeroStage.astro';
-import ServiceShowcase from '../components/ServiceShowcase.astro';
+import SplitLines from '../components/SplitLines.astro';
+import Avatar from '../components/Avatar.astro';
+import FloatingCards from '../components/FloatingCards.astro';
 import FounderPortrait from '../components/FounderPortrait.astro';
-import DiscoveryPitch from '../components/DiscoveryPitch.astro';
-import { CAPABILITY_ICONS } from '../lib/icons';
 import Viz from '../components/Viz.astro';
-import ScrollReveal from '../components/ScrollReveal.astro';
-import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, CAPABILITIES, FOUNDER } from '../lib/site';
 import WhatsApp from '../components/icons/WhatsApp.astro';
+import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, FOUNDER } from '../lib/site';
 
 const pains = [
-  { t: 'המידע מפוזר בכל מקום', d: 'חלק בוואטסאפ, חלק במייל, חלק באקסל, וחלק בראש של מישהו. אף אחד לא רואה את התמונה המלאה.' },
-  { t: 'אותה עבודה, שוב ושוב', d: 'מעתיקים פרטים בין מערכות, ממלאים את אותם טפסים, שולחים את אותן הודעות. כל יום מחדש.' },
+  { t: 'המידע מפוזר', d: 'חלק בוואטסאפ, חלק במייל, חלק באקסל, וחלק בראש של מישהו. אף אחד לא רואה את התמונה המלאה.' },
+  { t: 'אותה עבודה, שוב', d: 'מעתיקים פרטים בין מערכות, ממלאים את אותם טפסים, שולחים את אותן הודעות. כל יום מחדש.' },
   { t: 'פניות שנשכחות', d: 'מישהו השאיר פרטים ולא חזרו אליו בזמן. עד שנזכרים, הפנייה כבר התקררה.' },
-  { t: 'קשה לדעת מה קורה', d: 'שאלה פשוטה כמו "כמה פניות היו החודש" דורשת לעבור בין כמה מקומות רק כדי להבין את התמונה.' },
+  { t: 'קשה לדעת מה קורה', d: 'שאלה פשוטה כמו "כמה פניות היו החודש" דורשת לעבור בין כמה מקומות.' },
+];
+
+const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות', 'תוכן AI', 'אפיון', 'אינטגרציות'];
+
+// One line per service panel: the guide narrates the section as it
+// scrolls. Content only, so rewriting what it says is a data edit.
+const avatarLines = [
+  'כל לקוח במקום אחד, בלי לחפש בשיחות ישנות.',
+  'מה שחוזר על עצמו רץ לבד. ההחלטות נשארות אצלכם.',
+  'אתר שמוביל לצעד הבא, לא רק נראה טוב.',
+  'כשאין מערכת שמתאימה לכם, בונים אחת שכן.',
+  'טיוטה ראשונה מהר. מה שיוצא עדיין עובר דרככם.',
 ];
 ---
 
@@ -29,566 +46,455 @@ const pains = [
   title="LAHAV AI, מערכות ואוטומציות שעושות סדר בעסק"
   description="בונים לעסקים קטנים ובינוניים בישראל מערכות CRM, אוטומציות ופתרונות דיגיטליים שמחברים את התהליכים בעסק. פחות עבודה ידנית, יותר שליטה."
 >
-  <ScrollReveal />
+  <!-- ═════════ 1. HERO ═════════ -->
+  <section class="hero band band--hero">
+    <FloatingCards />
 
-  <!-- ══════════ HERO: copy and visual in ONE first-screen act ══════════ -->
-  <section class="hero">
-    <div class="u-container hero__grid">
-      <div class="hero__type">
-        <p class="hero__eyebrow">מערכות AI ואוטומציה לעסקים</p>
-        <h1 class="hero__title">
-          פחות עבודה ידנית.<br />
-          <span class="hero__accent">יותר שליטה בעסק.</span>
-        </h1>
-        <p class="hero__lead">
-          נשב, נבין איך העסק שלכם עובד היום, ונבנה מערכת שלוקחת על עצמה את
-          העבודה שחוזרת על עצמה. ההחלטות נשארות אצלכם.
+    <!-- The character is a layer BEHIND the statement, not a block after
+         it: that layering is what lets the whole act sit in one screen. -->
+    <div class="hero__figure" aria-hidden="false">
+      <Avatar size="lg" class="hero__avatar" />
+    </div>
+
+    <div class="u-container u-container--wide hero__inner">
+      <p class="hero__eyebrow t-eyebrow" data-reveal>מערכות AI ואוטומציה לעסקים</p>
+
+      <h1 class="hero__title t-display-1">
+        <span class="mo-line" style="--mo-delay:60ms"><span class="t-latin hero__latin">Less busywork.</span></span>
+        <span class="mo-line" style="--mo-delay:150ms"><span>פחות עבודה ידנית.</span></span>
+        <span class="mo-line" style="--mo-delay:240ms"><span class="hero__accent">יותר שליטה בעסק.</span></span>
+      </h1>
+
+      <div class="hero__foot">
+        <p class="hero__lead" data-reveal style="--mo-delay:340ms">
+          נבין איך העסק עובד היום, ונבנה מערכת שלוקחת על עצמה את מה שחוזר.
         </p>
-        <div class="hero__actions">
-          <a class="btn btn-primary btn-lg" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-          <a class="btn btn-secondary btn-lg" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+        <div class="hero__actions" data-reveal style="--mo-delay:420ms">
+          <a class="btn btn-primary" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
+          <a class="btn btn-secondary" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
             <WhatsApp />
-            שיחה בוואטסאפ
+            וואטסאפ
           </a>
         </div>
-        <p class="hero__note">30 דקות, בלי התחייבות. נבין יחד איפה יש מה לשפר.</p>
-      </div>
-
-      <div class="hero__stage">
-        <HeroStage />
       </div>
     </div>
+
+    <a class="hero__disc btn-disc" href={CTA_PRIMARY.href} data-magnetic="0.18">
+      שיחת<br />היכרות
+    </a>
+
+    <span class="hero__scroll" aria-hidden="true"></span>
   </section>
 
-  <!-- ══════════ EXPLAINER ══════════ -->
-  <section class="section explain">
-    <div class="u-container explain__grid">
-      <h2 class="t-h2 explain__q">רגע, מה זה בעצם אומר?</h2>
-      <div class="explain__a">
-        <p class="explain__lead">"אוטומציה" נשמעת כמו מילה גדולה. הרעיון מאחוריה פשוט.</p>
-        <p class="explain__p">
-          תחשבו על יום עבודה רגיל אצלכם. יש פעולות קטנות שחוזרות שוב ושוב:
-          להעביר פרטים ממקום למקום, לשלוח הודעות מעקב, לזכור לחזור ללקוח,
-          לעדכן מידע ידנית. כל אחת קטנה בפני עצמה, אבל ביחד הן מצטברות
-          להרבה עבודה.
-        </p>
-        <p class="explain__strong">
-          את כל אלה אפשר להגדיר פעם אחת ולתת למערכת לעשות. אתם נשארים עם
-          ההחלטות. המערכת מטפלת בפעולות שהגדרנו מראש.
-        </p>
+  <!-- ═════════ 2. MARQUEE ═════════ -->
+  <div class="band band--navy mq" aria-hidden="true">
+    <div class="mo-marquee" style="--mo-speed:44s;--mo-gap:clamp(2rem,5vw,5rem)">
+      <div class="mo-marquee__track">
+        {marquee.map((w) => <span class="mq__item">{w}</span>)}
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ══════════ PAIN ══════════ -->
-  <section class="section section--gray">
-    <div class="u-container">
-      <div class="lede">
-        <p class="t-eyebrow">נשמע מוכר?</p>
-        <h2 class="t-h2">לרוב העסקים לא חסר עוד כלי.<br />חסר שהכלים ידברו ביניהם.</h2>
+  <!-- ═════════ 3. PROBLEM ═════════ -->
+  <section class="u-section band">
+    <div class="u-container u-container--wide">
+      <div class="prob__head">
+        <p class="t-eyebrow" data-reveal>נשמע מוכר?</p>
+        <SplitLines
+          class="t-display-2 prob__title"
+          lines={['לא חסר לכם עוד כלי.', 'חסר שהכלים ידברו.']}
+          step={100}
+        />
       </div>
-      <ul class="pains">
-        {
-          pains.map((p, i) => (
-            <li class="pain" data-reveal style={`--i:${i}`}>
-              <span class="pain__n tabular">{String(i + 1).padStart(2, '0')}</span>
-              <h3 class="t-h3">{p.t}</h3>
-              <p class="pain__d">{p.d}</p>
-            </li>
-          ))
-        }
+
+      <ul class="prob__list" data-stagger style="--mo-step:110ms">
+        {pains.map((p, i) => (
+          <li class="prob__row" data-reveal>
+            <span class="prob__n tabular">{String(i + 1).padStart(2, '0')}</span>
+            <h3 class="prob__t t-display-3">{p.t}</h3>
+            <p class="prob__d">{p.d}</p>
+          </li>
+        ))}
       </ul>
     </div>
   </section>
 
-  <!-- ══════════ RESULT: connected system, full dark section ══════════ -->
-  <section class="section section--navy">
-    <div class="u-container">
-      <div class="lede lede--center">
-        <p class="t-eyebrow">התוצאה</p>
-        <h2 class="t-display-2">ככה זה נראה<br />כשהכל מדבר</h2>
-        <p class="t-lead">
+  <!-- ═════════ 4. CORE (full-bleed contrast) ═════════ -->
+  <section class="u-section band band--blue core">
+    <span class="core__ghost t-ghost" aria-hidden="true" data-parallax="0.22">SYSTEM</span>
+
+    <div class="u-container u-container--wide core__inner">
+      <div class="core__copy">
+        <p class="t-eyebrow" data-reveal>התוצאה</p>
+        <SplitLines
+          class="t-display-2"
+          lines={['ככה זה נראה', 'כשהכל מדבר.']}
+          step={100}
+        />
+        <p class="t-lead core__lead" data-reveal style="--mo-delay:220ms">
           מישהו משאיר פרטים באתר. הפנייה נרשמת לבד, מקבלת מענה ראשוני, נכנסת
           למעקב, ומזכירה לכם לחזור אליה בזמן. אף אחד לא העתיק שורה.
         </p>
       </div>
-      <Viz kind="crm" class="home__viz" />
 
-      <div class="caps">
-        <p class="caps__label">תחומים שאנחנו עובדים בהם</p>
-        <ul class="caps__list">
-          {
-            CAPABILITIES.map((c, i) => (
-              <li class="cap" data-reveal style={`--i:${i}`}>
-                <span class="cap__ico" aria-hidden="true">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    set:html={CAPABILITY_ICONS[i % CAPABILITY_ICONS.length]}
-                  />
-                </span>
-                <span class="cap__t">{c}</span>
+      <div class="core__viz" data-clip style="--mo-delay:160ms">
+        <Viz kind="crm" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 5. SERVICES (pinned storytelling) ═════════ -->
+  <section class="svc" data-swap-root>
+    <div class="u-container u-container--wide svc__grid">
+      <!-- pinned index: highlights whichever panel is in view -->
+      <aside class="svc__index">
+        <div class="mo-sticky svc__sticky">
+          <p class="t-eyebrow">מה אנחנו בונים</p>
+          <Avatar lines={avatarLines} size="sm" class="svc__guide" />
+          <ol class="svc__nums">
+            {SERVICES.map((s, i) => (
+              <li class="svc__num" data-swap-index={i}>
+                <span class="svc__num-n tabular">{String(i + 1).padStart(2, '0')}</span>
+                <span class="svc__num-t">{s.short}</span>
               </li>
-            ))
-          }
-        </ul>
+            ))}
+          </ol>
+        </div>
+      </aside>
+
+      <div class="svc__panels">
+        {SERVICES.map((s, i) => (
+          <article class="svc__panel">
+            <p class="svc__panel-n t-eyebrow">שירות {String(i + 1).padStart(2, '0')}</p>
+            <h3 class="svc__panel-t t-display-2" data-reveal>{s.name}</h3>
+            <p class="svc__panel-lead t-lead" data-reveal style="--mo-delay:90ms">{s.lead}</p>
+            <p class="svc__panel-pain" data-reveal style="--mo-delay:160ms">{s.pain}</p>
+            <ul class="svc__points" data-reveal style="--mo-delay:230ms">
+              {s.points.map((pt) => <li>{pt}</li>)}
+            </ul>
+            <a class="link-arrow" href={`/services/${s.slug}/`}>
+              עוד על {s.short} <span class="arrow-inline" aria-hidden="true">←</span>
+            </a>
+          </article>
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- ══════════ SERVICES: the commercial act ══════════ -->
-  <section class="section services" id="services">
-    <div class="u-container">
-      <div class="lede">
-        <p class="t-eyebrow">מה אנחנו בונים</p>
-        <h2 class="t-display-2">חמישה תחומים,<br />ואפשר להתחיל מאחד.</h2>
-        <p class="t-lead services__hint">בחרו תחום כדי לראות איך הוא עובד בפועל.</p>
+  <!-- ═════════ 6. PROCESS ═════════ -->
+  <section class="u-section band band--warm">
+    <div class="u-container u-container--wide">
+      <div class="proc__head">
+        <p class="t-eyebrow" data-reveal>איך זה עובד</p>
+        <SplitLines class="t-display-2" lines={['מה קורה מרגע', 'שאמרתם כן.']} step={100} />
       </div>
 
-      <ServiceShowcase />
-
-      <p class="pricing-note">
-        אין מחירון קבוע, כי אין שני עסקים זהים. המחיר נקבע אחרי שיחת היכרות
-        ואפיון, לפי מה שאתם באמת צריכים ולא לפי חבילה.
-      </p>
-    </div>
-  </section>
-
-  <DiscoveryPitch variant="home" />
-
-  <!-- ══════════ PROCESS ══════════ -->
-  <section class="section section--gray">
-    <div class="u-container">
-      <div class="lede">
-        <p class="t-eyebrow">איך זה עובד</p>
-        <h2 class="t-h2">מה קורה מרגע שאמרתם כן</h2>
-      </div>
-      <ol class="steps">
-        {
-          PROCESS.map((p, i) => (
-            <li class="step" data-reveal style={`--i:${i}`}>
-              <span class="step__n">{p.n}</span>
-              <h3 class="t-h3 step__t">{p.label}</h3>
-              <p class="step__d">{p.what}</p>
-            </li>
-          ))
-        }
+      <ol class="proc__list" data-stagger style="--mo-step:90ms">
+        {PROCESS.map((p) => (
+          <li class="proc__row" data-reveal>
+            <span class="proc__n tabular">{p.n}</span>
+            <h3 class="proc__t t-h2">{p.label}</h3>
+            <p class="proc__d">{p.what}</p>
+          </li>
+        ))}
       </ol>
     </div>
   </section>
 
-  <!-- ══════════ FOUNDER ══════════ -->
-  <section class="section founder">
-    <div class="u-container founder__grid">
-      <FounderPortrait scale="home" sizes="(max-width: 1024px) 60vw, 26rem" />
-      <div class="founder__text">
-        <p class="t-eyebrow">מי עומד מאחורי זה</p>
-        <h2 class="t-h2 founder__name">{FOUNDER.name}</h2>
-        <p class="founder__role">{FOUNDER.role}</p>
-        <p class="founder__p">
+  <!-- ═════════ 7. FOUNDER ═════════ -->
+  <section class="u-section band fnd">
+    <div class="u-container u-container--wide fnd__grid">
+      <div class="fnd__art" data-clip>
+        <FounderPortrait scale="home" sizes="(max-width: 1024px) 70vw, 30rem" />
+      </div>
+
+      <div class="fnd__copy">
+        <p class="t-eyebrow" data-reveal>מי עומד מאחורי זה</p>
+        <SplitLines class="t-display-3 fnd__name" lines={[FOUNDER.name]} />
+        <p class="fnd__role" data-reveal style="--mo-delay:120ms">{FOUNDER.role}</p>
+        <p class="fnd__p" data-reveal style="--mo-delay:180ms">
           הקמתי את LAHAV AI בגלל משהו שראיתי חוזר בעסק אחרי עסק: כמעט תמיד לא
           חסרים כלים. חסר שהם ידברו. המידע מתפזר, העבודה הידנית מצטברת, ודברים
           שהיו פשוטים כשהייתם שלושה נהיים מסורבלים כשאתם חמישה עשר.
         </p>
-        <p class="founder__p">
+        <p class="fnd__p" data-reveal style="--mo-delay:240ms">
           לכן אני מתחיל מהעסק, לא מהטכנולוגיה. קודם נבין איפה העבודה נתקעת ומה
-          גוזל לכם את הזמן. רק אחר כך נבחר כלים ונבנה את המערכת שמתאימה לתהליך,
-          ולא להפך.
+          גוזל לכם את הזמן. רק אחר כך נבחר כלים.
         </p>
-        <a class="link-arrow founder__link" href="/about/">
+        <a class="link-arrow" href="/about/" data-reveal style="--mo-delay:300ms">
           עוד עלינו <span class="arrow-inline" aria-hidden="true">←</span>
         </a>
       </div>
     </div>
   </section>
-
-  <ClosingCta
-    heading="בואו נראה איפה אפשר לעשות סדר"
-    body="30 דקות. נעבור יחד על איך שאתם עובדים היום, ונגיד בכנות איפה יש מה לשפר ואיפה פשוט לא צריך."
-  />
 </SiteLayout>
 
 <style>
-  /* ---------- Hero ----------
-     Copy and visual belong to the SAME first screen. The visual is a
-     co-star, not a side illustration, so it takes the larger share. */
+  /* ══════ hero ══════
+     One screen, three layers: floating cards (z1), the character (z2),
+     the statement (z3). The type overlaps the character deliberately,
+     which is what keeps the whole act inside a single viewport instead
+     of becoming a tall stack. */
   .hero {
-    padding-block: clamp(2.5rem, 5vw, 5rem) clamp(3rem, 6vw, 6rem);
-    background:
-      radial-gradient(120% 90% at 85% 0%, rgba(41, 151, 255, 0.09), transparent 60%),
-      radial-gradient(90% 80% at 10% 20%, rgba(29, 78, 216, 0.06), transparent 60%);
-  }
-  .hero__grid {
+    position: relative;
+    min-height: 100svh;
     display: grid;
-    /* first column is the RIGHT one in RTL: the words come first */
-    grid-template-columns: minmax(0, 48fr) minmax(0, 52fr);
-    gap: clamp(2rem, 4vw, 4rem);
-    align-items: center;
+    grid-template-rows: 1fr auto;
+    padding-block: clamp(6rem, 11svh, 8.5rem) clamp(2rem, 5svh, 3.5rem);
+    overflow: clip;
   }
-  .hero__eyebrow {
-    display: inline-block;
-    font-size: var(--text-micro);
-    font-weight: 700;
-    letter-spacing: 0.07em;
-    color: var(--color-electric);
-    background: color-mix(in srgb, var(--color-electric) 14%, var(--color-surface-3));
-    border-radius: var(--radius-full);
-    padding: 0.5rem 1.1rem;
-    margin-bottom: 1.5rem;
+
+  .hero__figure {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    padding-top: 8svh;
+    pointer-events: none;
   }
-  .hero__title {
-    font-family: var(--font-display);
-    font-size: clamp(2.375rem, 1rem + 3vw, 3.5rem);
-    font-weight: 800;
-    line-height: 1.02;
-    letter-spacing: -0.03em;
-    margin-bottom: 1.5rem;
+  .hero__figure :global(.av) { pointer-events: auto; }
+  /* sized off the viewport height so it can never push the page taller */
+  .hero__figure :global(.av--lg) { --av-size: clamp(8rem, 34svh, 17rem); }
+  .hero__figure :global(.av__speech) {
+    font-size: clamp(0.95rem, 1.25vw, 1.2rem);
+    max-width: 24ch;
+    min-height: 3.6em;
   }
+
+  .hero__inner {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    align-self: start;
+    pointer-events: none;
+  }
+  .hero__inner a { pointer-events: auto; }
+  .hero__eyebrow { margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem); }
+  .hero__title { margin-inline: auto; }
+  .hero__latin { font-size: 0.6em; opacity: 0.45; }
   .hero__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  .hero__lead {
-    font-size: var(--text-lead);
-    line-height: 1.6;
-    color: var(--color-ink-2);
-    max-width: 34ch;
-    margin-bottom: 2rem;
-  }
-  .hero__actions {
+
+  /* supporting copy sits at the bottom of the screen, small, so the
+     statement keeps the weight */
+  .hero__foot {
+    position: absolute;
+    inset-inline: 0;
+    bottom: clamp(-20rem, -26svh, -14rem);
     display: flex;
-    flex-wrap: nowrap;
-    gap: 0.75rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
-  /* slightly tighter than the global btn-lg so the pair fits the column */
-  .hero__actions .btn {
-    white-space: nowrap;
-    padding-inline: 1.375rem;
+  .hero__lead {
+    font-size: var(--text-body);
+    color: var(--color-ink-2);
+    max-width: 40ch;
+    margin: 0;
   }
-  .hero__note {
-    margin-top: 1.25rem;
-    font-size: var(--text-small);
-    color: var(--color-ink-3);
-  }
-  /* The dark stage is its own object, not a full-bleed band, so the copy
-     and the visual read as one composition. */
-  .hero__stage {
-    background: var(--color-navy);
-    border-radius: clamp(1.25rem, 2vw, 2rem);
-    padding: clamp(1.25rem, 2.5vw, 2.5rem);
-    box-shadow: var(--shadow-lg);
+  .hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.625rem; }
+  .hero__actions .btn { min-height: 48px; padding-inline: 1.4rem; font-size: var(--text-small); }
+
+  .hero__disc {
+    position: absolute;
+    z-index: 4;
+    bottom: clamp(3rem, 8svh, 5.5rem);
+    inset-inline-end: clamp(1.5rem, 6vw, 6rem);
   }
 
-  /* ---------- Explainer ---------- */
-  .explain__grid {
+  .hero__scroll {
+    position: absolute;
+    bottom: 1.75rem;
+    inset-inline-start: 50%;
+    width: 1px;
+    height: 3.5rem;
+    background: linear-gradient(180deg, transparent, var(--color-ink-3));
+    opacity: 0.5;
+    animation: hero-scroll 2.4s var(--ease-inout) infinite;
+  }
+  @keyframes hero-scroll {
+    0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.2; }
+    50%      { transform: scaleY(1); transform-origin: top; opacity: 0.6; }
+  }
+
+  /* ══════ marquee ══════ */
+  .mq { padding-block: clamp(1.25rem, 2.5vw, 2rem); }
+  .mq__item {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3.4vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+  }
+  .mq__item::after {
+    content: '—';
+    margin-inline-start: clamp(2rem, 5vw, 5rem);
+    color: var(--color-electric);
+  }
+
+  /* ══════ problem ══════ */
+  .prob__head { margin-bottom: clamp(3rem, 6vw, 5rem); }
+  .prob__title { margin-top: 1rem; }
+  .prob__list { list-style: none; margin: 0; padding: 0; }
+  .prob__row {
     display: grid;
-    grid-template-columns: 0.8fr 1.2fr;
+    grid-template-columns: 4rem minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: clamp(1rem, 3vw, 3rem);
+    align-items: baseline;
+    padding-block: clamp(1.75rem, 3vw, 2.75rem);
+    border-top: 1px solid var(--color-line);
+  }
+  .prob__row:last-child { border-bottom: 1px solid var(--color-line); }
+  .prob__n { font-family: var(--font-display); font-weight: 700; color: var(--color-electric); font-size: var(--text-small); }
+  .prob__d { color: var(--color-ink-2); max-width: 46ch; }
+
+  /* ══════ core ══════ */
+  .core { position: relative; }
+  .core__ghost {
+    position: absolute;
+    top: 6%;
+    inset-inline-start: 50%;
+    transform: translateX(50%);
+    z-index: 0;
+  }
+  .core__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .core__lead { margin-top: 1.5rem; }
+  .core__viz { border-radius: var(--radius-xl); overflow: hidden; }
+
+  /* ══════ services ══════ */
+  .svc { padding-block: var(--space-section); }
+  .svc__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
+    gap: clamp(2rem, 6vw, 6rem);
     align-items: start;
   }
-  .explain__q {
-    position: sticky;
-    top: 120px;
-  }
-  .explain__a {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-width: 60ch;
-  }
-  .explain__lead {
-    font-size: var(--text-lead);
-    font-weight: 600;
-    line-height: 1.5;
-    max-width: none;
-  }
-  .explain__p {
-    font-size: var(--text-body-lg);
-    line-height: 1.75;
-    color: var(--color-ink-2);
-    max-width: none;
-  }
-  .explain__strong {
-    font-size: var(--text-body-lg);
-    line-height: 1.75;
-    font-weight: 500;
-    border-inline-start: 3px solid var(--color-electric);
-    padding-inline-start: 1.25rem;
-    max-width: none;
-  }
-
-  /* ---------- Pain ----------
-     Bordered tiles, not a bare text list — closer to the numbered feature
-     grids on the reference sites (client request 2026-08-31). Same copy,
-     just given a card's weight and a hover lift. */
-  .pains {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(1.25rem, 2vw, 1.75rem);
-  }
-  .pain {
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
-    padding: clamp(1.5rem, 2.5vw, 2rem);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-lg);
-    background: rgba(255, 255, 255, 0.02);
-    transition:
-      opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
-      translate 600ms var(--ease-out) calc(var(--i) * 90ms),
-      border-color var(--dur) var(--ease-out),
-      background-color var(--dur) var(--ease-out);
-  }
-  .pain:hover {
-    border-color: var(--color-line-strong);
-    background: rgba(255, 255, 255, 0.045);
-  }
-  :global(html.reveal-ready) .pain {
-    opacity: 0;
-    translate: 0 16px;
-  }
-  :global(html.reveal-ready) .pain.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
-  /* Higher specificity than the .is-in rule above on purpose — by the
-     time a visitor can hover a card it has already revealed, so without
-     this the lift would be silently overridden by is-in's own translate. */
-  :global(html.reveal-ready) .pain.is-in:hover,
-  .pain:hover {
-    translate: 0 -3px;
-  }
-  .pain__n {
-    font-family: var(--font-display);
-    font-size: var(--text-small);
-    font-weight: 700;
-    color: var(--color-electric);
-  }
-  .pain__d {
-    color: var(--color-ink-2);
-    max-width: 44ch;
-  }
-
-  /* ---------- Result ---------- */
-  .home__viz {
-    margin-top: clamp(1rem, 3vw, 2rem);
-  }
-  .caps {
-    margin-top: clamp(3rem, 5vw, 4.5rem);
-    padding-top: clamp(1.75rem, 3vw, 2.5rem);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-  }
-  .caps__label {
-    font-size: var(--text-micro);
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    color: var(--color-electric);
-    margin-bottom: 1.25rem;
-  }
-  .caps__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.75rem;
-  }
-  .cap {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 0.25rem;
-    /* a hairline, not a card: nothing here is clickable */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition:
-      opacity 500ms var(--ease-out) calc(var(--i) * 70ms),
-      translate 500ms var(--ease-out) calc(var(--i) * 70ms);
-  }
-  :global(html.reveal-ready) .cap {
-    opacity: 0;
-    translate: 0 12px;
-  }
-  :global(html.reveal-ready) .cap.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
-  .cap__ico {
-    display: grid;
-    place-items: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    flex: none;
-    color: var(--color-electric);
-  }
-  .cap__ico svg {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-  .cap__t {
-    font-size: var(--text-small);
-    font-weight: 600;
-    line-height: 1.35;
-    color: rgba(255, 255, 255, 0.88);
-  }
-
-  /* ---------- Services ---------- */
-  .services__hint {
-    margin-top: 1rem;
-    color: var(--color-ink-3);
-  }
-  .pricing-note {
-    margin-top: clamp(2.5rem, 4vw, 3.5rem);
-    font-size: var(--text-small);
-    color: var(--color-ink-3);
-    border-inline-start: 3px solid var(--color-electric);
-    padding-inline-start: 1rem;
-    max-width: 60ch;
-  }
-
-  /* ---------- Process ---------- */
-  .steps {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(1.25rem, 2vw, 1.75rem);
-  }
-  /* Same bordered-tile treatment as .pain above, for consistency. */
-  .step {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: clamp(1.5rem, 2.5vw, 1.875rem) clamp(1.25rem, 2vw, 1.5rem);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-lg);
-    background: rgba(255, 255, 255, 0.02);
-    transition:
-      opacity 600ms var(--ease-out) calc(var(--i) * 100ms),
-      translate 600ms var(--ease-out) calc(var(--i) * 100ms),
-      border-color var(--dur) var(--ease-out),
-      background-color var(--dur) var(--ease-out);
-  }
-  .step:hover {
-    border-color: var(--color-electric);
-    background: rgba(255, 255, 255, 0.045);
-  }
-  :global(html.reveal-ready) .step {
-    opacity: 0;
-    translate: 0 18px;
-  }
-  :global(html.reveal-ready) .step.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
-  :global(html.reveal-ready) .step.is-in:hover,
-  .step:hover {
-    translate: 0 -3px;
-  }
-  .step__n {
-    font-family: var(--font-display);
-    font-size: var(--text-small);
-    font-weight: 700;
-    color: var(--color-electric);
-  }
-  .step__d {
-    font-size: var(--text-small);
-    line-height: 1.6;
-    color: var(--color-ink-2);
-    max-width: 36ch;
-  }
-
-  /* ---------- Founder ---------- */
-  /* The portrait sits on the same baseline as the text block, with no
-     frame around it, so the section reads as one composition. */
-  .founder {
-    overflow: hidden;
-  }
-  .founder__grid {
-    display: grid;
-    grid-template-columns: 1.25fr 0.75fr;
-    gap: clamp(2rem, 5vw, 4.5rem);
-    align-items: end;
-  }
-  .founder__text {
-    padding-bottom: clamp(0.5rem, 2vw, 2rem);
-  }
-  .founder__name {
-    margin-block: 0.75rem 0.25rem;
-  }
-  .founder__role {
-    font-size: var(--text-small);
-    font-weight: 600;
-    color: var(--color-electric);
-    direction: ltr;
+  .svc__sticky { top: 18vh; }
+  /* the guide narrates this section: it is pinned with the index and its
+     line changes as each service panel comes up */
+  .svc__guide { margin-block: 1.25rem; align-items: flex-start; }
+  .svc__guide :global(.av__speech) {
     text-align: start;
-    margin-bottom: 1.5rem;
+    font-size: var(--text-body);
+    max-width: 22ch;
+    min-height: 3.2em;
   }
-  .founder__p {
-    font-size: var(--text-body-lg);
-    line-height: 1.75;
+  .svc__nums { list-style: none; margin: 1.25rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .svc__num {
+    display: flex; align-items: baseline; gap: 0.75rem;
+    padding-block: 0.5rem;
+    color: var(--color-ink-3);
+    border-top: 1px solid var(--color-line);
+    transition: color var(--dur) var(--ease-out);
+  }
+  .svc__num-n { font-size: var(--text-micro); font-weight: 700; }
+  .svc__num-t { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 800; }
+  /* the pinned index highlights whichever panel Motion says is current */
+  .svc[data-swap='0'] .svc__num:nth-child(1),
+  .svc[data-swap='1'] .svc__num:nth-child(2),
+  .svc[data-swap='2'] .svc__num:nth-child(3),
+  .svc[data-swap='3'] .svc__num:nth-child(4),
+  .svc[data-swap='4'] .svc__num:nth-child(5) { color: var(--color-royal); }
+
+  .svc__panels { display: flex; flex-direction: column; gap: clamp(4rem, 10vw, 9rem); }
+  .svc__panel { display: flex; flex-direction: column; gap: 1rem; align-items: flex-start; }
+  .svc__panel-t { max-width: 14ch; }
+  .svc__panel-pain { color: var(--color-ink-2); max-width: 52ch; }
+  .svc__points { list-style: none; margin: 0.5rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .svc__points li {
+    font-size: var(--text-small);
+    font-weight: 600;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-full);
     color: var(--color-ink-2);
-    max-width: 54ch;
-    margin-bottom: 1rem;
-  }
-  .founder__link {
-    margin-top: 0.75rem;
   }
 
-  /* ---------- Responsive ---------- */
-  @media (max-width: 1024px) {
-    .hero__grid,
-    .explain__grid,
-    .founder__grid {
-      grid-template-columns: 1fr;
-    }
-    /* Mobile is recomposed, not shrunk: the words land first, then the
-       visual gets the full width it needs to stay readable. */
-    .hero__lead {
-      max-width: 46ch;
-    }
-    .explain__q {
-      position: static;
-    }
-    .steps {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .caps__list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  /* ══════ process ══════ */
+  .proc__head { margin-bottom: clamp(3rem, 6vw, 5rem); }
+  .proc__list { list-style: none; margin: 0; padding: 0; }
+  .proc__row {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 0.9fr) minmax(0, 1.2fr);
+    gap: clamp(1rem, 3vw, 3rem);
+    align-items: baseline;
+    padding-block: clamp(1.5rem, 2.6vw, 2.25rem);
+    border-top: 1px solid var(--color-line-strong);
   }
-  @media (max-width: 720px) {
-    .pains,
-    .steps,
-    .caps__list {
-      grid-template-columns: 1fr;
+  .proc__row:last-child { border-bottom: 1px solid var(--color-line-strong); }
+  .proc__n { font-family: var(--font-display); font-weight: 800; color: var(--color-electric); }
+  .proc__d { color: var(--color-ink-2); max-width: 52ch; }
+
+  /* ══════ founder ══════ */
+  .fnd__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .fnd__art { border-radius: var(--radius-xl); overflow: hidden; }
+  .fnd__name { margin-top: 0.75rem; }
+  .fnd__role {
+    font-size: var(--text-small); font-weight: 700; color: var(--color-royal);
+    direction: ltr; text-align: start; margin-block: 0.5rem 1.5rem;
+  }
+  .fnd__p { color: var(--color-ink-2); margin-bottom: 1rem; max-width: 54ch; }
+
+  /* ══════ responsive ══════ */
+  @media (max-width: 1024px) {
+    .core__inner, .fnd__grid { grid-template-columns: 1fr; }
+    .svc__grid { grid-template-columns: 1fr; }
+    /* the pinned index becomes a horizontal strip above the panels */
+    .svc__sticky { position: static; }
+    .svc__nums { flex-direction: row; flex-wrap: wrap; gap: 0.5rem; }
+    .svc__num { border-top: 0; padding: 0.4rem 0.8rem; border: 1px solid var(--color-line); border-radius: var(--radius-full); }
+    .fnd__art { max-width: 26rem; }
+  }
+  @media (max-width: 760px) {
+    .prob__row, .proc__row { grid-template-columns: 3rem 1fr; }
+    .prob__d, .proc__d { grid-column: 2; }
+
+    /* Mobile hero is recomposed, not shrunk: the statement owns the top
+       of the screen and the character sits in the lower half, so the two
+       never overlap on a narrow viewport. */
+    .hero { padding-top: 6.5rem; }
+    /* sized so each authored Hebrew line still fits on ONE rendered line
+       at 360px, which is what keeps the statement reading as a statement */
+    .hero__title { font-size: clamp(1.75rem, 8.2vw, 2.5rem); }
+    .hero__lead { font-size: var(--text-small); max-width: 32ch; }
+    .hero__figure {
+      inset: auto 0 0 0;
+      height: 52svh;
+      padding-top: 0;
+      align-items: center;
     }
-    .hero__actions {
-      flex-direction: column;
-      align-items: stretch;
-      width: 100%;
-    }
-    .hero__stage {
-      padding: 1rem;
+    .hero__figure :global(.av--lg) { --av-size: clamp(7rem, 26svh, 11rem); }
+
+    .hero__foot { bottom: auto; top: calc(100% + 1rem); }
+    .hero__actions { width: 100%; }
+    .hero__actions .btn { flex: 1 1 auto; }
+
+    .hero__disc {
+      inset-inline-end: 1rem;
+      bottom: 2rem;
+      width: 6.5rem;
+      font-size: var(--text-small);
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .pain,
-    .step,
-    .cap {
-      opacity: 1 !important;
-      translate: none !important;
-      transition: none !important;
-    }
+    .hero__scroll { animation: none; }
   }
 </style>

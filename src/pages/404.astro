@@ -29,10 +29,11 @@ import { CTA_PRIMARY } from '../lib/site';
 
 <style>
   .nf {
-    min-height: min(62vh, 560px);
+    min-height: min(70vh, 640px);
     display: grid;
     place-items: center;
-    padding-block: clamp(3rem, 7vw, 6rem);
+    /* clears the fixed header */
+    padding-block: clamp(9rem, 18vh, 13rem) clamp(3rem, 7vw, 6rem);
   }
   .nf__inner {
     display: flex;
