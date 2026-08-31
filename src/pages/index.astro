@@ -20,7 +20,7 @@ import Curve from '../components/Curve.astro';
 import ContactBlock from '../components/ContactBlock.astro';
 import { turnstileSiteKey } from '../lib/turnstile.ts';
 import SplitLines from '../components/SplitLines.astro';
-import Avatar from '../components/Avatar.astro';
+import Presenter from '../components/Presenter.astro';
 import FloatingCards from '../components/FloatingCards.astro';
 import FounderPortrait from '../components/FounderPortrait.astro';
 import Flow from '../components/Flow.astro';
@@ -71,14 +71,9 @@ const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות'
 // a real audio track can be dropped in later without touching markup.
 // Truth rules apply here exactly as in page copy: no numbers, no
 // results, no claims that cannot be stood behind.
-const heroScript = [
-  { text: 'שלום. אני לַהַב.', hold: 1900 },
-  { text: 'רוב העסקים לא צריכים עוד תוכנה.', hold: 2600 },
-  { text: 'הם צריכים שהמידע יהיה במקום אחד.', hold: 2800 },
-  { text: 'נתחיל מאיך שאתם עובדים היום.', hold: 2600 },
-  { text: 'מה שחוזר על עצמו, ירוץ לבד.', hold: 2600 },
-  { text: 'וההחלטות נשארות אצלכם.', hold: 2600 },
-];
+// The hero presenter is a real recorded person now, so his words live in
+// the audio and in public/presenter/he.vtt rather than in a caption array
+// here. See src/components/Presenter.astro.
 
 ---
 
@@ -109,12 +104,15 @@ const heroScript = [
     </div>
 
     <div class="hero__figure">
-      <Avatar
-        size="hero"
-        talkable
-        talkLabel="לחצו עליי"
-        script={heroScript}
-        class="hero__avatar"
+      <Presenter
+        idleWebm="/presenter/idle.webm"
+        idleMp4="/presenter/idle.mp4"
+        speakingSrc="/presenter/speaking.mp4"
+        poster="/presenter/poster.webp"
+        captions="/presenter/he.vtt"
+        label="לחצו עליי"
+        alt="המנחה של LAHAV AI"
+        class="hero__presenter"
       />
     </div>
 
@@ -387,43 +385,22 @@ const heroScript = [
     place-items: end center;
     width: 100%;
     padding-bottom: clamp(1.5rem, 3.5svh, 3rem);
-    margin-top: clamp(-2rem, -2vw, -0.5rem);
+    /* No negative margin. It was tuned for the drawn character, whose
+       silhouette narrowed to a head at the top so copy could sit in the
+       empty corners beside it. The presenter is a rectangular video with
+       hard edges, and the same pull-up put its top edge 29px into the
+       last line of the lead paragraph. */
+    padding-top: clamp(0.5rem, 1.6svh, 1.25rem);
   }
-  .hero__figure :global(.av) { gap: 0; height: 100%; justify-content: center; }
-  /* height-driven so the figure can never push the hero past one screen */
-  .hero__figure :global(.av--hero) { --av-w: auto; }
+  /* Height-driven, so the presenter can never push the hero past one
+     screen on a short laptop. Width follows from the 3:4 source. */
+  .hero__figure :global(.pr) { height: 100%; justify-content: center; }
+  .hero__figure :global(.pr__figure) { width: max-content; }
+  .hero__figure :global(.pr__idle) { height: min(42svh, 29vw); width: auto; }
   /* The figure HUGS the drawing rather than filling the hero column.
      While it was `height: 100%` the figure box was 576px tall on a phone
      around a 359px character, so a percentage placed inside it landed
      nowhere near the hip. `.av` still centres it vertically. */
-  .hero__figure :global(.av__figure) { display: grid; place-items: center; }
-  .hero__figure :global(.av__svg) { height: min(46svh, 29vw); width: auto; max-height: none; }
-
-  /* THE TRIGGER IS MEASURED IN THE CHARACTER, NOT IN THE VIEWPORT.
-     It overlaps the presenter's hip, the way the reference's round CTA
-     overlaps its own presenter. It used to be placed with a `bottom` in
-     rem/svh, hand-tuned again at two breakpoints, and that does not
-     survive a screen the tuning never saw: at 2560 it fell to the
-     character's feet, at 320 it covered the whole torso. Percentages of
-     the figure track the character at every size, with no breakpoints.
-
-     `.av` is narrowed to the figure's own width here so those
-     percentages resolve against the drawing rather than against the
-     34rem avatar column. */
-  .hero__figure :global(.av__talk) {
-    position: absolute;
-    bottom: 33%;
-    inset-inline-start: 50%;
-    transform: translateX(50%);
-    margin: 0;
-    /* Bounded in both directions. A bare 40% is proportionally right at
-       every size but produces a 63px disc on a small figure and a 190px
-       one on a tablet, where the character is much larger. */
-    width: clamp(4.5rem, 34%, 7.5rem);
-    font-size: clamp(0.7rem, 0.42vw + 0.6rem, 0.95rem);
-    padding: 0.5rem;
-  }
-
   .hero__scroll {
     position: absolute;
     bottom: 1.25rem;
@@ -778,11 +755,10 @@ const heroScript = [
   /* Tablet: the figure was sized off vw, which on a narrow-but-tall
      screen left a 200px band between the statement and the character. */
   @media (max-width: 1024px) and (min-width: 761px) {
-    /* The width share, not the height share, binds on a tablet: at
-       820x1180 the old 46vw capped the character at 377px inside a
-       1180px hero, and the leftover showed as ~190px of dead screen
-       under its feet. The character fills the space it is given. */
-    .hero__figure :global(.av__svg) { height: min(52svh, 68vw); }
+    /* The width share, not the height share, binds on a tablet: the old
+       cap left ~190px of dead screen under the presenter's feet. He
+       fills the space he is given. */
+    .hero__figure :global(.pr__idle) { height: min(46svh, 62vw); }
   }
   @media (max-width: 760px) {
     .prob__row, .proc__row { grid-template-columns: 3rem 1fr; }
@@ -800,7 +776,7 @@ const heroScript = [
        gets a smaller share so the statement still leads. */
     .hero { padding-top: 6rem; }
     .hero__title { font-size: clamp(1.85rem, 8.8vw, 2.75rem); }
-    .hero__figure :global(.av__svg) { height: 40svh; }
+    .hero__figure :global(.pr__idle) { height: min(46svh, 92vw); }
   }
   @media (prefers-reduced-motion: reduce) {
     .hero__scroll { animation: none; }

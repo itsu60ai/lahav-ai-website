@@ -1,0 +1,381 @@
+---
+// THE PRESENTER.
+//
+// This replaces the drawn SVG character in the hero. It is the same
+// approved person in both states, so there is no moment where the site
+// swaps one character for another:
+//
+//   idle      a short silent loop. He breathes, blinks and shifts very
+//             slightly. Muted, so it is allowed to autoplay everywhere,
+//             and small enough that it costs nothing to ship.
+//   speaking  the full monologue with real audio, loaded ONLY when the
+//             visitor asks for it.
+//
+// Both were produced locally from one approved portrait: LivePortrait
+// for the head motion and blinks, MuseTalk for the lip sync. See
+// Projects/presenter-lab/README.md.
+//
+// WHY NATIVE <video> CONTROLS IN THE DIALOG, rather than a designed
+// custom transport: the brief is explicit about no stuck state, no
+// replay confusion and no modal bugs, and every one of those is a bug
+// class that custom transports invent. Native controls cannot desync
+// from the media, are keyboard accessible for free, and behave the way
+// the visitor's own phone already behaves.
+interface Props {
+  /** VP9 with a real alpha channel: Chrome, Edge, Firefox */
+  idleWebm: string;
+  /** the same matte over a baked studio sweep, for Safari */
+  idleMp4: string;
+  speakingSrc: string;
+  poster: string;
+  captions?: string;
+  /** the invitation on the disc */
+  label?: string;
+  /** accessible name for the person on screen */
+  alt?: string;
+  /** figure only: no invitation, no dialog. For pages that want the
+      presenter present but not speaking. */
+  quiet?: boolean;
+  class?: string;
+}
+
+const {
+  idleWebm,
+  idleMp4,
+  speakingSrc,
+  poster,
+  captions,
+  label = 'לחצו עליי',
+  alt = 'המנחה של LAHAV AI',
+  quiet = false,
+  class: cls = '',
+} = Astro.props;
+
+const uid = 'pr' + Math.random().toString(36).slice(2, 8);
+---
+
+<div class:list={['pr', cls]} data-presenter data-uid={uid}>
+  <div class="pr__figure">
+    <video
+      class="pr__idle"
+      poster={poster}
+      muted
+      loop
+      playsinline
+      autoplay
+      preload="metadata"
+      aria-hidden="true"
+      tabindex="-1"
+      data-pr-idle
+    >
+      <!-- WebM first: it carries a real alpha channel, so the presenter
+           stands on the page over whatever gradient the hero happens to
+           have at this viewport width. Safari takes neither alpha in
+           WebM nor, practically, alpha in MP4, so it gets the same matte
+           over a baked studio sweep. -->
+      <source src={idleWebm} type="video/webm" />
+      <source src={idleMp4} type="video/mp4" />
+    </video>
+
+    {!quiet && (
+      <button class="pr__cta btn-disc" type="button" data-pr-open aria-expanded="false">
+        {label}
+      </button>
+    )}
+  </div>
+</div>
+
+{!quiet && (
+<div class="prtalk" data-pr-panel={uid} hidden>
+  <button class="prtalk__scrim" type="button" data-pr-close aria-label="סגירה"></button>
+
+  <div class="prtalk__box" role="dialog" aria-modal="true" aria-label="הודעה מ-LAHAV AI">
+    <button class="prtalk__x" type="button" data-pr-close>
+      <span aria-hidden="true">✕</span>
+      <span>סגירה</span>
+    </button>
+
+    <video
+      class="prtalk__video"
+      src={speakingSrc}
+      poster={poster}
+      playsinline
+      controls
+      preload="none"
+      data-pr-video
+    >
+      {captions && (
+        <track kind="captions" src={captions} srclang="he" label="עברית" default />
+      )}
+    </video>
+
+    <div class="prtalk__bar">
+      <a class="btn btn-primary" href="/contact/">לתיאום שיחת היכרות</a>
+      <button class="btn btn-secondary" type="button" data-pr-close>סגירה</button>
+    </div>
+  </div>
+</div>
+)}
+
+<style>
+  .pr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .pr__figure {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--pr-w, min(100%, 22rem));
+  }
+  .pr__idle {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* NO card. He is matted out of the original room, so there is no
+       rectangle to dress up: no radius, no shadow, no background.
+
+       The feather does two jobs at once. Where the alpha WebM plays it
+       is a soft vignette and nothing more. Where Safari falls back to
+       the baked studio sweep it dissolves that rectangle's edge into
+       the hero, so the fallback does not announce itself as a video
+       box. The stops clear his silhouette: his head starts around 10%
+       down and his shoulders sit inside 20-80% across. */
+    -webkit-mask-image:
+      linear-gradient(to bottom, transparent 0, #000 6%, #000 86%, transparent 100%),
+      linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+    mask-image:
+      linear-gradient(to bottom, transparent 0, #000 6%, #000 86%, transparent 100%),
+      linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  /* The disc sits ON the presenter, the way the reference's round CTA
+     overlaps its own. Both numbers are percentages OF THE FIGURE, never
+     rem or vh, so it lands in the same place on a 360px phone and a
+     2560px desktop with no breakpoints. */
+  .pr__cta {
+    position: absolute;
+    inset-block-end: 8%;
+    inset-inline-start: 50%;
+    transform: translateX(50%);
+    width: clamp(4.75rem, 30%, 7.5rem);
+    font-size: clamp(0.72rem, 0.4vw + 0.6rem, 0.95rem);
+    padding: 0.5rem;
+    animation: pr-bob 2.8s var(--ease-inout) infinite;
+  }
+  .pr__cta::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    border: 2px solid var(--color-royal);
+    animation: pr-halo 2.8s var(--ease-out) infinite;
+    pointer-events: none;
+  }
+  .pr__cta:hover, .pr__cta:focus-visible { animation-play-state: paused; }
+  .pr__cta:hover::after, .pr__cta:focus-visible::after { opacity: 0; animation-play-state: paused; }
+
+  /* `translate` and `scale`, not `transform`: the disc is centred with
+     `transform: translateX(50%)` and animating transform would drop it. */
+  @keyframes pr-bob {
+    0%, 100% { translate: 0 0;    scale: 1 }
+    42%      { translate: 0 -6px; scale: 1.035 }
+    62%      { translate: 0 0;    scale: 0.995 }
+  }
+  @keyframes pr-halo {
+    0%   { transform: scale(1);    opacity: 0.55 }
+    70%  { transform: scale(1.38); opacity: 0 }
+    100% { transform: scale(1.38); opacity: 0 }
+  }
+
+  /* ---------- the dialog ---------- */
+  .prtalk {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    padding: clamp(0.75rem, 3vw, 2rem);
+  }
+  .prtalk[hidden] { display: none; }
+
+  .prtalk__scrim {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    padding: 0;
+    background: rgba(9, 18, 44, 0.62);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+  .prtalk[data-open='true'] .prtalk__scrim { opacity: 1; }
+
+  .prtalk__box {
+    position: relative;
+    width: min(100%, 30rem);
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: clamp(0.85rem, 2vw, 1.25rem);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+    transition: opacity var(--dur) var(--ease-out), transform 460ms var(--ease-out);
+  }
+  .prtalk[data-open='true'] .prtalk__box { opacity: 1; transform: none; }
+
+  .prtalk__video {
+    display: block;
+    width: 100%;
+    /* The dialog must never grow taller than the screen, and on a short
+       landscape phone the video is what would do it. */
+    max-height: min(68svh, 34rem);
+    aspect-ratio: 3 / 4;
+    object-fit: contain;
+    border-radius: var(--radius-lg);
+    background: #0b1530;
+  }
+
+  .prtalk__x {
+    position: absolute;
+    inset-inline-end: 0.6rem;
+    top: 0.6rem;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    padding-inline: 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line-strong);
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(11, 26, 66, 0.16);
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background var(--dur) var(--ease-out);
+  }
+  .prtalk__x:hover { background: var(--color-soft); }
+
+  .prtalk__bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .prtalk__bar .btn { flex: 1 1 auto; justify-content: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pr__cta, .pr__cta::after { animation: none; }
+    .prtalk__scrim, .prtalk__box { transition: none; }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-presenter]').forEach((host) => {
+    const uid = host.dataset.uid;
+    const open = host.querySelector<HTMLButtonElement>('[data-pr-open]');
+    const idle = host.querySelector<HTMLVideoElement>('[data-pr-idle]');
+    const panel = document.querySelector<HTMLElement>(`[data-pr-panel="${uid}"]`);
+    // A quiet instance renders the figure alone, with no invitation and
+    // no dialog. Nothing below applies to it.
+    if (!open || !panel) return;
+
+    const box = panel.querySelector<HTMLElement>('.prtalk__box')!;
+    const video = panel.querySelector<HTMLVideoElement>('[data-pr-video]')!;
+
+    // The dialog is `position: fixed`, but it is authored next to a hero
+    // figure that is itself positioned. A positioned ancestor creates a
+    // stacking context and traps a fixed descendant's z-index inside it,
+    // which is how a previous version ended up with hero copy painted
+    // over an open modal. Moving the panel to <body> takes it out of
+    // every ancestor context for good.
+    if (panel.parentElement !== document.body) document.body.appendChild(panel);
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced && idle) {
+      // Leave the poster frame showing rather than looping motion at
+      // someone who asked the system for less of it.
+      idle.autoplay = false;
+      idle.removeAttribute('autoplay');
+      idle.pause();
+    }
+
+    let lastFocus: HTMLElement | null = null;
+
+    const setOpen = (isOpen: boolean) => {
+      if (isOpen) panel.hidden = false;
+      // one frame, so the transition has a state to animate FROM
+      requestAnimationFrame(() => { panel.dataset.open = String(isOpen); });
+      open.setAttribute('aria-expanded', String(isOpen));
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+
+      if (isOpen) {
+        lastFocus = document.activeElement as HTMLElement;
+        idle?.pause();
+
+        // ORDER MATTERS. The video is preload="none", so on the first
+        // open its readyState is 0 and there is no seekable range yet;
+        // assigning currentTime there throws, and the throw happened
+        // BEFORE play() was ever reached, so the dialog opened on a
+        // dead frame. Start playback first, and rewind only once there
+        // is something to rewind.
+        const rewind = () => { try { video.currentTime = 0; } catch { /* not seekable yet */ } };
+        if (video.readyState >= 1) rewind();
+        else video.addEventListener('loadedmetadata', rewind, { once: true });
+
+        // Explicitly start fetching. With preload="none" the only thing
+        // that would otherwise trigger a load is play() succeeding, so
+        // if a browser refuses playback the visitor would be left with
+        // an empty element rather than a poster and a play button.
+        if (video.readyState === 0) video.load();
+
+        // The click IS the user gesture, so audio is allowed here. If a
+        // browser still refuses, the visitor has native controls in
+        // front of them and nothing is stuck.
+        video.play().catch(() => { /* controls are right there */ });
+        box.focus?.();
+      } else {
+        video.pause();
+        if (!reduced) idle?.play().catch(() => {});
+        window.setTimeout(() => { if (panel.dataset.open !== 'true') panel.hidden = true; }, 420);
+        (lastFocus ?? open).focus();
+      }
+    };
+
+    open.addEventListener('click', () => setOpen(true));
+
+    const close = () => setOpen(false);
+    panel.querySelectorAll('[data-pr-close]').forEach((c) => c.addEventListener('click', close));
+
+    // Any pointer outside the dialog closes it, not just the scrim
+    // element. On a phone the dialog fills nearly the whole screen and
+    // there is barely any scrim left to hit, which was reported as
+    // "I can't even click outside".
+    panel.addEventListener('pointerdown', (e) => {
+      if (!box.contains(e.target as Node)) close();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && panel.dataset.open === 'true') close();
+    });
+
+    // Reaching the end is not a stuck state: rewind so the native play
+    // button restarts rather than sitting dead on the last frame.
+    video.addEventListener('ended', () => { video.currentTime = 0; });
+  });
+</script>

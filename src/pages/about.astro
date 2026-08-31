@@ -20,7 +20,7 @@ const SITE_KEY = turnstileSiteKey();
 import { turnstileSiteKey } from '../lib/turnstile.ts';
 import Flow from '../components/Flow.astro';
 import FounderPortrait from '../components/FounderPortrait.astro';
-import Avatar from '../components/Avatar.astro';
+import Presenter from '../components/Presenter.astro';
 import { FOUNDER, PROCESS, SERVICES } from '../lib/site';
 
 // The three beliefs. Short, declarative, one idea each: the reference
@@ -132,7 +132,21 @@ const guideLines = [
   <section class="ab-guide u-section band band--warm" data-swap-root>
     <div class="u-container u-container--wide ab-guide__grid">
       <div class="ab-guide__fig">
-        <Avatar lines={guideLines} size="md" />
+        <!-- The same person as the hero. One identity across the site:
+             a drawn character here and a photographed one on the home
+             page would read as two different companies. Quiet, because
+             the speaking version belongs to the hero. -->
+        <Presenter
+          quiet
+          idleWebm="/presenter/idle.webm"
+          idleMp4="/presenter/idle.mp4"
+          speakingSrc="/presenter/speaking.mp4"
+          poster="/presenter/poster.webp"
+          alt="המנחה של LAHAV AI"
+        />
+        <p class="ab-guide__says">
+          {guideLines.map((l) => <span>{l}</span>)}
+        </p>
       </div>
       <div class="ab-guide__copy">
         <p class="t-eyebrow" data-reveal>הגישה</p>
@@ -319,7 +333,20 @@ const guideLines = [
     align-items: center;
     margin-bottom: clamp(3rem, 6vw, 5rem);
   }
-  .ab-guide__fig { display: grid; place-items: center; }
+  .ab-guide__fig { display: grid; place-items: center; gap: 1.25rem; }
+  .ab-guide__fig :global(.pr__figure) { width: min(100%, 17rem); }
+  .ab-guide__says {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    text-align: center;
+    max-width: 26ch;
+    margin: 0 auto;
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-ink-2);
+  }
   .ab-guide__h { margin-block: 1rem 1.5rem; }
   .ab-guide__viz { margin-top: clamp(1.5rem, 4vw, 3rem); min-width: 0; }
 

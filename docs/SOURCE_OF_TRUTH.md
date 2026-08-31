@@ -2,7 +2,7 @@
 
 STATUS: CURRENT. Reconciliation complete. Final decisions F-1..F-18 approved by the client 2026-08-29.
 F-19 (2026-08-31) supersedes F-1's "never all-dark" clause - see section 5.
-F-20, F-21, F-22, F-23 (2026-08-29) and F-24, F-25, F-26, F-27 (2026-08-31) - see section 0.
+F-20, F-21, F-22, F-23 (2026-08-29) F-24, F-25, F-26, F-27 (2026-08-31) and F-28, F-29 (2026-09-01) - see section 0.
 
 ---
 
@@ -113,6 +113,44 @@ actually sent rendered unstyled, reported as "there is no color
 separation between what the client says and what the bot says". Any class
 applied to a JS-created node in a `.astro` component must be `:global()`.
 Date: 2026-08-31
+
+### F-28 - The hero presenter is a real recorded person, not a drawing
+The drawn SVG character is retired from the home page. The hero now
+carries the approved presenter, produced locally on the client's own GPU
+from one approved portrait and the approved Hebrew ElevenLabs recording.
+No paid avatar service is involved and no per-render cost exists.
+
+Two states, the same person in both, so the site never swaps characters:
+
+- **idle** a 10 second silent loop. He breathes, blinks and shifts
+  slightly. Muted, so it autoplays everywhere, 202 KB.
+- **speaking** the full 71 second monologue with real audio and Hebrew
+  captions. `preload="none"`, so its 2.6 MB is fetched only on a click.
+
+The presenter is matted out of the original room and stands directly on
+the page: VP9 with a real alpha channel for Chrome, Edge and Firefox,
+and the same matte over a baked studio sweep for Safari, which supports
+neither alpha in WebM nor, practically, alpha in MP4. Both are feathered
+in CSS so the fallback's rectangle never announces itself.
+
+The dialog uses NATIVE video controls deliberately. The brief is
+explicit about no stuck state, no replay confusion and no modal bugs,
+and every one of those is a bug class that custom transports invent.
+
+WHAT THIS IS NOT. There are no camera cuts, no second angle, no gestures
+and no walking. Everything animates ONE still frame. A true multi-shot
+directed presenter needs a real shoot or a hosted service that has
+trained a full-body model of the person. Pipeline and reasoning in
+Projects/presenter-lab/README.md.
+Date: 2026-09-01
+
+### F-29 - Presenter captions are transcribed, never written
+The captions in public/presenter/he.vtt are a transcript of the approved
+audio, produced with faster-whisper large-v3, not new copy. Two words
+were corrected where the model misheard. If the audio is ever replaced
+the captions must be re-transcribed rather than edited by hand, so the
+two can never drift.
+Date: 2026-09-01
 
 Date: 2026-08-29 (revision 2)
 Replaces: the ambiguity between the legacy Stage 1–4 documents and the handoff package.
