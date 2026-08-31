@@ -160,7 +160,11 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
     display: block;
     border-radius: var(--radius-xl);
     overflow: hidden;
-    background: var(--color-navy);
+    /* Reported as "getting the black page". #0b1530 behind a 16:9 crop
+       is mostly empty near-black, and a grid of them reads as a hole in
+       a light page. The brand blue carries the same diagram at the same
+       contrast and belongs to the rest of the site. */
+    background: linear-gradient(158deg, #17347f 0%, #1d4ed8 55%, #2564e0 100%);
     padding: clamp(1rem, 2.5vw, 2rem);
   }
   .feat__viz { display: block; }
@@ -203,7 +207,7 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
     font-size: clamp(1.75rem, 3.6vw, 3.25rem);
     font-weight: 900;
     line-height: 1.05;
-    letter-spacing: -0.03em;
+    letter-spacing: normal;
     color: var(--color-royal);
     transition: color var(--dur) var(--ease-out);
   }
@@ -238,7 +242,7 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
   .card-a__art {
     position: relative;
     display: block;
-    background: var(--color-navy);
+    background: linear-gradient(158deg, #17347f 0%, #1d4ed8 58%, #2564e0 100%);
     padding: 1rem;
     /* the diagram is wide; crop it to a consistent cover ratio */
     aspect-ratio: 16 / 9;
@@ -251,7 +255,7 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
     font-size: clamp(1.125rem, 1.7vw, 1.5rem);
     font-weight: 800;
     line-height: 1.2;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
     color: var(--color-royal);
   }
   .card-a__link:hover .card-a__t { color: var(--color-ink); }

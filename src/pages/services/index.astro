@@ -78,8 +78,13 @@ const discovery = [
   </section>
 
   <!-- ========= chooser ========= -->
-  <section class="chooser-sec u-section band">
-    <Curve tone="surface" shape="slope" />
+  <!-- band--soft, not white. This section used to be white, introduced
+       by a white curve, following a white section: 79px of invisible
+       transition plus two full paddings, which is the "hundreds of
+       pixels of unexplained empty space" that got reported here. The
+       curve now has a colour change to draw. -->
+  <section class="chooser-sec u-section band band--soft">
+    <Curve tone="soft" shape="slope" />
     <div class="u-container u-container--wide">
       <p class="t-eyebrow" data-reveal>מתחילים מהבעיה</p>
       <h2 class="chooser__h t-display-3" data-reveal style="--mo-delay:90ms">
@@ -186,7 +191,7 @@ const discovery = [
     font-size: clamp(1.25rem, 2.4vw, 2.25rem);
     font-weight: 800;
     line-height: 1.15;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
     transition: color var(--dur) var(--ease-out);
   }
   .ch-row:hover .ch__problem { color: var(--color-royal); }
@@ -211,7 +216,7 @@ const discovery = [
     font-size: var(--text-display-3);
     font-weight: 800;
     line-height: 1.02;
-    letter-spacing: -0.035em;
+    letter-spacing: normal;
     margin-block: 0.75rem 1.25rem;
     color: #fff;
   }
@@ -228,7 +233,7 @@ const discovery = [
     font-family: var(--font-display);
     font-size: clamp(1.25rem, 2vw, 1.75rem);
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
     color: #fff;
     margin-block: 0.35rem 0.5rem;
   }

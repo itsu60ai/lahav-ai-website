@@ -175,9 +175,13 @@ const heroScript = [
          product screenshot or a result we cannot stand behind. -->
     <div class="core__stage" data-scale-in>
       <span class="core__orb" aria-hidden="true"></span>
-      <span class="core__ring core__ring--1" aria-hidden="true"></span>
-      <span class="core__ring core__ring--2" aria-hidden="true"></span>
-      <span class="core__ring core__ring--3" aria-hidden="true"></span>
+      <span class="core__pulse core__pulse--1" aria-hidden="true"></span>
+      <span class="core__pulse core__pulse--2" aria-hidden="true"></span>
+      <span class="core__rings" aria-hidden="true">
+        <span class="core__ring core__ring--1"><i></i></span>
+        <span class="core__ring core__ring--2"><i></i></span>
+        <span class="core__ring core__ring--3"><i></i></span>
+      </span>
       <ul class="core__sats">
         <li class="core__sat core__sat--a"><span>פניות</span></li>
         <li class="core__sat core__sat--b"><span>לקוחות</span></li>
@@ -388,22 +392,36 @@ const heroScript = [
   .hero__figure :global(.av) { gap: 0; height: 100%; justify-content: center; }
   /* height-driven so the figure can never push the hero past one screen */
   .hero__figure :global(.av--hero) { --av-w: auto; }
-  .hero__figure :global(.av__figure) { height: 100%; display: grid; place-items: center; }
-  .hero__figure :global(.av__svg) { height: 100%; width: auto; max-height: min(46svh, 29vw); }
+  /* The figure HUGS the drawing rather than filling the hero column.
+     While it was `height: 100%` the figure box was 576px tall on a phone
+     around a 359px character, so a percentage placed inside it landed
+     nowhere near the hip. `.av` still centres it vertically. */
+  .hero__figure :global(.av__figure) { display: grid; place-items: center; }
+  .hero__figure :global(.av__svg) { height: min(46svh, 29vw); width: auto; max-height: none; }
 
-  /* the round trigger overlaps the character's lower body */
-  /* The trigger overlaps the character's hip, the way the reference's
-     round CTA overlaps its presenter. It is deliberately smaller than the
-     standard disc: at full size it would cover the whole figure, since a
-     drawn character is narrower than a rendered human one. */
+  /* THE TRIGGER IS MEASURED IN THE CHARACTER, NOT IN THE VIEWPORT.
+     It overlaps the presenter's hip, the way the reference's round CTA
+     overlaps its own presenter. It used to be placed with a `bottom` in
+     rem/svh, hand-tuned again at two breakpoints, and that does not
+     survive a screen the tuning never saw: at 2560 it fell to the
+     character's feet, at 320 it covered the whole torso. Percentages of
+     the figure track the character at every size, with no breakpoints.
+
+     `.av` is narrowed to the figure's own width here so those
+     percentages resolve against the drawing rather than against the
+     34rem avatar column. */
   .hero__figure :global(.av__talk) {
     position: absolute;
-    bottom: clamp(4.5rem, 15.5svh, 9.5rem);
+    bottom: 33%;
     inset-inline-start: 50%;
     transform: translateX(50%);
     margin: 0;
-    width: clamp(5.5rem, 6vw, 6.75rem);
-    font-size: var(--text-small);
+    /* Bounded in both directions. A bare 40% is proportionally right at
+       every size but produces a 63px disc on a small figure and a 190px
+       one on a tablet, where the character is much larger. */
+    width: clamp(4.5rem, 34%, 7.5rem);
+    font-size: clamp(0.7rem, 0.42vw + 0.6rem, 0.95rem);
+    padding: 0.5rem;
   }
 
   .hero__scroll {
@@ -428,7 +446,7 @@ const heroScript = [
     font-family: var(--font-display);
     font-size: clamp(1.5rem, 3.4vw, 3rem);
     font-weight: 900;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
     color: rgba(255, 255, 255, 0.9);
     white-space: nowrap;
   }
@@ -470,8 +488,8 @@ const heroScript = [
     font-family: var(--font-display);
     font-size: var(--text-display-3);
     font-weight: 900;
-    line-height: 0.98;
-    letter-spacing: -0.035em;
+    line-height: 1.05;
+    letter-spacing: normal;
     margin-top: 0.75rem;
     color: #fff;
   }
@@ -506,23 +524,60 @@ const heroScript = [
     0%, 100% { transform: scale(1) }
     50%      { transform: scale(1.045) }
   }
-  /* The rings do NOT rotate. Rotating a square element with a 50% radius
-     swings its bounding box out to the diagonal, which pushed the whole
-     document ~95px wider than a phone viewport. It is also invisible
-     motion: a plain circle looks identical at every angle. They breathe
-     instead, which is both visible and contained. */
+  /* THE RINGS DO ROTATE, and the rotation is what you see: each ring
+     carries a lit node that travels around it. A bare circle looks
+     identical at every angle, which is why the previous version read as
+     "not moving at all". The node makes the same rotation legible.
+
+     Rotating a square element with a 50% radius swings its bounding box
+     out to the diagonal, and that once pushed the document ~95px wider
+     than a phone viewport. `.core__rings` clips it, so the growth can
+     never reach the document. The satellites sit OUTSIDE this wrapper
+     and so are not clipped. */
+  .core__rings {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+  }
   .core__ring {
     position: absolute;
     border: 1px solid rgba(255, 255, 255, 0.28);
     border-radius: 50%;
-    animation: core-ring 9s var(--ease-inout) infinite;
+    animation: core-spin 18s linear infinite;
   }
-  .core__ring--1 { inset: 22%; }
-  .core__ring--2 { inset: 8%;  border-color: rgba(255, 255, 255, 0.2);  animation-delay: -3s; }
-  .core__ring--3 { inset: 0;   border-color: rgba(255, 255, 255, 0.14); animation-delay: -6s; }
-  @keyframes core-ring {
-    0%, 100% { opacity: 1;    transform: scale(1) }
-    50%      { opacity: 0.45; transform: scale(1.015) }
+  .core__ring i {
+    position: absolute;
+    top: -4px; left: 50%;
+    width: 8px; height: 8px;
+    margin-left: -4px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 14px 3px rgba(190, 224, 255, 0.9);
+  }
+  .core__ring--1 { inset: 22%; animation-duration: 11s; }
+  .core__ring--2 { inset: 8%;  border-color: rgba(255, 255, 255, 0.2);  animation-duration: 17s; animation-direction: reverse; }
+  .core__ring--3 { inset: 0;   border-color: rgba(255, 255, 255, 0.14); animation-duration: 26s; }
+  .core__ring--3 i { width: 6px; height: 6px; margin-left: -3px; top: -3px; }
+  @keyframes core-spin {
+    from { transform: rotate(0deg) }
+    to   { transform: rotate(360deg) }
+  }
+
+  /* A signal leaving the centre, twice per cycle. This is the part that
+     reads as "the system is running" from across the room. */
+  .core__pulse {
+    position: absolute;
+    inset: 28%;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    animation: core-pulse 5.2s var(--ease-out) infinite;
+  }
+  .core__pulse--2 { animation-delay: -2.6s; }
+  @keyframes core-pulse {
+    0%   { transform: scale(0.72); opacity: 0 }
+    18%  { opacity: 0.55 }
+    100% { transform: scale(1.85); opacity: 0 }
   }
 
   .core__sats { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; }
@@ -548,8 +603,12 @@ const heroScript = [
   .core__sat--c { inset-block-start: 46%; inset-inline-end: -4%;   animation-delay: -3s; }
   .core__sat--d { inset-block-end: 2%;    inset-inline-start: 50%; transform: translateX(50%); animation-delay: -4.5s; }
   @keyframes core-float {
-    0%, 100% { translate: 0 0 }
-    50%      { translate: 0 -8px }
+    0%, 100% { translate: 0 0;     box-shadow: 0 0 0 rgba(255,255,255,0) }
+    50%      { translate: 0 -14px; box-shadow: 0 10px 30px rgba(9, 30, 80, 0.35) }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .core__ring, .core__pulse, .core__orb, .core__sat { animation: none; }
+    .core__pulse { opacity: 0.3; }
   }
 
   .core__foot {
@@ -585,7 +644,12 @@ const heroScript = [
     overscroll-behavior-x: contain;
     scrollbar-width: thin;
   }
+  /* Reported as "I want it to be clickable from here as well and not
+     only from this button". The anchor stretches over the whole card,
+     which keeps one anchor in the markup rather than nesting links. */
   .svc__card {
+    position: relative;
+    cursor: pointer;
     scroll-snap-align: start;
     display: flex;
     flex-direction: column;
@@ -598,6 +662,8 @@ const heroScript = [
     transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
   }
   .svc__card:hover { transform: translateY(-6px); box-shadow: 0 28px 66px rgba(16, 38, 94, 0.3); }
+  .svc__card:focus-within { outline: 2px solid #fff; outline-offset: 3px; }
+  .svc__go::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
   .svc__icon {
     display: grid; place-items: center;
     width: 2.75rem; height: 2.75rem;
@@ -613,7 +679,7 @@ const heroScript = [
     font-size: clamp(1.375rem, 2.1vw, 1.875rem);
     font-weight: 800;
     line-height: 1.12;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
     color: #fff;
   }
   .svc__card-lead { color: rgba(255, 255, 255, 0.9); font-size: var(--text-small); line-height: 1.6; }
@@ -664,7 +730,7 @@ const heroScript = [
     font-size: clamp(1.875rem, 4.4vw, 3.75rem);
     font-weight: 900;
     line-height: 1.02;
-    letter-spacing: -0.035em;
+    letter-spacing: normal;
     color: var(--color-royal);
     margin-block: 0.35rem 0.9rem;
   }
@@ -712,8 +778,11 @@ const heroScript = [
   /* Tablet: the figure was sized off vw, which on a narrow-but-tall
      screen left a 200px band between the statement and the character. */
   @media (max-width: 1024px) and (min-width: 761px) {
-    .hero__figure :global(.av__svg) { max-height: min(44svh, 46vw); }
-    .hero__figure :global(.av__talk) { bottom: clamp(4rem, 12svh, 7rem); }
+    /* The width share, not the height share, binds on a tablet: at
+       820x1180 the old 46vw capped the character at 377px inside a
+       1180px hero, and the leftover showed as ~190px of dead screen
+       under its feet. The character fills the space it is given. */
+    .hero__figure :global(.av__svg) { height: min(52svh, 68vw); }
   }
   @media (max-width: 760px) {
     .prob__row, .proc__row { grid-template-columns: 3rem 1fr; }
@@ -731,10 +800,7 @@ const heroScript = [
        gets a smaller share so the statement still leads. */
     .hero { padding-top: 6rem; }
     .hero__title { font-size: clamp(1.85rem, 8.8vw, 2.75rem); }
-    .hero__figure :global(.av__svg) { max-height: 40svh; }
-    /* the trigger keeps overlapping the character on mobile too, the
-       way the reference's round CTA sits over its presenter's thighs */
-    .hero__figure :global(.av__talk) { bottom: 19svh; width: 5.75rem; font-size: var(--text-micro); }
+    .hero__figure :global(.av__svg) { height: 40svh; }
   }
   @media (prefers-reduced-motion: reduce) {
     .hero__scroll { animation: none; }

@@ -256,7 +256,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
   .menu__label {
     font-family: var(--font-display);
     font-size: clamp(2rem, 6vw, 4.5rem);
-    font-weight: 900; line-height: 1; letter-spacing: -0.02em;
+    font-weight: 900; line-height: 1; letter-spacing: normal;
   }
 
   .menu__side { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -319,7 +319,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     font-family: var(--font-display);
     font-size: clamp(1.25rem, 2vw, 1.875rem);
     font-weight: 800;
-    letter-spacing: -0.025em;
+    letter-spacing: normal;
     line-height: 1.1;
     color: var(--color-ink);
     margin-block: 0.5rem 1rem;
@@ -364,7 +364,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     font-size: var(--text-body);
     font-weight: 800;
     line-height: 1.2;
-    letter-spacing: -0.015em;
+    letter-spacing: normal;
     color: var(--color-ink);
   }
   .mega__card:hover .mega__name { color: var(--color-royal); }
@@ -377,9 +377,12 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding-block: 1rem;
+    padding-block: 0.55rem;
+    min-height: 3.5rem;
     cursor: pointer;
     list-style: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     font-family: var(--font-display);
     font-size: var(--text-body-lg);
     font-weight: 800;
@@ -387,11 +390,24 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
   }
   .menu__svc-group > summary::-webkit-details-marker { display: none; }
   .menu__svc-ico {
-    position: relative; width: 1.1rem; height: 1.1rem; flex: none;
+    /* A 1.1rem glyph is a 17px tap target. Fingers need 44. The bars are
+       drawn at glyph size but the box that receives the tap is full size,
+       which is why this reported as "the plus is not clickable". */
+    position: relative;
+    width: 2.75rem; height: 2.75rem;
+    flex: none;
+    display: grid; place-items: center;
+    margin-inline-end: -0.6rem;
+    border-radius: 50%;
+    transition: background var(--dur) var(--ease-out);
   }
+  .menu__svc-group > summary:active .menu__svc-ico { background: rgba(29, 78, 216, 0.1); }
   .menu__svc-ico::before, .menu__svc-ico::after {
-    content: ''; position: absolute; inset-inline: 0; top: 50%;
-    height: 2px; background: var(--color-royal);
+    content: ''; position: absolute;
+    inset-inline-start: 50%; top: 50%;
+    width: 1.1rem; height: 2px;
+    margin-inline-start: -0.55rem; margin-top: -1px;
+    background: var(--color-royal);
     transition: transform var(--dur) var(--ease-out);
   }
   .menu__svc-ico::after { transform: rotate(90deg); }
@@ -410,6 +426,20 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
 </style>
 
 <script>
+  // The disclosure is driven explicitly rather than left to the native
+  // <summary> behaviour. Reported as "the plus is not clickable in the
+  // mega menu": with a styled summary the UA toggle is easy to lose to a
+  // stray pointer/scroll heuristic on touch. Owning the toggle removes
+  // the whole class of problem.
+  {
+    const grp = document.querySelector('[data-menu-svc]') as HTMLDetailsElement | null;
+    const sum = grp?.querySelector('summary');
+    sum?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (grp) grp.open = !grp.open;
+    });
+  }
+
   // Scroll state for the header surface.
   const setScrolled = () => document.body.classList.toggle('is-scrolled', window.scrollY > 12);
   setScrolled();

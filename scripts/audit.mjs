@@ -27,7 +27,27 @@ const ROUTES = [
   '/about/', '/articles/', '/articles/automation-worth-it/',
   '/contact/', '/faq/', '/privacy/', '/nope/',
 ];
-const VIEWPORTS = [
+// The default three are the everyday check. `--wide` sweeps the real
+// spread of devices instead, from the smallest phone still in use to a
+// 4K desktop, because "is this going to look good on all screens" is not
+// answerable from three widths.
+const WIDE = process.argv.includes('--wide');
+const VIEWPORTS = WIDE ? [
+  { name: '320',  w: 320,  h: 640 },
+  { name: '360',  w: 360,  h: 780 },
+  { name: '390',  w: 390,  h: 844 },
+  { name: '430',  w: 430,  h: 932 },
+  { name: '540',  w: 540,  h: 960 },
+  { name: '600',  w: 600,  h: 900 },
+  { name: '768',  w: 768,  h: 1024 },
+  { name: '820',  w: 820,  h: 1180 },
+  { name: '1024', w: 1024, h: 768 },
+  { name: '1280', w: 1280, h: 800 },
+  { name: '1440', w: 1440, h: 900 },
+  { name: '1600', w: 1600, h: 900 },
+  { name: '1920', w: 1920, h: 1080 },
+  { name: '2560', w: 2560, h: 1440 },
+] : [
   { name: 'mobile', w: 390, h: 844 },
   { name: 'tablet', w: 820, h: 1180 },
   { name: 'desktop', w: 1440, h: 900 },
@@ -36,6 +56,12 @@ const VIEWPORTS = [
 // How big an empty band has to be before it counts as a bug. Editorial
 // whitespace is intentional; 240px of nothing is not.
 const GAP_LIMIT = 190;
+
+// A band starting at the very top of the document sits UNDER the fixed
+// header, which is 86px of real page furniture rather than empty page.
+// Without this every tall-viewport route reported its own correct
+// opening measure as a gap.
+const HEADER_H = 86;
 
 const CHROME = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -126,7 +152,30 @@ const PROBE = `(async () => {
     }
     return false;
   };
-  const res = { ovf: de.scrollWidth - de.clientWidth, gaps: [], hidden: [], overlap: [], underhdr: [], offscreen: [] };
+  const overflowingEl = () => {
+    const lim = de.clientWidth + 1;
+    for (const el of document.querySelectorAll('body *')) {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0) continue;
+      if (r.right <= lim && r.left >= -1) continue;
+      let clipped = false;
+      for (let n = el.parentElement; n && n !== de; n = n.parentElement) {
+        if (['hidden', 'clip', 'auto', 'scroll'].includes(getComputedStyle(n).overflowX)) { clipped = true; break; }
+      }
+      if (!clipped) return true;
+    }
+    return false;
+  };
+  // Horizontal overflow, corroborated. documentElement.scrollWidth on
+  // its own is not trustworthy here: below about 360px this harness ends
+  // up with a layout viewport wider than the visual one it was asked
+  // for, so scrollWidth exceeded clientWidth on every route at 320 while
+  // no element was actually out of bounds. Overflow is only reported
+  // when a real, unclipped element is genuinely past the edge.
+  // NOTE: everything in this block is inside a template literal, so a
+  // backtick anywhere in it, comments included, ends the string.
+  const de_ovf = de.scrollWidth - de.clientWidth;
+  const res = { ovf: de_ovf > 0 && overflowingEl() ? de_ovf : 0, gaps: [], hidden: [], overlap: [], underhdr: [], offscreen: [] };
 
   // ---- gaps: empty vertical bands inside a top-level section
   const main = document.querySelector('main');
@@ -150,6 +199,9 @@ const PROBE = `(async () => {
     let cursor = r.top + scrollY, worst = 0, at = 0;
     for (const [t, b] of spans) { if (t - cursor > worst) { worst = t - cursor; at = cursor; } cursor = Math.max(cursor, b); }
     if (r.bottom + scrollY - cursor > worst) { worst = r.bottom + scrollY - cursor; at = cursor; }
+    // A gap that begins at the document top is sitting under the fixed
+    // header, which is furniture, not empty page.
+    if (at < 2) worst -= ${HEADER_H};
     if (worst > ${GAP_LIMIT}) res.gaps.push({ el: label(sec), px: Math.round(worst), at: Math.round(at) });
   }
 

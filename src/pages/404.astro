@@ -94,8 +94,8 @@ const routes = [
     font-family: var(--font-display);
     font-size: var(--text-display-2);
     font-weight: 900;
-    line-height: 0.98;
-    letter-spacing: -0.03em;
+    line-height: 1.05;
+    letter-spacing: normal;
     margin-block: 1rem 1.5rem;
   }
   .nf__accent {
@@ -131,7 +131,7 @@ const routes = [
     font-family: var(--font-display);
     font-size: clamp(1.125rem, 1.8vw, 1.5rem);
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
     transition: color var(--dur) var(--ease-out);
   }
   .nf__route:hover .nf__label { color: var(--color-royal); }
@@ -142,7 +142,7 @@ const routes = [
   /* the broken-flow art is drawn for dark surfaces, so it gets its own
      dark stage rather than washing out on the light band */
   .nf__art {
-    background: var(--color-navy);
+    background: linear-gradient(158deg, #17347f 0%, #1d4ed8 55%, #2564e0 100%);
     border-radius: var(--radius-xl);
     padding: clamp(1.25rem, 2.5vw, 2rem);
   }

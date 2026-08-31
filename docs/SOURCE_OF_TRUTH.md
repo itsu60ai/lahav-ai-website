@@ -2,7 +2,7 @@
 
 STATUS: CURRENT. Reconciliation complete. Final decisions F-1..F-18 approved by the client 2026-08-29.
 F-19 (2026-08-31) supersedes F-1's "never all-dark" clause - see section 5.
-F-20, F-21, F-22 (2026-08-31) - see section 0.
+F-20, F-21, F-22, F-23 (2026-08-29) and F-24, F-25, F-26, F-27 (2026-08-31) - see section 0.
 
 ---
 
@@ -49,6 +49,71 @@ services, opened by hover, click or keyboard, closing on Escape, on focus
 leaving the group, and on pointer leave. On mobile it is an expandable
 group inside the existing full-screen menu, never the desktop panel
 squeezed onto a phone.
+### F-24 - Hebrew display typography is not Latin display typography
+Reported as "the Hebrew is terrible" and "the text and the spacing here
+is not very good". The display roles had been set the way the STG
+reference sets its LATIN display type: negative tracking and sub-1
+leading. Neither transfers.
+
+- **Tracking is zero.** Heebo's Hebrew glyphs are already fitted tight
+  and square, with no case contrast to open the line. Pull them in
+  another 3% and ד/ר, ב/כ and ח/ה pairs touch. 44 negative
+  `letter-spacing` declarations were neutralised. The one survivor is the
+  404 watermark, which is digits.
+- **Leading floors at 1.05.** Latin all-caps display sits under 1.0
+  because it has no descenders. Hebrew has both: ל rises, ק ן ך ף ץ drop,
+  so a line occupies about 0.97em of real ink. At the old 0.96 the footer
+  invitation measured 148px of ink inside a 97px line box and consecutive
+  lines touched.
+
+This is a rendering rule, not a copy rule. No approved sentence changed.
+Date: 2026-08-31
+
+### F-25 - Section seams are a system, and it lives outside @layer
+Two full-rhythm sections in a row each paid their own padding, so 130px
+of trailing space met 126px of leading space and /services/ carried 317px
+of blank page. Three rules now own every seam, at the end of
+`src/styles/global.css`:
+
+1. A band followed by a band gives up most of its trailing padding.
+2. A band followed by a CURVED band instead reserves the curve's own
+   height, because a curve paints over the section above it and was
+   cropping that section's last line of text.
+3. A curved band opens shorter, since the curve is itself the transition.
+
+They sit **outside `@layer`** deliberately. Astro emits a component's
+scoped styles unlayered, and an unlayered declaration beats a layered one
+however specific the layered selector is, so while these rules lived in
+`@layer components` they did nothing at all.
+
+A curve must also always have a colour change to draw. A `tone="surface"`
+curve introducing a white section after a white section is 79px of
+invisible transition and reads as dead space.
+Date: 2026-08-31
+
+### F-26 - The presenter is a young man, drawn
+Reported as "the character is a woman and looking very old and boring".
+The cut is short, above the ears, with visible ears and sideburns; the
+brows are straight, low and heavy; the jaw is shaded as shaved; there is
+no blush and the mouth is a closed lip line at rest. The long side-swept
+bob and the pink cheek ellipses were the two things reading feminine.
+
+The mouth is animated in JS with `transform-box: fill-box`, so its
+`transform-origin` MUST be expressed inside the element's own box
+(`50% 30%`). Giving it the mouth's SVG user-space coordinates put the
+origin ~112 units outside an 18x5 box, and scaling about that point is
+what threw the lips off the screen while it spoke.
+Date: 2026-08-31
+
+### F-27 - Chat bubbles are :global, because JS builds them
+Astro scopes component styles with a `data-astro-cid` attribute that
+`document.createElement` never sets, so the only styled bubble was the
+greeting written in the markup. Every message a visitor or the assistant
+actually sent rendered unstyled, reported as "there is no color
+separation between what the client says and what the bot says". Any class
+applied to a JS-created node in a `.astro` component must be `:global()`.
+Date: 2026-08-31
+
 Date: 2026-08-29 (revision 2)
 Replaces: the ambiguity between the legacy Stage 1–4 documents and the handoff package.
 

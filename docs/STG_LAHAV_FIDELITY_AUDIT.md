@@ -205,6 +205,50 @@ data model, canonical URLs or structured data.
 | Item | Why it is open |
 |---|---|
 | Synthetic voice for the character | The architecture is in place (`script` is data, `audioSrc` is a prop, nothing autoplays). Generating a voice asset needs an explicit go-ahead — and it must be an original synthetic voice, never an imitation of a real person. |
-| `robots.txt` and `sitemap.xml` | These have never existed in this repository — this is a pre-existing gap, not a regression from the redesign. Adding them is a new SEO feature rather than part of the redesign, so it is flagged rather than done unasked. |
+| ~~`robots.txt` and `sitemap.xml`~~ | **CLOSED.** `public/robots.txt` allows the public site and disallows `/admin`, `/admin/`, `/system/` and `/api/`; `src/pages/sitemap.xml.ts` emits the public routes. Verified live. |
 | Reference-style smooth-scroll hijack | Deliberately not implemented, see §9. |
 | Mobile menu panel colour | Light rather than brand-blue, per the explicit "the LAHAV site must be light" instruction. |
+
+---
+
+## 13. Round 3 — the two screen recordings, and the follow-up bugs
+
+Every item below was reported by the client, either spoken in the two
+walkthrough recordings or written in the message that followed. Each was
+reproduced before it was changed and verified after.
+
+### From the recordings
+
+| Reported | Cause | Fix |
+|---|---|---|
+| "the button here is completely static. I want it to pop out somehow" | no motion at all on the hero trigger | a bob plus an outward halo, both paused on hover and focus, both off under `prefers-reduced-motion` |
+| "I can't even stop it, so very very bad" | there was no stop. The only controls were replay and mute, and muting cancels the current sentence while the script marches on | the primary control is now a stop/replay toggle (`עצירה` ⇄ `להשמיע שוב`) |
+| "I can't even click outside. I have to try many keys to be able to close it" | the scrim is a SIBLING of the dialog, and on a phone the dialog fills almost the whole screen, so there was barely any scrim left to hit | any pointer landing outside the dialog box closes it, whatever it lands on. The close control is also now a 84×44 labelled pill instead of a 36px glyph |
+| "the plus is not clickable in the mega menu" | a 1.1rem glyph is a 17px tap target | 44×44 target, 3.5rem row, and the disclosure is toggled explicitly in JS rather than left to the UA |
+| "I want it to be clickable from here as well and not only from this button" | only the `לקראה` anchor was a link | the anchor stretches over the whole service card |
+| "it's not moving at all or barely visible" (AI Core) | the rings were breathing, and a plain circle looks identical at every angle | each ring carries a lit node and rotates, inside a clipping wrapper so the diagonal bounding box can never reach the document; plus signal pulses leaving the centre |
+| "the text that is hidden beneath this blue thing" | a curve is `bottom: 100%`, so it paints over the section above it | see F-25 |
+| "hundreds of pixels of unexplained empty space" on /services/ | two full section paddings stacked, around a `tone="surface"` curve that was white-on-white and therefore invisible | see F-25; the chooser band is now `band--soft` so the curve has a colour change to draw |
+| "getting the black page" | article covers, article heroes, the contact booking panel and the 404 panel were all `#0b1530` behind a 16:9 crop | all four are brand blue |
+| "the text and the spacing here is not very good" / "the Hebrew is terrible" | Latin display typography applied to Hebrew | see F-24 |
+
+### From the message after
+
+| Reported | Cause | Fix |
+|---|---|---|
+| "the character is a woman and looking very old and boring" | a long side-swept bob past the jaw, pink cheek ellipses, a red mouth, a perfectly round head | see F-26 |
+| "the lips jump outside the screen when it's speaking" | `transform-origin` given in SVG user space under `transform-box: fill-box` | see F-26. Measured after: the mouth opens 4px → 17px and its centre drifts 2px |
+| "there is no color separation between what the client says and what the bot says" | Astro scoping vs `document.createElement` | see F-27 |
+| "an overlapping css bug on /services/crm/" | the same curve-over-text bug; the client was looking at the deployed build, which did not yet carry the fix | verified by sweeping every `.curve` against every text node on all 12 public routes: zero collisions |
+
+### Verification
+
+- `node scripts/audit.mjs` — 14 routes × 3 viewports: clean.
+- `node scripts/audit.mjs --wide` — 14 routes × 14 viewports from 320 to
+  2560, added for this round because "is this going to look good on all
+  screens" is not answerable from three widths.
+- A curve-versus-text sweep on every public route: zero collisions.
+- The hero trigger measured across 360 / 390 / 768 / 1440 / 2560: it lands
+  at 0.56–0.60 of the character's height at every width, centred to 0px.
+  It used to be placed in rem and svh, hand-tuned at two breakpoints, and
+  fell to the character's feet at 2560 and covered the torso at 320.

@@ -84,6 +84,9 @@
   --space-section-tight: clamp(2.5rem, 4vw, 4.5rem);
   /* space between blocks INSIDE a section */
   --space-block: clamp(1.75rem, 3.5vw, 3.5rem);
+  /* The height of a <Curve>. Read by Curve.astro and by the rule that
+     makes the section above one leave room for it. */
+  --curve-h: clamp(40px, 5.5vw, 84px);
   --container-max: 1320px;
   --container-wide: 1560px;
   --measure: 62ch;
@@ -152,7 +155,7 @@
     font-family: var(--font-display);
     font-weight: 800;
     line-height: 1.04;
-    letter-spacing: -0.01em;
+    letter-spacing: normal;
     margin: 0;
     text-wrap: balance;
   }
@@ -191,7 +194,13 @@
   .u-section-tight { padding-block: var(--space-section-tight) calc(var(--space-section-tight) * 0.68); }
   /* A section that is introduced by a <Curve> needs room for the curve to
      sit in, or the curve crops the first line of content. */
-  .u-section:has(> .curve) { padding-block-start: calc(var(--space-section) + clamp(1rem, 3vw, 2.5rem)); }
+  /* A curved band opens SHORTER, not longer. The curve is itself
+     79px of transition and the section above it now reserves room for
+     it, so a full opening measure on top of both produced the 330px of
+     dead page reported on /services/. See SECTION SEAMS at the end of
+     this file. */
+  .u-section:has(> .curve) { padding-block-start: calc(var(--space-section) * 0.62); }
+
 
   /* --- Surface bands. A page is a sequence of these. --- */
   .band { position: relative; }
@@ -220,34 +229,56 @@
   .band--blue a,
   .band--navy a { color: #fff; }
 
+  /* --- Type roles ---
+
+     HEBREW IS NOT LATIN, AND THE DISPLAY SETTINGS ARE NOT INTERCHANGEABLE.
+     These roles were first set the way the reference sets its Latin
+     display type: negative tracking and sub-1 leading. Reported back as
+     "the Hebrew is terrible" and "the text and the spacing here is not
+     very good".
+
+     Two reasons it does not transfer:
+
+     · TRACKING. Latin display type is drawn loose and tightens well.
+       Heebo's Hebrew glyphs are already fitted tight and square, with no
+       case contrast to open the line up. Pull them in another 3% and
+       ד/ר, ב/כ and ח/ה pairs start to touch. Hebrew display tracking is
+       zero. The one exception left in the codebase is the 404 watermark,
+       which is digits.
+
+     · LEADING. Latin all-caps display can sit under 1.0 because it has
+       no descenders. Hebrew has both: ל rises and ק ן ך ף ץ drop, so a
+       line of Hebrew occupies about 0.97em of real ink. At the old 0.96
+       the footer invitation measured 148px of ink box inside a 97px line
+       box, and consecutive lines touched. 1.05 is the floor. */
   /* --- Type roles --- */
   .t-mega {
     font-family: var(--font-display);
     font-size: var(--text-mega);
     font-weight: 900;
-    line-height: 0.9;
-    letter-spacing: -0.03em;
+    line-height: 1.05;
+    letter-spacing: normal;
   }
   .t-display-1 {
     font-family: var(--font-display);
     font-size: var(--text-display-1);
     font-weight: 900;
-    line-height: 0.94;
-    letter-spacing: -0.025em;
+    line-height: 1.05;
+    letter-spacing: normal;
   }
   .t-display-2 {
     font-family: var(--font-display);
     font-size: var(--text-display-2);
     font-weight: 800;
-    line-height: 0.98;
-    letter-spacing: -0.02em;
+    line-height: 1.05;
+    letter-spacing: normal;
   }
   .t-display-3 {
     font-family: var(--font-display);
     font-size: var(--text-display-3);
     font-weight: 800;
     line-height: 1.02;
-    letter-spacing: -0.015em;
+    letter-spacing: normal;
   }
   .t-h1 { font-family: var(--font-display); font-size: var(--text-h1); font-weight: 800; line-height: 1.1; }
   .t-h2 { font-family: var(--font-display); font-size: var(--text-h2); font-weight: 800; line-height: 1.12; }
@@ -275,7 +306,7 @@
     font-family: var(--font-display);
     font-style: italic;
     font-weight: 300;
-    letter-spacing: -0.01em;
+    letter-spacing: normal;
     direction: ltr;
     unicode-bidi: isolate;
   }
@@ -286,7 +317,7 @@
     font-size: var(--text-mega);
     font-weight: 900;
     line-height: 0.86;
-    letter-spacing: -0.03em;
+    letter-spacing: normal;
     color: color-mix(in srgb, var(--color-ink) 7%, transparent);
     pointer-events: none;
     user-select: none;
@@ -358,9 +389,11 @@
     text-decoration: none;
     padding: 1rem;
     box-shadow: 0 18px 44px rgba(29, 78, 216, 0.34);
-    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+    transition: scale var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
   }
-  .btn-disc:hover { transform: scale(1.06); box-shadow: 0 24px 60px rgba(29, 78, 216, 0.42); }
+  /* `scale`, not `transform`: the hero disc is positioned with
+     `transform: translateX(50%)` and a transform here would drop it. */
+  .btn-disc:hover { scale: 1.06; box-shadow: 0 24px 60px rgba(29, 78, 216, 0.42); }
 
   .card {
     background: var(--color-surface);
@@ -562,7 +595,7 @@
   .section-tight { padding-block: var(--space-section-tight) calc(var(--space-section-tight) * 0.68); position: relative; }
   .section--gray { background: var(--color-surface-2); }
   .section--navy {
-    background: var(--color-navy);
+    background: linear-gradient(158deg, #17347f 0%, #1d4ed8 55%, #2564e0 100%);
     color: rgba(255, 255, 255, 0.86);
     position: relative;
     overflow: clip;
@@ -593,9 +626,11 @@
   }
   .stage__art { width: min(100%, 1180px); height: auto; }
 
-  /* Dark panel used behind diagrams. */
+  /* Blue panel used behind diagrams. Named "dark" from when it was
+     near-black; it is brand blue now, for the reason above the type
+     roles: a flat black rectangle reads as a hole in a light page. */
   .panel-dark {
-    background: var(--color-navy);
+    background: linear-gradient(158deg, #17347f 0%, #1d4ed8 55%, #2564e0 100%);
     color: rgba(255, 255, 255, 0.86);
     border-radius: var(--radius-xl);
     position: relative;
@@ -637,4 +672,46 @@
     .u-editorial--offset > :first-child,
     .u-editorial--offset > :last-child { padding-inline-end: 0; margin-block-start: 0; }
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION SEAMS
+
+   Deliberately OUTSIDE @layer, unlike the rest of this file. Astro
+   emits a component's scoped styles unlayered, and an unlayered
+   declaration beats a layered one however specific the layered
+   selector is. Both rules below sat in @layer components and therefore
+   did nothing at all: every component that set its own padding-block
+   silently won. These rules are the page's vertical rhythm and they
+   have to outrank that.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* THE SEAM BETWEEN TWO BANDS. Each section was paying its own full
+   measure, so 130px of trailing space met 126px of leading space and
+   /services/ carried 317px of blank page between the last service and
+   the next heading. The section that ENDS gives most of it up, because
+   the one that begins is already opening with a full measure.
+
+   The doubled class is specificity, not a typo: a component's own
+   `.stops { padding-block: ... }` is scoped to `.stops[data-astro-cid]`,
+   which outranks a single class here. */
+.band.band:has(+ .band) {
+  padding-block-end: calc(var(--space-section-end) * 0.34);
+}
+
+/* A CURVE IS THE EXCEPTION, and needs MORE room rather than less. It is
+   absolutely positioned at `bottom: 100%`, so it paints over the section
+   above it. That is the point: it carries the incoming band's colour
+   across the seam. But it also painted over that section's last line of
+   text, which is what "the text that is hidden beneath this blue thing"
+   was on the service pages. Whatever a curved band follows now reserves
+   the curve's own height, so the two never share pixels.
+
+   `!important` because this has to beat both a component's scoped
+   padding AND the seam rule above, which is deliberately more specific
+   and would otherwise win here. Excluding the curve case from that rule
+   is not an option: `:not(:has(...))` is invalid and silently drops the
+   whole declaration block. */
+:where(section, nav, div, article, aside):has(+ * > .curve) {
+  padding-block-end: calc(var(--curve-h) + var(--space-block) * 0.6) !important;
 }

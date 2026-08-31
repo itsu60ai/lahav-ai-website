@@ -97,6 +97,7 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
         <g class="av__legs">
           <path d="M112 266 L104 400 Q103 410 113 410 L124 410 Q130 410 130 400 L130 266 Z" fill={`url(#${uid}-trouser)`} />
           <path d="M148 266 L156 400 Q157 410 147 410 L136 410 Q130 410 130 400 L130 266 Z" fill={`url(#${uid}-trouser)`} opacity="0.9" />
+          <path d="M130 268 L130 404" stroke="#242e4a" stroke-width="2" opacity="0.85" />
           <path d="M101 402 q-7 13 4 15 h29 q6 0 6 -6 v-9 z" fill="#161f36" />
           <path d="M159 402 q7 13 -4 15 h-29 q-6 0 -6 -6 v-9 z" fill="#161f36" opacity="0.92" />
         </g>
@@ -126,26 +127,75 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
         <path d="M106 128 C 116 140 144 140 154 128 L 152 124 C 142 134 118 134 108 124 Z" fill="#0d1a38" opacity="0.16" />
 
         <g class="av__head">
-          <ellipse cx="130" cy="72" rx="36" ry="42" fill={`url(#${uid}-skin)`} />
-          <path d="M95 68 C 94 34 117 22 130 22 C 143 22 166 34 165 68 C 163 57 155 49 145 47 C 134 45 116 49 107 57 C 101 61 97 65 95 68 Z" fill={`url(#${uid}-hair)`} />
-          <path d="M94 64 C 91 78 93 88 96 94 C 91 82 91 70 94 64 Z" fill={`url(#${uid}-hair)`} />
-          <path d="M166 64 C 169 78 167 88 164 94 C 169 82 169 70 166 64 Z" fill={`url(#${uid}-hair)`} />
+          <!-- A younger man, not a doll. The first pass read back as "a
+               woman, looking very old and boring": a perfectly round
+               head, a hair shape that stopped above the ears so the
+               sides looked bald, blush on both cheeks, and a red mouth.
+               This version has a jawline, hair that comes down past the
+               ears with a side part, straighter and lower brows, smaller
+               eyes, and no blush. -->
+          <!-- face: a chin and a jaw, drawn rather than an ellipse -->
+          <path
+            d="M95 64 C 95 38 111 24 130 24 C 149 24 165 38 165 64
+               C 165 86 161 99 153 108 C 147 115 139 120 130 120
+               C 121 120 113 115 107 108 C 99 99 95 86 95 64 Z"
+            fill={`url(#${uid}-skin)`}
+          />
+          <!-- a shaved jaw. Nothing else in a flat drawing this simple
+               reads as male as fast, and it replaces the pair of pink
+               cheek ellipses that made the first version read feminine. -->
+          <path d="M105 96 C 109 111 118 121 130 121 C 142 121 151 111 155 96 C 149 109 141 114 130 114 C 119 114 111 109 105 96 Z" fill="#4a3526" opacity="0.1" />
+
+          <!-- HAIR: a short men's cut. The previous shape came down past
+               the jaw on both sides, which is a bob, and is most of why
+               this was read back as "the character is a woman". It now
+               stops above the ears, with sideburns rather than strands. -->
+          <path
+            d="M94 84 C 91 54 104 23 130 23 C 156 23 169 54 166 84
+               C 165 72 163 62 159 55 C 152 62 141 57 131 53
+               C 119 48 107 53 100 62 C 96 68 95 76 94 84 Z"
+            fill={`url(#${uid}-hair)`}
+          />
+          <path d="M102 58 C 114 40 144 38 160 52 C 149 46 132 47 120 54 C 112 58 106 59 102 58 Z" fill={`url(#${uid}-hair)`} opacity="0.8" />
+          <path d="M95 80 L99 80 L100 92 Q97 93 95 88 Z" fill={`url(#${uid}-hair)`} />
+          <path d="M165 80 L161 80 L160 92 Q163 93 165 88 Z" fill={`url(#${uid}-hair)`} />
+
+          <!-- ears, drawn after the hair so the short cut actually shows them -->
+          <ellipse cx="95" cy="86" rx="5" ry="7.5" fill={`url(#${uid}-skin)`} />
+          <ellipse cx="165" cy="86" rx="5" ry="7.5" fill={`url(#${uid}-skin)`} />
+          <path d="M94 84 q3 2 1 5" stroke="#c98f6a" stroke-width="1.3" fill="none" stroke-linecap="round" />
+          <path d="M166 84 q-3 2 -1 5" stroke="#c98f6a" stroke-width="1.3" fill="none" stroke-linecap="round" />
+
+          <!-- brows: straighter, lower and heavier than the arched pair -->
+          <path d="M107 65 q9 -3.5 18 -0.5" stroke="#2a1d14" stroke-width="3.2" stroke-linecap="round" fill="none" />
+          <path d="M135 64.5 q9 -3 18 0.5" stroke="#2a1d14" stroke-width="3.2" stroke-linecap="round" fill="none" />
 
           <g class="av__eyes">
-            <ellipse class="av__eye" cx="116" cy="74" rx="5" ry="6" fill="#22303f" />
-            <ellipse class="av__eye" cx="144" cy="74" rx="5" ry="6" fill="#22303f" />
-            <circle cx="117.6" cy="71.8" r="1.7" fill="#fff" opacity="0.92" />
-            <circle cx="145.6" cy="71.8" r="1.7" fill="#fff" opacity="0.92" />
+            <ellipse class="av__eye" cx="117" cy="77" rx="4.4" ry="4.8" fill="#243244" />
+            <ellipse class="av__eye" cx="143" cy="77" rx="4.4" ry="4.8" fill="#243244" />
+            <circle cx="118.4" cy="75.2" r="1.35" fill="#fff" opacity="0.9" />
+            <circle cx="144.4" cy="75.2" r="1.35" fill="#fff" opacity="0.9" />
+            <path d="M112 74 q5 -3.6 10 0" stroke="#b9825d" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.75" />
+            <path d="M138 74 q5 -3.6 10 0" stroke="#b9825d" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.75" />
           </g>
-          <path d="M108 62 q8 -5 16 -1" stroke="#2a1f17" stroke-width="2.4" stroke-linecap="round" fill="none" />
-          <path d="M136 61 q8 -4 16 1" stroke="#2a1f17" stroke-width="2.4" stroke-linecap="round" fill="none" />
-          <path d="M130 78 q-3 8 2 10" stroke="#cf9d78" stroke-width="2" stroke-linecap="round" fill="none" />
-          <ellipse class="av__mouth" cx="130" cy="96" rx="9" ry="2.6" fill="#a54f52" />
-          <ellipse cx="110" cy="88" rx="6.5" ry="4" fill="#e8a385" opacity="0.3" />
-          <ellipse cx="150" cy="88" rx="6.5" ry="4" fill="#e8a385" opacity="0.3" />
+
+          <path d="M130 80 q-3.5 10 1.5 12.5" stroke="#c1875f" stroke-width="2" stroke-linecap="round" fill="none" />
+          <!-- flat at rest, so it reads as a closed lip line rather than
+               a permanently open oval; the speech animation scales it -->
+          <ellipse class="av__mouth" cx="130" cy="101" rx="8" ry="1.7" fill="#7d4340" />
         </g>
       </g>
     </svg>
+
+    <!-- Inside the figure on purpose. The hero places this as a
+         percentage of the character, and percentages resolve against the
+         containing block, so the containing block has to be the drawing
+         rather than the avatar column. -->
+    {talkable && script.length > 0 && (
+      <button class="av__talk btn-disc" type="button" data-av-talk aria-expanded="false">
+        {talkLabel}
+      </button>
+    )}
   </div>
 
   <!-- Ambient caption: the line changes with the scroll state of an
@@ -159,11 +209,6 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
     </p>
   )}
 
-  {talkable && script.length > 0 && (
-    <button class="av__talk btn-disc" type="button" data-av-talk aria-expanded="false">
-      {talkLabel}
-    </button>
-  )}
 </div>
 
 <!-- The talk surface. Captions are always the source of truth; audio,
@@ -174,11 +219,14 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   <div class="avtalk" data-av-panel={uid} hidden>
     <button class="avtalk__scrim" type="button" data-av-close aria-label="סגירה"></button>
     <div class="avtalk__box" role="dialog" aria-modal="true" aria-label="שיחה עם לַהַב">
-      <button class="avtalk__x" type="button" data-av-close aria-label="סגירה">✕</button>
+      <button class="avtalk__x" type="button" data-av-close aria-label="סגירה">
+        <span aria-hidden="true">✕</span>
+        <span class="avtalk__x-t">סגירה</span>
+      </button>
       <div class="avtalk__stage" data-av-stage></div>
       <p class="avtalk__caption" data-av-caption aria-live="polite"></p>
       <div class="avtalk__bar">
-        <button class="btn btn-primary avtalk__replay" type="button" data-av-replay>שוב</button>
+        <button class="btn btn-primary avtalk__replay" type="button" data-av-play>עצירה</button>
         <button class="btn btn-secondary avtalk__mute" type="button" data-av-mute aria-pressed="false">השתקה</button>
         <a class="btn btn-secondary" href="/contact/">לתיאום שיחת היכרות</a>
       </div>
@@ -241,8 +289,16 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
      (audio amplitude, or the speech engine's word boundaries). All the
      stylesheet owns is the origin and a short smoothing transition. */
   .av__mouth {
-    transform-origin: 130px 96px;
+    /* `transform-box: fill-box` makes transform-origin relative to the
+       ELEMENT'S OWN fill box, which for this ellipse is 18x5 units. The
+       origin used to be given as 130px 96px, i.e. the mouth's position
+       in the SVG's user space, which lands about 112 units to the right
+       of and 92 units below a box that small. Scaling 4x about a point
+       that far away is what threw the lips off the screen while it
+       spoke. With fill-box the origin has to be expressed inside the
+       box; 30% down is where a jaw hinges. */
     transform-box: fill-box;
+    transform-origin: 50% 30%;
     transition: transform 60ms linear;
   }
   /* the head settles while speaking, so the mouth is the moving part */
@@ -272,7 +328,45 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   html:not(.mo-ready) .av__line { position: static; opacity: 1; transform: none; }
   html:not(.mo-ready) .av__line:not(:first-child) { display: none; }
 
-  .av__talk { margin-top: 0.25rem; }
+  /* Reported as "completely static, I want it to pop out somehow". The
+     disc now breathes and carries an outward halo, so it reads as the
+     thing to press. Both stop on hover and focus, where the pointer has
+     already found it and the motion would only be noise. */
+  .av__talk {
+    margin-top: 0.25rem;
+    max-width: 100%;
+    position: relative;
+    animation: av-talk-bob 2.8s var(--ease-inout) infinite;
+  }
+  .av__talk::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    border: 2px solid var(--color-royal);
+    animation: av-talk-halo 2.8s var(--ease-out) infinite;
+    pointer-events: none;
+  }
+  .av__talk:hover, .av__talk:focus-visible { animation-play-state: paused; }
+  .av__talk:hover::after, .av__talk:focus-visible::after { animation-play-state: paused; opacity: 0; }
+  /* `translate` and `scale`, NOT `transform`. In the hero the disc is
+     centred on the figure with `transform: translateX(50%)`, and
+     animating `transform` here replaced that and shifted the button
+     44px off the character. The individual properties compose with it
+     instead of overwriting it. */
+  @keyframes av-talk-bob {
+    0%, 100% { translate: 0 0;    scale: 1 }
+    42%      { translate: 0 -6px; scale: 1.035 }
+    62%      { translate: 0 0;    scale: 0.995 }
+  }
+  @keyframes av-talk-halo {
+    0%   { transform: scale(1);    opacity: 0.55 }
+    70%  { transform: scale(1.38); opacity: 0 }
+    100% { transform: scale(1.38); opacity: 0 }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .av__talk, .av__talk::after { animation: none; }
+  }
 
   /* ---------- talk panel ---------- */
   .avtalk { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; }
@@ -298,11 +392,19 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   }
   .avtalk[data-open='true'] .avtalk__box { opacity: 1; transform: none; }
   .avtalk__x {
-    position: absolute; inset-inline-end: 0.75rem; top: 0.75rem;
-    width: 2.25rem; height: 2.25rem; border-radius: 50%;
-    border: 1px solid var(--color-line-strong); background: rgba(255,255,255,0.7);
-    cursor: pointer; font-size: 0.875rem; color: var(--color-ink);
+    position: absolute; inset-inline-end: 0.6rem; top: 0.6rem;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    min-height: 2.75rem; padding-inline: 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line-strong); background: #fff;
+    box-shadow: 0 6px 18px rgba(11, 26, 66, 0.14);
+    cursor: pointer; font-size: 0.875rem; font-weight: 700; color: var(--color-ink);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
   }
+  .avtalk__x:hover { background: var(--color-soft); transform: translateY(-1px); }
+  .avtalk__x-t { font-family: var(--font-display); }
   .avtalk__stage { display: grid; place-items: center; }
   .avtalk__stage :global(.av) { gap: 0; }
   .avtalk__stage :global(.av__figure) { width: clamp(9rem, 34vw, 12rem); opacity: 1 !important; transform: none !important; }
@@ -370,7 +472,17 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
     const stage = panel.querySelector<HTMLElement>('[data-av-stage]')!;
     const caption = panel.querySelector<HTMLElement>('[data-av-caption]')!;
     const audio = panel.querySelector<HTMLAudioElement>('[data-av-audio]');
-    const replay = panel.querySelector<HTMLButtonElement>('[data-av-replay]')!;
+    const box = panel.querySelector<HTMLElement>('.avtalk__box')!;
+    const playBtn = panel.querySelector<HTMLButtonElement>('[data-av-play]')!;
+    // Reported as "I can't even stop it, so very very bad". There was no
+    // stop at all: the only controls were replay and mute, and muting
+    // cancels the current sentence while the script marches on to the
+    // next one. This is now an explicit stop/replay toggle.
+    let playing = false;
+    const paintPlay = () => {
+      playBtn.textContent = playing ? 'עצירה' : 'להשמיע שוב';
+      playBtn.setAttribute('aria-pressed', String(playing));
+    };
 
     // The panel shows the same character: clone the figure so the visitor
     // keeps talking to who they clicked, not a different illustration.
@@ -379,7 +491,12 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
     if (figure && !stage.childElementCount) {
       panelAv = document.createElement('div');
       panelAv.className = 'av av--md';
-      panelAv.appendChild(figure.cloneNode(true));
+      const clone = figure.cloneNode(true) as HTMLElement;
+      // The trigger now lives INSIDE the figure, so a straight clone
+      // would put a second "לחצו עליי" disc inside the dialog the disc
+      // just opened, still carrying data-av-talk.
+      clone.querySelector('[data-av-talk]')?.remove();
+      panelAv.appendChild(clone);
       stage.appendChild(panelAv);
     }
 
@@ -538,6 +655,8 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
 
     const stop = () => {
       runToken += 1;
+      playing = false;
+      paintPlay();
       window.clearTimeout(timer);
       panelAv?.classList.remove('is-talking');
       if (audio) { audio.pause(); audio.currentTime = 0; }
@@ -549,6 +668,8 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
       stop();
       if (!script.length) return;
       const myRun = ++runToken;
+      playing = true;
+      paintPlay();
       panelAv?.classList.add('is-talking');
       startMouth();
       if (audio) {
@@ -578,6 +699,8 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
         if (myRun !== runToken) return;
       }
 
+      playing = false;
+      paintPlay();
       panelAv?.classList.remove('is-talking');
       stopMouth();
     };
@@ -597,7 +720,8 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
     };
 
     btn.addEventListener('click', () => setOpen(true));
-    replay.addEventListener('click', play);
+    playBtn.addEventListener('click', () => { if (playing) stop(); else play(); });
+    paintPlay();
 
     const muteBtn = panel.querySelector<HTMLButtonElement>('[data-av-mute]');
     const paintMute = () => {
@@ -615,9 +739,16 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
       if (muted) synth?.cancel();
       paintMute();
     });
-    panel.querySelectorAll('[data-av-close]').forEach((c) =>
-      c.addEventListener('click', () => { setOpen(false); btn.focus(); })
-    );
+    const close = () => { setOpen(false); btn.focus(); };
+    panel.querySelectorAll('[data-av-close]').forEach((c) => c.addEventListener('click', close));
+    // Reported as "I can't even click outside, I have to try many keys to
+    // be able to close it". The scrim is a sibling of the dialog, so on a
+    // phone, where the dialog fills almost the whole screen, there was
+    // barely any scrim left to hit. Any pointer that lands outside the
+    // dialog box now closes, whatever it actually landed on.
+    panel.addEventListener('pointerdown', (e) => {
+      if (!box.contains(e.target as Node)) close();
+    });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && panel.dataset.open === 'true') { setOpen(false); btn.focus(); }
     });
