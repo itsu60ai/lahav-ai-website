@@ -32,14 +32,39 @@ export interface ProviderResult {
 /** Hard ceiling on a reply, so one question can never run up a bill. */
 const MAX_TOKENS = 420;
 
-/** Tried in order until one answers. See the note in askModel. */
+/** Tried in order until one answers ACCEPTABLY. See askModel. */
 const WORKERS_AI_MODELS = [
-  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-  '@cf/mistralai/mistral-small-3.1-24b-instruct',
   '@cf/google/gemma-3-12b-it',
-  '@cf/meta/llama-3.1-8b-instruct-fast',
+  '@cf/mistralai/mistral-small-3.1-24b-instruct',
   '@cf/qwen/qwen2.5-14b-instruct',
+  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
 ];
+
+// DEGENERACY GUARD.
+//
+// Small open models loop in Hebrew. Llama 3.3 answered "how much does it
+// cost" with 1,467 characters of the same clause repeated. Serving that
+// is worse than serving nothing, so a reply that repeats itself is
+// rejected and the next model is tried.
+function looksDegenerate(text: string): boolean {
+  const t = text.trim();
+  if (!t) return true;
+  // an answer this long is already off-brief; the prompt asks for 2-4
+  // sentences
+  if (t.length > 900) return true;
+  const words = t.split(/\s+/).filter((w) => w.length > 1);
+  if (words.length < 4) return false;
+  // repeated 4-grams
+  const grams = new Map<string, number>();
+  for (let i = 0; i + 4 <= words.length; i++) {
+    const g = words.slice(i, i + 4).join(' ');
+    grams.set(g, (grams.get(g) ?? 0) + 1);
+    if ((grams.get(g) ?? 0) > 2) return true;
+  }
+  // vocabulary collapse
+  const unique = new Set(words).size;
+  return words.length > 25 && unique / words.length < 0.42;
+}
 
 export function providerName(env: any): 'anthropic' | 'workers-ai' | null {
   if (env?.ANTHROPIC_API_KEY) return 'anthropic';
@@ -94,10 +119,16 @@ export async function askModel(
     let lastDetail = '';
     for (const model of WORKERS_AI_MODELS) {
       try {
-        const out: any = await env.AI.run(model, { max_tokens: MAX_TOKENS, messages });
+        const out: any = await env.AI.run(model, {
+          max_tokens: MAX_TOKENS,
+          temperature: 0.3,
+          repetition_penalty: 1.15,
+          messages,
+        });
         const text = String(out?.response ?? '').trim();
-        if (text) return { ok: true, text, via: 'workers-ai' };
-        lastDetail = `empty from ${model}`;
+        if (!text) { lastDetail = `empty from ${model}`; continue; }
+        if (looksDegenerate(text)) { lastDetail = `degenerate from ${model}`; continue; }
+        return { ok: true, text, via: 'workers-ai' };
       } catch (err) {
         lastDetail = `${model}: ${String((err as any)?.message ?? err).slice(0, 120)}`;
       }

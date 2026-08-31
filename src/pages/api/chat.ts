@@ -16,7 +16,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { buildKnowledge, SYSTEM_PROMPT } from '../../lib/chat/knowledge.ts';
+import { buildKnowledge, SYSTEM_PROMPT, CLOSING_RULES } from '../../lib/chat/knowledge.ts';
 import { askModel, providerName, type ChatTurn } from '../../lib/chat/provider.ts';
 
 /** Longest single question we will forward. */
