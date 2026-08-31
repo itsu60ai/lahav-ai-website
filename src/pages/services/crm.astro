@@ -13,14 +13,16 @@ const data = SERVICE_PAGES['crm'];
 >
 
   <!-- CRM only: what changes day to day -->
-  <section class="section crm-after">
-    <div class="u-container">
-      <div class="lede">
-        <p class="t-eyebrow">מה משתנה ביום-יום</p>
-        <h2 class="t-h2">במקום לחפש, פשוט לפתוח ולראות</h2>
+  <section class="crm-after u-section band band--warm">
+    <div class="u-container u-container--wide">
+      <div class="crm-after__head">
+        <p class="t-eyebrow" data-reveal>מה משתנה ביום-יום</p>
+        <h2 class="crm-after__h t-display-3" data-reveal style="--mo-delay:90ms">
+          במקום לחפש,<br />פשוט לפתוח ולראות
+        </h2>
       </div>
       <div class="crm-cols">
-        <div class="crm-col">
+        <div class="crm-col" data-reveal>
           <p class="crm-col__label">היום</p>
           <ul class="crm-list crm-list--before">
             <li>מחפשים בשיחות מה סוכם</li>
@@ -29,7 +31,7 @@ const data = SERVICE_PAGES['crm'];
             <li>אוספים ידנית כדי להבין מצב</li>
           </ul>
         </div>
-        <div class="crm-col">
+        <div class="crm-col" data-reveal style="--mo-delay:120ms">
           <p class="crm-col__label crm-col__label--after">אחרי</p>
           <ul class="crm-list crm-list--after">
             <li>הכל רשום בכרטיס אחד</li>
@@ -43,11 +45,17 @@ const data = SERVICE_PAGES['crm'];
   </section>
 
   <style>
+    .crm-after__head { max-width: 46rem; }
+    .crm-after__h { margin-top: 0.75rem; }
     .crm-cols {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: clamp(2rem, 5vw, 4rem);
+      margin-top: clamp(2rem, 4vw, 3.5rem);
     }
+    /* hairline heads instead of two tinted panels */
+    .crm-col { padding-top: 1.25rem; border-top: 2px solid var(--color-line-strong); }
+    .crm-col:nth-child(2) { border-top-color: var(--color-royal); }
     .crm-col__label {
       font-size: var(--text-micro);
       font-weight: 700;

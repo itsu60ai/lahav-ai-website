@@ -13,26 +13,26 @@ const data = SERVICE_PAGES['automations'];
 >
 
   <!-- Automations only: the human control band -->
-  <section class="section section--navy auto-human">
-    <div class="u-container">
-      <div class="lede lede--center">
-        <p class="t-eyebrow">שליטה</p>
-        <h2 class="t-display-2">אוטומציה טובה<br />לא מוציאה אתכם מהתמונה</h2>
-        <p class="t-lead">
+  <section class="auto-human band band--navy u-section">
+    <div class="u-container u-container--wide">
+      <div class="auto-human__head">
+        <p class="t-eyebrow" data-reveal>שליטה</p>
+        <h2 class="auto-human__h t-display-3" data-reveal style="--mo-delay:90ms">אוטומציה טובה<br />לא מוציאה אתכם מהתמונה</h2>
+        <p class="t-lead auto-human__lead" data-reveal style="--mo-delay:180ms">
           המטרה היא לא שהמערכת תחליט במקומכם. המטרה היא שהיא תעשה את מה שברור,
           ותעביר אליכם את מה שדורש שיקול דעת.
         </p>
       </div>
       <ul class="human">
-        <li class="human__i" data-reveal style="--i:0">
+        <li class="human__i" data-reveal style="--mo-delay:0ms">
           <span class="human__k">אתם מגדירים</span>
           <span class="human__v">מה מותר לה לעשות לבד</span>
         </li>
-        <li class="human__i" data-reveal style="--i:1">
+        <li class="human__i" data-reveal style="--mo-delay:110ms">
           <span class="human__k">אתם רואים</span>
           <span class="human__v">מה רץ, מה חיכה, ומה נעצר</span>
         </li>
-        <li class="human__i" data-reveal style="--i:2">
+        <li class="human__i" data-reveal style="--mo-delay:220ms">
           <span class="human__k">אתם מחליטים</span>
           <span class="human__v">בכל מקרה חריג שדורש אתכם</span>
         </li>
@@ -42,14 +42,15 @@ const data = SERVICE_PAGES['automations'];
 
   <style>
     .human { list-style: none; margin: clamp(2rem,4vw,3rem) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3,1fr); gap: clamp(1.5rem,3vw,2.5rem); }
-    .human__i { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1.25rem; border-top: 2px solid rgba(41,151,255,.4);
-      transition: opacity 600ms var(--ease-out) calc(var(--i)*110ms), translate 600ms var(--ease-out) calc(var(--i)*110ms); }
-    :global(html.reveal-ready) .human__i { opacity: 0; translate: 0 16px; }
-    :global(html.reveal-ready) .human__i.is-in { opacity: 1; translate: 0 0; }
-    .human__k { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 700; color: #fff; }
+    /* motion comes from the global [data-reveal] primitive now, so this
+       block only owns layout */
+    .auto-human__head { max-width: 46rem; }
+    .auto-human__h { color: #fff; margin-block: 0.75rem 1.25rem; }
+    .auto-human__lead { max-width: 52ch; }
+    .human__i { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1.25rem; border-top: 2px solid rgba(41,151,255,.4); }
+    .human__k { font-family: var(--font-display); font-size: clamp(1.25rem,2vw,1.75rem); font-weight: 800; letter-spacing: -0.02em; color: #fff; }
     .human__v { font-size: var(--text-small); color: rgba(255,255,255,.72); line-height: 1.6; }
     @media (max-width: 720px) { .human { grid-template-columns: 1fr; } }
-    @media (prefers-reduced-motion: reduce) { .human__i { opacity:1 !important; translate:none !important; transition:none !important; } }
   </style>
 
 </ServicePage>

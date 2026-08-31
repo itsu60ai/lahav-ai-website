@@ -1,27 +1,53 @@
 ---
-// 404. Short and elegant, as instructed. One small branded broken-flow
-// visual and clear routes back. No business claims, no cinematic page.
+// 404, V3. Short and elegant, as instructed. One small branded
+// broken-flow visual and clear routes back. No business claims, no
+// cinematic page.
+//
+// Composition matches the rest of the site: an oversized ghost number
+// behind display type, then the ways out as hairline rows rather than a
+// centred row of buttons.
 import SiteLayout from '../layouts/SiteLayout.astro';
 import Viz from '../components/Viz.astro';
-import ScrollReveal from '../components/ScrollReveal.astro';
 import { CTA_PRIMARY } from '../lib/site';
+
+const routes = [
+  { href: '/', label: 'לדף הבית', note: 'מה אנחנו עושים, בקצרה' },
+  { href: '/services/', label: 'לשירותים', note: 'חמישה תחומים, אפשר להתחיל מהבעיה' },
+  { href: '/articles/', label: 'למאמרים', note: 'כתיבה קצרה ומעשית' },
+  { href: CTA_PRIMARY.href, label: CTA_PRIMARY.label, note: '30 דקות, בלי התחייבות' },
+];
 ---
 
 <SiteLayout title="הדף לא נמצא | LAHAV AI" description="הקישור שהגעתם אליו לא קיים.">
-  <ScrollReveal />
+  <section class="nf band band--hero">
+    <span class="nf__ghost tabular" aria-hidden="true">404</span>
 
-  <section class="nf">
-    <div class="u-container nf__inner">
-      <Viz kind="broken" class="nf__viz" />
-      <p class="t-eyebrow nf__code tabular">404</p>
-      <h1 class="t-h1 nf__title">הקישור הזה לא מוביל לשום מקום</h1>
-      <p class="nf__lead">
-        כנראה שהעמוד הוסר או שהכתובת השתנתה. אפשר להמשיך מכאן:
-      </p>
-      <div class="nf__actions">
-        <a class="btn btn-primary" href="/">לדף הבית</a>
-        <a class="btn btn-secondary" href="/services/">לשירותים</a>
-        <a class="btn btn-secondary" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
+    <div class="u-container u-container--wide nf__inner">
+      <div class="nf__type">
+        <p class="t-eyebrow" data-reveal>404</p>
+        <h1 class="nf__title">
+          <span class="mo-line" style="--mo-delay:70ms"><span>הקישור הזה</span></span>
+          <span class="mo-line" style="--mo-delay:170ms"><span class="nf__accent">לא מוביל לשום מקום.</span></span>
+        </h1>
+        <p class="nf__lead" data-reveal style="--mo-delay:280ms">
+          כנראה שהעמוד הוסר או שהכתובת השתנתה. אפשר להמשיך מכאן.
+        </p>
+
+        <ul class="nf__routes">
+          {routes.map((r, i) => (
+            <li class="nf__route" data-reveal style={`--mo-delay:${340 + i * 70}ms`}>
+              <a href={r.href}>
+                <span class="nf__label">{r.label}</span>
+                <span class="nf__note">{r.note}</span>
+                <span class="nf__arrow arrow-inline" aria-hidden="true">←</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="nf__art" data-clip>
+        <Viz kind="broken" />
       </div>
     </div>
   </section>
@@ -29,51 +55,96 @@ import { CTA_PRIMARY } from '../lib/site';
 
 <style>
   .nf {
-    min-height: min(70vh, 640px);
-    display: grid;
-    place-items: center;
-    /* clears the fixed header */
-    padding-block: clamp(9rem, 18vh, 13rem) clamp(3rem, 7vw, 6rem);
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(9rem, 20svh, 14rem) clamp(4rem, 8vw, 7rem);
+  }
+  /* the number is scenery, not content: it sits behind everything and is
+     hidden from assistive tech */
+  .nf__ghost {
+    position: absolute;
+    inset-block-start: 48%;
+    inset-inline-start: -9vw;
+    font-family: var(--font-display);
+    font-size: clamp(12rem, 34vw, 34rem);
+    font-weight: 900;
+    line-height: 0.75;
+    letter-spacing: -0.05em;
+    color: var(--color-ink);
+    opacity: 0.035;
+    pointer-events: none;
+    user-select: none;
   }
   .nf__inner {
-    display: flex;
-    flex-direction: column;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr);
+    gap: clamp(2rem, 6vw, 5rem);
     align-items: center;
-    text-align: center;
-  }
-  .nf__viz {
-    max-width: 22rem;
-    margin-bottom: 2rem;
-  }
-  /* the broken-flow art is drawn for dark surfaces, tint it for light */
-  .nf__viz :global(svg) {
-    filter: none;
-  }
-  .nf__code {
-    letter-spacing: 0.12em;
-    margin-bottom: 0.75rem;
   }
   .nf__title {
-    margin-bottom: 1rem;
-    max-width: 20ch;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-display);
+    font-size: var(--text-display-2);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    margin-block: 1rem 1.5rem;
+  }
+  .nf__accent {
+    background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
   .nf__lead {
     font-size: var(--text-lead);
     color: var(--color-ink-2);
-    margin-bottom: 2rem;
-    max-width: 44ch;
+    max-width: 42ch;
   }
-  .nf__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: center;
+
+  .nf__routes {
+    list-style: none;
+    margin: clamp(2rem, 4vw, 3rem) 0 0;
+    padding: 0;
+    max-width: 34rem;
   }
-  @media (max-width: 560px) {
-    .nf__actions {
-      flex-direction: column;
-      align-items: stretch;
-      width: 100%;
-    }
+  .nf__route { border-top: 1px solid var(--color-line-strong); }
+  .nf__route:last-child { border-bottom: 1px solid var(--color-line-strong); }
+  .nf__route a {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) 1.5rem;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 1rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  .nf__label {
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    transition: color var(--dur) var(--ease-out);
+  }
+  .nf__route:hover .nf__label { color: var(--color-royal); }
+  .nf__note { font-size: var(--text-small); color: var(--color-ink-3); }
+  .nf__arrow { color: var(--color-royal); justify-self: end; }
+  .nf__route:hover .nf__arrow { transform: translateX(-5px); }
+
+  /* the broken-flow art is drawn for dark surfaces, so it gets its own
+     dark stage rather than washing out on the light band */
+  .nf__art {
+    background: var(--color-navy);
+    border-radius: var(--radius-xl);
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+  }
+
+  @media (max-width: 900px) {
+    .nf__inner { grid-template-columns: 1fr; }
+    .nf__art { order: -1; }
+    .nf__note { display: none; }
+    .nf__route a { grid-template-columns: minmax(0, 1fr) 1.25rem; }
   }
 </style>

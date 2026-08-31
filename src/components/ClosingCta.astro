@@ -2,6 +2,13 @@
 // Reusable closing conversion band, appears once, near the end of every
 // page (PRD §6, "every page must include ... a primary CTA, a WhatsApp
 // route"). Same component everywhere so the CTA hierarchy never drifts.
+//
+// V3 rebuild. The old version was a centred blue gradient card, which sat
+// directly above a navy footer that already ends on an oversized CTA: two
+// centred conversion blocks in a row, both shouting. This is now an
+// editorial two-column close on the warm band — statement on the reading
+// side, a round disc CTA opposite — so the page steps down into the
+// footer instead of competing with it.
 import { CTA_PRIMARY, WHATSAPP_HREF } from '../lib/site';
 import WhatsApp from './icons/WhatsApp.astro';
 
@@ -12,67 +19,74 @@ interface Props {
 const { heading, body } = Astro.props;
 ---
 
-<section class="cta-band on-dark">
-  <div class="u-container cta-band__inner">
-    <h2 class="t-h1 cta-band__heading">{heading}</h2>
-    {body && <p class="t-lead cta-band__body">{body}</p>}
-    <div class="cta-band__actions">
-      <a class="btn btn-primary btn-lg cta-band__primary" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-      <a class="btn btn-secondary btn-lg" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+<section class="cta-band band band--warm">
+  <div class="u-container u-container--wide cta-band__inner">
+    <div class="cta-band__type">
+      <p class="t-eyebrow" data-reveal>הצעד הבא</p>
+      <h2 class="cta-band__heading">
+        <span class="mo-line" style="--mo-delay:60ms"><span>{heading}</span></span>
+      </h2>
+      {body && <p class="cta-band__body" data-reveal style="--mo-delay:200ms">{body}</p>}
+      <a class="cta-band__wa" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
         <WhatsApp />
-        שיחה בוואטסאפ
+        <span>או פשוט בוואטסאפ</span>
+        <span class="arrow-inline" aria-hidden="true">←</span>
       </a>
+    </div>
+
+    <div class="cta-band__disc">
+      <a class="btn-disc" href={CTA_PRIMARY.href} data-scale-in data-magnetic>{CTA_PRIMARY.label}</a>
     </div>
   </div>
 </section>
 
 <style>
-  /* Fades IN to the brand gradient rather than starting with it: the
-     section begins transparent (showing whatever the body's own gradient
-     looks like at that scroll position) and only reaches full brand
-     vividness by its lower half, where the buttons sit. This is what
-     removes the hard horizontal seam the flat gradient used to create
-     against the section above it. */
-  .cta-band {
-    background: linear-gradient(
-      180deg,
-      transparent 0%,
-      rgba(29, 78, 216, 0.4) 45%,
-      #1d4ed8 75%,
-      #2997ff 100%
-    );
-    text-align: center;
-    padding-block: var(--space-section);
+  .cta-band { padding-block: var(--space-section); }
+  .cta-band__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
   }
   .cta-band__heading {
-    color: #fff;
-    max-width: 20ch;
-    margin-inline: auto;
+    font-family: var(--font-display);
+    font-size: var(--text-display-3);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    max-width: 16ch;
+    margin-block: 0.75rem 0;
+    color: var(--color-ink);
   }
   .cta-band__body {
-    color: rgba(255, 255, 255, 0.88);
-    max-width: 56ch;
-    margin: 1.25rem auto 0;
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--color-ink-2);
+    max-width: 46ch;
+    margin-top: clamp(1rem, 2vw, 1.75rem);
   }
-  .cta-band__actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: clamp(2rem, 3vw, 2.75rem);
+  .cta-band__wa {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: clamp(1.25rem, 2.5vw, 2rem);
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-ink-2);
+    text-decoration: none;
+    transition: color var(--dur) var(--ease-out);
   }
-  .cta-band__primary {
-    background: #fff;
-    color: var(--color-royal);
-  }
-  .cta-band__primary:hover {
-    background: #eef2ff;
-  }
+  .cta-band__wa:hover { color: var(--color-royal); }
+  /* width:max-content, not just justify-self: the disc carries
+     [data-scale-in], and scaling a full-width grid item by 1.12 pushes
+     the document wider than the viewport. */
+  .cta-band__disc { justify-self: end; width: max-content; }
 
-  @media (max-width: 560px) {
-    .cta-band__actions {
-      flex-direction: column;
-      align-items: stretch;
+  @media (max-width: 860px) {
+    .cta-band__inner {
+      grid-template-columns: 1fr;
+      gap: clamp(1.75rem, 6vw, 2.5rem);
     }
+    .cta-band__disc { justify-self: start; }
   }
 </style>

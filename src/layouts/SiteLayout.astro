@@ -10,6 +10,7 @@ import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import Motion from '../components/Motion.astro';
+import AvatarDock from '../components/AvatarDock.astro';
 
 interface Props {
   title: string;
@@ -26,5 +27,6 @@ const currentPath = new URL(Astro.request.url).pathname;
     <slot />
   </main>
   <SiteFooter />
+  <AvatarDock />
   <Motion />
 </BaseLayout>

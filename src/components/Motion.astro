@@ -29,30 +29,43 @@
     // Only now do the start states apply. Before this line the page is
     // complete and visible, which is what a no-JS visitor keeps.
     root.classList.add('mo-ready');
+    // legacy alias: a few components still gate their start state on this
+    root.classList.add('reveal-ready');
 
     // ---------- enter animations ----------
-    const enterTargets = document.querySelectorAll<HTMLElement>(
-      '[data-reveal], .mo-line, [data-clip], [data-scale-in]'
+    // Deliberately rect-based rather than IntersectionObserver.
+    //
+    // IO reports a clip-path'd element as having zero intersection, so a
+    // [data-clip] target that starts at inset(0 0 100% 0) can never be
+    // seen by IO, and the class that would REMOVE the clip is therefore
+    // never added: the reveal deadlocks itself and the content stays
+    // invisible forever. getBoundingClientRect ignores clip-path, so this
+    // measures where the element genuinely is.
+    const enterTargets = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-reveal], .mo-line, [data-clip], [data-scale-in]')
     );
 
-    if (reduced) {
-      enterTargets.forEach((el) => el.classList.add('is-in'));
-    } else {
-      const io = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (!entry.isIntersecting) continue;
-            entry.target.classList.add('is-in');
-            io.unobserve(entry.target);
-          }
-        },
-        // Fire a little before the element is fully on screen, and only
-        // once a real slice of it is visible, so reveals feel intentional
-        // rather than triggering at the very edge of the viewport.
-        { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
-      );
-      enterTargets.forEach((el) => io.observe(el));
-    }
+    // Reduced motion: show everything immediately. The composition is
+    // identical, only the movement is dropped.
+    if (reduced) enterTargets.forEach((el) => el.classList.add('is-in'));
+
+    // pending is mutated as things reveal, so the check gets cheaper as
+    // the visitor scrolls
+    let pending = reduced ? [] : enterTargets.slice();
+
+    const checkEnter = () => {
+      if (!pending.length) return;
+      const vh = window.innerHeight;
+      const still: HTMLElement[] = [];
+      for (const el of pending) {
+        const r = el.getBoundingClientRect();
+        // in view once its top has risen above 92% of the viewport and its
+        // bottom has not yet passed the top edge
+        if (r.top < vh * 0.92 && r.bottom > 0) el.classList.add('is-in');
+        else still.push(el);
+      }
+      pending = still;
+    };
 
     // ---------- stagger indices ----------
     document.querySelectorAll<HTMLElement>('[data-stagger]').forEach((group) => {
@@ -95,6 +108,8 @@
           }
         }
 
+        checkEnter();
+
         for (const s of swapRoots) {
           if (!s.steps) continue;
           const r = s.el.getBoundingClientRect();
@@ -112,11 +127,12 @@
       });
     };
 
-    if (parallaxEls.length || swapRoots.length) {
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll, { passive: true });
-      onScroll();
-    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    onScroll();
+    // run again once late layout (fonts, images) has settled, so nothing
+    // that shifted into view is left hidden
+    window.addEventListener('load', () => { onScroll(); window.setTimeout(onScroll, 400); });
 
     // ---------- marquee: duplicate content for a seamless loop ----------
     if (!reduced) {

@@ -19,8 +19,7 @@ import Avatar from '../components/Avatar.astro';
 import FloatingCards from '../components/FloatingCards.astro';
 import FounderPortrait from '../components/FounderPortrait.astro';
 import Viz from '../components/Viz.astro';
-import WhatsApp from '../components/icons/WhatsApp.astro';
-import { SERVICES, PROCESS, WHATSAPP_HREF, CTA_PRIMARY, FOUNDER } from '../lib/site';
+import { SERVICES, PROCESS, FOUNDER } from '../lib/site';
 
 const pains = [
   { t: 'המידע מפוזר', d: 'חלק בוואטסאפ, חלק במייל, חלק באקסל, וחלק בראש של מישהו. אף אחד לא רואה את התמונה המלאה.' },
@@ -30,6 +29,19 @@ const pains = [
 ];
 
 const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות', 'תוכן AI', 'אפיון', 'אינטגרציות'];
+
+// What the guide says when a visitor asks it to talk. Timed lines, so
+// a real audio track can be dropped in later without touching markup.
+// Truth rules apply here exactly as in page copy: no numbers, no
+// results, no claims that cannot be stood behind.
+const heroScript = [
+  { text: 'שלום. אני לַהַב.', hold: 1700 },
+  { text: 'רוב העסקים לא צריכים עוד כלי.', hold: 2400 },
+  { text: 'הם צריכים שהכלים ידברו.', hold: 2400 },
+  { text: 'נתחיל מאיך שאתם עובדים היום.', hold: 2600 },
+  { text: 'ומה שחוזר על עצמו, ירוץ לבד.', hold: 2600 },
+  { text: 'ההחלטות נשארות אצלכם.', hold: 2600 },
+];
 
 // One line per service panel: the guide narrates the section as it
 // scrolls. Content only, so rewriting what it says is a data edit.
@@ -50,12 +62,10 @@ const avatarLines = [
   <section class="hero band band--hero">
     <FloatingCards />
 
-    <!-- The character is a layer BEHIND the statement, not a block after
-         it: that layering is what lets the whole act sit in one screen. -->
-    <div class="hero__figure" aria-hidden="false">
-      <Avatar size="lg" class="hero__avatar" />
-    </div>
-
+    <!-- Reference composition: the statement owns the top of the screen,
+         the character stands beneath it with the round talk trigger over
+         its lower body. They sit in sequence, not stacked on top of each
+         other, which is what keeps both legible. -->
     <div class="u-container u-container--wide hero__inner">
       <p class="hero__eyebrow t-eyebrow" data-reveal>מערכות AI ואוטומציה לעסקים</p>
 
@@ -64,24 +74,17 @@ const avatarLines = [
         <span class="mo-line" style="--mo-delay:150ms"><span>פחות עבודה ידנית.</span></span>
         <span class="mo-line" style="--mo-delay:240ms"><span class="hero__accent">יותר שליטה בעסק.</span></span>
       </h1>
-
-      <div class="hero__foot">
-        <p class="hero__lead" data-reveal style="--mo-delay:340ms">
-          נבין איך העסק עובד היום, ונבנה מערכת שלוקחת על עצמה את מה שחוזר.
-        </p>
-        <div class="hero__actions" data-reveal style="--mo-delay:420ms">
-          <a class="btn btn-primary" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
-          <a class="btn btn-secondary" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
-            <WhatsApp />
-            וואטסאפ
-          </a>
-        </div>
-      </div>
     </div>
 
-    <a class="hero__disc btn-disc" href={CTA_PRIMARY.href} data-magnetic="0.18">
-      שיחת<br />היכרות
-    </a>
+    <div class="hero__figure">
+      <Avatar
+        size="hero"
+        talkable
+        talkLabel="דברו איתי"
+        script={heroScript}
+        class="hero__avatar"
+      />
+    </div>
 
     <span class="hero__scroll" aria-hidden="true"></span>
   </section>
@@ -231,48 +234,30 @@ const avatarLines = [
 
 <style>
   /* ══════ hero ══════
-     One screen, three layers: floating cards (z1), the character (z2),
-     the statement (z3). The type overlaps the character deliberately,
-     which is what keeps the whole act inside a single viewport instead
-     of becoming a tall stack. */
+     Sequence, not overlay: eyebrow, statement, then the character
+     directly beneath it with the talk trigger over its lower body. The
+     whole act is sized to land inside one screen. */
   .hero {
     position: relative;
     min-height: 100svh;
-    display: grid;
-    grid-template-rows: 1fr auto;
-    padding-block: clamp(6rem, 11svh, 8.5rem) clamp(2rem, 5svh, 3.5rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-block: clamp(5.5rem, 9svh, 7.5rem) 0;
     overflow: clip;
   }
 
-  .hero__figure {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: grid;
-    place-items: center;
-    padding-top: 8svh;
-    pointer-events: none;
+  .hero__inner { position: relative; z-index: 3; text-align: center; width: 100%; }
+  .hero__eyebrow { margin-bottom: clamp(0.5rem, 1.2vw, 1rem); }
+  /* Height-aware, not just width-aware. On a wide-but-short screen
+     (1920x988, the reference recording's own viewport) a pure vw size
+     eats the room the character needs, and the character is the point of
+     this hero. The svh term is what keeps the whole act on one screen. */
+  .hero__title {
+    margin-inline: auto;
+    font-size: min(8.4vw, 13.5svh, 11rem);
   }
-  .hero__figure :global(.av) { pointer-events: auto; }
-  /* sized off the viewport height so it can never push the page taller */
-  .hero__figure :global(.av--lg) { --av-size: clamp(8rem, 34svh, 17rem); }
-  .hero__figure :global(.av__speech) {
-    font-size: clamp(0.95rem, 1.25vw, 1.2rem);
-    max-width: 24ch;
-    min-height: 3.6em;
-  }
-
-  .hero__inner {
-    position: relative;
-    z-index: 3;
-    text-align: center;
-    align-self: start;
-    pointer-events: none;
-  }
-  .hero__inner a { pointer-events: auto; }
-  .hero__eyebrow { margin-bottom: clamp(0.75rem, 1.5vw, 1.25rem); }
-  .hero__title { margin-inline: auto; }
-  .hero__latin { font-size: 0.6em; opacity: 0.45; }
+  .hero__latin { font-size: 0.55em; opacity: 0.42; }
   .hero__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
     -webkit-background-clip: text;
@@ -280,42 +265,52 @@ const avatarLines = [
     color: transparent;
   }
 
-  /* supporting copy sits at the bottom of the screen, small, so the
-     statement keeps the weight */
-  .hero__foot {
-    position: absolute;
-    inset-inline: 0;
-    bottom: clamp(-20rem, -26svh, -14rem);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+  /* the character claims whatever height is left below the statement */
+  .hero__figure {
+    position: relative;
+    z-index: 2;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    /* bottom-aligned: the character stands on the fold the way the
+       reference presenter stands on its floor, rather than floating in
+       the middle of the leftover space */
+    place-items: end center;
+    width: 100%;
+    padding-bottom: clamp(1.5rem, 3.5svh, 3rem);
+    margin-top: clamp(-2rem, -2vw, -0.5rem);
   }
-  .hero__lead {
-    font-size: var(--text-body);
-    color: var(--color-ink-2);
-    max-width: 40ch;
-    margin: 0;
-  }
-  .hero__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.625rem; }
-  .hero__actions .btn { min-height: 48px; padding-inline: 1.4rem; font-size: var(--text-small); }
+  .hero__figure :global(.av) { gap: 0; height: 100%; justify-content: center; }
+  /* height-driven so the figure can never push the hero past one screen */
+  .hero__figure :global(.av--hero) { --av-w: auto; }
+  .hero__figure :global(.av__figure) { height: 100%; display: grid; place-items: center; }
+  .hero__figure :global(.av__svg) { height: 100%; width: auto; max-height: min(46svh, 29vw); }
 
-  .hero__disc {
+  /* the round trigger overlaps the character's lower body */
+  /* The trigger overlaps the character's hip, the way the reference's
+     round CTA overlaps its presenter. It is deliberately smaller than the
+     standard disc: at full size it would cover the whole figure, since a
+     drawn character is narrower than a rendered human one. */
+  .hero__figure :global(.av__talk) {
     position: absolute;
-    z-index: 4;
-    bottom: clamp(3rem, 8svh, 5.5rem);
-    inset-inline-end: clamp(1.5rem, 6vw, 6rem);
+    bottom: clamp(4.5rem, 14.5svh, 9rem);
+    inset-inline-start: 50%;
+    transform: translateX(50%);
+    margin: 0;
+    width: clamp(6rem, 7vw, 7.5rem);
+    font-size: var(--text-small);
   }
 
   .hero__scroll {
     position: absolute;
-    bottom: 1.75rem;
+    bottom: 1.25rem;
     inset-inline-start: 50%;
     width: 1px;
-    height: 3.5rem;
+    height: 3rem;
     background: linear-gradient(180deg, transparent, var(--color-ink-3));
     opacity: 0.5;
     animation: hero-scroll 2.4s var(--ease-inout) infinite;
+    z-index: 4;
   }
   @keyframes hero-scroll {
     0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.2; }
@@ -382,6 +377,8 @@ const avatarLines = [
     gap: clamp(2rem, 6vw, 6rem);
     align-items: start;
   }
+  /* same rule as About: the column must fill the row for sticky to work */
+  .svc__index { align-self: stretch; height: 100%; }
   .svc__sticky { top: 18vh; }
   /* the guide narrates this section: it is pinned with the index and its
      line changes as each service panel comes up */
@@ -467,32 +464,14 @@ const avatarLines = [
     .prob__row, .proc__row { grid-template-columns: 3rem 1fr; }
     .prob__d, .proc__d { grid-column: 2; }
 
-    /* Mobile hero is recomposed, not shrunk: the statement owns the top
-       of the screen and the character sits in the lower half, so the two
-       never overlap on a narrow viewport. */
-    .hero { padding-top: 6.5rem; }
-    /* sized so each authored Hebrew line still fits on ONE rendered line
-       at 360px, which is what keeps the statement reading as a statement */
-    .hero__title { font-size: clamp(1.75rem, 8.2vw, 2.5rem); }
-    .hero__lead { font-size: var(--text-small); max-width: 32ch; }
-    .hero__figure {
-      inset: auto 0 0 0;
-      height: 52svh;
-      padding-top: 0;
-      align-items: center;
-    }
-    .hero__figure :global(.av--lg) { --av-size: clamp(7rem, 26svh, 11rem); }
-
-    .hero__foot { bottom: auto; top: calc(100% + 1rem); }
-    .hero__actions { width: 100%; }
-    .hero__actions .btn { flex: 1 1 auto; }
-
-    .hero__disc {
-      inset-inline-end: 1rem;
-      bottom: 2rem;
-      width: 6.5rem;
-      font-size: var(--text-small);
-    }
+    /* Mobile keeps the same sequence, just tighter, and the character
+       gets a smaller share so the statement still leads. */
+    .hero { padding-top: 6rem; }
+    .hero__title { font-size: clamp(1.85rem, 8.8vw, 2.75rem); }
+    .hero__figure :global(.av__svg) { max-height: 40svh; }
+    /* the trigger keeps overlapping the character on mobile too, the
+       way the reference's round CTA sits over its presenter's thighs */
+    .hero__figure :global(.av__talk) { bottom: 19svh; width: 5.75rem; font-size: var(--text-micro); }
   }
   @media (prefers-reduced-motion: reduce) {
     .hero__scroll { animation: none; }

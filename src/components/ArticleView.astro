@@ -1,6 +1,17 @@
 ---
-// One article, rendered. Used by the public article page AND by the admin
-// preview, so what an author previews is literally what visitors get.
+// ONE ARTICLE, RENDERED. V3 editorial rebuild.
+//
+// Used by the public article page AND by the admin preview, so what an
+// author previews is literally what a visitor gets. The data contract
+// (Article, blocks, aiviz safety revalidation) is untouched; only the
+// presentation changed.
+//
+// Composition, in the same language as the rest of the site:
+//   opener      full-bleed type on the hero gradient, no card
+//   meta rail   hairline row of kind / topic / reading time
+//   body        one narrow reading measure, generous leading
+//   figures     break the measure, the one moment the page opens up
+//   related     oversized hairline rows, never cards
 import Viz from './Viz.astro';
 import { ARTICLE_KINDS } from '../lib/cms/types.ts';
 import type { Article } from '../lib/cms/types.ts';
@@ -14,237 +25,310 @@ interface Props {
 const { a, more = [] } = Astro.props;
 ---
 
-  <article class="art">
-    <header class="art__head u-container">
-      <p class="art__kicker">
+<article class="art">
+  <header class="art__head band band--hero">
+    <div class="u-container u-container--wide">
+      <p class="art__kicker" data-reveal>
         <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
         <span class="art__topic">{a.topic}</span>
-        <span class="art__dot" aria-hidden="true">·</span>
         <span class="art__time">{a.readingTime}</span>
       </p>
-      <h1 class="art__title">{a.title}</h1>
-      <p class="art__standfirst">{a.standfirst}</p>
-    </header>
+      <h1 class="art__title">
+        <span class="mo-line" style="--mo-delay:60ms"><span>{a.title}</span></span>
+      </h1>
+      <p class="art__standfirst" data-reveal style="--mo-delay:220ms">{a.standfirst}</p>
+    </div>
+  </header>
 
-    <div class="art__body u-container">
-      {
-        a.body.map((b) => {
-          if (b.t === 'h2') return <h2>{b.x}</h2>;
-          if (b.t === 'h3') return <h3>{b.x}</h3>;
-          if (b.t === 'quote') return <blockquote>{b.x}</blockquote>;
-          if (b.t === 'ul')
+  <div class="art__body u-container">
+    {
+      a.body.map((b) => {
+        if (b.t === 'h2') return <h2>{b.x}</h2>;
+        if (b.t === 'h3') return <h3>{b.x}</h3>;
+        if (b.t === 'quote') return <blockquote>{b.x}</blockquote>;
+        if (b.t === 'ul')
+          return (
+            <ul>
+              {b.items.map((li) => (
+                <li>{li}</li>
+              ))}
+            </ul>
+          );
+        if (b.t === 'aiviz') {
+          // Re-validated at render time, not just at creation — belt and
+          // suspenders for anything that reaches the public page.
+          if (isSvgSafe(b.svg)) {
             return (
-              <ul>
-                {b.items.map((li) => (
-                  <li>{li}</li>
-                ))}
-              </ul>
-            );
-          if (b.t === 'aiviz') {
-            // Re-validated at render time, not just at creation — belt and
-            // suspenders for anything that reaches the public page.
-            if (isSvgSafe(b.svg)) {
-              return (
-                <figure class="art__fig">
-                  <div class="art__fig-stage on-dark art__fig-stage--ai" set:html={b.svg} />
-                  {b.caption && <figcaption>{b.caption}</figcaption>}
-                  <span class="sr-only">{b.alt}</span>
-                </figure>
-              );
-            }
-            // Unsafe content should never reach here (validated well before
-            // this point), but if it somehow did, fall back to the site's
-            // own diagram rather than rendering nothing or something unsafe.
-            return (
-              <figure class="art__fig">
-                <div class="art__fig-stage on-dark">
-                  <Viz kind={a.viz as any} />
-                </div>
-                <figcaption>{a.vizCaption}</figcaption>
+              <figure class="art__fig" data-clip>
+                <div class="art__fig-stage on-dark art__fig-stage--ai" set:html={b.svg} />
+                {b.caption && <figcaption>{b.caption}</figcaption>}
+                <span class="sr-only">{b.alt}</span>
               </figure>
             );
           }
-          if (b.t === 'viz')
-            return (
-              <figure class="art__fig">
-                <div class="art__fig-stage on-dark">
-                  <Viz kind={a.viz as any} />
-                </div>
-                <figcaption>{a.vizCaption}</figcaption>
-              </figure>
-            );
-          return <p>{b.x}</p>;
-        })
-      }
-    </div>
+          // Unsafe content should never reach here (validated well before
+          // this point), but if it somehow did, fall back to the site's
+          // own diagram rather than rendering nothing or something unsafe.
+          return (
+            <figure class="art__fig" data-clip>
+              <div class="art__fig-stage on-dark">
+                <Viz kind={a.viz as any} />
+              </div>
+              <figcaption>{a.vizCaption}</figcaption>
+            </figure>
+          );
+        }
+        if (b.t === 'viz')
+          return (
+            <figure class="art__fig" data-clip>
+              <div class="art__fig-stage on-dark">
+                <Viz kind={a.viz as any} />
+              </div>
+              <figcaption>{a.vizCaption}</figcaption>
+            </figure>
+          );
+        return <p>{b.x}</p>;
+      })
+    }
+  </div>
 
-    <!-- The service connection, kept quiet. It reads as a related link,
-         not as a sales block interrupting the article. -->
-    <aside class="art__rel u-container" data-reveal>
-      <p class="art__rel-k">קשור לנושא</p>
-      <a class="art__rel-a" href={`/services/${a.serviceSlug}/`}>
-        {a.serviceName}
-        <span class="arrow-inline" aria-hidden="true">←</span>
-      </a>
-    </aside>
+  <!-- The service connection, kept quiet. It reads as a related link,
+       not as a sales block interrupting the article. -->
+  <aside class="art__rel u-container" data-reveal>
+    <p class="art__rel-k">קשור לנושא</p>
+    <a class="art__rel-a" href={`/services/${a.serviceSlug}/`}>
+      {a.serviceName}
+      <span class="arrow-inline" aria-hidden="true">←</span>
+    </a>
+  </aside>
 
-    <footer class="art__foot u-container">
-      <p class="art__foot-line">
-        אם משהו כאן נגע במשהו שקורה אצלכם בעסק, שיחה קצרה בדרך כלל מקצרת את הדרך.
-      </p>
-      <a class="link-arrow art__foot-cta" href={CTA_PRIMARY.href}>
-        {CTA_PRIMARY.label} <span class="arrow-inline" aria-hidden="true">←</span>
-      </a>
-    </footer>
-  </article>
+  <footer class="art__foot u-container">
+    <p class="art__foot-line">
+      אם משהו כאן נגע במשהו שקורה אצלכם בעסק, שיחה קצרה בדרך כלל מקצרת את הדרך.
+    </p>
+    <a class="link-arrow art__foot-cta" href={CTA_PRIMARY.href}>
+      {CTA_PRIMARY.label} <span class="arrow-inline" aria-hidden="true">←</span>
+    </a>
+  </footer>
+</article>
 
-  <section class="more">
-    <div class="u-container">
-      <h2 class="more__h">עוד באותו קו</h2>
-      <ul class="more__list">
-        {
-          more.map((m) => (
-            <li>
+{
+  more.length > 0 && (
+    <section class="more band band--soft u-section-tight">
+      <div class="u-container u-container--wide">
+        <p class="t-eyebrow more__k" data-reveal>
+          עוד באותו קו
+        </p>
+        <ul class="more__list">
+          {more.map((m, i) => (
+            <li class="more__row" data-reveal style={`--mo-delay:${i * 90}ms`}>
               <a class="more__item" href={`/articles/${m.slug}/`}>
-                <span class="more__topic">{m.topic}</span>
-                <span class="more__t">{m.title}</span>
-                <span class="more__x">{m.excerpt}</span>
+                <span class="more__n tabular">{String(i + 1).padStart(2, '0')}</span>
+                <span class="more__main">
+                  <span class="more__topic">{m.topic}</span>
+                  <span class="more__t">{m.title}</span>
+                  <span class="more__x">{m.excerpt}</span>
+                </span>
+                <span class="more__arrow arrow-inline" aria-hidden="true">
+                  ←
+                </span>
               </a>
             </li>
-          ))
-        }
-      </ul>
-      <a class="link-arrow more__all" href="/articles/">
-        כל המאמרים <span class="arrow-inline" aria-hidden="true">←</span>
-      </a>
-    </div>
-  </section>
+          ))}
+        </ul>
+        <a class="link-arrow more__all" href="/articles/">
+          כל המאמרים <span class="arrow-inline" aria-hidden="true">←</span>
+        </a>
+      </div>
+    </section>
+  )
+}
+
+<!-- reading progress: a single hairline, no numbers, no widget -->
+<div class="art-prog" aria-hidden="true"><span class="art-prog__bar"></span></div>
+
+<script is:inline>
+  (() => {
+    const bar = document.querySelector('.art-prog__bar');
+    const art = document.querySelector('.art');
+    if (!bar || !art) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const r = art.getBoundingClientRect();
+      const total = r.height - window.innerHeight;
+      const done = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 0;
+      bar.style.transform = `scaleX(${done})`;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+    update();
+  })();
+</script>
+
 <style>
-
-  .art {
-    /* top value clears the fixed header */
-    padding-block: clamp(8rem, 15vh, 11rem) clamp(2.5rem, 5vw, 4rem);
+  /* ══════ reading progress ══════ */
+  .art-prog {
+    position: fixed;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: 2px;
+    z-index: 60;
+    pointer-events: none;
   }
-  /* One reading measure for the whole article */
-  .art__head,
-  .art__body,
-  .art__rel,
-  .art__foot {
-    max-width: 46rem;
+  .art-prog__bar {
+    display: block;
+    height: 100%;
+    /* RTL: the bar should fill from the right, where reading starts */
+    transform-origin: right center;
+    transform: scaleX(0);
+    background: linear-gradient(90deg, #2997ff, #1d4ed8);
   }
 
+  /* ══════ opener ══════ */
+  .art__head {
+    padding-block: clamp(9rem, 20svh, 14rem) clamp(2.5rem, 5vw, 4.5rem);
+  }
   .art__kicker {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.7rem;
     font-size: var(--text-micro);
     font-weight: 700;
-    margin-bottom: 1.25rem;
+    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
   }
   .art__kind {
     color: #fff;
     background: var(--color-royal);
     border-radius: 999px;
-    padding: 0.25rem 0.625rem;
+    padding: 0.28rem 0.75rem;
     letter-spacing: 0.05em;
   }
   .art__topic {
     color: var(--color-electric);
     letter-spacing: 0.06em;
   }
-  .art__dot,
-  .art__time {
-    color: var(--color-ink-3);
-    font-weight: 600;
-  }
+  .art__time { color: var(--color-ink-3); font-weight: 600; }
 
+  /* Editorial scale: the headline is the page. No cap at a "safe" size. */
   .art__title {
     font-family: var(--font-display);
-    font-size: clamp(2.375rem, 1.2rem + 4.2vw, 4.25rem);
+    font-size: clamp(2.5rem, 6vw, 6.5rem);
     font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    margin-bottom: 1.5rem;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    max-width: 18ch;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
   }
   .art__standfirst {
-    font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.625rem);
-    line-height: 1.55;
+    font-size: clamp(1.125rem, 1.6vw, 1.75rem);
+    line-height: 1.5;
     color: var(--color-ink-2);
-    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
-    border-bottom: 1px solid var(--color-line);
-    max-width: none;
+    max-width: 44ch;
+  }
+
+  /* ══════ reading column ══════ */
+  /* one measure for body, related and footer, so the article reads as a
+     single column even though the figures break out of it */
+  .art__body,
+  .art__rel,
+  .art__foot {
+    max-width: 44rem;
   }
 
   .art__body {
-    margin-top: clamp(1.75rem, 3vw, 2.75rem);
+    padding-block: clamp(2.5rem, 5vw, 4.5rem) 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.6rem;
   }
   .art__body p {
-    font-size: 1.25rem;
+    font-size: clamp(1.125rem, 1.25vw, 1.3125rem);
     line-height: 1.85;
     color: var(--color-ink);
     max-width: none;
   }
   .art__body h2 {
     font-family: var(--font-display);
-    font-size: clamp(1.625rem, 1.3rem + 1.1vw, 2.125rem);
+    font-size: clamp(1.75rem, 3vw, 2.75rem);
     font-weight: 800;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
-    margin-top: 1.5rem;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-top: clamp(1.75rem, 4vw, 3rem);
   }
   .art__body h3 {
     font-family: var(--font-display);
-    font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+    font-size: clamp(1.25rem, 1.8vw, 1.625rem);
     font-weight: 700;
-    line-height: 1.35;
-    margin-top: 1rem;
+    line-height: 1.3;
+    margin-top: 1.25rem;
     color: var(--color-ink);
   }
   .art__body ul {
     margin: 0;
-    padding-inline-start: 1.5rem;
+    padding-inline-start: 0;
+    list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
   }
   .art__body li {
-    font-size: 1.25rem;
+    font-size: clamp(1.0625rem, 1.15vw, 1.25rem);
     line-height: 1.7;
     color: var(--color-ink);
+    padding-block: 0.85rem;
+    padding-inline-start: 2.25rem;
+    border-top: 1px solid var(--color-line);
+    position: relative;
   }
-  .art__body li::marker {
-    color: var(--color-electric);
+  .art__body li:last-child { border-bottom: 1px solid var(--color-line); }
+  /* a hairline tick instead of a bullet: same rhythm as the list rows
+     used on the index and the service pages */
+  .art__body li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 1.55em;
+    width: 1.25rem;
+    height: 2px;
+    background: var(--color-electric);
   }
   .art__body blockquote {
-    margin: 0.75rem 0;
-    padding-inline-start: 1.5rem;
-    border-inline-start: 3px solid var(--color-electric);
+    margin-block: clamp(1rem, 2.5vw, 2rem);
+    padding: 0;
+    border: 0;
     font-family: var(--font-display);
-    font-size: clamp(1.375rem, 1.1rem + 0.9vw, 1.75rem);
-    font-weight: 700;
-    line-height: 1.45;
-    letter-spacing: -0.01em;
+    font-size: clamp(1.5rem, 3.2vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
     color: var(--color-ink);
   }
+  /* the pull quote is set off by space and scale, not by a rule or a box */
+  .art__body blockquote::before {
+    content: '';
+    display: block;
+    width: 3.5rem;
+    height: 2px;
+    background: var(--color-electric);
+    margin-bottom: clamp(1rem, 2vw, 1.5rem);
+  }
 
-  /* The diagram breaks the measure deliberately: it is the one moment
-     the article opens up. */
+  /* ══════ figures ══════ */
+  /* Deliberately wider than the measure: the one moment the page opens up. */
   .art__fig {
-    margin: 1.5rem 0;
-    width: min(100vw - 2 * var(--gutter, 1.25rem), 60rem);
-    margin-inline: calc((46rem - min(100vw - 2 * var(--gutter, 1.25rem), 60rem)) / 2);
+    margin-block: clamp(1.5rem, 3vw, 2.5rem);
+    width: min(100vw - 2 * var(--gutter, 1.25rem), 62rem);
+    margin-inline: calc((44rem - min(100vw - 2 * var(--gutter, 1.25rem), 62rem)) / 2);
   }
   .art__fig-stage {
     background: var(--color-navy);
-    border-radius: var(--radius-lg);
-    padding: clamp(1.25rem, 3vw, 2.25rem);
+    border-radius: var(--radius-xl);
+    padding: clamp(1.25rem, 3vw, 2.75rem);
   }
-  /* the AI-generated diagram is a full SVG document, not a component we
-     control the markup of — size it to the frame instead of its own
-     hard-coded viewBox pixels, on both desktop and mobile. */
+  /* the AI-generated diagram is a full SVG document, not markup we
+     control — size it to the frame instead of its own hard-coded viewBox */
   .art__fig-stage--ai :global(svg) {
     width: 100%;
     height: auto;
@@ -262,94 +346,74 @@ const { a, more = [] } = Astro.props;
     border: 0;
   }
   .art__fig figcaption {
-    margin-top: 0.875rem;
+    margin-top: 1rem;
     font-size: var(--text-small);
     line-height: 1.6;
     color: var(--color-ink-3);
     text-align: center;
   }
 
+  /* ══════ related service ══════ */
+  /* a hairline row, not a tinted box */
   .art__rel {
-    margin-top: clamp(2.5rem, 5vw, 3.5rem);
-    padding: 1.25rem 1.5rem;
-    border: 1px solid var(--color-line);
-    border-inline-start: 3px solid var(--color-electric);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface-2);
+    margin-top: clamp(3rem, 6vw, 5rem);
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--color-line-strong);
+    border-bottom: 1px solid var(--color-line-strong);
   }
   .art__rel-k {
     font-size: var(--text-micro);
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     color: var(--color-ink-3);
-    margin-bottom: 0.375rem;
+    margin-bottom: 0.5rem;
   }
   .art__rel-a {
     font-family: var(--font-display);
-    font-size: var(--text-h3);
-    font-weight: 700;
-    color: var(--color-electric);
+    font-size: clamp(1.375rem, 2.2vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
     text-decoration: none;
+    transition: color var(--dur) var(--ease-out);
   }
-  .art__rel-a:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
+  .art__rel-a:hover { color: var(--color-royal); }
+  .art__rel-a:hover .arrow-inline { transform: translateX(-5px); }
 
+  /* ══════ article footer ══════ */
   .art__foot {
-    margin-top: clamp(2rem, 4vw, 3rem);
-    padding-top: 1.75rem;
-    border-top: 1px solid var(--color-line);
+    padding-block: clamp(2.5rem, 5vw, 4rem);
   }
   .art__foot-line {
-    font-size: var(--text-body-lg);
-    line-height: 1.7;
+    font-size: var(--text-lead);
+    line-height: 1.6;
     color: var(--color-ink-2);
-    margin-bottom: 0.875rem;
+    margin-bottom: 1rem;
     max-width: none;
   }
-  .art__foot-cta {
-    font-size: var(--text-body-lg);
-    font-weight: 700;
-  }
+  .art__foot-cta { font-size: var(--text-lead); font-weight: 700; }
 
-  .more {
-    background: var(--color-surface-2);
-    border-top: 1px solid var(--color-line);
-    padding-block: clamp(2.5rem, 5vw, 4.5rem);
-  }
-  .more__h {
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    font-weight: 800;
-    margin-bottom: 1.5rem;
-  }
-  .more__list {
-    list-style: none;
-    margin: 0 0 1.75rem;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
-  }
+  /* ══════ more articles, as rows ══════ */
+  .more__k { margin-bottom: clamp(1.25rem, 2.5vw, 2rem); }
+  .more__list { list-style: none; margin: 0 0 2rem; padding: 0; }
+  .more__row { border-top: 1px solid var(--color-line-strong); }
+  .more__row:last-child { border-bottom: 1px solid var(--color-line-strong); }
   .more__item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    height: 100%;
-    padding: 1.5rem;
-    background: #fff;
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-lg);
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) 2rem;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: center;
+    padding-block: clamp(1.5rem, 2.6vw, 2.25rem);
     text-decoration: none;
-    transition:
-      border-color var(--dur) var(--ease-out),
-      translate var(--dur) var(--ease-out);
+    color: inherit;
   }
-  .more__item:hover {
-    border-color: var(--color-electric);
-    translate: 0 -3px;
+  .more__n {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-small);
+    color: var(--color-electric);
   }
+  .more__main { display: flex; flex-direction: column; gap: 0.45rem; min-width: 0; }
   .more__topic {
     font-size: var(--text-micro);
     font-weight: 700;
@@ -358,24 +422,25 @@ const { a, more = [] } = Astro.props;
   }
   .more__t {
     font-family: var(--font-display);
-    font-size: 1.375rem;
-    font-weight: 700;
-    line-height: 1.3;
+    font-size: clamp(1.25rem, 2.3vw, 2.125rem);
+    font-weight: 800;
+    line-height: 1.14;
+    letter-spacing: -0.02em;
     color: var(--color-ink);
+    transition: color var(--dur) var(--ease-out);
   }
+  .more__row:hover .more__t { color: var(--color-royal); }
   .more__x {
     font-size: var(--text-small);
-    line-height: 1.65;
-    color: var(--color-ink-2);
+    line-height: 1.6;
+    color: var(--color-ink-3);
+    max-width: 60ch;
   }
+  .more__arrow { color: var(--color-royal); justify-self: end; }
+  .more__row:hover .more__arrow { transform: translateX(-5px); }
 
   @media (max-width: 760px) {
-    .art__fig {
-      width: 100%;
-      margin-inline: 0;
-    }
-    .more__list {
-      grid-template-columns: 1fr;
-    }
+    .art__fig { width: 100%; margin-inline: 0; }
+    .more__item { grid-template-columns: 2.25rem 1fr 1.25rem; gap: 0.875rem; }
   }
 </style>

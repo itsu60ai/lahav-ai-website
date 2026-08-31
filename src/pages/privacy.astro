@@ -62,29 +62,35 @@ const sections = [
   description="איזה מידע נאסף באתר LAHAV AI, למה משתמשים בו, ואיך אפשר לפנות אלינו בנושא."
 >
   <div class="pv-flag">
-    <div class="u-container">
+    <div class="u-container u-container--wide">
       טיוטה. הנוסח הסופי ייקבע לאחר שהמערכות באתר יופעלו בפועל ולאחר בדיקה משפטית.
     </div>
   </div>
 
   <article class="pv">
-    <header class="u-container pv__head">
-      <h1 class="t-display-2 pv__title">מדיניות פרטיות</h1>
-      <p class="pv__intro">
-        בקצרה: אנחנו אוספים רק את מה שאתם משאירים לנו בטופס, משתמשים בזה כדי
-        לחזור אליכם, ולא מוכרים אותו לאף אחד.
-      </p>
+    <header class="pv__head band band--hero">
+      <div class="u-container u-container--wide">
+        <p class="t-eyebrow" data-reveal>משפטי</p>
+        <h1 class="pv__title">
+          <span class="mo-line" style="--mo-delay:70ms"><span>מדיניות</span></span>
+          <span class="mo-line" style="--mo-delay:170ms"><span>פרטיות</span></span>
+        </h1>
+        <p class="pv__intro" data-reveal style="--mo-delay:280ms">
+          בקצרה: אנחנו אוספים רק את מה שאתם משאירים לנו בטופס, משתמשים בזה
+          כדי לחזור אליכם, ולא מוכרים אותו לאף אחד.
+        </p>
+      </div>
     </header>
 
-    <div class="u-container pv__body">
+    <div class="u-container u-container--wide pv__body">
       {
         sections.map((s, i) => (
-          <section class="pv__sec">
-            <h2 class="pv__h">
-              <span class="pv__n tabular">{String(i + 1).padStart(2, '0')}</span>
-              {s.h}
-            </h2>
-            {s.p.map((t) => <p>{t}</p>)}
+          <section class="pv__sec" data-reveal>
+            <span class="pv__n tabular">{String(i + 1).padStart(2, '0')}</span>
+            <div class="pv__secbody">
+              <h2 class="pv__h">{s.h}</h2>
+              {s.p.map((t) => <p>{t}</p>)}
+            </div>
           </section>
         ))
       }
@@ -103,53 +109,62 @@ const sections = [
     font-size: var(--text-small);
     font-weight: 600;
     padding-block: 0.75rem;
+    /* sits under the fixed header */
+    padding-top: calc(0.75rem + 84px);
   }
-  .pv {
-    /* top value clears the fixed header */
-    padding-block: clamp(8rem, 15vh, 11rem) clamp(3rem, 6vw, 6rem);
-  }
-  .pv__head,
-  .pv__body {
-    max-width: 48rem;
-  }
+  .pv__head { padding-block: clamp(3rem, 6vw, 5rem) clamp(2.5rem, 5vw, 4rem); }
   .pv__title {
-    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-display);
+    font-size: var(--text-display-1);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    margin-block: 1rem 1.5rem;
   }
   .pv__intro {
     font-size: var(--text-lead);
     line-height: 1.6;
     color: var(--color-ink-2);
-    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
-    border-bottom: 1px solid var(--color-line);
-    max-width: none;
+    max-width: 44ch;
   }
   .pv__body {
-    margin-top: clamp(2rem, 4vw, 3rem);
+    max-width: 52rem;
+    padding-block: clamp(2.5rem, 5vw, 4.5rem) clamp(3rem, 6vw, 6rem);
     display: flex;
     flex-direction: column;
-    gap: clamp(2rem, 4vw, 3rem);
   }
+  /* numbered hairline rows, the same separation language the rest of the
+     site uses for lists */
   .pv__sec {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: clamp(1rem, 3vw, 2rem);
+    padding-block: clamp(1.5rem, 3vw, 2.5rem);
+    border-top: 1px solid var(--color-line-strong);
   }
+  .pv__secbody { display: flex; flex-direction: column; gap: 0.875rem; }
   .pv__h {
-    display: flex;
-    align-items: baseline;
-    gap: 0.875rem;
-    font-size: var(--text-h3);
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
   }
   .pv__n {
-    font-size: var(--text-micro);
+    font-family: var(--font-display);
+    font-size: var(--text-small);
     font-weight: 700;
     color: var(--color-electric);
+    padding-top: 0.25rem;
   }
   .pv__sec p {
     font-size: var(--text-body-lg);
     line-height: 1.8;
     color: var(--color-ink-2);
-    max-width: none;
+    max-width: 62ch;
   }
   .pv__updated,
   .pv__legal {
@@ -157,7 +172,13 @@ const sections = [
     color: var(--color-ink-3);
   }
   .pv__updated {
+    margin-top: clamp(2rem, 4vw, 3rem);
     padding-top: 1.5rem;
-    border-top: 1px solid var(--color-line);
+    border-top: 1px solid var(--color-line-strong);
+  }
+  .pv__legal { margin-top: 0.5rem; }
+
+  @media (max-width: 640px) {
+    .pv__sec { grid-template-columns: 2.25rem minmax(0, 1fr); gap: 0.875rem; }
   }
 </style>

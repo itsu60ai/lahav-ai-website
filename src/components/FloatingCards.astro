@@ -131,9 +131,11 @@
   @media (max-width: 900px) {
     .fc__card--a, .fc__card--b { display: none; }
     .fc__card { width: clamp(8.5rem, 40vw, 11rem); font-size: 0.7rem; padding: 0.7rem 0.8rem; }
-    /* pinned low, beside the character, clear of the CTA row above */
-    .fc__card--c { bottom: 8%; inset-inline-start: -0.75rem; }
-    .fc__card--d { bottom: 30%; inset-inline-end: -0.75rem; }
+    /* One high beside the statement and one low beside the character,
+       so the first screen has no dead band between the two, which is how
+       the reference's mobile hero is composed. */
+    .fc__card--c { bottom: 26%; inset-inline-start: -0.75rem; }
+    .fc__card--d { top: 27%; inset-inline-end: -0.75rem; bottom: auto; }
   }
   @media (prefers-reduced-motion: reduce) {
     .fc__card { animation: none; }

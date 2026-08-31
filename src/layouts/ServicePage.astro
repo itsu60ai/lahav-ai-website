@@ -1,12 +1,23 @@
 ---
-// Shared skeleton for the five service pages. It fixes the *system*
-// (typography, spacing, CTA, motion) but deliberately leaves composition
-// open: each page supplies its own visual and can insert extra sections
-// through the default slot, so the five pages do not read as one template.
+// Shared skeleton for the five service pages, V3.
+//
+// It fixes the *system* (typography, spacing, CTA, motion) but deliberately
+// leaves composition open: each page supplies its own visual and can insert
+// extra sections through the default slot, so the five pages do not read as
+// one template.
+//
+// Rebuilt into the site's editorial language:
+//   opener      display type on the hero gradient
+//   stage       the page's own diagram, full width on navy
+//   symptoms    sentences the visitor might say, at real scale
+//   build       what we actually build, as numbered hairline rows
+//   more        a quiet rail out of the page
+//
+// `symptomsStyle` is kept: 'rail' staggers the statements into two
+// alternating columns, 'grid' keeps them in one straight stack.
 import SiteLayout from './SiteLayout.astro';
 import ClosingCta from '../components/ClosingCta.astro';
 import Viz from '../components/Viz.astro';
-import ScrollReveal from '../components/ScrollReveal.astro';
 import { SERVICES } from '../lib/site';
 
 interface Props {
@@ -27,7 +38,7 @@ interface Props {
   };
   title: string;
   description: string;
-  /** 'rail' = symptoms as a numbered rail, 'grid' = two column list */
+  /** 'rail' = staggered two-column statements, 'grid' = one straight stack */
   symptomsStyle?: 'rail' | 'grid';
 }
 const { slug, data, title, description, symptomsStyle = 'rail' } = Astro.props;
@@ -35,11 +46,9 @@ const others = SERVICES.filter((s) => s.slug !== slug);
 ---
 
 <SiteLayout title={title} description={description}>
-  <ScrollReveal />
-
-  <!-- Hero: type first, then the page's own dominant visual -->
+  <!-- ═════════ opener ═════════ -->
   <section class="sp-hero band band--hero">
-    <div class="u-container u-container--wide sp-hero__type">
+    <div class="u-container u-container--wide">
       <p class="t-eyebrow" data-reveal>{data.eyebrow}</p>
       <h1 class="sp-hero__h1">
         <span class="mo-line" style="--mo-delay:80ms"><span>{data.h1a}</span></span>
@@ -49,25 +58,27 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     </div>
   </section>
 
-  <section class="section--navy sp-stage">
-    <div class="u-container">
-      <Viz kind={data.viz as any} />
+  <!-- ═════════ the page's own picture ═════════ -->
+  <section class="sp-stage band band--navy">
+    <div class="u-container u-container--wide">
+      <div class="sp-stage__art" data-clip>
+        <Viz kind={data.viz as any} />
+      </div>
+      <p class="sp-stage__note" data-reveal>{data.note}</p>
     </div>
-    <p class="u-container sp-stage__note">{data.note}</p>
   </section>
 
-  <!-- Symptoms: "is this you?" -->
-  <section class="section">
-    <div class="u-container">
-      <div class="lede">
-        <h2 class="t-h2">{data.symptomsTitle}</h2>
-      </div>
+  <!-- ═════════ symptoms: "is this you?" ═════════ -->
+  <section class="sp-sym u-section band">
+    <div class="u-container u-container--wide">
+      <p class="t-eyebrow" data-reveal>נשמע מוכר?</p>
+      <h2 class="sp-sym__h t-display-3" data-reveal style="--mo-delay:90ms">{data.symptomsTitle}</h2>
       <ul class:list={['sym', `sym--${symptomsStyle}`]}>
         {
           data.symptoms.map((s, i) => (
-            <li class="sym__item" data-reveal style={`--i:${i}`}>
-              <span class="sym__q" aria-hidden="true">״</span>
-              <span class="sym__t">{s}</span>
+            <li class="sym__item" data-reveal style={`--mo-delay:${i * 80}ms`}>
+              <span class="sym__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              <span class="sym__t">״{s}״</span>
             </li>
           ))
         }
@@ -75,23 +86,24 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     </div>
   </section>
 
-  <!-- What we actually build -->
-  <section class="section section--gray">
-    <div class="u-container">
-      <div class="lede">
-        <h2 class="t-h2">{data.buildTitle}</h2>
-      </div>
-      <div class="build">
+  <!-- ═════════ what we actually build ═════════ -->
+  <section class="sp-build u-section band band--soft">
+    <div class="u-container u-container--wide">
+      <p class="t-eyebrow" data-reveal>מה נבנה בפועל</p>
+      <h2 class="sp-build__h t-display-3" data-reveal style="--mo-delay:90ms">{data.buildTitle}</h2>
+      <ul class="build">
         {
           data.build.map((b, i) => (
-            <article class="build__item" data-reveal style={`--i:${i}`}>
+            <li class="build__item" data-reveal style={`--mo-delay:${i * 70}ms`}>
               <span class="build__n tabular">{String(i + 1).padStart(2, '0')}</span>
-              <h3 class="t-h3">{b.t}</h3>
-              <p class="build__d">{b.d}</p>
-            </article>
+              <span class="build__main">
+                <span class="build__t">{b.t}</span>
+                <span class="build__d">{b.d}</span>
+              </span>
+            </li>
           ))
         }
-      </div>
+      </ul>
     </div>
   </section>
 
@@ -100,7 +112,7 @@ const others = SERVICES.filter((s) => s.slug !== slug);
   <!-- Other services. Deliberately small: a quiet way out of the page,
        not a second sales pitch competing with the closing CTA. -->
   <nav class="more-svc" aria-label="שירותים נוספים">
-    <div class="u-container more-svc__in">
+    <div class="u-container u-container--wide more-svc__in">
       <span class="more-svc__k">שירותים נוספים</span>
       <ul class="more-svc__list">
         {
@@ -121,13 +133,13 @@ const others = SERVICES.filter((s) => s.slug !== slug);
 </SiteLayout>
 
 <style>
-  /* Service opener: display type at the same scale as the home hero,
-     so a service page reads as a chapter of the same publication. */
+  /* ══════ opener ══════ */
+  /* Display type at the same scale as the home hero, so a service page
+     reads as a chapter of the same publication. */
   .sp-hero {
-    padding-top: clamp(8rem, 16vh, 12rem);
+    padding-top: clamp(9rem, 20svh, 14rem);
     padding-bottom: clamp(3rem, 7vw, 6rem);
   }
-  .sp-hero__type { max-width: none; }
   .sp-hero__h1 {
     display: flex;
     flex-direction: column;
@@ -135,7 +147,7 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     font-size: var(--text-display-2);
     font-weight: 900;
     line-height: 0.98;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
     margin-block: 1.25rem 2rem;
   }
   .sp-hero__h1b {
@@ -148,145 +160,95 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     font-size: var(--text-lead);
     line-height: 1.55;
     color: var(--color-ink-2);
-    max-width: 52ch;
+    max-width: 48ch;
   }
 
-  .sp-stage {
-    padding-block: clamp(2.5rem, 5vw, 4.5rem);
-  }
+  /* ══════ stage ══════ */
+  .sp-stage { padding-block: clamp(2.5rem, 5vw, 5rem); }
+  .sp-stage__art { border-radius: var(--radius-xl); overflow: hidden; }
   .sp-stage__note {
     margin-top: clamp(1.5rem, 3vw, 2.5rem);
     font-size: var(--text-small);
-    color: rgba(255, 255, 255, 0.6);
-    max-width: 64ch;
-    border-inline-start: 3px solid rgba(41, 151, 255, 0.5);
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.62);
+    max-width: 62ch;
+    border-inline-start: 2px solid rgba(41, 151, 255, 0.55);
     padding-inline-start: 1rem;
   }
 
-  /* Symptoms.
-     These are sentences the visitor might say out loud, so they are set as
-     quoted fragments in bubbles rather than as a numbered list. The stagger
-     stops five bubbles from reading as a table. */
-  .sym {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: clamp(0.875rem, 2vw, 1.25rem);
-  }
-  .sym--rail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .sym--grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  /* every other bubble sits lower, the way a conversation staggers */
-  .sym--rail .sym__item:nth-child(even) {
-    margin-block-start: clamp(1rem, 2.5vw, 2rem);
-  }
-
+  /* ══════ symptoms ══════ */
+  /* These are sentences the visitor might say out loud, so they are set
+     as oversized quoted statements rather than bubbles in a card grid. */
+  .sp-sym__h { margin-block: 0.75rem clamp(2rem, 4vw, 3.5rem); }
+  .sym { list-style: none; margin: 0; padding: 0; display: grid; }
+  .sym--rail { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(2rem, 5vw, 5rem); }
+  .sym--grid { grid-template-columns: 1fr; }
   .sym__item {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: clamp(1.25rem, 2.5vw, 1.75rem) clamp(1.25rem, 2.5vw, 1.75rem)
-      clamp(1.375rem, 2.5vw, 1.875rem);
-    background: var(--color-surface-2);
-    border: 1px solid var(--color-line);
-    border-radius: 1.25rem;
-    border-end-end-radius: 0.25rem;
-    transition:
-      opacity 600ms var(--ease-out) calc(var(--i) * 90ms),
-      translate 600ms var(--ease-out) calc(var(--i) * 90ms),
-      border-color var(--dur) var(--ease-out);
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: baseline;
+    padding-block: clamp(1.25rem, 2.4vw, 2rem);
+    border-top: 1px solid var(--color-line-strong);
   }
-  .sym__item:hover {
-    border-color: var(--color-line-strong);
-  }
-  /* the bubble tail, on the reading-start side */
-  .sym__item::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    inset-inline-end: -1px;
-    width: 1.125rem;
-    height: 1.125rem;
-    background: var(--color-surface-2);
-    border-inline-end: 1px solid var(--color-line);
-    border-block-end: 1px solid var(--color-line);
-    border-end-start-radius: 1rem;
-  }
-
-  :global(html.reveal-ready) .sym__item {
-    opacity: 0;
-    translate: 0 14px;
-  }
-  :global(html.reveal-ready) .sym__item.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
-
-  .sym__q {
+  /* in the staggered rail the last row of each column closes itself */
+  .sym--grid .sym__item:last-child { border-bottom: 1px solid var(--color-line-strong); }
+  .sym__n {
     font-family: var(--font-display);
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 0.8;
+    font-weight: 700;
+    font-size: var(--text-small);
     color: var(--color-electric);
-    flex: none;
   }
   .sym__t {
     font-family: var(--font-display);
-    font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.375rem);
-    font-weight: 600;
-    line-height: 1.4;
+    font-size: clamp(1.25rem, 2.1vw, 2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
     color: var(--color-ink);
   }
 
-  /* Build */
-  .build {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 5vw, 5rem);
-  }
+  /* ══════ build ══════ */
+  .sp-build__h { margin-block: 0.75rem clamp(2rem, 4vw, 3.5rem); }
+  .build { list-style: none; margin: 0; padding: 0; }
   .build__item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    transition:
-      opacity 600ms var(--ease-out) calc(var(--i) * 100ms),
-      translate 600ms var(--ease-out) calc(var(--i) * 100ms);
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: start;
+    padding-block: clamp(1.5rem, 2.8vw, 2.5rem);
+    border-top: 1px solid var(--color-line-strong);
   }
-  :global(html.reveal-ready) .build__item {
-    opacity: 0;
-    translate: 0 16px;
-  }
-  :global(html.reveal-ready) .build__item.is-in {
-    opacity: 1;
-    translate: 0 0;
-  }
+  .build__item:last-child { border-bottom: 1px solid var(--color-line-strong); }
   .build__n {
     font-family: var(--font-display);
-    font-size: var(--text-micro);
+    font-size: var(--text-small);
     font-weight: 700;
     color: var(--color-electric);
+    padding-top: 0.35rem;
   }
-  .build__d {
-    color: var(--color-ink-2);
-    max-width: 46ch;
+  .build__main { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+  .build__t {
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 2.4vw, 2.25rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    color: var(--color-ink);
   }
+  .build__d { color: var(--color-ink-2); line-height: 1.7; max-width: 56ch; }
 
-  /* Other services: one compact row, not a section */
+  /* ══════ other services ══════ */
   .more-svc {
     border-top: 1px solid var(--color-line);
-    background: var(--color-surface-2);
-    padding-block: clamp(1.5rem, 3vw, 2.25rem);
+    background: var(--color-surface);
+    padding-block: clamp(1.75rem, 3.5vw, 2.75rem);
   }
   .more-svc__in {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem 1.5rem;
+    align-items: baseline;
+    gap: 0.75rem 2rem;
   }
   .more-svc__k {
     font-size: var(--text-micro);
@@ -300,45 +262,26 @@ const others = SERVICES.filter((s) => s.slug !== slug);
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1.75rem;
+    gap: 0.5rem 2rem;
   }
   .more-svc__a {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.4rem;
     font-family: var(--font-display);
-    font-size: var(--text-body-lg);
-    font-weight: 700;
+    font-size: clamp(1rem, 1.4vw, 1.375rem);
+    font-weight: 800;
+    letter-spacing: -0.015em;
     color: var(--color-ink);
     text-decoration: none;
     transition: color var(--dur) var(--ease-out);
   }
-  .more-svc__a:hover {
-    color: var(--color-electric);
-  }
-  .more-svc__a .arrow-inline {
-    color: var(--color-electric);
-  }
+  .more-svc__a:hover { color: var(--color-royal); }
+  .more-svc__a .arrow-inline { color: var(--color-electric); }
 
   @media (max-width: 860px) {
-    .sym--rail,
-    .sym--grid,
-    .build {
-      grid-template-columns: 1fr;
-    }
-    .sym--rail .sym__item:nth-child(even) {
-      margin-block-start: 0;
-    }
-    .more-svc__list {
-      gap: 0.5rem 1.25rem;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .sym__item,
-    .build__item {
-      opacity: 1 !important;
-      translate: none !important;
-      transition: none !important;
-    }
+    .sym--rail { grid-template-columns: 1fr; }
+    .sym--rail .sym__item:last-child { border-bottom: 1px solid var(--color-line-strong); }
+    .build__item { grid-template-columns: 2.25rem minmax(0, 1fr); gap: 0.875rem; }
   }
 </style>

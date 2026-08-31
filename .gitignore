@@ -41,3 +41,10 @@ migrations/*_seed.sql
 
 # local Cloudflare secrets for `astro dev` / `wrangler dev`, never commit
 .dev.vars
+
+# Third-party design reference (STG.AI mirror + screen recordings).
+# Kept locally at docs/reference/stg/ so the redesign can be checked
+# against it, but NEVER committed: this repository is public, and the
+# mirror is another company's copyrighted HTML, CSS, media and brand
+# assets. Only our own implementation and the written audit are tracked.
+docs/reference/stg/

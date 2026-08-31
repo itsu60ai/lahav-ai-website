@@ -126,7 +126,12 @@
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
+    /* clip, NOT hidden. `overflow-x: hidden` silently turns the body into
+       a scroll container, which breaks position:sticky and makes
+       IntersectionObserver report ratio 0 for anything inside it, so
+       every pinned section and scroll reveal stops working. `clip`
+       contains the same horizontal overflow without that side effect. */
+    overflow-x: clip;
   }
 
   /* Display type is set tight and heavy. Hebrew takes almost no negative

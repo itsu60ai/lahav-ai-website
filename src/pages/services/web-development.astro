@@ -2,6 +2,16 @@
 import ServicePage from '../../layouts/ServicePage.astro';
 import { SERVICE_PAGES } from '../../lib/site';
 const data = SERVICE_PAGES['web-development'];
+
+// Web only: the four seconds after someone lands. Stated as a sequence,
+// because a page that fails one of these steps never reaches the next.
+// Mechanism only, no figures and no claims about how visitors behave.
+const seconds = [
+  { k: 'איפה אני', d: 'תוך רגע צריך להיות ברור מה אתם עושים ולמי.' },
+  { k: 'זה בשבילי', d: 'המבקר צריך לזהות את עצמו בטקסט, לא לפענח אותו.' },
+  { k: 'למה דווקא אתם', d: 'משהו קונקרטי, לא הבטחה שכל אתר אחר גם כותב.' },
+  { k: 'מה עכשיו', d: 'פעולה אחת ברורה בכל עמוד. לא שבע אפשרויות שוות.' },
+];
 ---
 
 <ServicePage
@@ -11,5 +21,62 @@ const data = SERVICE_PAGES['web-development'];
   description="אתרים עסקיים שנבנים סביב מטרה ומסלול ברור: מי נכנס, מה הוא מחפש, ולאן הוא אמור להגיע."
   symptomsStyle="grid"
 >
+  <!-- Web only: the sequence a visitor goes through -->
+  <section class="wd-sec u-section band band--warm">
+    <div class="u-container u-container--wide">
+      <div class="wd-sec__head">
+        <p class="t-eyebrow" data-reveal>מה עובר למבקר בראש</p>
+        <h2 class="wd-sec__h t-display-3" data-reveal style="--mo-delay:90ms">
+          ארבע שאלות,<br />לפי הסדר הזה
+        </h2>
+        <p class="t-lead wd-sec__lead" data-reveal style="--mo-delay:180ms">
+          אתר שלא עונה על אחת מהן פשוט לא מגיע לשאלה הבאה. לכן המבנה נקבע
+          לפני הצבעים, ולא אחריהם.
+        </p>
+      </div>
+      <ol class="wd-steps">
+        {seconds.map((s, i) => (
+          <li class="wd-step" data-reveal style={`--mo-delay:${i * 90}ms`}>
+            <span class="wd-step__n tabular">{String(i + 1).padStart(2, '0')}</span>
+            <span class="wd-step__k">{s.k}</span>
+            <span class="wd-step__d">{s.d}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
 
+  <style>
+    .wd-sec__head { max-width: 46rem; }
+    .wd-sec__h { margin-block: 0.75rem 1.25rem; }
+    .wd-sec__lead { max-width: 52ch; }
+    .wd-steps {
+      list-style: none;
+      margin: clamp(2rem, 4vw, 3.5rem) 0 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(1.5rem, 3vw, 2.5rem);
+    }
+    .wd-step {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding-top: 1.25rem;
+      border-top: 2px solid var(--color-line-strong);
+    }
+    /* the last question is the one the whole page exists for */
+    .wd-step:last-child { border-top-color: var(--color-royal); }
+    .wd-step__n { font-family: var(--font-display); font-size: var(--text-micro); font-weight: 700; color: var(--color-electric); }
+    .wd-step__k {
+      font-family: var(--font-display);
+      font-size: clamp(1.25rem, 1.9vw, 1.625rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--color-ink);
+    }
+    .wd-step__d { font-size: var(--text-small); line-height: 1.65; color: var(--color-ink-2); }
+    @media (max-width: 900px) { .wd-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) { .wd-steps { grid-template-columns: 1fr; } }
+  </style>
 </ServicePage>

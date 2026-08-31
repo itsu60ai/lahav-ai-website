@@ -8,7 +8,6 @@
 export const prerender = false;
 
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import ScrollReveal from '../../components/ScrollReveal.astro';
 import ArticleView from '../../components/ArticleView.astro';
 
 
@@ -26,12 +25,10 @@ const more = (await articles.list({ status: 'published' }))
 ---
 
 <SiteLayout title={`${a.title} | LAHAV AI`} description={a.excerpt} noindex={a.isPlaceholder}>
-  <ScrollReveal />
-
   {
     a.isPlaceholder && (
       <div class="rv-flag">
-        <div class="u-container">
+        <div class="u-container u-container--wide">
           מאמר לדוגמה, לצורכי סקירת העיצוב והקריאוּת בלבד. לא פורסם ולא אושר כתוכן עסקי.
         </div>
       </div>
@@ -42,6 +39,8 @@ const more = (await articles.list({ status: 'published' }))
 </SiteLayout>
 
 <style>
+  /* Sits above the article opener and under the fixed header, so it
+     needs its own header clearance; the opener then loses its own. */
   .rv-flag {
     background: #fff4e5;
     border-bottom: 1px solid #f0c98a;
@@ -49,5 +48,9 @@ const more = (await articles.list({ status: 'published' }))
     font-size: var(--text-small);
     font-weight: 600;
     padding-block: 0.75rem;
+    padding-top: calc(0.75rem + 84px);
+  }
+  .rv-flag + :global(.art) :global(.art__head) {
+    padding-top: clamp(3rem, 6vw, 5rem);
   }
 </style>

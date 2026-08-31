@@ -1,187 +1,439 @@
 ---
-// LAHAV's guide character: an ORIGINAL abstract AI presence.
+// "לַהַב" — LAHAV's guide character.
 //
-// Why abstract and not a rendered person:
-//   1. F-17 forbids AI-generating or altering the founder's likeness,
-//      and no approved character asset exists.
-//   2. The reference's own character is its proprietary asset and is
-//      explicitly out of scope to copy.
-// So this is a LAHAV-specific construct built from the brand's own
-// geometry: the concentric-ring "core" already used across the site's
-// diagrams, given a face-like focus, breathing motion, and a voice.
+// WHY THIS DESIGN, AND WHAT IT IS NOT
+// The reference site's hero is anchored by a rendered 3D presenter. That
+// asset is the reference owner's property, so it is not reused. Nor is a
+// likeness of the founder generated: F-17 forbids AI-generating or
+// altering it, and no approved character asset exists.
 //
-// It fills the same STORYTELLING role as the reference's presenter:
-// it is pinned inside its section, it reacts to scroll, its speech
-// changes per state, and it is part of the composition rather than a
-// chat widget bolted to a corner.
+// So this is an ORIGINAL character, drawn as vector art and built from
+// LAHAV's own geometry (the logo's arc and dot, the brand navy/electric).
+// It is deliberately a *designed digital being* — visor face, floating
+// stance — rather than an attempted human: that reads as intentional,
+// stays clear of the uncanny valley, and cannot resemble a real person.
 //
-// SPEECH IS DATA. Lines come in as a prop and each maps to a scroll
-// state, so changing what it says later (or wiring it to a real
-// script/audio track) is a content edit, not a rebuild.
+// It fills the same role as the reference's presenter: full-height in the
+// hero, centred under the statement, entering on load, reacting to
+// scroll, and able to speak.
+//
+// SPEECH IS DATA. `script` is an array of timed lines; nothing about the
+// character hard-codes what it says. A real recorded or synthesised audio
+// track can be attached later through `audioSrc` without touching this
+// component's internals.
+export interface SpeechLine {
+  /** what is said/shown */
+  text: string;
+  /** ms this line stays on screen when the character is speaking */
+  hold?: number;
+}
+
 export interface Props {
-  /** Speech states. One per scroll step of the enclosing
-   *  [data-swap-root]. Pass [] to render the core with no speech. */
+  /** Ambient lines, one per scroll step of an enclosing [data-swap-root]. */
   lines?: string[];
-  /** visual size of the core */
-  size?: 'sm' | 'lg';
+  /** Timed script used by the talk panel. */
+  script?: SpeechLine[];
+  /** Optional narration track. Absent by default: nothing autoplays. */
+  audioSrc?: string;
+  size?: 'sm' | 'md' | 'lg' | 'hero';
+  /** Show the round talk trigger, as the reference does in its hero. */
+  talkable?: boolean;
+  talkLabel?: string;
   class?: string;
 }
-const { lines = [], size = 'lg', class: cls = '' } = Astro.props;
+
+const {
+  lines = [],
+  script = [],
+  audioSrc,
+  size = 'lg',
+  talkable = false,
+  talkLabel = 'דברו איתי',
+  class: cls = '',
+} = Astro.props;
+
+const uid = 'av' + Math.random().toString(36).slice(2, 8);
 ---
 
-<div class:list={['av', `av--${size}`, cls]} data-avatar>
-  <div class="av__core" aria-hidden="true">
-    <span class="av__halo av__halo--1"></span>
-    <span class="av__halo av__halo--2"></span>
-    <span class="av__halo av__halo--3"></span>
-    <span class="av__pupil"></span>
-    <span class="av__scan"></span>
+<div class:list={['av', `av--${size}`, cls]} data-avatar data-uid={uid} data-script={JSON.stringify(script)}>
+  <div class="av__figure">
+    <!-- The character. Drawn, not rendered: it stays crisp at any size,
+         recolours with the brand, and costs a few KB. -->
+    <svg class="av__svg" viewBox="0 0 260 460" role="img" aria-label="לַהַב, הדמות המנחה של LAHAV AI" data-av-svg>
+      <defs>
+        <linearGradient id={`${uid}-body`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1b2b52" />
+          <stop offset="1" stop-color="#0b1530" />
+        </linearGradient>
+        <linearGradient id={`${uid}-limb`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#263a66" />
+          <stop offset="1" stop-color="#101d40" />
+        </linearGradient>
+        <linearGradient id={`${uid}-visor`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#0d1c3f" />
+          <stop offset="1" stop-color="#132a5c" />
+        </linearGradient>
+        <linearGradient id={`${uid}-accent`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2997ff" />
+          <stop offset="1" stop-color="#1d4ed8" />
+        </linearGradient>
+        <radialGradient id={`${uid}-glow`} cx="50%" cy="50%">
+          <stop offset="0" stop-color="#2997ff" stop-opacity="0.5" />
+          <stop offset="1" stop-color="#2997ff" stop-opacity="0" />
+        </radialGradient>
+        <filter id={`${uid}-soft`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="7" />
+        </filter>
+      </defs>
+
+      <!-- ground shadow: grounds the figure the way the reference's
+           presenter stands on a soft floor -->
+      <ellipse class="av__shadow" cx="130" cy="430" rx="66" ry="11" fill="#0b1530" opacity="0.18" filter={`url(#${uid}-soft)`} />
+
+      <!-- ambient glow -->
+      <circle cx="130" cy="170" r="130" fill={`url(#${uid}-glow)`} class="av__glow" />
+
+      <!-- the whole body bobs gently as one unit -->
+      <g class="av__body">
+        <!-- Legs and feet. Two clearly separated limbs with a real gap
+             between them: a single dark column reads as a bust on a pole
+             at hero size, which is not a standing character. -->
+        <path d="M114 296 L104 392 Q103 400 111 400 L122 400 Q128 400 128 392 L128 296 Z" fill={`url(#${uid}-limb)`} />
+        <path d="M146 296 L156 392 Q157 400 149 400 L138 400 Q132 400 132 392 L132 296 Z" fill={`url(#${uid}-limb)`} opacity="0.94" />
+        <rect x="92" y="394" width="38" height="17" rx="8.5" fill={`url(#${uid}-limb)`} />
+        <rect x="130" y="394" width="38" height="17" rx="8.5" fill={`url(#${uid}-limb)`} opacity="0.94" />
+
+        <!-- torso -->
+        <path
+          d="M130 150
+             C 168 150 186 176 186 214
+             L 186 286 C 186 306 170 316 150 316
+             L 110 316 C 90 316 74 306 74 286
+             L 74 214 C 74 176 92 150 130 150 Z"
+          fill={`url(#${uid}-body)`}
+        />
+        <!-- chest light: the LAHAV dot, used as the character's core -->
+        <circle class="av__core-dot" cx="130" cy="216" r="13" fill={`url(#${uid}-accent)`} />
+        <circle class="av__core-ring" cx="130" cy="216" r="22" fill="none" stroke="#2997ff" stroke-opacity="0.45" stroke-width="1.5" />
+
+        <!-- arms -->
+        <g class="av__arm av__arm--r">
+          <path d="M76 204 C 56 214 48 246 52 280 C 54 296 68 300 75 289 C 82 274 80 236 86 218 Z" fill={`url(#${uid}-limb)`} />
+        </g>
+        <g class="av__arm av__arm--l">
+          <path d="M184 204 C 204 214 212 246 208 280 C 206 296 192 300 185 289 C 178 274 180 236 174 218 Z" fill={`url(#${uid}-limb)`} />
+        </g>
+
+        <!-- neck: without it the head reads as a detached balloon -->
+        <rect x="119" y="128" width="22" height="34" rx="10" fill={`url(#${uid}-body)`} opacity="0.9" />
+
+        <!-- head -->
+        <g class="av__head">
+          <rect x="88" y="44" width="84" height="94" rx="40" fill={`url(#${uid}-body)`} />
+          <!-- visor: the face plate -->
+          <rect class="av__visor" x="97" y="59" width="66" height="64" rx="28" fill={`url(#${uid}-visor)`} />
+          <!-- eyes -->
+          <g class="av__eyes">
+            <rect class="av__eye" x="110" y="80" width="11" height="18" rx="5.5" fill="#7cc4ff" />
+            <rect class="av__eye" x="139" y="80" width="11" height="18" rx="5.5" fill="#7cc4ff" />
+          </g>
+          <!-- mouth: a level bar at rest, opens while speaking -->
+          <rect class="av__mouth" x="119" y="106" width="22" height="4" rx="2" fill="#2997ff" />
+          <!-- antenna: the logo's arc, and the "listening" tell -->
+          <path d="M130 44 L130 28" stroke="#2997ff" stroke-width="3" stroke-linecap="round" />
+          <circle class="av__antenna" cx="130" cy="23" r="5.5" fill="#2997ff" />
+        </g>
+      </g>
+    </svg>
   </div>
 
-  <!-- The speech is real text in the DOM (not painted into canvas or
-       an image) so it is selectable, translatable and read by screen
-       readers. aria-live announces state changes as they happen. -->
+  <!-- Ambient caption: the line changes with the scroll state of an
+       enclosing [data-swap-root]. Real text, so it is selectable and
+       announced by screen readers. -->
   {lines.length > 0 && (
-    <p class="av__speech" data-avatar-speech aria-live="polite">
+    <p class="av__speech" aria-live="polite">
       {lines.map((line: string, i: number) => (
-        <span class="av__line" data-line-index={i} data-active={i === 0 ? 'true' : 'false'}>{line}</span>
+        <span class="av__line" data-active={i === 0 ? 'true' : 'false'}>{line}</span>
       ))}
     </p>
   )}
+
+  {talkable && script.length > 0 && (
+    <button class="av__talk btn-disc" type="button" data-av-talk aria-expanded="false" data-magnetic="0.18">
+      {talkLabel}
+    </button>
+  )}
 </div>
 
+<!-- The talk surface. Captions are always the source of truth; audio,
+     when a track is supplied, is an enhancement on top. Nothing plays
+     until the visitor asks, so there is no autoplay and no surprise
+     sound. -->
+{talkable && script.length > 0 && (
+  <div class="avtalk" data-av-panel={uid} hidden>
+    <button class="avtalk__scrim" type="button" data-av-close aria-label="סגירה"></button>
+    <div class="avtalk__box" role="dialog" aria-modal="true" aria-label="שיחה עם לַהַב">
+      <button class="avtalk__x" type="button" data-av-close aria-label="סגירה">✕</button>
+      <div class="avtalk__stage" data-av-stage></div>
+      <p class="avtalk__caption" data-av-caption aria-live="polite"></p>
+      <div class="avtalk__bar">
+        <button class="btn btn-primary avtalk__replay" type="button" data-av-replay>שוב</button>
+        <a class="btn btn-secondary" href="/contact/">לתיאום שיחת היכרות</a>
+      </div>
+      {audioSrc && <audio data-av-audio src={audioSrc} preload="none"></audio>}
+    </div>
+  </div>
+)}
+
 <style>
-  .av {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: clamp(1.25rem, 2.5vw, 2rem);
-    /* an explicit width: inside a centring grid/flex parent this element
-       would otherwise shrink to min-content and break every word onto
-       its own line. */
-    width: min(100%, 32rem);
+  .av { display: flex; flex-direction: column; align-items: center; gap: clamp(1rem, 2vw, 1.75rem); width: min(100%, 34rem); }
+  .av__figure { position: relative; width: var(--av-w); flex: none; }
+  .av__svg { width: 100%; height: auto; overflow: visible; }
+
+  .av--hero { --av-w: clamp(11rem, 27svh, 19rem); }
+  .av--lg   { --av-w: clamp(10rem, 20vw, 16rem); }
+  .av--md   { --av-w: clamp(7rem, 13vw, 10rem); }
+  .av--sm   { --av-w: clamp(5rem, 9vw, 7rem); }
+
+  /* ---------- idle life ---------- */
+  .av__body { animation: av-bob 5200ms var(--ease-inout) infinite; transform-origin: 130px 440px; }
+  @keyframes av-bob {
+    0%, 100% { transform: translateY(0) }
+    50%      { transform: translateY(-9px) }
+  }
+  .av__shadow { animation: av-shadow 5200ms var(--ease-inout) infinite; }
+  @keyframes av-shadow {
+    0%, 100% { transform: scale(1); opacity: 0.16 }
+    50%      { transform: scale(0.9); opacity: 0.11 }
+  }
+  .av__glow { animation: av-glow 6400ms var(--ease-inout) infinite; transform-origin: 130px 170px; }
+  @keyframes av-glow {
+    0%, 100% { opacity: 0.55; transform: scale(1) }
+    50%      { opacity: 0.9;  transform: scale(1.08) }
+  }
+  .av__core-dot { animation: av-core 3200ms var(--ease-inout) infinite; transform-origin: 130px 216px; }
+  @keyframes av-core {
+    0%, 100% { transform: scale(1) }
+    50%      { transform: scale(1.14) }
+  }
+  .av__core-ring { animation: av-ring 3200ms var(--ease-inout) infinite; transform-origin: 130px 216px; }
+  @keyframes av-ring {
+    0%, 100% { transform: scale(1); opacity: 0.45 }
+    50%      { transform: scale(1.16); opacity: 0.12 }
+  }
+  .av__antenna { animation: av-core 2400ms var(--ease-inout) infinite; transform-origin: 130px 23px; }
+
+  /* blink: scaleY on the eye group, on an irregular-feeling cycle */
+  .av__eyes { animation: av-blink 6100ms steps(1, end) infinite; transform-origin: 130px 89px; }
+  @keyframes av-blink {
+    0%, 96%   { transform: scaleY(1) }
+    97%, 98%  { transform: scaleY(0.12) }
+    99%, 100% { transform: scaleY(1) }
+  }
+  .av__arm--r { animation: av-arm 6800ms var(--ease-inout) infinite; transform-origin: 84px 210px; }
+  .av__arm--l { animation: av-arm 6800ms var(--ease-inout) infinite reverse; transform-origin: 176px 210px; }
+  @keyframes av-arm {
+    0%, 100% { transform: rotate(0deg) }
+    50%      { transform: rotate(3.5deg) }
+  }
+  .av__head { animation: av-head 8200ms var(--ease-inout) infinite; transform-origin: 130px 138px; }
+  @keyframes av-head {
+    0%, 100% { transform: rotate(0deg) translateY(0) }
+    35%      { transform: rotate(-1.6deg) translateY(-2px) }
+    70%      { transform: rotate(1.4deg) translateY(1px) }
   }
 
-  /* ---------- the core ---------- */
-  .av__core {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: var(--av-size);
-    aspect-ratio: 1;
-    flex: none;
+  /* ---------- speaking ---------- */
+  /* The mouth is driven by a class rather than a fixed loop, so it only
+     moves while there is actually something being said. */
+  .av.is-talking .av__mouth { animation: av-talk 320ms var(--ease-inout) infinite; transform-origin: 130px 108px; }
+  @keyframes av-talk {
+    0%, 100% { transform: scaleY(1)   translateY(0) }
+    30%      { transform: scaleY(4.2) translateY(-1px) }
+    60%      { transform: scaleY(2.2) translateY(0) }
   }
-  .av--lg { --av-size: clamp(11rem, 22vw, 20rem); }
-  .av--sm { --av-size: clamp(6rem, 10vw, 8.5rem); }
+  .av.is-talking .av__core-dot { animation-duration: 1100ms; }
 
-  .av__halo {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 1.5px solid color-mix(in srgb, var(--color-electric) 42%, transparent);
-    animation: av-breathe 5200ms var(--ease-inout) infinite;
-  }
-  .av__halo--2 { inset: 12%; border-color: color-mix(in srgb, var(--color-royal) 34%, transparent); animation-delay: -1700ms; }
-  .av__halo--3 {
-    inset: 24%;
-    border-color: transparent;
-    background: radial-gradient(circle at 38% 32%, rgba(41,151,255,0.30), rgba(29,78,216,0.16) 55%, transparent 72%);
-    animation-delay: -3400ms;
+  /* ---------- entrance ---------- */
+  html.mo-ready .av__figure { opacity: 0; transform: translateY(26px) scale(0.94); }
+  html.mo-ready .av.is-in .av__figure {
+    opacity: 1; transform: none;
+    transition: opacity 900ms var(--ease-out) 120ms, transform 1100ms var(--ease-out) 120ms;
   }
 
-  /* the focal point: reads as attention/gaze without being a face */
-  .av__pupil {
-    position: relative;
-    width: 22%;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: var(--gradient-blue);
-    box-shadow: 0 0 38px rgba(41,151,255,0.55);
-    animation: av-pulse 3400ms var(--ease-inout) infinite;
-  }
-
-  /* a slow vertical sweep: the "thinking" tell */
-  .av__scan {
-    position: absolute;
-    inset: 24%;
-    border-radius: 50%;
-    overflow: hidden;
-    mask-image: radial-gradient(circle, #000 60%, transparent 72%);
-  }
-  .av__scan::after {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    height: 22%;
-    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.5), transparent);
-    animation: av-scan 4200ms var(--ease-inout) infinite;
-  }
-
-  @keyframes av-breathe {
-    0%, 100% { transform: scale(1); opacity: 0.85; }
-    50%      { transform: scale(1.055); opacity: 1; }
-  }
-  @keyframes av-pulse {
-    0%, 100% { transform: scale(1); }
-    50%      { transform: scale(1.16); }
-  }
-  @keyframes av-scan {
-    0%   { transform: translateY(-120%); }
-    100% { transform: translateY(460%); }
-  }
-
-  /* ---------- speech ---------- */
+  /* ---------- ambient caption ---------- */
   .av__speech {
-    position: relative;
-    margin: 0;
-    max-width: 26ch;
-    min-height: 4.5em;
-    text-align: center;
+    position: relative; margin: 0; width: 100%; max-width: 26ch;
+    min-height: 3.4em; text-align: center;
     font-family: var(--font-display);
-    font-size: clamp(1.05rem, 1.7vw, 1.6rem);
-    font-weight: 700;
-    line-height: 1.35;
+    font-size: clamp(0.95rem, 1.3vw, 1.25rem);
+    font-weight: 700; line-height: 1.35;
   }
   .av__line {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 620ms var(--ease-out), transform 620ms var(--ease-out);
+    position: absolute; inset: 0; opacity: 0; transform: translateY(12px);
+    transition: opacity 560ms var(--ease-out), transform 560ms var(--ease-out);
   }
   .av__line[data-active='true'] { opacity: 1; transform: none; }
-
-  /* Without JS every line would stack invisibly, so the first one is
-     laid out normally and the rest are simply not shown. */
+  /* With no JS every line would stack invisibly, so only the first shows. */
   html:not(.mo-ready) .av__line { position: static; opacity: 1; transform: none; }
   html:not(.mo-ready) .av__line:not(:first-child) { display: none; }
 
+  .av__talk { margin-top: 0.25rem; }
+
+  /* ---------- talk panel ---------- */
+  .avtalk { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; }
+  .avtalk[hidden] { display: none; }
+  .avtalk__scrim {
+    position: absolute; inset: 0; border: 0; padding: 0;
+    background: rgba(11, 21, 48, 0.55);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity var(--dur) var(--ease-out);
+    cursor: pointer;
+  }
+  .avtalk[data-open='true'] .avtalk__scrim { opacity: 1; }
+  .avtalk__box {
+    position: relative;
+    width: min(92vw, 26rem);
+    background: var(--gradient-hero);
+    border-radius: var(--radius-xl);
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    opacity: 0; transform: translateY(22px) scale(0.97);
+    transition: opacity var(--dur) var(--ease-out), transform 520ms var(--ease-out);
+  }
+  .avtalk[data-open='true'] .avtalk__box { opacity: 1; transform: none; }
+  .avtalk__x {
+    position: absolute; inset-inline-end: 0.75rem; top: 0.75rem;
+    width: 2.25rem; height: 2.25rem; border-radius: 50%;
+    border: 1px solid var(--color-line-strong); background: rgba(255,255,255,0.7);
+    cursor: pointer; font-size: 0.875rem; color: var(--color-ink);
+  }
+  .avtalk__stage { display: grid; place-items: center; }
+  .avtalk__stage :global(.av) { gap: 0; }
+  .avtalk__stage :global(.av__figure) { width: clamp(9rem, 34vw, 12rem); opacity: 1 !important; transform: none !important; }
+  .avtalk__caption {
+    min-height: 4.5em; margin: 1rem auto 0; max-width: 24ch;
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(1.05rem, 2vw, 1.35rem); line-height: 1.4;
+  }
+  .avtalk__bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 1.25rem; }
+  .avtalk__bar .btn { min-height: 46px; padding-inline: 1.2rem; font-size: var(--text-small); }
+
   @media (prefers-reduced-motion: reduce) {
-    .av__halo, .av__pupil, .av__scan::after { animation: none; }
-    .av__line { transition: none; }
+    .av__body, .av__shadow, .av__glow, .av__core-dot, .av__core-ring,
+    .av__antenna, .av__eyes, .av__arm--r, .av__arm--l, .av__head { animation: none; }
+    .av.is-talking .av__mouth { animation: none; }
+    html.mo-ready .av__figure { opacity: 1; transform: none; }
+    .av__line, .avtalk__scrim, .avtalk__box { transition: none; }
   }
 </style>
 
 <script>
-  // Binds the avatar's speech to the scroll state of its nearest
-  // [data-swap-root] section, which Motion.astro already maintains.
-  // If it is not inside one, it simply keeps its first line.
-  document.querySelectorAll<HTMLElement>('[data-avatar]').forEach((av) => {
-    const root = av.closest<HTMLElement>('[data-swap-root]');
-    if (!root) return;
-    const lines = Array.from(av.querySelectorAll<HTMLElement>('.av__line'));
-    if (lines.length < 2) return;
+  type Line = { text: string; hold?: number };
 
-    const apply = () => {
-      const raw = Number(root.getAttribute('data-swap') ?? '0');
-      const idx = Math.min(Math.max(raw, 0), lines.length - 1);
-      lines.forEach((l, i) => l.setAttribute('data-active', String(i === idx)));
+  document.querySelectorAll<HTMLElement>('[data-avatar]').forEach((av) => {
+    // ---- entrance ----
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { av.classList.add('is-in'); io.unobserve(e.target); } }),
+      { threshold: 0.15 }
+    );
+    io.observe(av);
+
+    // ---- ambient caption follows the section's scroll state ----
+    const swapRoot = av.closest<HTMLElement>('[data-swap-root]');
+    const lines = Array.from(av.querySelectorAll<HTMLElement>('.av__line'));
+    if (swapRoot && lines.length > 1) {
+      const apply = () => {
+        const raw = Number(swapRoot.getAttribute('data-swap') ?? '0');
+        const idx = Math.min(Math.max(raw, 0), lines.length - 1);
+        lines.forEach((l, i) => l.setAttribute('data-active', String(i === idx)));
+      };
+      new MutationObserver(apply).observe(swapRoot, { attributes: true, attributeFilter: ['data-swap'] });
+      apply();
+    }
+  });
+
+  // ---- talk panel ----
+  document.querySelectorAll<HTMLButtonElement>('[data-av-talk]').forEach((btn) => {
+    const host = btn.closest<HTMLElement>('[data-avatar]');
+    if (!host) return;
+    const uid = host.dataset.uid!;
+    const panel = document.querySelector<HTMLElement>(`[data-av-panel="${uid}"]`);
+    if (!panel) return;
+
+    const stage = panel.querySelector<HTMLElement>('[data-av-stage]')!;
+    const caption = panel.querySelector<HTMLElement>('[data-av-caption]')!;
+    const audio = panel.querySelector<HTMLAudioElement>('[data-av-audio]');
+    const replay = panel.querySelector<HTMLButtonElement>('[data-av-replay]')!;
+
+    // The panel shows the same character: clone the figure so the visitor
+    // keeps talking to who they clicked, not a different illustration.
+    const figure = host.querySelector('.av__figure');
+    let panelAv: HTMLElement | null = null;
+    if (figure && !stage.childElementCount) {
+      panelAv = document.createElement('div');
+      panelAv.className = 'av av--md';
+      panelAv.appendChild(figure.cloneNode(true));
+      stage.appendChild(panelAv);
+    }
+
+    let script: Line[] = [];
+    try { script = JSON.parse(host.dataset.script || '[]'); } catch {}
+
+    let timer: number | undefined;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const stop = () => {
+      window.clearTimeout(timer);
+      panelAv?.classList.remove('is-talking');
+      if (audio) { audio.pause(); audio.currentTime = 0; }
     };
 
-    new MutationObserver(apply).observe(root, {
-      attributes: true,
-      attributeFilter: ['data-swap'],
+    const play = () => {
+      stop();
+      if (!script.length) return;
+      let i = 0;
+      panelAv?.classList.add('is-talking');
+      if (audio) audio.play().catch(() => { /* no track, captions carry it */ });
+
+      const step = () => {
+        if (i >= script.length) {
+          panelAv?.classList.remove('is-talking');
+          return;
+        }
+        const line = script[i];
+        caption.textContent = line.text;
+        // Reduced motion still gets the full script, just without the
+        // mouth animation, and with a calmer pace.
+        const hold = line.hold ?? Math.max(1800, line.text.length * 70);
+        i += 1;
+        timer = window.setTimeout(step, reduced ? hold + 400 : hold);
+      };
+      step();
+    };
+
+    const setOpen = (open: boolean) => {
+      if (open) panel.hidden = false;
+      panel.dataset.open = String(open);
+      btn.setAttribute('aria-expanded', String(open));
+      document.body.style.overflow = open ? 'hidden' : '';
+      if (open) {
+        requestAnimationFrame(play);
+      } else {
+        stop();
+        caption.textContent = '';
+        window.setTimeout(() => { if (panel.dataset.open !== 'true') panel.hidden = true; }, 420);
+      }
+    };
+
+    btn.addEventListener('click', () => setOpen(true));
+    replay.addEventListener('click', play);
+    panel.querySelectorAll('[data-av-close]').forEach((c) =>
+      c.addEventListener('click', () => { setOpen(false); btn.focus(); })
+    );
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && panel.dataset.open === 'true') { setOpen(false); btn.focus(); }
     });
-    apply();
   });
 </script>
