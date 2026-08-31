@@ -246,7 +246,12 @@ import { SUGGESTIONS } from '../lib/chat/knowledge.ts';
     flex-direction: column;
     align-items: center;
     gap: 0.7rem;
+    transition: opacity var(--dur) var(--ease-out);
   }
+  /* The full-screen menu owns the screen while it is open: the floating
+     buttons used to sit on top of the navigation. */
+  :global(body.menu-open) .dock,
+  :global(body.menu-open) .chat { opacity: 0; pointer-events: none; }
 
   .dock__wa,
   .dock__chat,

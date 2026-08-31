@@ -148,6 +148,9 @@ const routes = [
   }
 
   @media (max-width: 900px) {
+    /* No room beside the reading column on a phone, so the watermark
+       stops competing with the route list entirely. */
+    .nf__ghost { display: none; }
     .nf__inner { grid-template-columns: 1fr; }
     .nf__art { order: -1; }
     .nf__note { display: none; }

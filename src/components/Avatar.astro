@@ -356,6 +356,17 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
     const panel = document.querySelector<HTMLElement>(`[data-av-panel="${uid}"]`);
     if (!panel) return;
 
+    // PORTAL THE PANEL TO <body>.
+    //
+    // `.avtalk` is position:fixed with z-index 80, but it is rendered
+    // inside `.hero__figure`, which has `position: relative; z-index: 2`
+    // and therefore creates a stacking context. That traps the panel's
+    // z-index INSIDE that context, and `.hero__inner` (the headline) sits
+    // at z-index 3 in the same parent, so the hero copy painted straight
+    // over the open modal. Moving the panel to <body> takes it out of
+    // every ancestor context for good.
+    if (panel.parentElement !== document.body) document.body.appendChild(panel);
+
     const stage = panel.querySelector<HTMLElement>('[data-av-stage]')!;
     const caption = panel.querySelector<HTMLElement>('[data-av-caption]')!;
     const audio = panel.querySelector<HTMLAudioElement>('[data-av-audio]');

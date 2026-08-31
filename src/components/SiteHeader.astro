@@ -268,7 +268,10 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
   @media (max-width: 1024px) {
     .hdr__nav, .hdr__cta { display: none; }
     .hdr__burger { display: grid; }
-    .hdr__end { margin-inline-start: auto; }
+    /* NO auto margin here. `.hdr__brand` already carries
+       `margin-inline-start: auto`, and two auto margins in a flex row
+       split the free space between them, which parked the burger in the
+       middle of the bar instead of at the reading edge. */
     .menu__inner { grid-template-columns: 1fr; align-content: start; gap: 2rem; }
     .menu__side { border-top: 1px solid var(--color-line); padding-top: 1.5rem; }
   }
