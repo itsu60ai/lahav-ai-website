@@ -87,6 +87,9 @@ export const POST: APIRoute = async ({ request }) => {
       result.reason === 'not_configured'
         ? 'העוזר לא פעיל כרגע. אפשר לכתוב לנו בוואטסאפ או לתאם שיחה קצרה, ונענה בעצמנו.'
         : 'משהו לא עבד כרגע. אפשר לנסות שוב, או לכתוב לנו בוואטסאפ.';
+    // `detail` names internal models and upstream errors, so it stays in
+    // the log and never goes to the visitor.
+    if (result.detail) console.warn('[chat] upstream:', result.detail);
     return json({ ok: false, code: result.reason, error }, 503);
   }
 

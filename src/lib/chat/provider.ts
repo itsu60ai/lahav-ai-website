@@ -25,10 +25,21 @@ export interface ProviderResult {
   via?: 'anthropic' | 'workers-ai';
   /** set when no provider could answer */
   reason?: 'not_configured' | 'upstream_error';
+  /** upstream failure text, for diagnostics only, never shown to a visitor */
+  detail?: string;
 }
 
 /** Hard ceiling on a reply, so one question can never run up a bill. */
-const MAX_TOKENS = 320;
+const MAX_TOKENS = 420;
+
+/** Tried in order until one answers. See the note in askModel. */
+const WORKERS_AI_MODELS = [
+  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  '@cf/mistralai/mistral-small-3.1-24b-instruct',
+  '@cf/google/gemma-3-12b-it',
+  '@cf/meta/llama-3.1-8b-instruct-fast',
+  '@cf/qwen/qwen2.5-14b-instruct',
+];
 
 export function providerName(env: any): 'anthropic' | 'workers-ai' | null {
   if (env?.ANTHROPIC_API_KEY) return 'anthropic';
@@ -72,16 +83,27 @@ export async function askModel(
 
     // Workers AI. The chat template takes the system prompt as its own
     // first message rather than a separate field.
-    const out: any = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-      max_tokens: MAX_TOKENS,
-      messages: [
-        { role: 'system', content: system },
-        ...history.map((m) => ({ role: m.role, content: m.content })),
-      ],
-    });
-    const text = String(out?.response ?? '').trim();
-    return text ? { ok: true, text, via: 'workers-ai' } : { ok: false, reason: 'upstream_error' };
-  } catch {
-    return { ok: false, reason: 'upstream_error' };
+    // A chain, not one id. Workers AI retires models on a schedule and a
+    // single hard-coded name turns the assistant off the day that
+    // happens, which is exactly how this broke the first time. Ordered by
+    // Hebrew quality; the first that answers wins.
+    const messages = [
+      { role: 'system', content: system },
+      ...history.map((m) => ({ role: m.role, content: m.content })),
+    ];
+    let lastDetail = '';
+    for (const model of WORKERS_AI_MODELS) {
+      try {
+        const out: any = await env.AI.run(model, { max_tokens: MAX_TOKENS, messages });
+        const text = String(out?.response ?? '').trim();
+        if (text) return { ok: true, text, via: 'workers-ai' };
+        lastDetail = `empty from ${model}`;
+      } catch (err) {
+        lastDetail = `${model}: ${String((err as any)?.message ?? err).slice(0, 120)}`;
+      }
+    }
+    return { ok: false, reason: 'upstream_error', detail: lastDetail };
+  } catch (err) {
+    return { ok: false, reason: 'upstream_error', detail: String((err as any)?.message ?? err).slice(0, 200) };
   }
 }
