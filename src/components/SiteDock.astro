@@ -1,0 +1,487 @@
+---
+// PERSISTENT PAGE FURNITURE.
+//
+// THREE SEPARATE THINGS, deliberately not merged:
+//   1. WhatsApp        talk to a person, opens the verified wa.me flow
+//   2. AI assistant    a real chat, answering from approved copy only
+//   3. Back to top     appears once there is something to go back up to
+//
+// The assistant is NOT the hero character. Clicking it opens a chat, and
+// it never replays the hero's introduction.
+//
+// D-Q2 in SOURCE_OF_TRUTH previously said "no floating WhatsApp". That
+// was superseded on 31.08.2026 by an explicit client decision: WhatsApp
+// and the AI chat are both required, side by side.
+import WhatsApp from './icons/WhatsApp.astro';
+import { WHATSAPP_HREF, DISCOVERY_BOOKING_URL } from '../lib/site';
+import { SUGGESTIONS } from '../lib/chat/knowledge.ts';
+---
+
+<div class="dock" data-dock>
+  <button class="dock__top" type="button" data-dock-top aria-label="חזרה לראש העמוד">
+    <span aria-hidden="true">↑</span>
+  </button>
+
+  <a
+    class="dock__wa"
+    href={WHATSAPP_HREF}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="שיחה בוואטסאפ"
+  >
+    <WhatsApp />
+    <span class="dock__tip">וואטסאפ</span>
+  </a>
+
+  <button
+    class="dock__chat"
+    type="button"
+    data-chat-open
+    aria-expanded="false"
+    aria-controls="lahav-chat"
+    aria-label="פתיחת הצ׳אט"
+  >
+    <span class="dock__chat-ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.2-.6L3 21l1.8-5A8.3 8.3 0 0 1 4 11.5a8.4 8.4 0 0 1 9-8.4 8.4 8.4 0 0 1 8 8.4Z" />
+      </svg>
+    </span>
+    <span class="dock__tip">שאלו אותי</span>
+  </button>
+</div>
+
+<!-- ═════════ the assistant ═════════ -->
+<div class="chat" id="lahav-chat" data-chat hidden>
+  <div class="chat__panel" role="dialog" aria-modal="false" aria-label="העוזר של LAHAV AI">
+    <header class="chat__head">
+      <span class="chat__badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.2-.6L3 21l1.8-5A8.3 8.3 0 0 1 4 11.5a8.4 8.4 0 0 1 9-8.4 8.4 8.4 0 0 1 8 8.4Z" />
+        </svg>
+      </span>
+      <span class="chat__title">
+        <span class="chat__name">העוזר של LAHAV AI</span>
+        <span class="chat__sub" data-chat-status>עונה על שאלות מהאתר</span>
+      </span>
+      <button class="chat__x" type="button" data-chat-close aria-label="סגירת הצ׳אט">✕</button>
+    </header>
+
+    <div class="chat__log" data-chat-log role="log" aria-live="polite">
+      <div class="chat__msg chat__msg--bot">
+        <p>שלום. אני יכול לענות על שאלות על מה שאנחנו עושים, לעזור להבין מה
+        מתאים לכם, ולתאם שיחה קצרה.</p>
+      </div>
+    </div>
+
+    <div class="chat__sugg" data-chat-sugg>
+      {SUGGESTIONS.map((q) => (
+        <button class="chat__chip" type="button" data-chat-suggest={q}>{q}</button>
+      ))}
+    </div>
+
+    <div class="chat__actions">
+      <a class="chat__action" href={DISCOVERY_BOOKING_URL} target="_blank" rel="noopener noreferrer">
+        לתיאום שיחת היכרות
+      </a>
+      <a class="chat__action" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+        לוואטסאפ
+      </a>
+    </div>
+
+    <form class="chat__form" data-chat-form>
+      <label class="sr-only" for="chat-input">מה תרצו לשאול?</label>
+      <input
+        class="chat__input"
+        id="chat-input"
+        name="q"
+        type="text"
+        autocomplete="off"
+        maxlength="500"
+        placeholder="מה תרצו לשאול?"
+        data-chat-input
+      />
+      <button class="chat__send" type="submit" data-chat-send aria-label="שליחה">
+        <span aria-hidden="true">←</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  (() => {
+    const dock = document.querySelector<HTMLElement>('[data-dock]');
+    const topBtn = document.querySelector<HTMLButtonElement>('[data-dock-top]');
+    const openBtn = document.querySelector<HTMLButtonElement>('[data-chat-open]');
+    const chat = document.querySelector<HTMLElement>('[data-chat]');
+    if (!dock || !chat || !openBtn) return;
+
+    const log = chat.querySelector<HTMLElement>('[data-chat-log]')!;
+    const form = chat.querySelector<HTMLFormElement>('[data-chat-form]')!;
+    const input = chat.querySelector<HTMLInputElement>('[data-chat-input]')!;
+    const send = chat.querySelector<HTMLButtonElement>('[data-chat-send]')!;
+    const sugg = chat.querySelector<HTMLElement>('[data-chat-sugg]')!;
+    const status = chat.querySelector<HTMLElement>('[data-chat-status]')!;
+
+    // ---------- back to top ----------
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        dock.classList.toggle('is-up', window.scrollY > 900);
+        raf = 0;
+      });
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    topBtn?.addEventListener('click', () => {
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    });
+
+    // ---------- open / close ----------
+    let lastFocus: HTMLElement | null = null;
+    const setOpen = (open: boolean) => {
+      if (open) chat.hidden = false;
+      chat.dataset.open = String(open);
+      openBtn.setAttribute('aria-expanded', String(open));
+      dock.classList.toggle('is-chatting', open);
+      if (open) {
+        lastFocus = document.activeElement as HTMLElement;
+        setTimeout(() => input.focus(), 120);
+      } else {
+        setTimeout(() => {
+          if (chat.dataset.open !== 'true') chat.hidden = true;
+        }, 260);
+        lastFocus?.focus?.();
+      }
+    };
+    openBtn.addEventListener('click', () => setOpen(chat.dataset.open !== 'true'));
+    chat.querySelectorAll('[data-chat-close]').forEach((b) =>
+      b.addEventListener('click', () => setOpen(false))
+    );
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && chat.dataset.open === 'true') setOpen(false);
+    });
+
+    // ---------- transcript ----------
+    type Turn = { role: 'user' | 'assistant'; content: string };
+    const history: Turn[] = [];
+
+    const bubble = (role: 'user' | 'bot', text: string) => {
+      const div = document.createElement('div');
+      div.className = `chat__msg chat__msg--${role}`;
+      const p = document.createElement('p');
+      p.textContent = text;
+      div.appendChild(p);
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+      return div;
+    };
+
+    let busy = false;
+    const ask = async (question: string) => {
+      if (busy || !question.trim()) return;
+      busy = true;
+      sugg.hidden = true;
+      input.value = '';
+      send.disabled = true;
+      bubble('user', question);
+      history.push({ role: 'user', content: question });
+
+      const typing = document.createElement('div');
+      typing.className = 'chat__msg chat__msg--bot chat__msg--typing';
+      typing.innerHTML = '<span></span><span></span><span></span>';
+      log.appendChild(typing);
+      log.scrollTop = log.scrollHeight;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ messages: history.slice(-8) }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean; reply?: string; error?: string; code?: string;
+        };
+        typing.remove();
+        if (res.ok && data.ok && data.reply) {
+          bubble('bot', data.reply);
+          history.push({ role: 'assistant', content: data.reply });
+        } else {
+          bubble('bot', data.error || 'משהו לא עבד כרגע. אפשר לנסות שוב.');
+          if (data.code === 'not_configured') status.textContent = 'לא פעיל כרגע';
+        }
+      } catch {
+        typing.remove();
+        bubble('bot', 'לא הצלחנו להתחבר. אפשר לנסות שוב, או לכתוב לנו בוואטסאפ.');
+      } finally {
+        busy = false;
+        send.disabled = false;
+        input.focus();
+      }
+    };
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      ask(input.value);
+    });
+    sugg.querySelectorAll<HTMLButtonElement>('[data-chat-suggest]').forEach((b) =>
+      b.addEventListener('click', () => ask(b.dataset.chatSuggest || b.textContent || ''))
+    );
+  })();
+</script>
+
+<style>
+  /* The dock owns the reading-END corner (physical left in RTL) so it
+     never sits on top of the Hebrew reading edge. Safe-area insets keep
+     it clear of an iPhone home indicator. */
+  .dock {
+    position: fixed;
+    inset-block-end: calc(clamp(1rem, 2.5vw, 1.5rem) + env(safe-area-inset-bottom, 0px));
+    inset-inline-end: calc(clamp(1rem, 2.5vw, 1.5rem) + env(safe-area-inset-left, 0px));
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .dock__wa,
+  .dock__chat,
+  .dock__top {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    border: 0;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(11, 21, 48, 0.22);
+    transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out);
+  }
+  .dock__wa:hover, .dock__chat:hover, .dock__top:hover { transform: scale(1.06); }
+
+  .dock__wa { background: #25d366; color: #fff; }
+  .dock__wa :global(svg) { width: 1.5rem; height: 1.5rem; }
+
+  /* Visually distinct from WhatsApp, and unmistakably a chat. */
+  .dock__chat { background: var(--color-royal); color: #fff; }
+  .dock__chat-ico { display: grid; place-items: center; }
+  .dock__chat-ico svg { width: 1.45rem; height: 1.45rem; }
+  .dock.is-chatting .dock__chat { background: var(--color-navy); }
+  /* While the chat is open the panel would sit on top of the WhatsApp
+     button. The chat carries its own WhatsApp action, so the floating one
+     steps out of the way rather than being covered. */
+  .dock.is-chatting .dock__wa,
+  .dock.is-chatting .dock__top {
+    opacity: 0;
+    transform: scale(0.85);
+    pointer-events: none;
+  }
+
+  .dock__top {
+    background: var(--color-surface);
+    color: var(--color-ink-2);
+    border: 1px solid var(--color-line-strong);
+    font-size: 1.1rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    box-shadow: 0 8px 20px rgba(11, 21, 48, 0.14);
+  }
+  .dock.is-up .dock__top { opacity: 1; transform: none; pointer-events: auto; }
+
+  /* label on hover, so two round buttons are never a guessing game */
+  .dock__tip {
+    position: absolute;
+    inset-inline-start: calc(100% + 0.6rem);
+    white-space: nowrap;
+    background: var(--color-ink);
+    color: #fff;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    opacity: 0;
+    transform: translateX(6px);
+    pointer-events: none;
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+  }
+  .dock__wa:hover .dock__tip,
+  .dock__chat:hover .dock__tip { opacity: 1; transform: none; }
+
+  /* ══════ chat panel ══════ */
+  .chat {
+    position: fixed;
+    inset-block-end: calc(clamp(1rem, 2.5vw, 1.5rem) + 4rem + env(safe-area-inset-bottom, 0px));
+    inset-inline-end: calc(clamp(1rem, 2.5vw, 1.5rem) + env(safe-area-inset-left, 0px));
+    z-index: 71;
+    width: min(23rem, calc(100vw - 2rem));
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+    transform-origin: bottom left;
+    pointer-events: none;
+    transition: opacity 220ms var(--ease-out), transform 260ms var(--ease-out);
+  }
+  .chat[hidden] { display: none; }
+  .chat[data-open='true'] { opacity: 1; transform: none; pointer-events: auto; }
+
+  .chat__panel {
+    display: flex;
+    flex-direction: column;
+    max-height: min(34rem, calc(100svh - 8rem));
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 30px 70px rgba(11, 21, 48, 0.26);
+    overflow: hidden;
+  }
+
+  .chat__head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.9rem 1rem;
+    background: var(--color-royal);
+    color: #fff;
+  }
+  .chat__badge {
+    display: grid; place-items: center;
+    width: 2rem; height: 2rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+  }
+  .chat__badge svg { width: 1.05rem; height: 1.05rem; }
+  .chat__title { display: flex; flex-direction: column; line-height: 1.25; margin-inline-end: auto; }
+  .chat__name { font-family: var(--font-display); font-weight: 800; font-size: var(--text-small); }
+  .chat__sub { font-size: var(--text-micro); color: rgba(255, 255, 255, 0.78); }
+  .chat__x {
+    border: 0; background: transparent; color: #fff;
+    font-size: 1rem; cursor: pointer; padding: 0.25rem 0.35rem; border-radius: 50%;
+  }
+  .chat__x:hover { background: rgba(255, 255, 255, 0.16); }
+
+  .chat__log {
+    flex: 1 1 auto;
+    min-height: 6rem;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .chat__msg {
+    max-width: 88%;
+    padding: 0.65rem 0.85rem;
+    border-radius: 1rem;
+    font-size: var(--text-small);
+    line-height: 1.6;
+  }
+  .chat__msg--bot {
+    align-self: flex-start;
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+    border-end-start-radius: 0.3rem;
+  }
+  .chat__msg--user {
+    align-self: flex-end;
+    background: var(--color-royal);
+    color: #fff;
+    border-end-end-radius: 0.3rem;
+  }
+  .chat__msg--typing { display: flex; gap: 0.25rem; align-items: center; }
+  .chat__msg--typing span {
+    width: 0.4rem; height: 0.4rem; border-radius: 50%;
+    background: var(--color-ink-3);
+    animation: chat-dot 1.1s ease-in-out infinite;
+  }
+  .chat__msg--typing span:nth-child(2) { animation-delay: 0.15s; }
+  .chat__msg--typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes chat-dot {
+    0%, 100% { opacity: 0.3; transform: translateY(0) }
+    50%      { opacity: 1;   transform: translateY(-3px) }
+  }
+
+  .chat__sugg { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0 1rem 0.75rem; }
+  .chat__chip {
+    border: 1px solid var(--color-line-strong);
+    background: transparent;
+    color: var(--color-ink-2);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    padding: 0.4rem 0.7rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+  }
+  .chat__chip:hover { border-color: var(--color-royal); color: var(--color-royal); }
+
+  .chat__actions {
+    display: flex; gap: 0.4rem;
+    padding: 0 1rem 0.75rem;
+  }
+  .chat__action {
+    flex: 1;
+    text-align: center;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    color: var(--color-royal);
+    text-decoration: none;
+    padding: 0.45rem 0.5rem;
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--color-royal) 8%, transparent);
+  }
+  .chat__action:hover { background: color-mix(in srgb, var(--color-royal) 14%, transparent); }
+
+  .chat__form {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .chat__input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    color: var(--color-ink);
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line-strong);
+    border-radius: 999px;
+    padding: 0.6rem 0.9rem;
+  }
+  .chat__input:focus { outline: none; border-color: var(--color-royal); }
+  .chat__send {
+    flex: none;
+    width: 2.5rem; height: 2.5rem;
+    border: 0; border-radius: 50%;
+    background: var(--color-royal);
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .chat__send:disabled { opacity: 0.5; cursor: progress; }
+
+  /* On a phone the panel takes the width it needs and sits above the
+     dock, never under the home indicator. */
+  @media (max-width: 560px) {
+    .chat {
+      inset-inline: 0.75rem;
+      width: auto;
+      inset-block-end: calc(0.75rem + 4rem + env(safe-area-inset-bottom, 0px));
+    }
+    .chat__panel { max-height: min(30rem, calc(100svh - 9rem)); }
+    .dock__wa, .dock__chat { width: 3rem; height: 3rem; }
+    .dock__tip { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chat, .dock__top, .dock__tip { transition: none; }
+    .chat__msg--typing span { animation: none; }
+  }
+</style>

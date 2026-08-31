@@ -1,0 +1,234 @@
+---
+// THE SERVICE STORY.
+//
+// One continuous drawn line runs the whole length of the services page.
+// Each service is a station on it: the line arrives, the station sits
+// beside it, the line leaves and carries on to the next one. Nothing is
+// a rectangle, nothing is a card, and no two stations sit on the same
+// side of the line.
+//
+// This is the LAHAV answer to the reference's illustrated path: the
+// reference draws a winding road through its own scenery, we draw a
+// signal path through the parts of a business system. Original artwork,
+// built from the brand's own geometry.
+//
+// The line is a single SVG per station, stroke-dashoffset animated on
+// enter, so the path appears to be drawn as the visitor scrolls.
+import { SERVICES } from '../lib/site';
+import { SERVICE_ICONS } from '../lib/icons';
+
+// Each station gets its own path shape so the journey never repeats.
+// `d` is the connector drawn ABOVE the station, arriving into it.
+const PATHS = [
+  'M300 0 C300 60 300 90 220 130 C140 170 60 190 60 260',
+  'M60 0 C60 70 120 110 210 140 C300 170 340 200 340 270',
+  'M340 0 C340 80 260 110 170 140 C90 165 40 195 40 270',
+  'M40 0 C40 70 110 105 200 135 C290 165 350 195 350 270',
+  'M350 0 C350 80 270 115 190 145 C120 170 70 200 70 270',
+];
+---
+
+<div class="story">
+  {SERVICES.map((s, i) => (
+    <section class:list={['story__stop', i % 2 === 0 ? 'is-start' : 'is-end']} data-reveal>
+      <!-- the connector arriving into this station -->
+      <span class="story__link" aria-hidden="true">
+        <svg viewBox="0 0 400 280" preserveAspectRatio="none" focusable="false">
+          <path class="story__path" d={PATHS[i % PATHS.length]} />
+          <circle class="story__node" cx="0" cy="0" r="7" />
+        </svg>
+      </span>
+
+      <div class="u-container u-container--wide story__grid">
+        <div class="story__copy">
+          <p class="story__n tabular" dir="ltr" data-reveal>{String(i + 1).padStart(2, '0')} / 05</p>
+          <h2 class="story__name">
+            <span class="mo-line" style="--mo-delay:60ms"><span>{s.name}</span></span>
+          </h2>
+          <p class="story__lead" data-reveal style="--mo-delay:180ms">{s.lead}</p>
+          <p class="story__pain" data-reveal style="--mo-delay:260ms">{s.pain}</p>
+          <a class="story__go" href={`/services/${s.slug}/`} data-reveal style="--mo-delay:340ms">
+            לראות איך זה עובד
+            <span class="arrow-inline" aria-hidden="true">←</span>
+          </a>
+        </div>
+
+        <!-- the station itself: an original mark, its number, and the
+             three things this part of the system does -->
+        <div class="story__art" data-reveal style="--mo-delay:140ms">
+          <span class="story__ring" aria-hidden="true"></span>
+          <span class="story__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"
+                 stroke-linecap="round" stroke-linejoin="round" set:html={SERVICE_ICONS[s.slug]} />
+          </span>
+          <ul class="story__points">
+            {s.points.map((pt) => <li>{pt}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+  ))}
+</div>
+
+<style>
+  .story { position: relative; }
+
+  .story__stop {
+    position: relative;
+    padding-block: clamp(2rem, 5vw, 4rem) clamp(2rem, 5vw, 4rem);
+  }
+
+  /* ---- the connecting line ---- */
+  .story__link {
+    position: absolute;
+    inset-block-start: calc(-1 * clamp(5rem, 12vw, 11rem));
+    inset-inline: 0;
+    height: clamp(6rem, 14vw, 13rem);
+    display: block;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .story__link svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .story__path {
+    fill: none;
+    stroke: var(--color-royal);
+    stroke-width: 1.6;
+    stroke-opacity: 0.35;
+    stroke-linecap: round;
+    /* drawn on enter */
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  .story__node { fill: var(--color-electric); opacity: 0; }
+  /* the first station has nothing arriving into it */
+  .story__stop:first-child .story__link { display: none; }
+
+  :global(html.mo-ready) .story__stop.is-in .story__path,
+  :global(html:not(.mo-ready)) .story__path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1600ms var(--ease-out);
+  }
+
+  /* ---- layout: the station alternates sides ---- */
+  .story__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(1.5rem, 5vw, 5rem);
+    align-items: center;
+  }
+  .story__stop.is-end .story__copy { order: 2; }
+  .story__stop.is-end .story__art { order: 1; }
+
+  .story__n {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--color-electric);
+    /* dir=ltr on the element keeps "01 / 05" in that order; without it
+       RTL reorders the run to "05 / 01" */
+    text-align: start;
+  }
+  .story__name {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 5.25rem);
+    font-weight: 900;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--color-ink);
+    margin-block: 0.5rem 1rem;
+    max-width: 12ch;
+  }
+  .story__lead {
+    font-size: var(--text-lead);
+    line-height: 1.5;
+    color: var(--color-ink);
+    font-weight: 600;
+    max-width: 32ch;
+  }
+  .story__pain {
+    margin-top: 0.9rem;
+    color: var(--color-ink-2);
+    line-height: 1.75;
+    max-width: 46ch;
+  }
+  .story__go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: clamp(1.25rem, 2.5vw, 2rem);
+    font-weight: 700;
+    font-size: var(--text-small);
+    color: var(--color-royal);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-royal) 40%, transparent);
+    padding-bottom: 0.2rem;
+    transition: border-color var(--dur) var(--ease-out);
+  }
+  .story__go:hover { border-bottom-color: var(--color-royal); }
+  .story__go:hover .arrow-inline { transform: translateX(-5px); }
+
+  /* ---- the station mark ---- */
+  .story__art {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 1.25rem;
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .story__ring {
+    position: absolute;
+    inset-block-start: 0;
+    width: clamp(9rem, 17vw, 14rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 42% 34%, rgba(41, 151, 255, 0.16), transparent 68%);
+    z-index: 0;
+  }
+  .story__mark {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: clamp(4.5rem, 8vw, 6.5rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--color-royal) 30%, transparent);
+    background: var(--color-surface);
+    color: var(--color-royal);
+    box-shadow: 0 16px 40px rgba(29, 78, 216, 0.12);
+  }
+  .story__mark :global(svg) { width: 45%; height: 45%; }
+
+  .story__points {
+    position: relative;
+    z-index: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    text-align: center;
+  }
+  .story__points li {
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: var(--color-ink-2);
+  }
+  .story__points li + li { padding-top: 0.55rem; border-top: 1px solid var(--color-line); }
+
+  @media (max-width: 900px) {
+    /* On a phone the line runs down the side rather than weaving, and the
+       station sits above its own copy. Weaving needs width to read. */
+    .story__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+    .story__stop.is-end .story__copy,
+    .story__stop.is-end .story__art { order: initial; }
+    .story__art { justify-items: start; padding-inline: 0; }
+    .story__points { text-align: start; }
+    .story__ring { inset-inline-start: 0; }
+    .story__link { inset-block-start: calc(-1 * clamp(3rem, 9vw, 5rem)); height: clamp(4rem, 10vw, 6rem); }
+  }
+</style>

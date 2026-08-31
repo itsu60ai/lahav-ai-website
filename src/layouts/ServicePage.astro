@@ -21,7 +21,7 @@
 import SiteLayout from './SiteLayout.astro';
 import Curve from '../components/Curve.astro';
 import ContactBlock from '../components/ContactBlock.astro';
-import Viz from '../components/Viz.astro';
+import Flow from '../components/Flow.astro';
 import { turnstileSiteKey } from '../lib/turnstile.ts';
 import { SERVICES } from '../lib/site';
 
@@ -29,6 +29,7 @@ interface Props {
   slug: string;
   data: {
     viz: string;
+    flow: readonly { t: string; s?: string }[];
     eyebrow: string;
     h1a: string;
     h1b: string;
@@ -72,9 +73,8 @@ const SITE_KEY = turnstileSiteKey();
         <span class="mo-line" style="--mo-delay:60ms"><span>{data.h1a}</span></span>
         <span class="mo-line" style="--mo-delay:160ms"><span class="sp-say__accent">{data.h1b}</span></span>
       </h2>
-      <div class="sp-say__art" data-clip>
-        <Viz kind={data.viz as any} />
-        <p class="sp-say__note">{data.note}</p>
+      <div class="sp-say__art">
+        <Flow stops={[...data.flow]} note={data.note} />
       </div>
     </div>
   </section>
@@ -83,7 +83,7 @@ const SITE_KEY = turnstileSiteKey();
   <section class="sp-sym u-section band band--warm">
     <Curve tone="warm" shape="wave" />
     <div class="u-container u-container--wide">
-      <p class="t-eyebrow" data-reveal>ככה זה נראה ביום יום</p>
+      <p class="t-eyebrow" data-reveal>הסימנים</p>
       <h2 class="sp-sym__h t-display-3" data-reveal style="--mo-delay:90ms">{data.symptomsTitle}</h2>
       <ul class:list={['sym', `sym--${symptomsStyle}`]}>
         {
@@ -151,7 +151,7 @@ const SITE_KEY = turnstileSiteKey();
 <style>
   /* ====== opener ====== */
   .sp-hero {
-    padding-block: clamp(9rem, 20svh, 14rem) clamp(3rem, 7vw, 6rem);
+    padding-block: clamp(8rem, 15svh, 11rem) var(--space-section-end);
     text-align: center;
   }
   .sp-hero--royal    { background: var(--color-royal); color: #fff; }
@@ -213,20 +213,9 @@ const SITE_KEY = turnstileSiteKey();
     background-clip: text;
     color: transparent;
   }
-  .sp-say__art {
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    background: var(--color-navy);
-    padding: clamp(1rem, 2.5vw, 2rem);
-  }
-  .sp-say__note {
-    margin-top: 1.25rem;
-    font-size: var(--text-small);
-    line-height: 1.65;
-    color: rgba(255, 255, 255, 0.62);
-    border-inline-start: 2px solid rgba(41, 151, 255, 0.55);
-    padding-inline-start: 0.875rem;
-  }
+  /* No panel. The drawing sits directly on the band, which is what stops
+     it reading as a stock SaaS diagram. */
+  .sp-say__art { min-width: 0; }
 
   /* ====== symptoms ====== */
   .sp-sym { position: relative; overflow: visible; }

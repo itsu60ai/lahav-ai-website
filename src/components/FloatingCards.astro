@@ -78,10 +78,13 @@
     font-size: var(--text-micro);
     animation: fc-float 9s var(--ease-inout) infinite;
   }
-  .fc__card--a { top: 14%; inset-inline-end: 4%; animation-delay: -1s; }
-  .fc__card--b { top: 30%; inset-inline-start: 3%; animation-delay: -3s; }
-  .fc__card--c { bottom: 20%; inset-inline-start: 9%; animation-delay: -5s; }
-  .fc__card--d { bottom: 25%; inset-inline-end: 6%; animation-delay: -7s; }
+  /* Pinned to the outer edges. They used to sit at 14%/30% from the top,
+     which put them straight across the hero statement once the headline
+     became two full-width display lines. */
+  .fc__card--a { top: 12%;    inset-inline-end: 1.5%; animation-delay: -1s; }
+  .fc__card--b { bottom: 30%; inset-inline-start: 1.5%; animation-delay: -3s; }
+  .fc__card--c { bottom: 12%; inset-inline-start: 8%; animation-delay: -5s; }
+  .fc__card--d { bottom: 18%; inset-inline-end: 4%; animation-delay: -7s; }
 
   .fc__head {
     display: flex; align-items: center; gap: 0.4rem;
@@ -129,7 +132,8 @@
      statement, so only two survive, they shrink, and they sit clear of
      both the fixed header and the headline. */
   @media (max-width: 900px) {
-    .fc__card--a, .fc__card--b { display: none; }
+    /* pulled to the outer edges so they never cross the hero statement */
+  .fc__card--a, .fc__card--b { display: none; }
     .fc__card { width: clamp(8.5rem, 40vw, 11rem); font-size: 0.7rem; padding: 0.7rem 0.8rem; }
     /* Two cards survive on a tablet, pulled fully inside the viewport.
        Negative insets used to push the document ~16px wider than the

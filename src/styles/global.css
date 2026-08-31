@@ -71,8 +71,19 @@
 
   /* --- Spacing --- */
   --spacing: 0.25rem;
-  --space-section: clamp(5rem, 10vw, 12rem);
-  --space-section-tight: clamp(3rem, 5vw, 6rem);
+  /* THE VERTICAL RHYTHM.
+     One unit, used everywhere. It is deliberately smaller than it looks
+     like it should be, because a section pays its top padding AND the
+     previous section's bottom padding at every seam. At the old value
+     (12rem) two adjacent sections produced ~290px of dead band, which is
+     the "huge gap" this system exists to prevent.
+     Sections are asymmetric: they own a full unit of space above and
+     roughly two thirds below, so a seam costs ~1.7 units, not 2. */
+  --space-section: clamp(3.25rem, 6vw, 7.5rem);
+  --space-section-end: calc(var(--space-section) * 0.68);
+  --space-section-tight: clamp(2.5rem, 4vw, 4.5rem);
+  /* space between blocks INSIDE a section */
+  --space-block: clamp(1.75rem, 3.5vw, 3.5rem);
   --container-max: 1320px;
   --container-wide: 1560px;
   --measure: 62ch;
@@ -176,8 +187,11 @@
   .u-container--wide { max-width: var(--container-wide); }
   .u-container--full { max-width: none; padding-inline: clamp(1.25rem, 3vw, 2.5rem); }
 
-  .u-section { padding-block: var(--space-section); }
-  .u-section-tight { padding-block: var(--space-section-tight); }
+  .u-section { padding-block: var(--space-section) var(--space-section-end); }
+  .u-section-tight { padding-block: var(--space-section-tight) calc(var(--space-section-tight) * 0.68); }
+  /* A section that is introduced by a <Curve> needs room for the curve to
+     sit in, or the curve crops the first line of content. */
+  .u-section:has(> .curve) { padding-block-start: calc(var(--space-section) + clamp(1rem, 3vw, 2.5rem)); }
 
   /* --- Surface bands. A page is a sequence of these. --- */
   .band { position: relative; }
@@ -544,8 +558,8 @@
    .u-section / .t-* directly.
    ------------------------------------------------------------- */
 @layer components {
-  .section { padding-block: var(--space-section); position: relative; }
-  .section-tight { padding-block: var(--space-section-tight); position: relative; }
+  .section { padding-block: var(--space-section) var(--space-section-end); position: relative; }
+  .section-tight { padding-block: var(--space-section-tight) calc(var(--space-section-tight) * 0.68); position: relative; }
   .section--gray { background: var(--color-surface-2); }
   .section--navy {
     background: var(--color-navy);

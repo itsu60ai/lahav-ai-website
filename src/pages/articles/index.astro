@@ -1,23 +1,23 @@
 ---
 export const prerender = false;
 
-// ARTICLES INDEX, V3.
+// ARTICLES INDEX, V5.
 //
-// Rebuilt as an editorial journal in the same language as the rest of the
-// site: a type-led opener, one lead piece given real scale, then the rest
-// as oversized hairline rows that behave on hover. No card grid.
+// Structure taken from the reference's own articles page: a big editorial
+// opener, one featured piece at real scale, then a card grid where every
+// card carries a visual, a category chip, a blue heading, an excerpt and a
+// read link. The previous version was a list of hairline rows, which was
+// nothing like it.
 //
-// Deliberately absent: filters, search, categories, pagination, post
-// counts, view counts, share counts. V1 launches with a handful of
-// articles (F-8) and nothing here should imply an archive that does not
-// exist.
+// The visual on each card is the article's own diagram, rendered small and
+// cropped, so a card is never an empty grey box.
 //
-// Data contract is unchanged: published articles only, straight from the
-// CMS store, drafts invisible by construction.
+// Data contract unchanged: published articles only, straight from the CMS.
 import SiteLayout from '../../layouts/SiteLayout.astro';
+import Curve from '../../components/Curve.astro';
 import ContactBlock from '../../components/ContactBlock.astro';
-import { turnstileSiteKey } from '../../lib/turnstile.ts';
 import Viz from '../../components/Viz.astro';
+import { turnstileSiteKey } from '../../lib/turnstile.ts';
 import { ARTICLE_KINDS } from '../../lib/cms/types.ts';
 
 const SITE_KEY = turnstileSiteKey();
@@ -41,7 +41,7 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
     </div>
   )}
 
-  <!-- ═════════ opener ═════════ -->
+  <!-- ========= opener ========= -->
   <section class="ar-hero band band--hero">
     <div class="u-container u-container--wide">
       <p class="t-eyebrow" data-reveal>מאמרים</p>
@@ -49,61 +49,59 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
         <span class="mo-line" style="--mo-delay:80ms"><span>דברים שכדאי לדעת</span></span>
         <span class="mo-line" style="--mo-delay:190ms"><span class="ar-hero__accent">לפני שבונים.</span></span>
       </h1>
-      <p class="ar-hero__lead" data-reveal style="--mo-delay:380ms">
+      <p class="ar-hero__lead" data-reveal style="--mo-delay:300ms">
         מאמרים על AI, אוטומציה ומערכות עסקיות, עם דגש על מה שאפשר לקחת
         לעבודה.
       </p>
     </div>
   </section>
 
-  <!-- ═════════ lead piece ═════════ -->
+  <!-- ========= featured ========= -->
   {featured && (
     <section class="feat band">
       <div class="u-container u-container--wide">
         <a class="feat__link" href={`/articles/${featured.slug}/`}>
-          <div class="feat__art" data-clip>
-            <div class="feat__stage on-dark">
-              <Viz kind={featured.viz as any} />
-            </div>
-          </div>
-
-          <div class="feat__copy">
-            <p class="feat__kick">
-              <span class="feat__kind">{ARTICLE_KINDS[featured.kind]?.label ?? featured.kind}</span>
+          <span class="feat__art">
+            <span class="feat__viz"><Viz kind={featured.viz as any} /></span>
+            <span class="feat__chip">{ARTICLE_KINDS[featured.kind]?.label ?? featured.kind}</span>
+          </span>
+          <span class="feat__copy">
+            <span class="feat__kick">
               <span class="feat__topic">{featured.topic}</span>
               <span class="feat__time">{featured.readingTime}</span>
-            </p>
-            <h2 class="feat__t t-display-3" data-reveal>{featured.title}</h2>
-            <p class="feat__x" data-reveal style="--mo-delay:110ms">{featured.excerpt}</p>
-            <span class="link-arrow feat__go">
-              לקריאה <span class="arrow-inline" aria-hidden="true">←</span>
             </span>
-          </div>
+            <span class="feat__t">{featured.title}</span>
+            <span class="feat__x">{featured.excerpt}</span>
+            <span class="feat__go">לקריאה <span class="arrow-inline" aria-hidden="true">←</span></span>
+          </span>
         </a>
       </div>
     </section>
   )}
 
-  <!-- ═════════ the rest, as editorial rows ═════════ -->
+  <!-- ========= the grid ========= -->
   {rest.length > 0 && (
-    <section class="rows u-section band band--soft">
+    <section class="grid-sec u-section band band--soft">
+      <Curve tone="soft" shape="wave" />
       <div class="u-container u-container--wide">
-        <p class="t-eyebrow rows__k" data-reveal>עוד באותו נושא</p>
-        <ul class="rows__list" data-stagger style="--mo-step:80ms">
+        <p class="t-eyebrow grid-sec__k" data-reveal>עוד באותו נושא</p>
+        <ul class="cards">
           {rest.map((a, i) => (
-            <li class="rows__row" data-reveal>
-              <a class="rows__link" href={`/articles/${a.slug}/`}>
-                <span class="rows__n tabular">{String(i + 1).padStart(2, '0')}</span>
-                <span class="rows__main">
-                  <span class="rows__meta">
-                    <span class="rows__kind">{ARTICLE_KINDS[a.kind]?.label ?? a.kind}</span>
-                    <span class="rows__topic">{a.topic}</span>
-                    <span class="rows__time">{a.readingTime}</span>
-                  </span>
-                  <span class="rows__t">{a.title}</span>
-                  <span class="rows__x">{a.excerpt}</span>
+            <li class="card-a" data-reveal style={`--mo-delay:${(i % 3) * 90}ms`}>
+              <a class="card-a__link" href={`/articles/${a.slug}/`}>
+                <span class="card-a__art">
+                  <span class="card-a__viz"><Viz kind={a.viz as any} /></span>
+                  <span class="card-a__chip">{ARTICLE_KINDS[a.kind]?.label ?? a.kind}</span>
                 </span>
-                <span class="rows__arrow arrow-inline" aria-hidden="true">←</span>
+                <span class="card-a__body">
+                  <span class="card-a__kick">
+                    <span class="card-a__topic">{a.topic}</span>
+                    <span class="card-a__time">{a.readingTime}</span>
+                  </span>
+                  <span class="card-a__t">{a.title}</span>
+                  <span class="card-a__x">{a.excerpt}</span>
+                  <span class="card-a__go">לקריאה <span class="arrow-inline" aria-hidden="true">←</span></span>
+                </span>
               </a>
             </li>
           ))}
@@ -120,8 +118,7 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
     </section>
   )}
 
-  <ContactBlock siteKey={SITE_KEY}
-  />
+  <ContactBlock siteKey={SITE_KEY} />
 </SiteLayout>
 
 <style>
@@ -132,96 +129,143 @@ const anyPlaceholder = ARTICLES.some((a) => a.isPlaceholder);
     font-size: var(--text-small);
     font-weight: 600;
     padding-block: 0.75rem;
-    /* sits under the fixed header */
     padding-top: calc(0.75rem + 84px);
   }
 
-  /* ══════ opener ══════ */
+  /* ====== opener ====== */
   .ar-hero {
-    padding-top: clamp(8rem, 16svh, 12rem);
-    padding-bottom: clamp(3rem, 7vw, 6rem);
+    padding-top: clamp(7rem, 12svh, 9.5rem);
+    padding-bottom: clamp(2rem, 4vw, 3.5rem);
   }
-  .rv-flag + .ar-hero { padding-top: clamp(3rem, 6vw, 5rem); }
-  .ar-hero__h1 { display: flex; flex-direction: column; margin-block: 1rem 2rem; }
+  .rv-flag + .ar-hero { padding-top: clamp(2.5rem, 5vw, 4rem); }
+  .ar-hero__h1 { display: flex; flex-direction: column; margin-block: 1rem 1.5rem; }
   .ar-hero__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .ar-hero__lead { font-size: var(--text-lead); color: var(--color-ink-2); max-width: 46ch; }
 
-  /* ══════ lead piece ══════ */
-  .feat { padding-block: clamp(2rem, 4vw, 3.5rem) clamp(3rem, 6vw, 5rem); }
+  /* ====== featured ====== */
+  .feat { padding-block: clamp(1.5rem, 3vw, 2.5rem) var(--space-section-end); }
   .feat__link {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    gap: clamp(1.5rem, 4vw, 4rem);
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
     align-items: center;
     text-decoration: none;
     color: inherit;
   }
   .feat__art {
+    position: relative;
+    display: block;
     border-radius: var(--radius-xl);
     overflow: hidden;
-    transition: transform var(--dur-slow) var(--ease-out);
-  }
-  /* The site diagrams are authored for dark surfaces; on white they wash
-     out completely. Same navy stage the article figures use. */
-  .feat__stage {
     background: var(--color-navy);
-    padding: clamp(1.25rem, 3vw, 2.5rem);
+    padding: clamp(1rem, 2.5vw, 2rem);
   }
-  .feat__link:hover .feat__art { transform: scale(1.015); }
-  .feat__kick {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 0.625rem;
-    font-size: var(--text-micro); font-weight: 700; margin-bottom: 1rem;
+  .feat__viz { display: block; }
+  /* a soft scrim under the chip, so it never sits directly on one of
+     the diagram's own labels */
+  .feat__art::before,
+  .card-a__art::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: 4.5rem;
+    background: linear-gradient(180deg, rgba(11, 21, 48, 0.85), transparent);
+    z-index: 1;
+    pointer-events: none;
   }
-  .feat__kind {
-    color: #fff; background: var(--color-royal);
-    border-radius: 999px; padding: 0.25rem 0.7rem; letter-spacing: 0.04em;
+  .feat__chip,
+  .card-a__chip {
+    z-index: 2;
+    position: absolute;
+    inset-block-start: 0.9rem;
+    inset-inline-start: 0.9rem;
+    background: var(--color-royal);
+    color: #fff;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
   }
-  .feat__topic { color: var(--color-electric); letter-spacing: 0.06em; }
-  .feat__time { color: var(--color-ink-3); }
-  .feat__t { transition: color var(--dur) var(--ease-out); }
-  .feat__link:hover .feat__t { color: var(--color-royal); }
-  .feat__x { margin-top: 1rem; color: var(--color-ink-2); max-width: 46ch; }
-  .feat__go { margin-top: 1.5rem; }
-
-  /* ══════ rows ══════ */
-  .rows { padding-top: clamp(3rem, 6vw, 5rem); }
-  .rows__k { margin-bottom: clamp(1.5rem, 3vw, 2.5rem); }
-  .rows__list { list-style: none; margin: 0; padding: 0; }
-  .rows__row { border-top: 1px solid var(--color-line-strong); }
-  .rows__row:last-child { border-bottom: 1px solid var(--color-line-strong); }
-  .rows__link {
-    display: grid;
-    grid-template-columns: 3.5rem minmax(0, 1fr) 2rem;
-    gap: clamp(1rem, 3vw, 2.5rem);
-    align-items: center;
-    padding-block: clamp(1.5rem, 2.8vw, 2.5rem);
-    text-decoration: none; color: inherit;
-    transition: padding-inline var(--dur) var(--ease-out);
+  .feat__kick, .card-a__kick {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+    font-size: var(--text-micro); font-weight: 700;
   }
-  /* the row nudges toward the reading direction on hover */
-  .rows__row:hover .rows__link { padding-inline-end: 0.75rem; }
-  .rows__n { font-family: var(--font-display); font-weight: 700; color: var(--color-electric); font-size: var(--text-small); }
-  .rows__main { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
-  .rows__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; font-size: var(--text-micro); font-weight: 700; }
-  .rows__kind { color: var(--color-royal); }
-  .rows__topic { color: var(--color-electric); letter-spacing: 0.06em; }
-  .rows__time { color: var(--color-ink-3); }
-  .rows__t {
+  .feat__topic, .card-a__topic { color: var(--color-electric); letter-spacing: 0.06em; }
+  .feat__time, .card-a__time { color: var(--color-ink-3); }
+  .feat__copy { display: flex; flex-direction: column; gap: 0.9rem; }
+  .feat__t {
     font-family: var(--font-display);
-    font-size: clamp(1.375rem, 2.6vw, 2.5rem);
-    font-weight: 800; line-height: 1.12; letter-spacing: -0.015em;
+    font-size: clamp(1.75rem, 3.6vw, 3.25rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--color-royal);
     transition: color var(--dur) var(--ease-out);
   }
-  .rows__row:hover .rows__t { color: var(--color-royal); }
-  .rows__x { font-size: var(--text-small); color: var(--color-ink-3); max-width: 62ch; }
-  .rows__arrow { color: var(--color-royal); justify-self: end; }
-  .rows__row:hover .rows__arrow { transform: translateX(-5px); }
+  .feat__link:hover .feat__t { color: var(--color-ink); }
+  .feat__x { color: var(--color-ink-2); line-height: 1.7; max-width: 46ch; }
+  .feat__go { font-weight: 700; font-size: var(--text-small); color: var(--color-royal); }
+  .feat__link:hover .arrow-inline { transform: translateX(-5px); }
 
-  @media (max-width: 900px) {
+  /* ====== the grid ====== */
+  .grid-sec { position: relative; overflow: visible; }
+  .grid-sec__k { margin-bottom: clamp(1.5rem, 3vw, 2.5rem); }
+  .cards {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: clamp(1.25rem, 2.5vw, 2rem);
+  }
+  .card-a { display: flex; }
+  .card-a__link {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 10px 30px rgba(11, 21, 48, 0.06);
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  }
+  .card-a__link:hover { transform: translateY(-6px); box-shadow: 0 22px 50px rgba(11, 21, 48, 0.13); }
+  .card-a__art {
+    position: relative;
+    display: block;
+    background: var(--color-navy);
+    padding: 1rem;
+    /* the diagram is wide; crop it to a consistent cover ratio */
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+  .card-a__viz { display: block; transform: scale(1.35); transform-origin: center; }
+  .card-a__body { display: flex; flex-direction: column; gap: 0.6rem; padding: clamp(1rem, 2vw, 1.4rem); }
+  .card-a__t {
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 1.7vw, 1.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-royal);
+  }
+  .card-a__link:hover .card-a__t { color: var(--color-ink); }
+  .card-a__x { font-size: var(--text-small); line-height: 1.65; color: var(--color-ink-2); }
+  .card-a__go {
+    margin-top: auto;
+    padding-top: 0.4rem;
+    font-size: var(--text-small);
+    font-weight: 700;
+    color: var(--color-royal);
+  }
+  .card-a__link:hover .arrow-inline { transform: translateX(-5px); }
+
+  @media (max-width: 860px) {
     .feat__link { grid-template-columns: 1fr; }
-    .rows__link { grid-template-columns: 2.5rem 1fr 1.25rem; gap: 0.875rem; }
   }
 </style>

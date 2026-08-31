@@ -6,13 +6,12 @@
 // oversized full-screen overlay menu rather than a dropdown drawer, and
 // a persistent primary CTA. Labels and structure stay LAHAV's own.
 import { NAV, CTA_PRIMARY, SERVICES } from '../lib/site';
+import { SERVICE_ICONS } from '../lib/icons';
 
 interface Props { currentPath: string; solid?: boolean }
 const { currentPath, solid = false } = Astro.props;
 const isActive = (href: string) => (href === '/' ? currentPath === '/' : currentPath.startsWith(href));
 ---
-
-<a class="skip-link" href="#main">דילוג לתוכן</a>
 
 <header class:list={['hdr', solid && 'is-solid']} data-header>
   <div class="u-container u-container--wide hdr__inner">
@@ -21,15 +20,30 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     </a>
 
     <nav class="hdr__nav" aria-label="ניווט ראשי">
-      {NAV.map((item) => (
-        <a
-          class:list={['hdr__link', isActive(item.href) && 'is-on']}
-          href={item.href}
-          aria-current={isActive(item.href) ? 'page' : undefined}
-        >
-          <span>{item.label}</span>
-        </a>
-      ))}
+      {NAV.map((item) =>
+        item.href === '/services/' ? (
+          <div class="hdr__has-mega" data-mega-wrap>
+            <a
+              class:list={['hdr__link', isActive(item.href) && 'is-on']}
+              href={item.href}
+              aria-expanded="false"
+              aria-controls="mega-services"
+              data-mega-btn
+            >
+              <span>{item.label}</span>
+              <span class="hdr__caret" aria-hidden="true"></span>
+            </a>
+          </div>
+        ) : (
+          <a
+            class:list={['hdr__link', isActive(item.href) && 'is-on']}
+            href={item.href}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
+            <span>{item.label}</span>
+          </a>
+        )
+      )}
     </nav>
 
     <div class="hdr__end">
@@ -39,6 +53,38 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
         <span class="hdr__burger-bars" aria-hidden="true"></span>
         <span class="sr-only">פתיחת תפריט</span>
       </button>
+    </div>
+  </div>
+
+  <!-- SERVICES MEGA MENU.
+       Desktop only. It is a real region with a real heading, opened by
+       hover OR click/keyboard, and it closes on Escape, on blur out of
+       the whole group, and on pointer leave. -->
+  <div class="mega" id="mega-services" data-mega hidden>
+    <div class="u-container u-container--wide mega__inner">
+      <div class="mega__lead">
+        <p class="t-eyebrow">השירותים שלנו</p>
+        <p class="mega__h">מתחילים במה שהכי מציק.</p>
+        <a class="link-arrow mega__all" href="/services/">
+          לכל השירותים <span class="arrow-inline" aria-hidden="true">←</span>
+        </a>
+      </div>
+
+      <ul class="mega__list">
+        {SERVICES.map((s, i) => (
+          <li>
+            <a class="mega__card" href={`/services/${s.slug}/`}>
+              <span class="mega__n tabular">{String(i + 1).padStart(2, '0')}</span>
+              <span class="mega__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round" set:html={SERVICE_ICONS[s.slug]} />
+              </span>
+              <span class="mega__name">{s.name}</span>
+              <span class="mega__lead-t">{s.lead}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   </div>
 </header>
@@ -56,12 +102,24 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     </nav>
 
     <div class="menu__side">
-      <p class="t-eyebrow">שירותים</p>
-      <ul class="menu__svc">
-        {SERVICES.map((s) => (
-          <li><a href={`/services/${s.slug}/`}>{s.name}</a></li>
-        ))}
-      </ul>
+      <!-- Not the desktop mega menu squeezed onto a phone: an expandable
+           group that behaves like a phone menu should. -->
+      <details class="menu__svc-group" data-menu-svc>
+        <summary>
+          <span>כל השירותים</span>
+          <span class="menu__svc-ico" aria-hidden="true"></span>
+        </summary>
+        <ul class="menu__svc">
+          {SERVICES.map((s, i) => (
+            <li>
+              <a href={`/services/${s.slug}/`}>
+                <span class="menu__svc-n tabular">{String(i + 1).padStart(2, '0')}</span>
+                <span>{s.name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
       <a class="btn btn-primary btn-lg menu__cta" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
     </div>
   </div>
@@ -217,6 +275,135 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
   @media (prefers-reduced-motion: reduce) {
     .menu__link { transition: opacity 1ms, transform 1ms; }
   }
+  /* ══════ services mega menu ══════ */
+  .hdr__has-mega { position: relative; display: flex; }
+  .hdr__caret {
+    display: inline-block;
+    width: 0.42em; height: 0.42em;
+    margin-inline-start: 0.45em;
+    border-inline-end: 1.5px solid currentColor;
+    border-block-end: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+    opacity: 0.55;
+    transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out);
+  }
+  [data-mega][data-open='true'] ~ * .hdr__caret,
+  .hdr__has-mega:hover .hdr__caret { opacity: 1; }
+
+  .mega {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    background: var(--color-surface);
+    border-block-end: 1px solid var(--color-line);
+    box-shadow: 0 30px 60px rgba(11, 21, 48, 0.12);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 220ms var(--ease-out), transform 260ms var(--ease-out);
+  }
+  .mega[hidden] { display: none; }
+  .mega[data-open='true'] { opacity: 1; transform: none; pointer-events: auto; }
+
+  .mega__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 3fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    padding-block: clamp(1.75rem, 3vw, 2.75rem);
+    align-items: start;
+  }
+  .mega__h {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2vw, 1.875rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    color: var(--color-ink);
+    margin-block: 0.5rem 1rem;
+    max-width: 12ch;
+  }
+
+  .mega__list {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .mega__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    height: 100%;
+    padding: 1rem 0.9rem 1.1rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid transparent;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out),
+                transform var(--dur) var(--ease-out);
+  }
+  .mega__card:hover {
+    background: var(--color-surface-2);
+    border-color: var(--color-line);
+    transform: translateY(-3px);
+  }
+  .mega__n { font-family: var(--font-display); font-size: var(--text-micro); font-weight: 700; color: var(--color-electric); }
+  .mega__mark {
+    display: grid; place-items: center;
+    width: 2.25rem; height: 2.25rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-royal) 9%, transparent);
+    color: var(--color-royal);
+  }
+  .mega__mark :global(svg) { width: 1.1rem; height: 1.1rem; }
+  .mega__name {
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: var(--color-ink);
+  }
+  .mega__card:hover .mega__name { color: var(--color-royal); }
+  .mega__lead-t { font-size: var(--text-micro); line-height: 1.5; color: var(--color-ink-3); }
+
+  /* ══════ mobile services group ══════ */
+  .menu__svc-group { border-top: 1px solid var(--color-line); }
+  .menu__svc-group > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1rem;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-display);
+    font-size: var(--text-body-lg);
+    font-weight: 800;
+    color: var(--color-ink);
+  }
+  .menu__svc-group > summary::-webkit-details-marker { display: none; }
+  .menu__svc-ico {
+    position: relative; width: 1.1rem; height: 1.1rem; flex: none;
+  }
+  .menu__svc-ico::before, .menu__svc-ico::after {
+    content: ''; position: absolute; inset-inline: 0; top: 50%;
+    height: 2px; background: var(--color-royal);
+    transition: transform var(--dur) var(--ease-out);
+  }
+  .menu__svc-ico::after { transform: rotate(90deg); }
+  .menu__svc-group[open] .menu__svc-ico::after { transform: rotate(0deg); }
+  .menu__svc-group[open] > summary { color: var(--color-royal); }
+  .menu__svc-group .menu__svc { padding-bottom: 1rem; }
+  .menu__svc-n { font-size: var(--text-micro); font-weight: 700; color: var(--color-electric); margin-inline-end: 0.6rem; }
+  .menu__svc li a { display: flex; align-items: baseline; }
+
+  @media (max-width: 1024px) {
+    /* the mega menu is a desktop affordance only */
+    .mega { display: none !important; }
+    .hdr__caret { display: none; }
+  }
+
 </style>
 
 <script>
@@ -251,4 +438,69 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
       }
     });
   }
+
+  // ---------------- SERVICES MEGA MENU ----------------
+  // Opens on hover for a pointer, and on click or keyboard for everyone
+  // else. It closes on Escape, when focus leaves the whole group, and
+  // when the pointer leaves. There is a small close delay so a diagonal
+  // mouse path from the trigger to the panel does not dismiss it.
+  const megaWrap = document.querySelector<HTMLElement>('[data-mega-wrap]');
+  const megaBtn = document.querySelector<HTMLAnchorElement>('[data-mega-btn]');
+  const mega = document.querySelector<HTMLElement>('[data-mega]');
+
+  if (megaWrap && megaBtn && mega) {
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    let closeTimer = 0;
+
+    const setMega = (open: boolean) => {
+      window.clearTimeout(closeTimer);
+      if (open) mega.hidden = false;
+      mega.dataset.open = String(open);
+      megaBtn.setAttribute('aria-expanded', String(open));
+      document.body.classList.toggle('mega-open', open);
+      if (!open) {
+        closeTimer = window.setTimeout(() => {
+          if (mega.dataset.open !== 'true') mega.hidden = true;
+        }, 300);
+      }
+    };
+    const openNow = () => { window.clearTimeout(closeTimer); setMega(true); };
+    const closeSoon = () => {
+      window.clearTimeout(closeTimer);
+      closeTimer = window.setTimeout(() => setMega(false), 140);
+    };
+
+    if (canHover) {
+      megaWrap.addEventListener('pointerenter', openNow);
+      megaWrap.addEventListener('pointerleave', closeSoon);
+      mega.addEventListener('pointerenter', openNow);
+      mega.addEventListener('pointerleave', closeSoon);
+    }
+
+    // A click opens the panel rather than following the link, but only
+    // while it is closed: a second click goes through to /services/.
+    megaBtn.addEventListener('click', (e) => {
+      if (mega.dataset.open === 'true') return;
+      if (window.matchMedia('(max-width: 1024px)').matches) return;
+      e.preventDefault();
+      setMega(true);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mega.dataset.open === 'true') {
+        setMega(false);
+        megaBtn.focus();
+      }
+    });
+
+    // Focus leaving BOTH the trigger and the panel closes it.
+    document.addEventListener('focusin', (e) => {
+      if (mega.dataset.open !== 'true') return;
+      const t = e.target as Node;
+      if (!mega.contains(t) && !megaWrap.contains(t)) setMega(false);
+    });
+
+    mega.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMega(false)));
+  }
+
 </script>

@@ -237,14 +237,13 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   }
 
   /* ---------- speaking ---------- */
-  /* The mouth is driven by a class rather than a fixed loop, so it only
-     moves while there is actually something being said. */
-  .av.is-talking .av__mouth { animation: av-talk 300ms var(--ease-inout) infinite; transform-origin: 130px 96px; }
-  @keyframes av-talk {
-    0%, 100% { transform: scaleY(1)   scaleX(1) }
-    28%      { transform: scaleY(3.4) scaleX(0.86) }
-    56%      { transform: scaleY(1.9) scaleX(0.96) }
-    78%      { transform: scaleY(2.7) scaleX(0.9) }
+  /* No keyframes: the mouth is driven from JS by the actual voice signal
+     (audio amplitude, or the speech engine's word boundaries). All the
+     stylesheet owns is the origin and a short smoothing transition. */
+  .av__mouth {
+    transform-origin: 130px 96px;
+    transform-box: fill-box;
+    transition: transform 60ms linear;
   }
   /* the head settles while speaking, so the mouth is the moving part */
   .av.is-talking .av__head { animation-duration: 5200ms; }
@@ -318,7 +317,7 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
   @media (prefers-reduced-motion: reduce) {
     .av__body, .av__shadow, .av__glow, .av__mouth,
     .av__eyes, .av__arm--r, .av__arm--l, .av__head { animation: none; }
-    .av.is-talking .av__mouth { animation: none; }
+    .av__mouth { transition: none; }
     html.mo-ready .av__figure { opacity: 1; transform: none; }
     .av__line, .avtalk__scrim, .avtalk__box { transition: none; }
   }
@@ -416,6 +415,91 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
     // Resolves when the line has finished being spoken. If there is no
     // speech engine, no Hebrew voice, or the visitor muted it, it
     // resolves immediately and the caller falls back to a timer.
+    // ---------------- MOUTH ----------------
+    //
+    // The mouth is driven by the VOICE, not by a fixed loop.
+    //
+    //  · With a real audio track a Web Audio AnalyserNode reads the signal
+    //    every frame and the opening follows its amplitude. That is the
+    //    path a produced narration will use, and it is why `audioSrc`
+    //    exists as a prop.
+    //  · With the browser speech engine there is no audio stream to
+    //    analyse, so the next best REAL signal is used: the utterance's
+    //    own `boundary` events, which fire per word on the actual speech
+    //    timeline. Between boundaries the opening decays.
+    //
+    // Either way the mouth closes the moment speech stops, and the value
+    // is smoothed so it never jitters. Introducing phoneme/viseme data
+    // later means changing what feeds `mouthTarget`, nothing else.
+    const mouthEl = () => panelAv?.querySelector('.av__mouth') as SVGElement | null;
+    let mouthRaf = 0;
+    let mouthOff = 0;
+    let mouthTarget = 0;
+    let mouthValue = 0;
+
+    const paintMouth = () => {
+      // fast to open, slower to close, so it reads as speech not a blink
+      const k = mouthTarget > mouthValue ? 0.45 : 0.18;
+      mouthValue += (mouthTarget - mouthValue) * k;
+      const el = mouthEl();
+      if (el) {
+        const open = 1 + mouthValue * 3.2;
+        const wide = 1 - mouthValue * 0.14;
+        el.style.transform = `scaleY(${open.toFixed(3)}) scaleX(${wide.toFixed(3)})`;
+      }
+      mouthRaf = requestAnimationFrame(paintMouth);
+    };
+
+    // play() calls stop() before it starts, so the delayed teardown below
+    // has to be cancellable or it fires 260ms into the NEW run and kills
+    // the animation that just began.
+    const startMouth = () => {
+      if (mouthOff) { window.clearTimeout(mouthOff); mouthOff = 0; }
+      if (!mouthRaf) paintMouth();
+    };
+    const stopMouth = () => {
+      mouthTarget = 0;
+      window.clearTimeout(mouthOff);
+      mouthOff = window.setTimeout(() => {
+        mouthOff = 0;
+        if (mouthRaf) { cancelAnimationFrame(mouthRaf); mouthRaf = 0; }
+        mouthValue = 0;
+        const el = mouthEl();
+        if (el) el.style.transform = '';
+      }, 260);
+    };
+
+    // Real audio: amplitude drives the opening.
+    let analyser: AnalyserNode | null = null;
+    const attachAnalyser = () => {
+      if (!audio || analyser) return;
+      try {
+        const Ctx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
+        const ctx = new Ctx();
+        const src = ctx.createMediaElementSource(audio);
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = 512;
+        src.connect(analyser);
+        analyser.connect(ctx.destination);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        const pump = () => {
+          if (!analyser) return;
+          analyser.getByteTimeDomainData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) {
+            const v = (data[i] - 128) / 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / data.length);
+          mouthTarget = audio!.paused ? 0 : Math.min(1, rms * 4.5);
+          requestAnimationFrame(pump);
+        };
+        pump();
+      } catch {
+        // No Web Audio available: captions still carry the whole script.
+      }
+    };
+
     const speak = (text: string): Promise<boolean> =>
       new Promise((resolve) => {
         if (!synth || muted || audio) { resolve(false); return; }
@@ -426,8 +510,15 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
         u.pitch = 1.0;
         let settled = false;
         const done = (ok: boolean) => { if (!settled) { settled = true; resolve(ok); } };
-        u.onend = () => done(true);
-        u.onerror = () => done(false);
+        u.onstart = () => startMouth();
+        u.onend = () => { mouthTarget = 0; done(true); };
+        u.onerror = () => { mouthTarget = 0; done(false); };
+        // Word boundaries are the only real timing signal a speech engine
+        // exposes. Each one opens the mouth; it decays until the next.
+        u.onboundary = () => {
+          mouthTarget = 0.55 + Math.random() * 0.45;
+          window.setTimeout(() => { mouthTarget *= 0.25; }, 90);
+        };
         // Some engines never fire onend on a long utterance. This is the
         // escape hatch so the script can never hang half way through.
         window.setTimeout(() => done(false), Math.max(6000, text.length * 220));
@@ -440,6 +531,7 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
       panelAv?.classList.remove('is-talking');
       if (audio) { audio.pause(); audio.currentTime = 0; }
       synth?.cancel();
+      stopMouth();
     };
 
     const play = async () => {
@@ -447,7 +539,11 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
       if (!script.length) return;
       const myRun = ++runToken;
       panelAv?.classList.add('is-talking');
-      if (audio) audio.play().catch(() => { /* no track, captions carry it */ });
+      startMouth();
+      if (audio) {
+        attachAnalyser();
+        audio.play().catch(() => { /* no track, captions carry it */ });
+      }
 
       for (const line of script) {
         if (myRun !== runToken) return;
@@ -472,6 +568,7 @@ const uid = 'av' + Math.random().toString(36).slice(2, 8);
       }
 
       panelAv?.classList.remove('is-talking');
+      stopMouth();
     };
 
     const setOpen = (open: boolean) => {

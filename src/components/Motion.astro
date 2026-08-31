@@ -58,13 +58,76 @@
       const still: HTMLElement[] = [];
       for (const el of pending) {
         const r = el.getBoundingClientRect();
-        // in view once its top has risen above 92% of the viewport and its
-        // bottom has not yet passed the top edge
-        if (r.top < vh * 0.92 && r.bottom > 0) el.classList.add('is-in');
+        // Reveal as soon as the top has risen above 92% of the viewport,
+        // and NEVER un-reveal.
+        //
+        // There used to be a second condition, `r.bottom > 0`, meaning
+        // "and it has not scrolled off the top yet". That is the bug that
+        // made copy disappear: jump to an anchor, restore a scroll
+        // position, flick-scroll on a phone, or press End, and everything
+        // you skipped past has bottom < 0 forever, so it stays at
+        // opacity 0 permanently. Content must never be lost that way.
+        if (r.top < vh * 0.92) el.classList.add('is-in');
         else still.push(el);
       }
       pending = still;
     };
+
+    // PRIMARY TRIGGER: IntersectionObserver.
+    //
+    // The rect sweep below is kept, but it cannot be the only mechanism.
+    // During a fast flick or a programmatic jump the scroll handler is
+    // throttled and the sweep gets starved, so content further down the
+    // page arrives already scrolled past and stays at opacity 0 until the
+    // page comes to rest. IO is not tied to scroll events at all and
+    // fires for every element the viewport passes, at any speed.
+    //
+    // Both mechanisms only ever ADD `is-in`, so running them together is
+    // safe and idempotent.
+    if (!reduced && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            // isIntersecting alone is not enough for a [data-clip]
+            // element, whose painted area starts at zero: compare the
+            // layout rect against the viewport instead.
+            const r = e.boundingClientRect;
+            if (e.isIntersecting || r.top < window.innerHeight * 0.92) {
+              (e.target as HTMLElement).classList.add('is-in');
+              io.unobserve(e.target);
+              pending = pending.filter((x) => x !== e.target);
+            }
+          }
+        },
+        { rootMargin: '0px 0px -8% 0px', threshold: 0 }
+      );
+      for (const el of enterTargets) io.observe(el);
+    }
+
+    // BACKSTOP: a plain interval, not rAF.
+    //
+    // Both the scroll handler and IntersectionObserver can be starved by
+    // a fast flick or a programmatic jump, which is how copy ended up
+    // stuck at opacity 0. A 150ms interval cannot be starved, costs a few
+    // getBoundingClientRect calls, and only runs while something is
+    // actually still waiting.
+    let ticker = 0;
+    const startWatch = () => {
+      if (ticker || !pending.length) return;
+      ticker = window.setInterval(() => {
+        checkEnter();
+        if (!pending.length) { window.clearInterval(ticker); ticker = 0; }
+      }, 150);
+    };
+
+    // Last line of defence. Whatever is still pending 2.5s after load is
+    // shown unconditionally: a visitor must never lose content because an
+    // animation did not fire.
+    window.setTimeout(() => {
+      for (const el of pending) el.classList.add('is-in');
+      pending = [];
+      if (ticker) { window.clearInterval(ticker); ticker = 0; }
+    }, 2500);
 
     // ---------- stagger indices ----------
     document.querySelectorAll<HTMLElement>('[data-stagger]').forEach((group) => {
@@ -108,6 +171,7 @@
         }
 
         checkEnter();
+        startWatch();
 
         for (const s of swapRoots) {
           if (!s.steps) continue;
@@ -132,6 +196,7 @@
     // run again once late layout (fonts, images) has settled, so nothing
     // that shifted into view is left hidden
     window.addEventListener('load', () => { onScroll(); window.setTimeout(onScroll, 400); });
+    startWatch();
 
     // ---------- marquee: duplicate content for a seamless loop ----------
     if (!reduced) {

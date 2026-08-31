@@ -18,7 +18,7 @@ import ContactBlock from '../components/ContactBlock.astro';
 
 const SITE_KEY = turnstileSiteKey();
 import { turnstileSiteKey } from '../lib/turnstile.ts';
-import Viz from '../components/Viz.astro';
+import Flow from '../components/Flow.astro';
 import FounderPortrait from '../components/FounderPortrait.astro';
 import Avatar from '../components/Avatar.astro';
 import { FOUNDER, PROCESS, SERVICES } from '../lib/site';
@@ -144,8 +144,14 @@ const guideLines = [
       </div>
     </div>
 
-    <div class="u-container u-container--wide ab-guide__viz" data-clip>
-      <Viz kind="about" />
+    <div class="u-container u-container--wide ab-guide__viz">
+      <Flow
+        stops={[
+          { t: 'התהליך', s: 'איך אתם עובדים היום' },
+          { t: 'הצורך', s: 'מה באמת צריך להשתנות' },
+          { t: 'הכלי', s: 'רק אחרי שהבנו' },
+        ]}
+      />
     </div>
   </section>
 
@@ -202,14 +208,14 @@ const guideLines = [
   /* ══════ opener ══════ */
   .ab-hero {
     position: relative;
-    min-height: 88svh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-block: clamp(8rem, 16svh, 12rem) clamp(4rem, 8vh, 7rem);
+    /* No min-height. It was 88svh on top of 12rem of padding, which on a
+       short laptop screen produced a mostly empty first screen. */
+    padding-block: clamp(8rem, 17svh, 11rem) var(--space-section-end);
   }
   .ab-hero__h1 { margin-block: 1rem 2rem; display: flex; flex-direction: column; }
-  .ab-hero__latin { font-size: 0.4em; opacity: 0.4; }
   .ab-hero__accent {
     background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -254,8 +260,10 @@ const guideLines = [
   .ab-story__text {
     display: flex;
     flex-direction: column;
-    gap: clamp(3rem, 30svh, 16rem);
-    padding-block: clamp(1rem, 8svh, 5rem) clamp(3rem, 20svh, 10rem);
+    /* Enough travel for the pinned portrait to move through, without the
+       270px dead bands the old 30svh gap produced. */
+    gap: clamp(2.5rem, 16svh, 9rem);
+    padding-block: clamp(1rem, 5svh, 3rem) clamp(2rem, 10svh, 5rem);
   }
   .ab-story__p {
     font-size: clamp(1.25rem, 2vw, 1.9rem);
@@ -277,7 +285,16 @@ const guideLines = [
 
   /* ══════ beliefs ══════ */
   .ab-belief { position: relative; }
-  .ab-belief__ghost { position: absolute; top: 4%; inset-inline-start: 50%; transform: translateX(50%); z-index: 0; }
+  /* The watermark sits BELOW the heading, not across it. It used to
+     start at 4% and run straight through the section title. */
+  .ab-belief__ghost {
+    position: absolute;
+    inset-block-start: 3%;
+    inset-inline-start: 50%;
+    transform: translateX(50%);
+    z-index: 0;
+    pointer-events: none;
+  }
   .ab-belief__inner { position: relative; z-index: 1; }
   .ab-belief__head { margin-bottom: clamp(3rem, 6vw, 5rem); }
   .ab-belief__list { list-style: none; margin: 0; padding: 0; }
@@ -304,7 +321,7 @@ const guideLines = [
   }
   .ab-guide__fig { display: grid; place-items: center; }
   .ab-guide__h { margin-block: 1rem 1.5rem; }
-  .ab-guide__viz { border-radius: var(--radius-xl); overflow: hidden; }
+  .ab-guide__viz { margin-top: clamp(1.5rem, 4vw, 3rem); min-width: 0; }
 
   /* ══════ ecosystem ══════ */
   .ab-eco__head { margin-bottom: clamp(3rem, 6vw, 5rem); }

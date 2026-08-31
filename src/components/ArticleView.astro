@@ -26,9 +26,16 @@ const { a, more = [] } = Astro.props;
 ---
 
 <article class="art">
-  <header class="art__head band band--hero">
-    <div class="u-container u-container--wide">
-      <p class="art__kicker" data-reveal>
+  <!-- COVER.
+       Structure taken from the reference's own article page: a full-bleed
+       cover with a curved light panel overlapping its lower corner, and
+       the title, author and date sitting inside that panel. -->
+  <header class="art__cover">
+    <div class="art__cover-art" aria-hidden="true">
+      <Viz kind={a.viz as any} />
+    </div>
+    <div class="art__plate">
+      <p class="art__kicker">
         <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
         <span class="art__topic">{a.topic}</span>
         <span class="art__time">{a.readingTime}</span>
@@ -186,9 +193,29 @@ const { a, more = [] } = Astro.props;
     background: linear-gradient(90deg, #2997ff, #1d4ed8);
   }
 
-  /* ══════ opener ══════ */
-  .art__head {
-    padding-block: clamp(9rem, 20svh, 14rem) clamp(2.5rem, 5vw, 4.5rem);
+  /* ══════ cover ══════ */
+  .art__cover {
+    position: relative;
+    padding-top: 84px; /* clears the fixed header */
+    background: var(--color-navy);
+  }
+  .art__cover-art {
+    padding: clamp(1.5rem, 3.5vw, 3rem) clamp(1.25rem, 5vw, 5rem) clamp(6rem, 14vw, 11rem);
+    max-width: var(--container-wide);
+    margin-inline: auto;
+  }
+  /* the light plate that the title sits on, curving up out of the cover */
+  .art__plate {
+    position: relative;
+    z-index: 2;
+    margin-top: clamp(-7rem, -12vw, -4rem);
+    margin-inline: auto;
+    width: min(100% - 2 * clamp(1rem, 4vw, 3rem), var(--container-max));
+    background: var(--color-surface);
+    border-start-start-radius: var(--radius-xl);
+    border-start-end-radius: clamp(3rem, 9vw, 8rem);
+    padding: clamp(1.75rem, 4vw, 3.25rem) clamp(1.5rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem);
+    box-shadow: 0 -20px 60px rgba(11, 21, 48, 0.18);
   }
   .art__kicker {
     display: flex;
@@ -215,7 +242,7 @@ const { a, more = [] } = Astro.props;
   /* Editorial scale: the headline is the page. No cap at a "safe" size. */
   .art__title {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 6vw, 6.5rem);
+    font-size: clamp(2rem, 4.6vw, 4.25rem);
     font-weight: 800;
     line-height: 1.02;
     letter-spacing: -0.035em;
@@ -317,10 +344,15 @@ const { a, more = [] } = Astro.props;
 
   /* ══════ figures ══════ */
   /* Deliberately wider than the measure: the one moment the page opens up. */
-  .art__fig {
-    margin-block: clamp(1.5rem, 3vw, 2.5rem);
-    width: min(100vw - 2 * var(--gutter, 1.25rem), 62rem);
-    margin-inline: calc((44rem - min(100vw - 2 * var(--gutter, 1.25rem), 62rem)) / 2);
+  /* The figure breaks out of the reading measure, but only when there is
+     genuinely room. `100vw` includes the scrollbar gutter, which pushed
+     the figure 13px past the viewport at tablet width. */
+  .art__fig { margin-block: clamp(1.5rem, 3vw, 2.5rem); }
+  @media (min-width: 62rem) {
+    .art__fig {
+      width: min(100% + 12rem, 62rem);
+      margin-inline: calc((44rem - min(100% + 12rem, 62rem)) / 2);
+    }
   }
   .art__fig-stage {
     background: var(--color-navy);

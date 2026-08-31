@@ -1,7 +1,54 @@
 # LAHAV AI Website — Consolidated Source of Truth
 
 STATUS: CURRENT. Reconciliation complete. Final decisions F-1..F-18 approved by the client 2026-08-29.
-F-19 (2026-08-31) supersedes F-1's "never all-dark" clause — see section 5.
+F-19 (2026-08-31) supersedes F-1's "never all-dark" clause - see section 5.
+F-20, F-21, F-22 (2026-08-31) - see section 0.
+
+---
+
+## 0. Decisions taken 2026-08-31, during the STG-fidelity redesign
+
+### F-20 - Floating WhatsApp is REQUIRED. D-Q2 is superseded.
+The client instructed, explicitly and in writing: "I WANT THE FLOATING
+WHATSAPP BUTTON. DO NOT REMOVE IT. This decision supersedes any previous
+instruction saying otherwise."
+
+D-Q2 ("no floating WhatsApp") no longer applies. The floating button is
+implemented in `src/components/SiteDock.astro`, uses the existing verified
+`WHATSAPP_HREF`, sits in the reading-end corner clear of the safe area,
+and steps aside when the chat panel opens.
+
+Note for future reference: STG is the visual and motion authority for this
+project. It is NOT the product-requirements authority. This decision was
+taken by the client on its merits, not because STG has such a button.
+
+### F-21 - Three separate things, never merged
+1. Floating WhatsApp - talks to a person.
+2. AI chat - a real assistant, answers from approved copy only.
+3. Hero character - the presenter on the home page.
+
+The chat launcher must never replay the hero character's introduction.
+A face in the corner promises a chat; anything else is a broken promise.
+
+### F-22 - No giant English display type
+Removed from the public site: PROCESS, BUZZWORD, LESS, CONTROL, The Core,
+CRM SYSTEMS, AUTOMATIONS, WEBSITES, APPLICATIONS, AI CONTENT,
+"Work smarter, not harder", "Notes, not noise", SERVICES,
+"Tools were never the problem".
+
+English that stays, because it is how Israeli business owners speak:
+**LAHAV AI, AI, CRM**.
+
+Oversized HEBREW typography carries the composition instead. See
+`docs/LAHAV_HEBREW_VOICE_GUIDE.md` section 13.
+
+### F-23 - Services mega menu. D-Q5 is superseded.
+D-Q5 said "no header dropdown". The client asked for a proper services
+mega menu on desktop, and it is built: a designed panel with all five
+services, opened by hover, click or keyboard, closing on Escape, on focus
+leaving the group, and on pointer leave. On mobile it is an expandable
+group inside the existing full-screen menu, never the desktop panel
+squeezed onto a phone.
 Date: 2026-08-29 (revision 2)
 Replaces: the ambiguity between the legacy Stage 1–4 documents and the handoff package.
 
@@ -84,7 +131,7 @@ Nothing in the legacy set was silently overwritten. Every conflict is listed in 
 Not contradicted by anything newer, so they stay in force:
 - Measured contrast rules, including **Electric Blue #2997FF on white ≈ 3:1 — not permitted for body text**
 - D-Q1 semantic colors: Success #15803D, Error #B91C1C, functional use only
-- D-Q2 no floating WhatsApp · D-Q3 hide Articles when empty · D-Q5 no header dropdown (all three are independently confirmed by the handoff documents)
+- ~~D-Q2 no floating WhatsApp~~ **SUPERSEDED, see F-20** · D-Q3 hide Articles when empty · ~~D-Q5 no header dropdown~~ **SUPERSEDED, see F-23** (all three are independently confirmed by the handoff documents)
 - The RTL specification, button/form state requirements, motion rules and accessibility design rules
 - D-2: security overrides cost when they conflict
 

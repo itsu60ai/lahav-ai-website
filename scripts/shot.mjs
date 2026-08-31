@@ -112,6 +112,10 @@ await S('Runtime.evaluate', { expression: 'document.fonts && document.fonts.read
 if (scrollY) {
   await S('Runtime.evaluate', { expression: `window.scrollTo(0, ${scrollY});` });
 }
+if (process.env.SHOT_EVAL) {
+  await S('Runtime.evaluate', { expression: process.env.SHOT_EVAL, awaitPromise: true });
+  await sleep(600);
+}
 if (process.env.SHOT_CLICK) {
   await S('Runtime.evaluate', { expression: `document.querySelector(${JSON.stringify(process.env.SHOT_CLICK)})?.click()` });
   await sleep(700);

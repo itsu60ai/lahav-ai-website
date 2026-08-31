@@ -23,7 +23,7 @@ import SplitLines from '../components/SplitLines.astro';
 import Avatar from '../components/Avatar.astro';
 import FloatingCards from '../components/FloatingCards.astro';
 import FounderPortrait from '../components/FounderPortrait.astro';
-import Viz from '../components/Viz.astro';
+import Flow from '../components/Flow.astro';
 import { SERVICES, PROCESS, FOUNDER } from '../lib/site';
 import { SERVICE_ICONS } from '../lib/icons';
 
@@ -191,8 +191,17 @@ const heroScript = [
         מישהו משאיר פרטים באתר. הפנייה נרשמת לבד, מקבלת מענה ראשוני, נכנסת
         למעקב, ומזכירה לכם לחזור אליה בזמן. אף אחד לא העתיק שורה.
       </p>
-      <div class="core__viz" data-clip style="--mo-delay:160ms">
-        <Viz kind="crm" />
+      <div class="core__viz">
+        <Flow
+          tone="dark"
+          stops={[
+            { t: 'פנייה', s: 'נכנסת לבד' },
+            { t: 'מענה', s: 'ראשוני ומיידי' },
+            { t: 'מעקב', s: 'לא נשכח' },
+            { t: 'לקוח', s: 'הכל במקום אחד' },
+          ]}
+          note="התרשים ממחיש את סדר הדברים. מה בדיוק ירוץ אצלכם ייקבע באפיון."
+        />
       </div>
     </div>
   </section>
@@ -326,7 +335,8 @@ const heroScript = [
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-block: clamp(5.5rem, 9svh, 7.5rem) 0;
+    /* must clear the 86px fixed header at every viewport */
+    padding-block: clamp(6.5rem, 10svh, 8rem) 0;
     overflow: clip;
   }
 
@@ -337,6 +347,11 @@ const heroScript = [
      eats the room the character needs, and the character is the point of
      this hero. The svh term is what keeps the whole act on one screen. */
   .hero__title {
+    /* max-content, so the box hugs the glyphs. A full-width centred
+       heading box reaches the hero cards at the edges even though the
+       text never does, which is both untruthful layout and a real
+       click-target overlap. */
+    max-width: max-content;
     margin-inline: auto;
     font-size: min(8.4vw, 13.5svh, 11rem);
   }
@@ -547,10 +562,10 @@ const heroScript = [
     text-align: start;
   }
   .core__lead { color: rgba(255, 255, 255, 0.9); font-size: var(--text-lead); line-height: 1.6; }
-  .core__viz { border-radius: var(--radius-xl); overflow: hidden; }
+  .core__viz { min-width: 0; }
 
   /* ====== what we build ====== */
-  .svc { position: relative; overflow: visible; }
+  .svc { position: relative; overflow: visible; padding-block-end: var(--space-section-end); }
   .svc__head { max-width: 46rem; margin-bottom: clamp(2rem, 4vw, 3.5rem); }
   .svc__h { margin-block: 0.75rem 1.25rem; }
   .svc__lead { max-width: 48ch; }
@@ -693,6 +708,12 @@ const heroScript = [
     .core__inner, .fnd__grid { grid-template-columns: 1fr; }
     .core__foot { grid-template-columns: 1fr; }
     .fnd__art { max-width: 26rem; }
+  }
+  /* Tablet: the figure was sized off vw, which on a narrow-but-tall
+     screen left a 200px band between the statement and the character. */
+  @media (max-width: 1024px) and (min-width: 761px) {
+    .hero__figure :global(.av__svg) { max-height: min(44svh, 46vw); }
+    .hero__figure :global(.av__talk) { bottom: clamp(4rem, 12svh, 7rem); }
   }
   @media (max-width: 760px) {
     .prob__row, .proc__row { grid-template-columns: 3rem 1fr; }

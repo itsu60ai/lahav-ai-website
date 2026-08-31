@@ -94,7 +94,10 @@ const faqJsonLd = {
   .fq__item { border-top: 1px solid var(--color-line); }
   .fq__item:last-child { border-bottom: 1px solid var(--color-line); }
 
-  .fq__d { }
+  /* Explicit, not relying on the UA's closed-details behaviour: with a
+     grid <summary> the answer was still laid out at full height while
+     closed, and it overlapped the next question. */
+  .fq__d:not([open]) .fq__a { display: none; }
   .fq__q {
     display: grid;
     grid-template-columns: 3.5rem minmax(0, 1fr) 2rem;
@@ -143,7 +146,6 @@ const faqJsonLd = {
   .fq__d[open] .fq__ico::after { transform: rotate(0deg); opacity: 0; }
 
   .fq__a {
-    grid-column: 2;
     padding-inline-start: calc(3.5rem + clamp(0.75rem, 2vw, 2rem));
     padding-bottom: clamp(1.5rem, 2.6vw, 2.25rem);
   }

@@ -57,21 +57,25 @@ const routes = [
   .nf {
     position: relative;
     overflow: hidden;
-    padding-block: clamp(9rem, 20svh, 14rem) clamp(4rem, 8vw, 7rem);
+    padding-block: clamp(6.5rem, 10svh, 8.5rem) var(--space-section-end);
   }
   /* the number is scenery, not content: it sits behind everything and is
      hidden from assistive tech */
   .nf__ghost {
     position: absolute;
-    inset-block-start: 48%;
-    inset-inline-start: -9vw;
+    /* pushed clear of the reading column: it used to sit on top of the
+       lead paragraph and the route list */
+    /* fully clear of the reading column: it kept landing on the title
+       and the lead at tablet and desktop widths */
+    inset-block-start: 62%;
+    inset-inline-start: -22vw;
     font-family: var(--font-display);
     font-size: clamp(12rem, 34vw, 34rem);
     font-weight: 900;
     line-height: 0.75;
     letter-spacing: -0.05em;
     color: var(--color-ink);
-    opacity: 0.035;
+    opacity: 0.03;
     pointer-events: none;
     user-select: none;
   }
@@ -80,7 +84,9 @@ const routes = [
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr);
     gap: clamp(2rem, 6vw, 5rem);
-    align-items: center;
+    /* start, not center: centring the short type column against the tall
+       art column opened a 250px band above the eyebrow on a tablet */
+    align-items: start;
   }
   .nf__title {
     display: flex;

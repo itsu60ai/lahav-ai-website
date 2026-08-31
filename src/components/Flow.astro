@@ -1,0 +1,150 @@
+---
+// FLOW: the replacement for the old dark diagram cards.
+//
+// The previous Viz component drew navy panels full of boxes and arrows.
+// It read as stock SaaS graphics and fought with everything around it.
+//
+// This draws the same idea as LINE ART on the page's own background: a
+// single stroked path with labelled stops along it, the labels set in the
+// site's display face at real size, the path drawn on scroll. No panel,
+// no fill, no border, nothing to clash with the band it sits on.
+//
+// TRUTH: these are labels for stages of a process, never numbers, never
+// a screenshot of a product, never a claimed result.
+export interface FlowStop {
+  /** the stage, in two or three words */
+  t: string;
+  /** what the business knows or does at that point */
+  s?: string;
+}
+
+export interface Props {
+  stops: FlowStop[];
+  /** small caption under the drawing */
+  note?: string;
+  /** 'light' on white/warm bands, 'dark' on navy/blue bands */
+  tone?: 'light' | 'dark';
+  class?: string;
+}
+const { stops, note, tone = 'light', class: cls = '' } = Astro.props;
+
+// The path is generated from the number of stops so the drawing always
+// fits its own content. Hebrew reads right to left, so stop one is on
+// the RIGHT and the line travels left.
+const W = 1000;
+const H = 300;
+const n = Math.max(stops.length, 2);
+const pad = 90;
+const step = (W - pad * 2) / (n - 1);
+const xs = stops.map((_, i) => W - pad - i * step);
+// alternate the vertical position so the line undulates rather than
+// running dead straight
+const ys = stops.map((_, i) => (i % 2 === 0 ? 118 : 186));
+
+let d = `M ${xs[0]} ${ys[0]}`;
+for (let i = 1; i < n; i++) {
+  const cx = (xs[i - 1] + xs[i]) / 2;
+  d += ` C ${cx} ${ys[i - 1]}, ${cx} ${ys[i]}, ${xs[i]} ${ys[i]}`;
+}
+---
+
+<figure class:list={['flow', `flow--${tone}`, cls]} data-reveal>
+  <svg class="flow__svg" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={stops.map((s) => s.t).join(', ')}>
+    <path class="flow__path" d={d} />
+    {stops.map((s, i) => (
+      <g class="flow__stop" style={`--i:${i}`}>
+        <circle class="flow__dot" cx={xs[i]} cy={ys[i]} r="7" />
+        <circle class="flow__halo" cx={xs[i]} cy={ys[i]} r="16" />
+        <text class="flow__t" x={xs[i]} y={ys[i] + (i % 2 === 0 ? -34 : 44)} text-anchor="middle">{s.t}</text>
+        {s.s && (
+          <text class="flow__s" x={xs[i]} y={ys[i] + (i % 2 === 0 ? -14 : 64)} text-anchor="middle">{s.s}</text>
+        )}
+      </g>
+    ))}
+  </svg>
+  {note && <figcaption class="flow__note">{note}</figcaption>}
+</figure>
+
+<style>
+  .flow { margin: 0; width: 100%; }
+  .flow__svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+  .flow__path {
+    fill: none;
+    stroke: var(--color-royal);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-opacity: 0.45;
+    stroke-dasharray: 2600;
+    stroke-dashoffset: 2600;
+  }
+  .flow__dot { fill: var(--color-royal); }
+  .flow__halo { fill: none; stroke: var(--color-electric); stroke-width: 1.2; stroke-opacity: 0.35; }
+
+  .flow__t {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    fill: var(--color-ink);
+  }
+  .flow__s {
+    font-family: var(--font-body);
+    font-size: 20px;
+    fill: var(--color-ink-3);
+  }
+  .flow--dark .flow__path { stroke: #7fb6ff; stroke-opacity: 0.6; }
+  .flow--dark .flow__dot { fill: #7fb6ff; }
+  .flow--dark .flow__halo { stroke: #bfe0ff; stroke-opacity: 0.45; }
+  .flow--dark .flow__t { fill: #fff; }
+  .flow--dark .flow__s { fill: rgba(255, 255, 255, 0.7); }
+
+  .flow__note {
+    margin-top: clamp(0.75rem, 2vw, 1.25rem);
+    font-size: var(--text-small);
+    line-height: 1.65;
+    color: var(--color-ink-3);
+    max-width: 62ch;
+  }
+  .flow--dark .flow__note { color: rgba(255, 255, 255, 0.62); }
+
+  /* ---- drawn on enter, stops fading in behind the line ---- */
+  :global(html.mo-ready) .flow__stop { opacity: 0; }
+  :global(html.mo-ready) .flow.is-in .flow__path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 2000ms var(--ease-out);
+  }
+  :global(html.mo-ready) .flow.is-in .flow__stop {
+    opacity: 1;
+    transition: opacity 500ms var(--ease-out) calc(320ms + var(--i) * 260ms);
+  }
+  /* the pulse only starts once the line has arrived */
+  :global(html.mo-ready) .flow.is-in .flow__halo {
+    animation: flow-halo 3.4s var(--ease-inout) infinite;
+    animation-delay: calc(1.6s + var(--i) * 260ms);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @keyframes flow-halo {
+    0%, 100% { transform: scale(1);    stroke-opacity: 0.35 }
+    50%      { transform: scale(1.35); stroke-opacity: 0.05 }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow__path { stroke-dashoffset: 0; }
+    :global(html.mo-ready) .flow__stop { opacity: 1; }
+    :global(html.mo-ready) .flow.is-in .flow__halo { animation: none; }
+  }
+
+  /* On a phone a five-stop horizontal line is unreadable, so the drawing
+     scrolls sideways inside its own track at a legible size instead of
+     being squashed. */
+  @media (max-width: 760px) {
+    .flow {
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+    }
+    .flow__svg { min-width: 42rem; }
+  }
+</style>
