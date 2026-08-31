@@ -93,5 +93,8 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, code: result.reason, error }, 503);
   }
 
+  // A successful answer that still carries a detail means the preferred
+  // provider failed and we fell back. Worth knowing about.
+  if (result.detail) console.warn('[chat] fell back:', result.via, result.detail);
   return json({ ok: true, reply: result.text });
 };

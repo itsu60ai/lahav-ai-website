@@ -80,6 +80,7 @@ export async function askModel(
   const which = providerName(env);
   if (!which) return { ok: false, reason: 'not_configured' };
 
+  let anthropicDetail = '';
   try {
     if (which === 'anthropic') {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -96,14 +97,25 @@ export async function askModel(
           messages: history.map((m) => ({ role: m.role, content: m.content })),
         }),
       });
-      if (!res.ok) return { ok: false, reason: 'upstream_error' };
-      const data: any = await res.json();
-      const text = (data?.content ?? [])
-        .filter((b: any) => b.type === 'text')
-        .map((b: any) => b.text)
-        .join('')
-        .trim();
-      return text ? { ok: true, text, via: 'anthropic' } : { ok: false, reason: 'upstream_error' };
+      if (!res.ok) {
+        // The upstream body says WHY: a bad key, a retired model id, an
+        // exhausted balance. It used to be discarded, which turned every
+        // one of those into an indistinguishable "upstream_error".
+        anthropicDetail = `anthropic ${res.status}: ${(await res.text().catch(() => '')).slice(0, 300)}`;
+      } else {
+        const data: any = await res.json();
+        const text = (data?.content ?? [])
+          .filter((b: any) => b.type === 'text')
+          .map((b: any) => b.text)
+          .join('')
+          .trim();
+        if (text) return { ok: true, text, via: 'anthropic' };
+        anthropicDetail = 'anthropic returned no text';
+      }
+      // FALL THROUGH TO WORKERS AI rather than giving up. Preferring
+      // Anthropic must never make the assistant WORSE than it was
+      // without a key, which is what an early return did: configuring
+      // the key took the free fallback out of the chain entirely.
     }
 
     // Workers AI. The chat template takes the system prompt as its own
@@ -112,11 +124,12 @@ export async function askModel(
     // single hard-coded name turns the assistant off the day that
     // happens, which is exactly how this broke the first time. Ordered by
     // Hebrew quality; the first that answers wins.
+    if (!env?.AI) return { ok: false, reason: 'upstream_error', detail: anthropicDetail || 'no AI binding' };
     const messages = [
       { role: 'system', content: system },
       ...history.map((m) => ({ role: m.role, content: m.content })),
     ];
-    let lastDetail = '';
+    let lastDetail = anthropicDetail;
     for (const model of WORKERS_AI_MODELS) {
       try {
         const out: any = await env.AI.run(model, {
@@ -128,7 +141,10 @@ export async function askModel(
         const text = String(out?.response ?? '').trim();
         if (!text) { lastDetail = `empty from ${model}`; continue; }
         if (looksDegenerate(text)) { lastDetail = `degenerate from ${model}`; continue; }
-        return { ok: true, text, via: 'workers-ai' };
+        // Carry the Anthropic failure through even on success, so a
+        // silent downgrade to the free model is visible in the log
+        // rather than looking like everything is fine.
+        return { ok: true, text, via: 'workers-ai', detail: anthropicDetail || undefined };
       } catch (err) {
         lastDetail = `${model}: ${String((err as any)?.message ?? err).slice(0, 120)}`;
       }

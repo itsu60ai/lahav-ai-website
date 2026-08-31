@@ -8,6 +8,7 @@
 export const prerender = false;
 
 import { env } from 'cloudflare:workers';
+import { turnstileSiteKey } from '../lib/turnstile';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { WHATSAPP_HREF, SERVICES, DISCOVERY_BOOKING_URL, DISCOVERY_CAL_LINK } from '../lib/site';
 import WhatsApp from '../components/icons/WhatsApp.astro';
@@ -17,7 +18,7 @@ import WhatsApp from '../components/icons/WhatsApp.astro';
 // in src/pages/api/contact.ts, is sensitive. Cloudflare's official
 // always-pass test key is the fallback, so the form is fully testable
 // before a real Turnstile widget is created in the client's own dashboard.
-const TURNSTILE_SITE_KEY = (env as any).TURNSTILE_SITE_KEY || '1x00000000000000000000AA';
+const TURNSTILE_SITE_KEY = turnstileSiteKey();
 
 const url = new URL(Astro.request.url);
 const sent = url.searchParams.get('sent') === '1';
