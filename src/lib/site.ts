@@ -157,6 +157,7 @@ export const NAV = [
   { href: '/', label: 'בית' },
   { href: '/services/', label: 'שירותים', children: SERVICES },
   { href: '/about/', label: 'אודות' },
+  { href: '/portfolio/', label: 'תיק עבודות' },
   { href: '/faq/', label: 'שאלות נפוצות' },
   ...(REVIEW_MODE ? [{ href: '/articles/', label: 'מאמרים' }] : []),
   { href: '/contact/', label: 'צור קשר' },

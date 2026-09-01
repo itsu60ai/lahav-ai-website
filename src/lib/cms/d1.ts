@@ -20,6 +20,7 @@ import type {
   FaqStore,
   MediaRow,
   MediaStore,
+  PortfolioListStore,
   Role,
   Session,
   SessionStore,
@@ -299,10 +300,10 @@ class D1SessionStore implements SessionStore {
  * differs.
  */
 class D1ContentPageStore implements ContentPageStore {
-  constructor(private db: D1, private table: 'content_pages' | 'services_content') {}
+  constructor(private db: D1, private table: 'content_pages' | 'services_content' | 'portfolio_items') {}
 
   private col(): 'id' | 'slug' {
-    return this.table === 'content_pages' ? 'id' : 'slug';
+    return this.table === 'services_content' ? 'slug' : 'id';
   }
 
   async getDraftRaw(id: string): Promise<string | null> {
@@ -364,6 +365,164 @@ class D1ContentPageStore implements ContentPageStore {
       publishedBy: r.published_by ?? null,
       hasUnpublishedChanges: r.draft_json !== r.published_json,
     };
+  }
+}
+
+// ─────────────────────────────────────────────────────────── PORTFOLIO
+//
+// Structural operations on `portfolio_items` that content_pages and
+// services_content never needed: listing, creating, deleting, reordering,
+// and looking a row up by the slug INSIDE its JSON content (there is no
+// separate slug column -- see migrations/0010_portfolio.sql). Reading and
+// saving one item's own content is handled by the generic
+// D1ContentPageStore above (`stores.portfolio`); this class is
+// `stores.portfolioList`.
+const STARTER_PORTFOLIO_CONTENT = JSON.stringify({
+  slug: '',
+  name: '',
+  industry: '',
+  service: '',
+  heroImage: '',
+  challenge: '',
+  approach: '',
+  result: '',
+  seo: {
+    title: '',
+    description: '',
+    ogTitle: '',
+    ogDescription: '',
+    ogImage: '',
+    noindex: true,
+  },
+});
+
+class D1PortfolioListStore implements PortfolioListStore {
+  constructor(private db: D1) {}
+
+  async listDraftMeta() {
+    const { results } = await this.db
+      .prepare(
+        `SELECT id, draft_json, published_json, draft_enabled, published_at
+         FROM portfolio_items WHERE draft_deleted = 0 ORDER BY draft_sort_order ASC`
+      )
+      .all();
+    return (results as Row[]).map((r) => {
+      let name = '(ללא שם)';
+      try { name = JSON.parse(r.draft_json)?.name || name; } catch {}
+      return {
+        id: r.id,
+        name,
+        enabled: !!r.draft_enabled,
+        hasUnpublishedChanges: r.draft_json !== r.published_json,
+        publishedAt: r.published_at ?? null,
+      };
+    });
+  }
+
+  async listPublished() {
+    const { results } = await this.db
+      .prepare(
+        `SELECT id, published_json FROM portfolio_items
+         WHERE published_json IS NOT NULL AND published_enabled = 1
+         ORDER BY published_sort_order ASC`
+      )
+      .all();
+    return (results as Row[]).map((r) => ({ id: r.id, content: JSON.parse(r.published_json) }));
+  }
+
+  async getPublishedBySlug(slug: string) {
+    const r = await this.db
+      .prepare(
+        `SELECT published_json FROM portfolio_items
+         WHERE published_json IS NOT NULL AND published_enabled = 1
+           AND json_extract(published_json, '$.slug') = ?1
+         LIMIT 1`
+      )
+      .bind(slug)
+      .first<Row>();
+    return r ? JSON.parse(r.published_json) : null;
+  }
+
+  async getDraftBySlug(slug: string) {
+    const r = await this.db
+      .prepare(
+        `SELECT id, draft_json FROM portfolio_items
+         WHERE draft_deleted = 0 AND json_extract(draft_json, '$.slug') = ?1
+         LIMIT 1`
+      )
+      .bind(slug)
+      .first<Row>();
+    return r ? { id: r.id, content: JSON.parse(r.draft_json) } : null;
+  }
+
+  async create(userId: string) {
+    const id = crypto.randomUUID();
+    const ts = now();
+    const { results } = await this.db
+      .prepare('SELECT COALESCE(MAX(draft_sort_order), -1) + 1 AS n FROM portfolio_items')
+      .all();
+    const nextOrder = (results as Row[])[0]?.n ?? 0;
+    await this.db
+      .prepare(
+        `INSERT INTO portfolio_items
+         (id, draft_json, draft_sort_order, draft_enabled, draft_deleted, created_at, draft_updated_at, draft_updated_by)
+         VALUES (?1, ?2, ?3, 0, 0, ?4, ?4, ?5)`
+      )
+      .bind(id, STARTER_PORTFOLIO_CONTENT, nextOrder, ts, userId)
+      .run();
+    return { id };
+  }
+
+  async setEnabled(id: string, enabled: boolean, userId: string): Promise<void> {
+    await this.db
+      .prepare('UPDATE portfolio_items SET draft_enabled = ?1, draft_updated_at = ?2, draft_updated_by = ?3 WHERE id = ?4')
+      .bind(enabled ? 1 : 0, now(), userId, id)
+      .run();
+  }
+
+  async remove(id: string): Promise<void> {
+    const r = await this.db
+      .prepare('SELECT published_json FROM portfolio_items WHERE id = ?1')
+      .bind(id)
+      .first<Row>();
+    if (!r) return;
+    if (r.published_json == null) {
+      await this.db.prepare('DELETE FROM portfolio_items WHERE id = ?1').bind(id).run();
+    } else {
+      await this.db.prepare('UPDATE portfolio_items SET draft_deleted = 1 WHERE id = ?1').bind(id).run();
+    }
+  }
+
+  async reorder(ids: string[], userId: string): Promise<void> {
+    const ts = now();
+    const stmts = ids.map((id, i) =>
+      this.db
+        .prepare('UPDATE portfolio_items SET draft_sort_order = ?1, draft_updated_at = ?2, draft_updated_by = ?3 WHERE id = ?4')
+        .bind(i, ts, userId, id)
+    );
+    await this.db.batch(stmts);
+  }
+
+  async publish(id: string, userId: string): Promise<void> {
+    const r = await this.db.prepare('SELECT draft_deleted FROM portfolio_items WHERE id = ?1').bind(id).first<Row>();
+    if (!r) return;
+    if (r.draft_deleted) {
+      await this.db.prepare('DELETE FROM portfolio_items WHERE id = ?1').bind(id).run();
+      return;
+    }
+    const ts = now();
+    await this.db
+      .prepare(
+        `UPDATE portfolio_items SET
+           published_json = draft_json,
+           published_enabled = draft_enabled,
+           published_sort_order = draft_sort_order,
+           published_at = ?1,
+           published_by = ?2
+         WHERE id = ?3`
+      )
+      .bind(ts, userId, id)
+      .run();
   }
 }
 
@@ -704,6 +863,8 @@ export function createStores(db: D1): CmsStores {
     sessions: new D1SessionStore(db),
     content: new D1ContentPageStore(db, 'content_pages'),
     services: new D1ContentPageStore(db, 'services_content'),
+    portfolio: new D1ContentPageStore(db, 'portfolio_items'),
+    portfolioList: new D1PortfolioListStore(db),
     faq: new D1FaqStore(db),
     settings: new D1SettingsStore(db),
     media: new D1MediaStore(db),

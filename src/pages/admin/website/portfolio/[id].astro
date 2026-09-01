@@ -1,0 +1,166 @@
+---
+export const prerender = false;
+
+// One project's editor: name, industry tag, which LAHAV service it's an
+// example of, a hero image (paste a media id from the library, same
+// pattern as every other image field -- see /admin/media), the
+// challenge/approach/result story, and its own SEO. Publishing here only
+// ever affects this ONE project, never the others.
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import EditorChrome from '../../../../components/admin/EditorChrome.astro';
+import { can } from '../../../../lib/cms/types.ts';
+
+const { id } = Astro.params;
+const { portfolio } = Astro.locals.stores!;
+const user = Astro.locals.user!;
+
+const raw = await portfolio.getDraftRaw(String(id));
+if (!raw) return Astro.redirect('/admin/website/portfolio', 302);
+let s: any;
+try { s = JSON.parse(raw); } catch { return Astro.redirect('/admin/website/portfolio', 302); }
+
+const meta = await portfolio.meta(String(id));
+// The preview link needs the CURRENT draft slug -- this item may never
+// have been published under any slug yet, so there is no other way to
+// know its address. The "מוצג" (enabled) toggle lives on the list page,
+// not here, since it's a list-level operation.
+const previewHref = s.slug ? `/portfolio/${s.slug}/?preview=1` : '/admin/website/portfolio';
+---
+
+<AdminLayout title={s.name || 'פרויקט חדש'}>
+  <EditorChrome
+    title={s.name || 'פרויקט חדש'}
+    previewHref={previewHref}
+    canPublish={can(user, 'content:publish')}
+    hasUnpublishedChanges={meta?.hasUnpublishedChanges}
+    publishedAt={meta?.publishedAt}
+  >
+    <p class="adm-hint" style="margin-bottom:1rem">
+      <a href="/admin/website/portfolio">&larr; חזרה לרשימת הפרויקטים</a>
+      {!s.slug && ' -- יש למלא כתובת (slug) לפני שאפשר לצפות בעמוד.'}
+    </p>
+
+    <fieldset class="adm-fieldset">
+      <legend>פרטי הפרויקט</legend>
+      <div class="adm-field">
+        <label class="adm-label" for="f-name">שם העסק (בדוי)</label>
+        <input class="adm-input" id="f-name" data-f="name" value={s.name} />
+      </div>
+      <div class="adm-field-row">
+        <div class="adm-field">
+          <label class="adm-label" for="f-industry">תחום (מוצג בכרטיס ובעמוד)</label>
+          <input class="adm-input" id="f-industry" data-f="industry" value={s.industry} placeholder="למשל: מסעדה, קליניקה" />
+        </div>
+        <div class="adm-field">
+          <label class="adm-label" for="f-service">איזה שירות של LAHAV זה מדגים</label>
+          <input class="adm-input" id="f-service" data-f="service" value={s.service} placeholder="למשל: CRM ואוטומציות" />
+        </div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-slug">כתובת בעמוד (slug)</label>
+        <input class="adm-input" id="f-slug" data-f="slug" value={s.slug} dir="ltr" placeholder="example-business" />
+        <span class="adm-hint">האתר יציג את הפרויקט בכתובת /portfolio/{'{'}זה{'}'}/. שינוי כאן משנה את הכתובת.</span>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-image">מזהה תמונה ראשית</label>
+        <input class="adm-input" id="f-image" data-f="heroImage" value={s.heroImage} dir="ltr" placeholder="הדביקו מזהה מ" />
+        <span class="adm-hint">מעתיקים את המזהה מ<a href="/admin/media" target="_blank" rel="noopener">ספריית המדיה</a> ומדביקים כאן.</span>
+        {s.heroImage && (
+          <img class="adm-preview-img" src={`/api/media/${s.heroImage}`} alt="" id="img-preview" />
+        )}
+      </div>
+    </fieldset>
+
+    <fieldset class="adm-fieldset">
+      <legend>הסיפור</legend>
+      <div class="adm-field">
+        <label class="adm-label" for="f-challenge">האתגר</label>
+        <textarea class="adm-textarea" id="f-challenge" data-f="challenge" rows="3">{s.challenge}</textarea>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-approach">מה בנינו</label>
+        <textarea class="adm-textarea" id="f-approach" data-f="approach" rows="3">{s.approach}</textarea>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-result">התוצאה</label>
+        <textarea class="adm-textarea" id="f-result" data-f="result" rows="3">{s.result}</textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="adm-fieldset">
+      <legend>קידום באתרי חיפוש (SEO)</legend>
+      <div class="adm-field">
+        <label class="adm-label" for="f-seo-title">כותרת הדף</label>
+        <input class="adm-input" id="f-seo-title" data-f="seo.title" value={s.seo?.title} />
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-seo-desc">תיאור הדף</label>
+        <textarea class="adm-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{s.seo?.description}</textarea>
+      </div>
+      <label class="chk">
+        <input type="checkbox" id="f-noindex" data-f="seo.noindex" checked={s.seo?.noindex !== false} />
+        להסתיר ממנועי חיפוש (noindex) -- מומלץ להשאיר מסומן כל עוד זה פרויקט לדוגמה
+      </label>
+    </fieldset>
+  </EditorChrome>
+</AdminLayout>
+
+<script>
+  import { wireEditor } from '../../../../lib/cms/admin-editor-client.ts';
+  const val = (sel: string) => (document.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value ?? '');
+  const checked = (sel: string) => document.querySelector<HTMLInputElement>(sel)?.checked ?? false;
+  const csrf = document.body.dataset.csrf!;
+  // /admin/website/portfolio/<id> -- the last path segment.
+  const id = location.pathname.split('/').filter(Boolean).pop()!;
+
+  const imgField = document.getElementById('f-image') as HTMLInputElement | null;
+  imgField?.addEventListener('change', () => {
+    let preview = document.getElementById('img-preview') as HTMLImageElement | null;
+    const v = imgField.value.trim();
+    if (!v) { preview?.remove(); return; }
+    if (!preview) {
+      preview = document.createElement('img');
+      preview.id = 'img-preview';
+      preview.className = 'adm-preview-img';
+      imgField.insertAdjacentElement('afterend', preview);
+    }
+    preview.src = `/api/media/${v}`;
+  });
+
+  wireEditor({
+    store: 'portfolio',
+    id,
+    csrf,
+    canPublish: !!document.querySelector('[data-publish]'),
+    collect: () => ({
+      name: val('[data-f="name"]'),
+      industry: val('[data-f="industry"]'),
+      service: val('[data-f="service"]'),
+      slug: val('[data-f="slug"]').trim(),
+      heroImage: val('[data-f="heroImage"]').trim(),
+      challenge: val('[data-f="challenge"]'),
+      approach: val('[data-f="approach"]'),
+      result: val('[data-f="result"]'),
+      seo: {
+        title: val('[data-f="seo.title"]'),
+        description: val('[data-f="seo.description"]'),
+        ogTitle: val('[data-f="seo.title"]'),
+        ogDescription: val('[data-f="seo.description"]'),
+        noindex: checked('[data-f="seo.noindex"]'),
+      },
+    }),
+  });
+</script>
+
+<style>
+  .chk { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--color-ink-2); margin-top: 0.5rem; }
+  :global(.adm-preview-img) {
+    display: block;
+    margin-top: 0.6rem;
+    width: 8rem;
+    height: 6rem;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-line);
+  }
+</style>

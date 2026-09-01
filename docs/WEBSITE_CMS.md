@@ -36,6 +36,24 @@ already rendered from hardcoded strings — the strings just moved to D1.
 | Settings (global) | WhatsApp number/message, booking URL, primary CTA label | Everything else — see "What settings deliberately excludes" below. The business **name** is intentionally not here — see "The `site_name` decision" |
 | Media | Upload/delete images for SEO/OG use | Not a DAM: no folders, no cropping, no CDN transforms |
 | SEO (per page) | Title, description, OG image, `noindex` | — |
+| Portfolio ("תיק עבודות") | A growable list of example projects: name, industry, hero image, story, SEO -- add/delete/reorder/enable, each publishes on its own | Not linked from navigation and not published by default -- see below |
+
+### Portfolio is fictional example content, not real clients (2026-09-01)
+
+Every portfolio item is a made-up business (client instruction: "לקוחות
+כאילו" -- pretend clients), so nothing on the site claims a real company
+relationship that doesn't exist. It reuses the exact same draft/published
+mechanism as everything else in this document (`portfolio_items`, added
+in migration 0010, shares its per-item content shape with `content_pages`
+via the same generic store -- see `PortfolioListStore` in `types.ts` for
+the create/list/delete/reorder operations content_pages never needed).
+The navigation entry was added disabled by default, and the index/every
+item's SEO defaults to `noindex: true`, so the feature exists, is fully
+editable and previewable, but shows nothing to a real visitor until an
+admin deliberately enables the nav link and publishes each item. Four
+example items with AI-generated generic photos (no real company depicted)
+were created as drafts -- built, verified end to end, and left unpublished
+on the live site exactly as requested.
 
 The presenter video/audio/captions on the home page are **not** part of
 this CMS and were not touched: they stay exactly as approved, served from

@@ -20,12 +20,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json({ error: 'bad request' }, 400);
   }
 
-  const storeName = body.store === 'services' ? 'services' : 'content';
-  const store = storeName === 'services' ? locals.stores!.services : locals.stores!.content;
+  const storeName = body.store === 'services' ? 'services' : body.store === 'portfolio' ? 'portfolio' : 'content';
   const id = typeof body.id === 'string' ? body.id.slice(0, 64) : '';
   if (!id) return json({ error: 'missing id' }, 400);
 
-  await store.publish(id, locals.user!.id);
+  // Portfolio's publish also has to move the enabled flag and sort order,
+  // and to actually remove a row staged for deletion -- the generic
+  // ContentPageStore.publish() only knows about the JSON column. See
+  // PortfolioListStore.publish()'s own doc comment.
+  if (storeName === 'portfolio') {
+    await locals.stores!.portfolioList.publish(id, locals.user!.id);
+  } else {
+    const store = storeName === 'services' ? locals.stores!.services : locals.stores!.content;
+    await store.publish(id, locals.user!.id);
+  }
   await locals.stores!.audit.record(`${storeName}:${id}`, 'published', locals.user!.id);
 
   return json({ ok: true });

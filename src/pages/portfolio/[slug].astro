@@ -1,0 +1,183 @@
+---
+// PORTFOLIO DETAIL -- one example project.
+//
+// Only a PUBLISHED item resolves publicly; a draft-only or disabled item
+// 404s exactly like a non-existent slug, unless the request is an
+// authenticated ?preview=1 (see resolvePreview.ts), same rule the rest of
+// the site's preview pages follow.
+//
+// Structure inspired by a reference agency's own case-study page (image,
+// name, a short challenge/approach/result story, a link to the next
+// project) -- reworked in LAHAV's own visual system: a colour-band hero
+// with the same display type as a service page, the image framed as an
+// inset visual rather than a full-bleed photo, alternating text blocks
+// like a service page's symptoms/build rhythm.
+export const prerender = false;
+
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ContactBlock from '../../components/ContactBlock.astro';
+import Curve from '../../components/Curve.astro';
+import { turnstileSiteKey } from '../../lib/turnstile.ts';
+import { resolvePreview } from '../../lib/cms/preview.ts';
+import type { PortfolioItemContent } from '../../lib/cms/content.ts';
+
+const SITE_KEY = turnstileSiteKey();
+const { portfolioList } = Astro.locals.stores!;
+const { slug } = Astro.params;
+const preview = await resolvePreview(Astro, Astro.locals.stores!);
+
+let content: PortfolioItemContent | null = null;
+if (preview) {
+  const draft = await portfolioList.getDraftBySlug(String(slug));
+  content = (draft?.content as PortfolioItemContent) ?? null;
+} else {
+  content = (await portfolioList.getPublishedBySlug(String(slug))) as PortfolioItemContent | null;
+}
+
+if (!content) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+const item = content; // narrowed, non-null from here down
+
+// "Next project": the next PUBLISHED item after this one, wrapping to
+// the first when this is the last. Preview does not get a next-project
+// link -- draft items aren't a single stable ordered list the way
+// published ones are, and preview's purpose is checking one item, not
+// browsing the set.
+let next: { name: string; slug: string } | null = null;
+if (!preview) {
+  const list = await portfolioList.listPublished();
+  const idx = list.findIndex((r) => (r.content as PortfolioItemContent).slug === item.slug);
+  if (idx !== -1 && list.length > 1) {
+    const nextContent = list[(idx + 1) % list.length].content as PortfolioItemContent;
+    next = { name: nextContent.name, slug: nextContent.slug };
+  }
+}
+---
+
+<SiteLayout
+  title={item.seo.title || `${item.name} | LAHAV AI`}
+  description={item.seo.description}
+  noindex={item.seo.noindex}
+  image={item.seo.ogImage || undefined}
+  preview={preview}
+>
+  <section class="pd-hero band band--hero">
+    <div class="u-container u-container--wide pd-hero__grid">
+      <div>
+        <p class="t-eyebrow" data-reveal>{item.industry}</p>
+        <h1 class="pd-hero__h1 t-display-1" data-reveal style="--mo-delay:80ms">{item.name}</h1>
+        {item.service && <p class="pd-hero__service" data-reveal style="--mo-delay:180ms">{item.service}</p>}
+      </div>
+      <div class="pd-hero__frame" data-reveal style="--mo-delay:140ms">
+        {item.heroImage
+          ? <img src={`/api/media/${item.heroImage}`} alt={item.name} />
+          : <span class="pd-hero__placeholder" aria-hidden="true" />}
+      </div>
+    </div>
+  </section>
+
+  <section class="pd-story u-section band">
+    <Curve tone="surface" shape="wave" />
+    <div class="u-container u-container--wide pd-story__grid">
+      <div class="pd-block" data-reveal>
+        <p class="t-eyebrow pd-block__k">האתגר</p>
+        <p class="pd-block__t">{item.challenge}</p>
+      </div>
+      <div class="pd-block" data-reveal style="--mo-delay:90ms">
+        <p class="t-eyebrow pd-block__k">מה בנינו</p>
+        <p class="pd-block__t">{item.approach}</p>
+      </div>
+      <div class="pd-block" data-reveal style="--mo-delay:180ms">
+        <p class="t-eyebrow pd-block__k">התוצאה</p>
+        <p class="pd-block__t">{item.result}</p>
+      </div>
+    </div>
+  </section>
+
+  {next && (
+    <nav class="pd-next" aria-label="הפרויקט הבא">
+      <div class="u-container u-container--wide pd-next__in">
+        <span class="pd-next__k">הפרויקט הבא</span>
+        <a class="pd-next__a" href={`/portfolio/${next.slug}/`}>
+          {next.name}
+          <span class="arrow-inline" aria-hidden="true">←</span>
+        </a>
+      </div>
+    </nav>
+  )}
+
+  <ContactBlock siteKey={SITE_KEY} preview={preview} />
+</SiteLayout>
+
+<style>
+  .pd-hero {
+    padding-top: clamp(7rem, 12svh, 9.5rem);
+    padding-bottom: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .pd-hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+  .pd-hero__h1 { margin-block: 0.75rem 0.5rem; }
+  .pd-hero__service {
+    font-size: var(--text-lead);
+    color: var(--color-ink-2);
+    max-width: 40ch;
+  }
+  .pd-hero__frame {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(11, 21, 48, 0.14);
+  }
+  .pd-hero__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pd-hero__placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-surface-2), var(--color-line));
+  }
+
+  .pd-story { position: relative; overflow: visible; }
+  .pd-story__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+  .pd-block__k { color: var(--color-electric); margin-bottom: 0.5rem; }
+  .pd-block__t {
+    font-size: var(--text-body-lg);
+    line-height: 1.65;
+    color: var(--color-ink-2);
+  }
+
+  .pd-next {
+    border-top: 1px solid var(--color-line);
+    background: var(--color-surface);
+    padding-block: clamp(1.75rem, 3.5vw, 2.75rem);
+  }
+  .pd-next__in { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.75rem 1.5rem; }
+  .pd-next__k { font-size: var(--text-micro); font-weight: 700; letter-spacing: 0.08em; color: var(--color-ink-3); }
+  .pd-next__a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+    font-weight: 800;
+    color: var(--color-ink);
+    text-decoration: none;
+    transition: color var(--dur) var(--ease-out);
+  }
+  .pd-next__a:hover { color: var(--color-royal); }
+  .pd-next__a .arrow-inline { color: var(--color-electric); }
+
+  @media (max-width: 900px) {
+    .pd-hero__grid { grid-template-columns: 1fr; }
+    .pd-hero__frame { order: -1; }
+    .pd-story__grid { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,191 @@
+---
+// PORTFOLIO INDEX ("תיק עבודות").
+//
+// Structure borrowed as inspiration from a reference agency's own
+// portfolio page (a giant heading, then a grid of project cards) --
+// not its visuals: no full-bleed photo hero, no imported copy. This
+// stays in LAHAV's own system: a band--hero opener with the same
+// display type used everywhere else, and cards built from the same
+// rounded-surface language as the mega menu / FAQ rows.
+//
+// EVERY item shown here is a fictional example (client decision,
+// 2026-09-01) -- see docs/WEBSITE_CMS.md. Not linked from navigation and
+// noindex by default until the client is ready to launch it for real.
+export const prerender = false;
+
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ContactBlock from '../../components/ContactBlock.astro';
+import { turnstileSiteKey } from '../../lib/turnstile.ts';
+import { PORTFOLIO_INDEX_DEFAULT, getPublicContent, getDraftContent } from '../../lib/cms/content.ts';
+import { resolvePreview } from '../../lib/cms/preview.ts';
+
+const SITE_KEY = turnstileSiteKey();
+
+const { content: contentStore, portfolioList } = Astro.locals.stores!;
+const preview = await resolvePreview(Astro, Astro.locals.stores!);
+const page = preview
+  ? await getDraftContent(contentStore, 'portfolio', PORTFOLIO_INDEX_DEFAULT)
+  : await getPublicContent(contentStore, 'portfolio', PORTFOLIO_INDEX_DEFAULT);
+
+// In preview there is no "draft list" endpoint analogous to listPublished
+// -- draft items are still individual rows scattered by id, not a single
+// ordered list the way FAQ's draft state is. For the index page, preview
+// therefore shows every non-deleted draft item (ignoring the enabled
+// flag, so a not-yet-enabled item can still be checked before switching
+// it on), sorted the same way the admin list is.
+let items: { id: string; content: any }[];
+if (preview) {
+  // listDraftMeta only returns each item's name (enough to label an
+  // admin list row); the index page needs the full draft content, fetched
+  // per id through the generic content store (stores.portfolio).
+  const meta = await portfolioList.listDraftMeta();
+  const { portfolio: portfolioContent } = Astro.locals.stores!;
+  items = await Promise.all(
+    meta.map(async (m) => {
+      const raw = await portfolioContent.getDraftRaw(m.id);
+      let content: any = {};
+      try { content = raw ? JSON.parse(raw) : {}; } catch {}
+      return { id: m.id, content };
+    })
+  );
+} else {
+  items = await portfolioList.listPublished();
+}
+---
+
+<SiteLayout
+  title={page.seo.title}
+  description={page.seo.description}
+  noindex={page.seo.noindex}
+  image={page.seo.ogImage || undefined}
+  preview={preview}
+>
+  <section class="pf-hero band band--hero">
+    <div class="u-container u-container--wide">
+      <p class="t-eyebrow" data-reveal>{page.hero.eyebrow}</p>
+      <h1 class="pf-hero__h1 t-display-1">
+        <span class="mo-line" style="--mo-delay:80ms"><span>{page.hero.headlineLine1}</span></span>
+        <span class="mo-line" style="--mo-delay:190ms"><span class="pf-hero__accent">{page.hero.headlineLine2}</span></span>
+      </h1>
+      <p class="pf-hero__lead t-lead" data-reveal style="--mo-delay:300ms">{page.hero.lead}</p>
+    </div>
+  </section>
+
+  <section class="u-section band">
+    <div class="u-container u-container--wide">
+      {items.length === 0 ? (
+        <p class="pf-empty">עוד אין פרויקטים לדוגמה כאן.</p>
+      ) : (
+        <ul class="pf-grid" data-stagger style="--mo-step:70ms">
+          {items.map(({ content }) => (
+            <li class="pf-card" data-reveal>
+              <a class="pf-card__link" href={`/portfolio/${content.slug}/${preview ? '?preview=1' : ''}`}>
+                <span class="pf-card__frame">
+                  {content.heroImage
+                    ? <img src={`/api/media/${content.heroImage}`} alt={content.name} loading="lazy" />
+                    : <span class="pf-card__placeholder" aria-hidden="true" />}
+                </span>
+                <span class="pf-card__body">
+                  <span class="pf-card__industry">{content.industry}</span>
+                  <span class="pf-card__name">{content.name}</span>
+                  <span class="pf-card__arrow arrow-inline" aria-hidden="true">←</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <ContactBlock siteKey={SITE_KEY} preview={preview} />
+</SiteLayout>
+
+<style>
+  .pf-hero {
+    padding-top: clamp(8rem, 16vh, 12rem);
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+  .pf-hero__h1 { display: flex; flex-direction: column; margin-block: 1.25rem 2rem; }
+  .pf-hero__accent {
+    background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .pf-hero__lead { max-width: 46ch; }
+
+  .pf-empty { color: var(--color-ink-3); }
+
+  .pf-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.25rem, 3vw, 2rem);
+  }
+  .pf-card__link {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    transition: border-color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  }
+  .pf-card__link:hover {
+    border-color: var(--color-royal);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(11, 21, 48, 0.1);
+  }
+  .pf-card__frame {
+    display: block;
+    aspect-ratio: 4 / 3;
+    background: var(--color-surface-2);
+    overflow: hidden;
+  }
+  .pf-card__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pf-card__placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-surface-2), var(--color-line));
+  }
+  .pf-card__body {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.1rem 1.25rem;
+  }
+  .pf-card__body { flex-wrap: wrap; }
+  .pf-card__industry {
+    flex-basis: 100%;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-3);
+  }
+  .pf-card__name {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-body-lg);
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--color-ink);
+    transition: color var(--dur) var(--ease-out);
+  }
+  .pf-card__link:hover .pf-card__name { color: var(--color-royal); }
+  .pf-card__arrow { color: var(--color-electric); flex: none; }
+  .pf-card__link:hover .pf-card__arrow { transform: translateX(-5px); }
+
+  @media (max-width: 900px) {
+    .pf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .pf-grid { grid-template-columns: 1fr; }
+  }
+</style>

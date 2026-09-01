@@ -14,6 +14,7 @@ const PAGES = [
   { id: 'contact', label: 'צור קשר', href: '/admin/website/contact', view: '/contact/?preview=1' },
   { id: 'faq', label: 'שאלות נפוצות - כותרת', href: '/admin/website/faq-page', view: '/faq/?preview=1' },
   { id: 'services', label: 'עמוד השירותים - SEO', href: '/admin/website/services-seo', view: '/services/?preview=1' },
+  { id: 'portfolio', label: 'תיק עבודות - כותרת', href: '/admin/website/portfolio-seo', view: '/portfolio/?preview=1' },
   { id: 'navigation', label: 'ניווט', href: '/admin/website/navigation', view: '/?preview=1' },
   { id: 'footer', label: 'פוטר', href: '/admin/website/footer', view: '/?preview=1' },
 ];
@@ -83,6 +84,7 @@ const serviceStatuses = await Promise.all(serviceSlugs.map((s) => services.meta(
     <h2 class="grp__h">ניהול נוסף</h2>
     <div class="cards">
       <a class="card" href="/admin/faq"><span class="card__t">שאלות נפוצות - השאלות עצמן</span></a>
+      <a class="card" href="/admin/website/portfolio"><span class="card__t">תיק עבודות - הפרויקטים</span></a>
       <a class="card" href="/admin/settings"><span class="card__t">הגדרות כלליות</span></a>
       <a class="card" href="/admin/media"><span class="card__t">ספריית מדיה</span></a>
     </div>

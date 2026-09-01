@@ -341,12 +341,56 @@ export interface AuditLogStore {
   recent(limit: number): Promise<{ area: string; action: string; userId: string; createdAt: string }[]>;
 }
 
+/**
+ * Portfolio ("תיק עבודות"): a growable list of example projects. Each
+ * item's own content (name, story, image, SEO -- including its `slug`)
+ * is a JSON blob with the exact same draft/published shape content_pages
+ * uses, keyed by a stable `id` -- so `stores.portfolio` (a
+ * `ContentPageStore` over the `portfolio_items` table) handles reading
+ * and saving one item's content with zero new code. This interface
+ * covers only what content_pages never needed: listing, creating,
+ * deleting and reordering rows, and finding one by its public slug.
+ */
+export interface PortfolioListStore {
+  /** admin list page: every non-deleted item, draft order, with just
+   *  enough of the draft content (name) to label the row. */
+  listDraftMeta(): Promise<
+    { id: string; name: string; enabled: boolean; hasUnpublishedChanges: boolean; publishedAt: string | null }[]
+  >;
+  /** the public index page: published items only, published order. */
+  listPublished(): Promise<{ id: string; content: Record<string, any> }[]>;
+  /** the public detail page: one published item by its slug (a field
+   *  inside the JSON, not a column) -- null if never published, disabled,
+   *  deleted, or the slug does not match any item. */
+  getPublishedBySlug(slug: string): Promise<Record<string, any> | null>;
+  /** the preview detail page: one DRAFT item by its draft slug. */
+  getDraftBySlug(slug: string): Promise<{ id: string; content: Record<string, any> } | null>;
+  /** creates a new row with a starter content blob, empty and disabled
+   *  until the admin fills it in; returns its new stable id. */
+  create(userId: string): Promise<{ id: string }>;
+  setEnabled(id: string, enabled: boolean, userId: string): Promise<void>;
+  /** hard-deletes an item never published; soft-deletes (draft_deleted)
+   *  one that is, so Publish is what actually removes it -- same
+   *  reasoning as FaqStore.remove. */
+  remove(id: string): Promise<void>;
+  reorder(ids: string[], userId: string): Promise<void>;
+  /** Publishes ONE item: copies its draft content, enabled flag and sort
+   *  order onto the published columns, and -- if it was staged for
+   *  deletion -- actually removes the row. Deliberately NOT the generic
+   *  `ContentPageStore.publish()` on `stores.portfolio`: that only knows
+   *  about the JSON column, not the enabled/sort_order/deleted columns
+   *  this table also carries. */
+  publish(id: string, userId: string): Promise<void>;
+}
+
 export interface CmsStores {
   articles: ArticleStore;
   users: UserStore;
   sessions: SessionStore;
   content: ContentPageStore;
   services: ContentPageStore;
+  portfolio: ContentPageStore;
+  portfolioList: PortfolioListStore;
   faq: FaqStore;
   settings: SettingsStore;
   media: MediaStore;

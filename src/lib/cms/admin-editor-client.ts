@@ -7,7 +7,7 @@
 // "unsaved changes" guard the article editor already uses, so the whole
 // admin has one consistent feel.
 export interface EditorOptions {
-  store: 'content' | 'services';
+  store: 'content' | 'services' | 'portfolio';
   id: string;
   csrf: string;
   collect: () => Record<string, any>;

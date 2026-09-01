@@ -45,7 +45,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json({ error: 'bad request' }, 400);
   }
 
-  const store = body.store === 'services' ? locals.stores!.services : locals.stores!.content;
+  const store =
+    body.store === 'services' ? locals.stores!.services :
+    body.store === 'portfolio' ? locals.stores!.portfolio :
+    locals.stores!.content;
   const id = typeof body.id === 'string' ? body.id.slice(0, 64) : '';
   if (!id) return json({ error: 'missing id' }, 400);
   if (!body.value || typeof body.value !== 'object') return json({ error: 'missing value' }, 400);

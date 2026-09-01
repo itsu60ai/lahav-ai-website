@@ -352,6 +352,54 @@ export async function getServiceNames(
   return out;
 }
 
+// ──────────────────────────────────────────────────────────── PORTFOLIO
+//
+// "תיק עבודות" -- a growable list of EXAMPLE projects (client decision,
+// 2026-09-01: entirely fictional business names, so nothing here implies
+// a real client relationship). Not linked from navigation and not
+// published by default -- see migrations/0010_portfolio.sql. Each item's
+// content is one JSON blob stored in `portfolio_items` with the same
+// draft/published split content_pages uses; `stores.portfolioList`
+// handles everything content_pages never needed (create/list/delete/
+// reorder/slug lookup) -- see PortfolioListStore in types.ts.
+
+export interface PortfolioItemContent {
+  /** used in the URL, /portfolio/<slug>/ -- changing it changes the address */
+  slug: string;
+  /** the fictional business name */
+  name: string;
+  /** short descriptor shown on the card and the page, e.g. "מסעדה", "קליניקת שיניים" */
+  industry: string;
+  /** which of LAHAV's services this example is about, free text, e.g. "CRM ואוטומציות" */
+  service: string;
+  /** a media id from the `media` table, or '' for none */
+  heroImage: string;
+  challenge: string;
+  approach: string;
+  result: string;
+  seo: SeoFields;
+}
+
+/** The portfolio INDEX page's own hero + SEO -- a normal content_pages
+ *  row (id: 'portfolio'), same mechanism as every other page. */
+export interface PortfolioIndexContent {
+  hero: { eyebrow: string; headlineLine1: string; headlineLine2: string; lead: string };
+  seo: SeoFields;
+}
+
+export const PORTFOLIO_INDEX_DEFAULT: PortfolioIndexContent = {
+  hero: {
+    eyebrow: 'תיק עבודות',
+    headlineLine1: 'דוגמאות לעבודה',
+    headlineLine2: 'שאנחנו גאים בה.',
+    lead: 'פרויקטים לדוגמה שממחישים איך אנחנו חושבים על מערכות ואוטומציה.',
+  },
+  seo: seoDefault(
+    'תיק עבודות | LAHAV AI',
+    'דוגמאות לפרויקטים: איך אנחנו הופכים בעיה עסקית למערכת שעובדת.'
+  ),
+};
+
 // ────────────────────────────────────────────────────────────── FAQ
 
 export interface FaqItemContent {
