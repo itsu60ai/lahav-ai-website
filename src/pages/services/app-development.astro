@@ -51,23 +51,23 @@ const verdict = [
   preview={preview}
 >
   <!-- App only: when NOT to build -->
-  <section class="ad-sec u-section band">
+  <section class="appdev-sec u-section band">
     <div class="u-container u-container--wide">
-      <div class="ad-sec__head">
+      <div class="appdev-sec__head">
         <p class="t-eyebrow" data-reveal>לפני שמתלהבים</p>
-        <h2 class="ad-sec__h t-display-3" data-reveal style="--mo-delay:90ms">
+        <h2 class="appdev-sec__h t-display-3" data-reveal style="--mo-delay:90ms">
           לבנות זה הפתרון היקר.<br />לא תמיד הוא הנכון.
         </h2>
-        <p class="t-lead ad-sec__lead" data-reveal style="--mo-delay:180ms">
+        <p class="t-lead appdev-sec__lead" data-reveal style="--mo-delay:180ms">
           אם באפיון יסתבר שהצורך שלכם נפתר בלי לבנות כלום, נגיד את זה. זה
           חוסך לכם כסף, וחוסך לנו פרויקט שלא היה צריך לקרות.
         </p>
       </div>
-      <div class="ad-cols">
+      <div class="appdev-cols">
         {verdict.map((c, i) => (
-          <div class={`ad-col ad-col--${c.side}`} data-reveal style={`--mo-delay:${i * 120}ms`}>
-            <p class="ad-col__label">{c.label}</p>
-            <ul class="ad-col__list">
+          <div class={`appdev-col appdev-col--${c.side}`} data-reveal style={`--mo-delay:${i * 120}ms`}>
+            <p class="appdev-col__label">{c.label}</p>
+            <ul class="appdev-col__list">
               {c.items.map((t) => (
                 <li>{t}</li>
               ))}
@@ -79,19 +79,19 @@ const verdict = [
   </section>
 
   <style>
-    .ad-sec__head { max-width: 46rem; }
-    .ad-sec__h { margin-block: 0.75rem 1.25rem; }
-    .ad-sec__lead { max-width: 52ch; }
-    .ad-cols {
+    .appdev-sec__head { max-width: 46rem; }
+    .appdev-sec__h { margin-block: 0.75rem 1.25rem; }
+    .appdev-sec__lead { max-width: 52ch; }
+    .appdev-cols {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: clamp(1.5rem, 4vw, 4rem);
       margin-top: clamp(2rem, 4vw, 3.5rem);
     }
     /* hairline heads, same separation language as the rest of the site */
-    .ad-col { padding-top: 1.25rem; border-top: 2px solid var(--color-line-strong); }
-    .ad-col--yes { border-top-color: var(--color-royal); }
-    .ad-col__label {
+    .appdev-col { padding-top: 1.25rem; border-top: 2px solid var(--color-line-strong); }
+    .appdev-col--yes { border-top-color: var(--color-royal); }
+    .appdev-col__label {
       font-family: var(--font-display);
       font-size: clamp(1.125rem, 1.7vw, 1.5rem);
       font-weight: 800;
@@ -99,9 +99,9 @@ const verdict = [
       color: var(--color-ink-3);
       margin-bottom: 1.25rem;
     }
-    .ad-col--yes .ad-col__label { color: var(--color-royal); }
-    .ad-col__list { list-style: none; margin: 0; padding: 0; }
-    .ad-col__list li {
+    .appdev-col--yes .appdev-col__label { color: var(--color-royal); }
+    .appdev-col__list { list-style: none; margin: 0; padding: 0; }
+    .appdev-col__list li {
       position: relative;
       padding-block: 0.8rem;
       padding-inline-start: 1.75rem;
@@ -110,9 +110,9 @@ const verdict = [
       color: var(--color-ink-2);
       border-top: 1px solid var(--color-line);
     }
-    .ad-col__list li:first-child { border-top: 0; }
-    .ad-col--yes .ad-col__list li { color: var(--color-ink); font-weight: 600; }
-    .ad-col__list li::before {
+    .appdev-col__list li:first-child { border-top: 0; }
+    .appdev-col--yes .appdev-col__list li { color: var(--color-ink); font-weight: 600; }
+    .appdev-col__list li::before {
       content: '';
       position: absolute;
       inset-inline-start: 0;
@@ -121,7 +121,7 @@ const verdict = [
       height: 2px;
       background: var(--color-line-strong);
     }
-    .ad-col--yes .ad-col__list li::before { background: var(--color-electric); }
-    @media (max-width: 760px) { .ad-cols { grid-template-columns: 1fr; } }
+    .appdev-col--yes .appdev-col__list li::before { background: var(--color-electric); }
+    @media (max-width: 760px) { .appdev-cols { grid-template-columns: 1fr; } }
   </style>
 </ServicePage>
