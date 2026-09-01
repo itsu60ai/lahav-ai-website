@@ -22,16 +22,16 @@ const { title, previewHref, canPublish, hasUnpublishedChanges, publishedAt } = A
 
   <div class="ed__acts">
     {publishedAt && (
-      <span class:list={['ad-pill', hasUnpublishedChanges ? 'ad-pill--draft' : 'ad-pill--published']}>
-        <span class="ad-dot"></span>
+      <span class:list={['adm-pill', hasUnpublishedChanges ? 'adm-pill--draft' : 'adm-pill--published']}>
+        <span class="adm-dot"></span>
         {hasUnpublishedChanges ? 'יש שינויים שלא פורסמו' : 'מפורסם ועדכני'}
       </span>
     )}
     <span class="ed__saved" data-saved aria-live="polite"></span>
-    <button class="ad-btn ad-btn--ghost" type="button" data-save>שמירת טיוטה</button>
-    <a class="ad-btn ad-btn--ghost" href={previewHref} target="_blank" rel="noopener">תצוגה מקדימה</a>
+    <button class="adm-btn adm-btn--ghost" type="button" data-save>שמירת טיוטה</button>
+    <a class="adm-btn adm-btn--ghost" href={previewHref} target="_blank" rel="noopener">תצוגה מקדימה</a>
     {canPublish && (
-      <button class="ad-btn ad-btn--primary" type="button" data-publish>פרסום</button>
+      <button class="adm-btn adm-btn--primary" type="button" data-publish>פרסום</button>
     )}
   </div>
 </div>
@@ -61,15 +61,15 @@ const { title, previewHref, canPublish, hasUnpublishedChanges, publishedAt } = A
 
   .ed__main { max-width: 46rem; }
 
-  :global(.ad-field) { margin-bottom: 1.15rem; }
-  :global(.ad-field:last-child) { margin-bottom: 0; }
-  :global(.ad-field-row) { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  :global(.ad-hint) { display: block; margin-top: 0.35rem; font-size: 0.8rem; color: var(--color-ink-3); }
-  :global(.ad-fieldset) {
+  :global(.adm-field) { margin-bottom: 1.15rem; }
+  :global(.adm-field:last-child) { margin-bottom: 0; }
+  :global(.adm-field-row) { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  :global(.adm-hint) { display: block; margin-top: 0.35rem; font-size: 0.8rem; color: var(--color-ink-3); }
+  :global(.adm-fieldset) {
     border: 1px solid var(--color-line);
     border-radius: var(--radius);
     padding: 1rem;
     margin-bottom: 1.15rem;
   }
-  :global(.ad-fieldset legend) { padding-inline: 0.4rem; font-weight: 700; font-size: 0.85rem; color: var(--color-ink-2); }
+  :global(.adm-fieldset legend) { padding-inline: 0.4rem; font-weight: 700; font-size: 0.85rem; color: var(--color-ink-2); }
 </style>

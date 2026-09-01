@@ -43,10 +43,10 @@ if (Astro.request.method === 'POST') {
     {error && <p class="lg__err" role="alert">{error}</p>}
 
     <form class="lg__form" method="post">
-      <div class="ad-field">
-        <label class="ad-label" for="email">אימייל</label>
+      <div class="adm-field">
+        <label class="adm-label" for="email">אימייל</label>
         <input
-          class="ad-input"
+          class="adm-input"
           id="email"
           name="email"
           type="email"
@@ -57,10 +57,10 @@ if (Astro.request.method === 'POST') {
         />
       </div>
 
-      <div class="ad-field">
-        <label class="ad-label" for="password">סיסמה</label>
+      <div class="adm-field">
+        <label class="adm-label" for="password">סיסמה</label>
         <input
-          class="ad-input"
+          class="adm-input"
           id="password"
           name="password"
           type="password"
@@ -70,7 +70,7 @@ if (Astro.request.method === 'POST') {
         />
       </div>
 
-      <button class="ad-btn ad-btn--primary lg__go" type="submit">כניסה</button>
+      <button class="adm-btn adm-btn--primary lg__go" type="submit">כניסה</button>
     </form>
 
     <p class="lg__note">

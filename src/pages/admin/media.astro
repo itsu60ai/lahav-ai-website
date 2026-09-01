@@ -29,8 +29,8 @@ const mayDelete = can(user, 'media:delete');
 
   <div class="card up">
     <input type="file" id="file" accept="image/jpeg,image/png,image/webp" />
-    <input class="ad-input" id="alt" placeholder="תיאור התמונה (alt)" style="max-width:22rem" />
-    <button class="ad-btn ad-btn--primary" type="button" id="upload-btn">העלאה</button>
+    <input class="adm-input" id="alt" placeholder="תיאור התמונה (alt)" style="max-width:22rem" />
+    <button class="adm-btn adm-btn--primary" type="button" id="upload-btn">העלאה</button>
     <span class="msg" id="up-msg"></span>
   </div>
 
@@ -42,7 +42,7 @@ const mayDelete = can(user, 'media:delete');
           <button class="idbtn" type="button" data-copy={m.id} title="העתקת מזהה">{m.id.slice(0, 8)}…</button>
           <span class="tile__size">{Math.round(m.sizeBytes / 1024)}KB</span>
         </div>
-        {mayDelete && <button class="ad-btn ad-btn--ghost is-danger" type="button" data-delete={m.id}>מחיקה</button>}
+        {mayDelete && <button class="adm-btn adm-btn--ghost is-danger" type="button" data-delete={m.id}>מחיקה</button>}
       </div>
     ))}
   </div>

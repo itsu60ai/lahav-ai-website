@@ -20,19 +20,19 @@ const meta = await content.meta('services');
     hasUnpublishedChanges={meta?.hasUnpublishedChanges}
     publishedAt={meta?.publishedAt}
   >
-    <p class="ad-hint" style="margin-bottom:1rem">
+    <p class="adm-hint" style="margin-bottom:1rem">
       תוכן עמוד השירותים עצמו קבוע בעיצוב. כאן ניתן לערוך רק את הופעתו
       בגוגל. לעריכת כל שירות בנפרד, חזרו ל<a href="/admin/website">תוכן האתר</a>.
     </p>
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>קידום באתרי חיפוש (SEO)</legend>
-      <div class="ad-field">
-        <label class="ad-label" for="f-seo-title">כותרת הדף</label>
-        <input class="ad-input" id="f-seo-title" data-f="seo.title" value={idx.seo.title} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-seo-title">כותרת הדף</label>
+        <input class="adm-input" id="f-seo-title" data-f="seo.title" value={idx.seo.title} />
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-seo-desc">תיאור הדף</label>
-        <textarea class="ad-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{idx.seo.description}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-seo-desc">תיאור הדף</label>
+        <textarea class="adm-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{idx.seo.description}</textarea>
       </div>
     </fieldset>
   </EditorChrome>

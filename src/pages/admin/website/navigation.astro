@@ -20,7 +20,7 @@ const meta = await content.meta('navigation');
     hasUnpublishedChanges={meta?.hasUnpublishedChanges}
     publishedAt={meta?.publishedAt}
   >
-    <p class="ad-hint" style="margin-bottom:1rem">
+    <p class="adm-hint" style="margin-bottom:1rem">
       אפשר לשנות את שם כל פריט בתפריט, ואת האם הוא מוצג. הסדר והיעד של
       כל פריט קבועים בעיצוב, כדי שלא ישבר קישור בטעות.
     </p>
@@ -28,9 +28,9 @@ const meta = await content.meta('navigation');
     {nav.items.map((item, i) => (
       <div class="row" data-item data-key={item.key}>
         <div class="row__grid">
-          <div class="ad-field">
-            <label class="ad-label">שם התצוגה</label>
-            <input class="ad-input" data-f={`items.${i}.label`} value={item.label} />
+          <div class="adm-field">
+            <label class="adm-label">שם התצוגה</label>
+            <input class="adm-input" data-f={`items.${i}.label`} value={item.label} />
           </div>
           <label class="chk">
             <input type="checkbox" data-f={`items.${i}.enabled`} checked={item.enabled} />
@@ -75,7 +75,7 @@ const meta = await content.meta('navigation');
   }
   .row:last-child { border-bottom: none; }
   .row__grid { display: flex; align-items: flex-end; gap: 1.25rem; flex: 1; }
-  .row__grid .ad-field { flex: 1; margin: 0; }
+  .row__grid .adm-field { flex: 1; margin: 0; }
   .chk { display: flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; white-space: nowrap; }
   .row__key { font-size: 0.75rem; color: var(--color-ink-3); }
 </style>

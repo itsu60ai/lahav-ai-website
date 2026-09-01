@@ -30,7 +30,7 @@ const fmt = (iso: string | null) =>
     {
       mayCreate && (
         <form method="post" action={`/api/admin/new?csrf=${csrf}`}>
-          <button class="ad-btn ad-btn--primary" type="submit">+ מאמר חדש</button>
+          <button class="adm-btn adm-btn--primary" type="submit">+ מאמר חדש</button>
         </form>
       )
     }
@@ -59,7 +59,7 @@ const fmt = (iso: string | null) =>
               <div class="row__meta">
                 <span class="row__slug" dir="ltr">/articles/{a.slug}/</span>
                 {a.isPlaceholder && (
-                  <span class="ad-pill ad-pill--placeholder">תוכן לדוגמה</span>
+                  <span class="adm-pill adm-pill--placeholder">תוכן לדוגמה</span>
                 )}
                 {a.featured && <span class="row__feat">מוצג ראשי</span>}
               </div>
@@ -68,8 +68,8 @@ const fmt = (iso: string | null) =>
             <span class="row__kind">{ARTICLE_KINDS[a.kind]?.label ?? a.kind}</span>
 
             <span>
-              <span class:list={['ad-pill', `ad-pill--${a.status}`]}>
-                <span class="ad-dot" />
+              <span class:list={['adm-pill', `adm-pill--${a.status}`]}>
+                <span class="adm-dot" />
                 {a.status === 'published' ? 'מפורסם' : 'טיוטה'}
               </span>
             </span>
@@ -77,9 +77,9 @@ const fmt = (iso: string | null) =>
             <span class="row__date">{fmt(a.updatedAt)}</span>
 
             <span class="row__actions">
-              <a class="ad-btn ad-btn--ghost row__btn" href={`/admin/${a.id}`}>עריכה</a>
+              <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/${a.id}`}>עריכה</a>
               <a
-                class="ad-btn ad-btn--ghost row__btn"
+                class="adm-btn adm-btn--ghost row__btn"
                 href={`/admin/preview/${a.id}`}
                 target="_blank"
                 rel="noopener"
@@ -97,8 +97,8 @@ const fmt = (iso: string | null) =>
                     />
                     <button
                       class:list={[
-                        'ad-btn row__btn',
-                        a.status === 'published' ? 'ad-btn--ghost' : 'ad-btn--primary',
+                        'adm-btn row__btn',
+                        a.status === 'published' ? 'adm-btn--ghost' : 'adm-btn--primary',
                       ]}
                       type="submit"
                     >

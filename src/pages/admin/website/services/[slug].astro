@@ -37,96 +37,96 @@ const label = SERVICE_LABELS[slug] ?? slug;
     hasUnpublishedChanges={meta?.hasUnpublishedChanges}
     publishedAt={meta?.publishedAt}
   >
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>שם ותקציר (מופיע בכרטיס, בתפריט ובפוטר)</legend>
-      <div class="ad-field">
-        <label class="ad-label" for="f-name">שם השירות</label>
-        <input class="ad-input" id="f-name" data-f="name" value={s.name} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-name">שם השירות</label>
+        <input class="adm-input" id="f-name" data-f="name" value={s.name} />
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-lead">משפט תקציר קצר</label>
-        <textarea class="ad-textarea" id="f-lead" data-f="lead" rows="2">{s.lead}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-lead">משפט תקציר קצר</label>
+        <textarea class="adm-textarea" id="f-lead" data-f="lead" rows="2">{s.lead}</textarea>
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-pain">פסקת ההסבר בכרטיס</label>
-        <textarea class="ad-textarea" id="f-pain" data-f="pain" rows="3">{s.pain}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-pain">פסקת ההסבר בכרטיס</label>
+        <textarea class="adm-textarea" id="f-pain" data-f="pain" rows="3">{s.pain}</textarea>
       </div>
-      <div class="ad-field">
-        <label class="ad-label">שלוש נקודות בכרטיס</label>
+      <div class="adm-field">
+        <label class="adm-label">שלוש נקודות בכרטיס</label>
         {s.points.map((p, i) => (
-          <input class="ad-input" style="margin-bottom:0.5rem" data-f={`points.${i}`} value={p} />
+          <input class="adm-input" style="margin-bottom:0.5rem" data-f={`points.${i}`} value={p} />
         ))}
       </div>
     </fieldset>
 
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>כותרת עמוד השירות</legend>
-      <div class="ad-field-row">
-        <div class="ad-field">
-          <label class="ad-label" for="f-h1a">שורה ראשונה</label>
-          <input class="ad-input" id="f-h1a" data-f="h1a" value={s.h1a} />
+      <div class="adm-field-row">
+        <div class="adm-field">
+          <label class="adm-label" for="f-h1a">שורה ראשונה</label>
+          <input class="adm-input" id="f-h1a" data-f="h1a" value={s.h1a} />
         </div>
-        <div class="ad-field">
-          <label class="ad-label" for="f-h1b">שורה שנייה</label>
-          <input class="ad-input" id="f-h1b" data-f="h1b" value={s.h1b} />
+        <div class="adm-field">
+          <label class="adm-label" for="f-h1b">שורה שנייה</label>
+          <input class="adm-input" id="f-h1b" data-f="h1b" value={s.h1b} />
         </div>
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-pagelead">טקסט מוביל בעמוד השירות</label>
-        <textarea class="ad-textarea" id="f-pagelead" data-f="pageLead" rows="2">{s.pageLead}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-pagelead">טקסט מוביל בעמוד השירות</label>
+        <textarea class="adm-textarea" id="f-pagelead" data-f="pageLead" rows="2">{s.pageLead}</textarea>
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-note">הערה קטנה מתחת לתרשים</label>
-        <textarea class="ad-textarea" id="f-note" data-f="note" rows="2">{s.note}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-note">הערה קטנה מתחת לתרשים</label>
+        <textarea class="adm-textarea" id="f-note" data-f="note" rows="2">{s.note}</textarea>
       </div>
     </fieldset>
 
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>הסימנים</legend>
-      <div class="ad-field">
-        <label class="ad-label" for="f-symt">כותרת הקטע</label>
-        <input class="ad-input" id="f-symt" data-f="symptomsTitle" value={s.symptomsTitle} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-symt">כותרת הקטע</label>
+        <input class="adm-input" id="f-symt" data-f="symptomsTitle" value={s.symptomsTitle} />
       </div>
       {s.symptoms.map((sym, i) => (
-        <input class="ad-input" style="margin-bottom:0.5rem" data-f={`symptoms.${i}`} value={sym} />
+        <input class="adm-input" style="margin-bottom:0.5rem" data-f={`symptoms.${i}`} value={sym} />
       ))}
     </fieldset>
 
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>מה נבנה בפועל</legend>
-      <div class="ad-field">
-        <label class="ad-label" for="f-buildt">כותרת הקטע</label>
-        <input class="ad-input" id="f-buildt" data-f="buildTitle" value={s.buildTitle} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-buildt">כותרת הקטע</label>
+        <input class="adm-input" id="f-buildt" data-f="buildTitle" value={s.buildTitle} />
       </div>
       {s.build.map((b, i) => (
         <div class="build-row">
-          <input class="ad-input" data-f={`build.${i}.t`} value={b.t} placeholder="כותרת" />
-          <textarea class="ad-textarea" data-f={`build.${i}.d`} rows="2" placeholder="תיאור">{b.d}</textarea>
+          <input class="adm-input" data-f={`build.${i}.t`} value={b.t} placeholder="כותרת" />
+          <textarea class="adm-textarea" data-f={`build.${i}.d`} rows="2" placeholder="תיאור">{b.d}</textarea>
         </div>
       ))}
     </fieldset>
 
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>סיום העמוד</legend>
-      <div class="ad-field">
-        <label class="ad-label" for="f-closing">כותרת הסיום</label>
-        <input class="ad-input" id="f-closing" data-f="closing" value={s.closing} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-closing">כותרת הסיום</label>
+        <input class="adm-input" id="f-closing" data-f="closing" value={s.closing} />
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-closingbody">טקסט הסיום</label>
-        <textarea class="ad-textarea" id="f-closingbody" data-f="closingBody" rows="2">{s.closingBody}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-closingbody">טקסט הסיום</label>
+        <textarea class="adm-textarea" id="f-closingbody" data-f="closingBody" rows="2">{s.closingBody}</textarea>
       </div>
     </fieldset>
 
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>קידום באתרי חיפוש (SEO)</legend>
-      <div class="ad-field">
-        <label class="ad-label" for="f-seo-title">כותרת הדף</label>
-        <input class="ad-input" id="f-seo-title" data-f="seo.title" value={s.seo.title} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-seo-title">כותרת הדף</label>
+        <input class="adm-input" id="f-seo-title" data-f="seo.title" value={s.seo.title} />
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-seo-desc">תיאור הדף</label>
-        <textarea class="ad-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{s.seo.description}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-seo-desc">תיאור הדף</label>
+        <textarea class="adm-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{s.seo.description}</textarea>
       </div>
     </fieldset>
   </EditorChrome>

@@ -191,23 +191,23 @@ const path = new URL(Astro.request.url).pathname;
   }
 
   /* shared admin controls */
-  .ad-field {
+  .adm-field {
     display: flex;
     flex-direction: column;
     gap: 0.375rem;
   }
-  .ad-label {
+  .adm-label {
     font-size: 0.8125rem;
     font-weight: 700;
     color: var(--color-ink-2);
   }
-  .ad-hint {
+  .adm-hint {
     font-size: 0.75rem;
     color: var(--color-ink-3);
   }
-  .ad-input,
-  .ad-select,
-  .ad-textarea {
+  .adm-input,
+  .adm-select,
+  .adm-textarea {
     width: 100%;
     font: inherit;
     font-size: 0.9375rem;
@@ -217,18 +217,18 @@ const path = new URL(Astro.request.url).pathname;
     background: #fff;
     color: var(--color-ink);
   }
-  .ad-textarea {
+  .adm-textarea {
     line-height: 1.6;
     resize: vertical;
   }
-  .ad-input:focus-visible,
-  .ad-select:focus-visible,
-  .ad-textarea:focus-visible {
+  .adm-input:focus-visible,
+  .adm-select:focus-visible,
+  .adm-textarea:focus-visible {
     outline: 3px solid var(--color-electric);
     outline-offset: 1px;
     border-color: transparent;
   }
-  .ad-btn {
+  .adm-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -242,35 +242,35 @@ const path = new URL(Astro.request.url).pathname;
     cursor: pointer;
     text-decoration: none;
   }
-  .ad-btn--primary {
+  .adm-btn--primary {
     background: var(--color-royal);
     color: #fff;
   }
-  .ad-btn--primary:hover {
+  .adm-btn--primary:hover {
     background: #1a45c4;
   }
-  .ad-btn--ghost {
+  .adm-btn--ghost {
     background: #fff;
     border-color: var(--color-line-strong);
     color: var(--color-ink);
   }
-  .ad-btn--ghost:hover {
+  .adm-btn--ghost:hover {
     background: var(--color-surface-2);
   }
-  .ad-btn--danger {
+  .adm-btn--danger {
     background: #fff;
     border-color: #e5b4b4;
     color: var(--color-error);
   }
-  .ad-btn--danger:hover {
+  .adm-btn--danger:hover {
     background: #fdf2f2;
   }
-  .ad-btn:disabled {
+  .adm-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  .ad-pill {
+  .adm-pill {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
@@ -279,19 +279,19 @@ const path = new URL(Astro.request.url).pathname;
     padding: 0.25rem 0.625rem;
     border-radius: 999px;
   }
-  .ad-pill--published {
+  .adm-pill--published {
     background: #e7f6ec;
     color: #15803d;
   }
-  .ad-pill--draft {
+  .adm-pill--draft {
     background: #f1f3f7;
     color: #55627a;
   }
-  .ad-pill--placeholder {
+  .adm-pill--placeholder {
     background: #fff4e5;
     color: #8a5300;
   }
-  .ad-dot {
+  .adm-dot {
     width: 0.4375rem;
     height: 0.4375rem;
     border-radius: 50%;

@@ -44,7 +44,7 @@ const needsAttention = blocking.length + review.length;
 const outcome: 'pass' | 'review' | 'blocked' =
   generation.status !== 'succeeded' ? 'blocked' : blocking.length > 0 ? 'blocked' : review.length > 0 ? 'review' : 'pass';
 const OUTCOME_LABEL = { pass: 'תקין ✓', review: 'דורש בדיקה', blocked: 'חסום' } as const;
-const OUTCOME_CLASS = { pass: 'ad-pill--published', review: 'ad-pill--placeholder', blocked: 'ad-pill--blocked' } as const;
+const OUTCOME_CLASS = { pass: 'adm-pill--published', review: 'adm-pill--placeholder', blocked: 'adm-pill--blocked' } as const;
 const SEVERITY_LABEL = { blocking: 'חוסם', review: 'לבדיקה', info: 'הערה' } as const;
 const SEVERITY_CLASS = { blocking: 'issue--blocking', review: 'issue--review', info: 'issue--info' } as const;
 
@@ -72,7 +72,7 @@ const orderedFailures = [...blocking, ...review, ...info];
   <section class="card card--primary">
     <p class="review-kicker">זהו מסך בדיקה וסקירה. עריכת התוכן עצמו נעשית במאמר.</p>
     <div class="status-row">
-      <span class:list={['ad-pill', 'ad-pill--outcome', OUTCOME_CLASS[outcome]]}>
+      <span class:list={['adm-pill', 'adm-pill--outcome', OUTCOME_CLASS[outcome]]}>
         מצב המאמר: {OUTCOME_LABEL[outcome]}
       </span>
       {needsAttention > 0 && <span class="status-note status-note--warn">{needsAttention} נושאים דורשים טיפול</span>}
@@ -84,8 +84,8 @@ const orderedFailures = [...blocking, ...review, ...info];
       {
         article && (
           <>
-            <a class="ad-btn ad-btn--primary" href={`/admin/${article.id}`}>עריכת המאמר</a>
-            <a class="ad-btn ad-btn--ghost" href={`/admin/preview/${article.id}`} target="_blank" rel="noopener">
+            <a class="adm-btn adm-btn--primary" href={`/admin/${article.id}`}>עריכת המאמר</a>
+            <a class="adm-btn adm-btn--ghost" href={`/admin/preview/${article.id}`} target="_blank" rel="noopener">
               תצוגה מקדימה
             </a>
           </>
@@ -95,14 +95,14 @@ const orderedFailures = [...blocking, ...review, ...info];
         mayCreate && article && (
           <form method="post" action={`/api/admin/ai/recheck?csrf=${csrf}`}>
             <input type="hidden" name="generationId" value={generation.id} />
-            <button class="ad-btn ad-btn--ghost" type="submit">בדיקה מחדש</button>
+            <button class="adm-btn adm-btn--ghost" type="submit">בדיקה מחדש</button>
           </form>
         )
       }
       {
         article && mayPublish && (
           <button
-            class="ad-btn ad-btn--primary"
+            class="adm-btn adm-btn--primary"
             type="button"
             data-publish-toggle
             data-article-id={article.id}
@@ -163,9 +163,9 @@ const orderedFailures = [...blocking, ...review, ...info];
               {f.suggestion && <p class="issue__suggestion">💡 {f.suggestion}</p>}
 
               <div class="issue__actions">
-                {article && <a class="ad-btn ad-btn--ghost row__btn" href={`/admin/${article.id}`}>עריכת המאמר</a>}
+                {article && <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/${article.id}`}>עריכת המאמר</a>}
                 {f.meta?.matchedArticleId && (
-                  <a class="ad-btn ad-btn--ghost row__btn" href={`/admin/${f.meta.matchedArticleId}`}>
+                  <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/${f.meta.matchedArticleId}`}>
                     פתיחת המאמר הקיים
                   </a>
                 )}
@@ -175,11 +175,11 @@ const orderedFailures = [...blocking, ...review, ...info];
                     <input type="hidden" name="articleId" value={generation.articleId ?? ''} />
                     <input type="hidden" name="kind" value="approve" />
                     <input type="hidden" name="note" value={`הנושאים שונים בפועל (לא כפילות): ${f.meta?.matchedArticleTitle ?? ''}`} />
-                    <button class="ad-btn ad-btn--ghost row__btn" type="submit">הנושאים שונים, המשך</button>
+                    <button class="adm-btn adm-btn--ghost row__btn" type="submit">הנושאים שונים, המשך</button>
                   </form>
                 )}
                 {f.gate === 'duplicate-topic' && f.severity === 'blocking' && article && mayDelete && (
-                  <button class="ad-btn ad-btn--danger row__btn" type="button" data-discard-draft data-article-id={article.id} data-csrf={csrf}>
+                  <button class="adm-btn adm-btn--danger row__btn" type="button" data-discard-draft data-article-id={article.id} data-csrf={csrf}>
                     ביטול הטיוטה
                   </button>
                 )}
@@ -257,7 +257,7 @@ const orderedFailures = [...blocking, ...review, ...info];
       זהו הטקסט המלא שנשלח (או הוכן להדבקה) עבור המודל. שום דבר כאן לא משתנה בעריכה או בבדיקה מחדש.
     </p>
     <details>
-      <summary class="ad-btn ad-btn--ghost">הצגת הפרומפט המלא</summary>
+      <summary class="adm-btn adm-btn--ghost">הצגת הפרומפט המלא</summary>
       <pre class="prompt-pre">{generation.promptText}</pre>
     </details>
   </section>
@@ -274,13 +274,13 @@ const orderedFailures = [...blocking, ...review, ...info];
         <form method="post" action={`/api/admin/ai/feedback?csrf=${csrf}`} class="fb-form">
           <input type="hidden" name="generationId" value={generation.id} />
           <input type="hidden" name="articleId" value={generation.articleId ?? ''} />
-          <div class="ad-field ad-field--wide">
-            <label class="ad-label" for="note">מה כדאי לשפר בפעם הבאה? (אופציונלי, אבל הכי מועיל)</label>
-            <textarea class="ad-textarea" id="note" name="note" rows={2} />
+          <div class="adm-field adm-field--wide">
+            <label class="adm-label" for="note">מה כדאי לשפר בפעם הבאה? (אופציונלי, אבל הכי מועיל)</label>
+            <textarea class="adm-textarea" id="note" name="note" rows={2} />
           </div>
           <div class="fb-actions">
-            <button class="ad-btn ad-btn--primary" type="submit" name="kind" value="approve">אהבתי את התוצאה</button>
-            <button class="ad-btn ad-btn--ghost" type="submit" name="kind" value="reject">לא אהבתי</button>
+            <button class="adm-btn adm-btn--primary" type="submit" name="kind" value="approve">אהבתי את התוצאה</button>
+            <button class="adm-btn adm-btn--ghost" type="submit" name="kind" value="reject">לא אהבתי</button>
           </div>
         </form>
         {
@@ -373,11 +373,11 @@ const orderedFailures = [...blocking, ...review, ...info];
   .crumbs a { color: var(--color-ink-3); text-decoration: none; }
   .crumbs a:hover { color: var(--color-royal); }
 
-  .ad-pill--outcome {
+  .adm-pill--outcome {
     font-size: 0.9375rem;
     padding: 0.375rem 0.875rem;
   }
-  .ad-pill--blocked {
+  .adm-pill--blocked {
     background: var(--color-error-soft);
     color: var(--color-error);
   }

@@ -141,8 +141,8 @@ const csrf = await csrfFor(Astro.locals.sessionToken);
     <p class="foot-note">
       הדביקו את הטקסט הזה בשיחה חדשה עם ChatGPT או Claude, ואז הדביקו לכאן את מה שהם עונים.
     </p>
-    <textarea id="prompt-box" class="ad-textarea prompt-box" readonly rows={10}>{generation.promptText}</textarea>
-    <button id="copy-btn" type="button" class="ad-btn ad-btn--primary">העתקת הפרומפט</button>
+    <textarea id="prompt-box" class="adm-textarea prompt-box" readonly rows={10}>{generation.promptText}</textarea>
+    <button id="copy-btn" type="button" class="adm-btn adm-btn--primary">העתקת הפרומפט</button>
     <span id="copy-status" class="copy-status" role="status"></span>
   </section>
 
@@ -162,12 +162,12 @@ const csrf = await csrfFor(Astro.locals.sessionToken);
     <form method="post" action={`/admin/ai/manual/${generation.id}?csrf=${csrf}`}>
       <textarea
         name="pastedText"
-        class="ad-textarea paste-box"
+        class="adm-textarea paste-box"
         rows={14}
         placeholder="הדביקו כאן את התשובה המלאה מ-ChatGPT או Claude"
         required
       >{preservedPastedText}</textarea>
-      <button class="ad-btn ad-btn--primary" type="submit">בדיקה ויצירת טיוטה</button>
+      <button class="adm-btn adm-btn--primary" type="submit">בדיקה ויצירת טיוטה</button>
     </form>
   </section>
 </AdminLayout>

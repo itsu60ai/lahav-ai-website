@@ -20,30 +20,30 @@ const meta = await content.meta('footer');
     hasUnpublishedChanges={meta?.hasUnpublishedChanges}
     publishedAt={meta?.publishedAt}
   >
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>ההזמנה הגדולה בתחתית האתר</legend>
-      <div class="ad-field-row">
-        <div class="ad-field">
-          <label class="ad-label" for="f-l1">שורה ראשונה</label>
-          <input class="ad-input" id="f-l1" data-f="invitationLine1" value={footer.invitationLine1} />
+      <div class="adm-field-row">
+        <div class="adm-field">
+          <label class="adm-label" for="f-l1">שורה ראשונה</label>
+          <input class="adm-input" id="f-l1" data-f="invitationLine1" value={footer.invitationLine1} />
         </div>
-        <div class="ad-field">
-          <label class="ad-label" for="f-l2">שורה שנייה</label>
-          <input class="ad-input" id="f-l2" data-f="invitationLine2" value={footer.invitationLine2} />
-          <span class="ad-hint">בלי נקודה בסוף - הנקודה מתווספת אוטומטית ומעוצבת בנפרד.</span>
+        <div class="adm-field">
+          <label class="adm-label" for="f-l2">שורה שנייה</label>
+          <input class="adm-input" id="f-l2" data-f="invitationLine2" value={footer.invitationLine2} />
+          <span class="adm-hint">בלי נקודה בסוף - הנקודה מתווספת אוטומטית ומעוצבת בנפרד.</span>
         </div>
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-note">משפט קטן מתחת להזמנה</label>
-        <input class="ad-input" id="f-note" data-f="note" value={footer.note} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-note">משפט קטן מתחת להזמנה</label>
+        <input class="adm-input" id="f-note" data-f="note" value={footer.note} />
       </div>
     </fieldset>
 
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>אודות העסק</legend>
-      <div class="ad-field">
-        <label class="ad-label" for="f-blurb">משפט קצר ליד הלוגו</label>
-        <input class="ad-input" id="f-blurb" data-f="blurb" value={footer.blurb} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-blurb">משפט קצר ליד הלוגו</label>
+        <input class="adm-input" id="f-blurb" data-f="blurb" value={footer.blurb} />
       </div>
     </fieldset>
   </EditorChrome>

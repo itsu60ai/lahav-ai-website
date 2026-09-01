@@ -20,38 +20,38 @@ const meta = await content.meta('faq');
     hasUnpublishedChanges={meta?.hasUnpublishedChanges}
     publishedAt={meta?.publishedAt}
   >
-    <p class="ad-hint" style="margin-bottom:1rem">
+    <p class="adm-hint" style="margin-bottom:1rem">
       זה עורך את הכותרת שמעל רשימת השאלות בלבד. את השאלות והתשובות עצמן
       עורכים ב<a href="/admin/faq">ניהול שאלות נפוצות</a>.
     </p>
 
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>הכותרת</legend>
-      <div class="ad-field-row">
-        <div class="ad-field">
-          <label class="ad-label" for="f-h1">שורה ראשונה</label>
-          <input class="ad-input" id="f-h1" data-f="headlineLine1" value={faqPage.headlineLine1} />
+      <div class="adm-field-row">
+        <div class="adm-field">
+          <label class="adm-label" for="f-h1">שורה ראשונה</label>
+          <input class="adm-input" id="f-h1" data-f="headlineLine1" value={faqPage.headlineLine1} />
         </div>
-        <div class="ad-field">
-          <label class="ad-label" for="f-h2">שורה שנייה</label>
-          <input class="ad-input" id="f-h2" data-f="headlineLine2" value={faqPage.headlineLine2} />
+        <div class="adm-field">
+          <label class="adm-label" for="f-h2">שורה שנייה</label>
+          <input class="adm-input" id="f-h2" data-f="headlineLine2" value={faqPage.headlineLine2} />
         </div>
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-lead">טקסט מתחת לכותרת</label>
-        <textarea class="ad-textarea" id="f-lead" data-f="lead" rows="2">{faqPage.lead}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-lead">טקסט מתחת לכותרת</label>
+        <textarea class="adm-textarea" id="f-lead" data-f="lead" rows="2">{faqPage.lead}</textarea>
       </div>
     </fieldset>
 
-    <fieldset class="ad-fieldset">
+    <fieldset class="adm-fieldset">
       <legend>קידום באתרי חיפוש (SEO)</legend>
-      <div class="ad-field">
-        <label class="ad-label" for="f-seo-title">כותרת הדף</label>
-        <input class="ad-input" id="f-seo-title" data-f="seo.title" value={faqPage.seo.title} />
+      <div class="adm-field">
+        <label class="adm-label" for="f-seo-title">כותרת הדף</label>
+        <input class="adm-input" id="f-seo-title" data-f="seo.title" value={faqPage.seo.title} />
       </div>
-      <div class="ad-field">
-        <label class="ad-label" for="f-seo-desc">תיאור הדף</label>
-        <textarea class="ad-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{faqPage.seo.description}</textarea>
+      <div class="adm-field">
+        <label class="adm-label" for="f-seo-desc">תיאור הדף</label>
+        <textarea class="adm-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{faqPage.seo.description}</textarea>
       </div>
     </fieldset>
   </EditorChrome>

@@ -37,21 +37,21 @@ const vizLabels: Record<string, string> = {
       </div>
 
       <div class="ed__acts">
-        <span class:list={['ad-pill', `ad-pill--${a.status}`]} data-status-pill>
-          <span class="ad-dot"></span>
+        <span class:list={['adm-pill', `adm-pill--${a.status}`]} data-status-pill>
+          <span class="adm-dot"></span>
           {a.status === 'published' ? 'מפורסם' : 'טיוטה'}
         </span>
 
         <span class="ed__saved" data-saved aria-live="polite"></span>
 
-        <button class="ad-btn ad-btn--ghost" type="button" data-save>שמירת טיוטה</button>
-        <a class="ad-btn ad-btn--ghost" href={`/admin/preview/${a.id}`} target="_blank" rel="noopener">
+        <button class="adm-btn adm-btn--ghost" type="button" data-save>שמירת טיוטה</button>
+        <a class="adm-btn adm-btn--ghost" href={`/admin/preview/${a.id}`} target="_blank" rel="noopener">
           תצוגה מקדימה
         </a>
         {
           mayPublish && (
             <button
-              class:list={['ad-btn', a.status === 'published' ? 'ad-btn--ghost' : 'ad-btn--primary']}
+              class:list={['adm-btn', a.status === 'published' ? 'adm-btn--ghost' : 'adm-btn--primary']}
               type="button"
               data-publish
               data-next={a.status === 'published' ? 'draft' : 'published'}
@@ -67,21 +67,21 @@ const vizLabels: Record<string, string> = {
       <!-- ─────────── the article itself ─────────── -->
       <div class="ed__main">
         <div class="card">
-          <div class="ad-field">
-            <label class="ad-label" for="f-title">כותרת</label>
-            <input class="ad-input ed__title" id="f-title" data-f="title" value={a.title} />
+          <div class="adm-field">
+            <label class="adm-label" for="f-title">כותרת</label>
+            <input class="adm-input ed__title" id="f-title" data-f="title" value={a.title} />
           </div>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-standfirst">פתיח</label>
-            <textarea class="ad-textarea" id="f-standfirst" data-f="standfirst" rows="2">{a.standfirst}</textarea>
-            <span class="ad-hint">המשפט הגדול שמופיע מתחת לכותרת בעמוד המאמר.</span>
+          <div class="adm-field">
+            <label class="adm-label" for="f-standfirst">פתיח</label>
+            <textarea class="adm-textarea" id="f-standfirst" data-f="standfirst" rows="2">{a.standfirst}</textarea>
+            <span class="adm-hint">המשפט הגדול שמופיע מתחת לכותרת בעמוד המאמר.</span>
           </div>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-excerpt">תקציר</label>
-            <textarea class="ad-textarea" id="f-excerpt" data-f="excerpt" rows="2">{a.excerpt}</textarea>
-            <span class="ad-hint">הטקסט שמופיע בכרטיס המאמר ברשימת המאמרים.</span>
+          <div class="adm-field">
+            <label class="adm-label" for="f-excerpt">תקציר</label>
+            <textarea class="adm-textarea" id="f-excerpt" data-f="excerpt" rows="2">{a.excerpt}</textarea>
+            <span class="adm-hint">הטקסט שמופיע בכרטיס המאמר ברשימת המאמרים.</span>
           </div>
         </div>
 
@@ -89,7 +89,7 @@ const vizLabels: Record<string, string> = {
         <div class="card">
           <div class="card__head">
             <h2 class="card__h">גוף המאמר</h2>
-            <span class="ad-hint">בחרו סוג תוכן והוסיפו. אין צורך בסימוני עיצוב.</span>
+            <span class="adm-hint">בחרו סוג תוכן והוסיפו. אין צורך בסימוני עיצוב.</span>
           </div>
 
           <div class="blocks" data-blocks></div>
@@ -112,32 +112,32 @@ const vizLabels: Record<string, string> = {
         <div class="card">
           <h2 class="card__h">הגדרות</h2>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-kind">סוג מאמר</label>
-            <select class="ad-select" id="f-kind" data-f="kind">
+          <div class="adm-field">
+            <label class="adm-label" for="f-kind">סוג מאמר</label>
+            <select class="adm-select" id="f-kind" data-f="kind">
               {
                 Object.entries(ARTICLE_KINDS).map(([k, v]) => (
                   <option value={k} selected={a.kind === k}>{v.label}</option>
                 ))
               }
             </select>
-            <span class="ad-hint">קובע את התווית ואת המיקום בעמוד המאמרים.</span>
+            <span class="adm-hint">קובע את התווית ואת המיקום בעמוד המאמרים.</span>
           </div>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-topic">נושא</label>
-            <input class="ad-input" id="f-topic" data-f="topic" value={a.topic} />
+          <div class="adm-field">
+            <label class="adm-label" for="f-topic">נושא</label>
+            <input class="adm-input" id="f-topic" data-f="topic" value={a.topic} />
           </div>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-reading">זמן קריאה</label>
-            <input class="ad-input" id="f-reading" data-f="readingTime" value={a.readingTime} />
+          <div class="adm-field">
+            <label class="adm-label" for="f-reading">זמן קריאה</label>
+            <input class="adm-input" id="f-reading" data-f="readingTime" value={a.readingTime} />
           </div>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-slug">כתובת בקישור</label>
-            <input class="ad-input" id="f-slug" data-f="slug" value={a.slug} dir="ltr" />
-            <span class="ad-hint" data-slug-preview>/articles/{a.slug}/</span>
+          <div class="adm-field">
+            <label class="adm-label" for="f-slug">כתובת בקישור</label>
+            <input class="adm-input" id="f-slug" data-f="slug" value={a.slug} dir="ltr" />
+            <span class="adm-hint" data-slug-preview>/articles/{a.slug}/</span>
           </div>
 
           <label class="check">
@@ -154,26 +154,26 @@ const vizLabels: Record<string, string> = {
         <div class="card">
           <h2 class="card__h">תרשים ושירות</h2>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-viz">תרשים</label>
-            <select class="ad-select" id="f-viz" data-f="viz">
+          <div class="adm-field">
+            <label class="adm-label" for="f-viz">תרשים</label>
+            <select class="adm-select" id="f-viz" data-f="viz">
               {
                 VIZ_KINDS.map((v) => (
                   <option value={v} selected={a.viz === v}>{vizLabels[v] ?? v}</option>
                 ))
               }
             </select>
-            <span class="ad-hint">מופיע במקום שבו הוספתם בלוק "תרשים".</span>
+            <span class="adm-hint">מופיע במקום שבו הוספתם בלוק "תרשים".</span>
           </div>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-vizcap">כיתוב לתרשים</label>
-            <textarea class="ad-textarea" id="f-vizcap" data-f="vizCaption" rows="2">{a.vizCaption}</textarea>
+          <div class="adm-field">
+            <label class="adm-label" for="f-vizcap">כיתוב לתרשים</label>
+            <textarea class="adm-textarea" id="f-vizcap" data-f="vizCaption" rows="2">{a.vizCaption}</textarea>
           </div>
 
-          <div class="ad-field">
-            <label class="ad-label" for="f-service">שירות קשור</label>
-            <select class="ad-select" id="f-service" data-f="serviceSlug">
+          <div class="adm-field">
+            <label class="adm-label" for="f-service">שירות קשור</label>
+            <select class="adm-select" id="f-service" data-f="serviceSlug">
               {
                 SERVICES.map((s) => (
                   <option value={s.slug} selected={a.serviceSlug === s.slug}>{s.name}</option>
@@ -187,8 +187,8 @@ const vizLabels: Record<string, string> = {
           mayDelete && (
             <div class="card card--danger">
               <h2 class="card__h">מחיקה</h2>
-              <p class="ad-hint">המחיקה סופית ואי אפשר לשחזר.</p>
-              <button class="ad-btn ad-btn--danger" type="button" data-delete>מחיקת המאמר</button>
+              <p class="adm-hint">המחיקה סופית ואי אפשר לשחזר.</p>
+              <button class="adm-btn adm-btn--danger" type="button" data-delete>מחיקת המאמר</button>
             </div>
           )
         }
@@ -271,7 +271,7 @@ const vizLabels: Record<string, string> = {
             const row = document.createElement('div');
             row.className = 'blk__li';
             const inp = document.createElement('input');
-            inp.className = 'ad-input';
+            inp.className = 'adm-input';
             inp.value = item;
             inp.addEventListener('input', () => { b.items[j] = inp.value; touch(); });
             row.append(inp, btn('✕', 'מחיקת שורה', () => {
@@ -290,7 +290,7 @@ const vizLabels: Record<string, string> = {
           wrap.appendChild(list);
         } else {
           const ta = document.createElement('textarea');
-          ta.className = 'ad-textarea';
+          ta.className = 'adm-textarea';
           ta.rows = b.t === 'p' ? 4 : 2;
           ta.value = b.x || '';
           ta.addEventListener('input', () => { b.x = ta.value; touch(); autoGrow(ta); });

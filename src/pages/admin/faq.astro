@@ -30,23 +30,23 @@ const canPublish = can(user, 'faq:publish');
     </div>
     <div class="hd__acts">
       {meta.publishedAt && (
-        <span class:list={['ad-pill', meta.hasUnpublishedChanges ? 'ad-pill--draft' : 'ad-pill--published']}>
-          <span class="ad-dot"></span>
+        <span class:list={['adm-pill', meta.hasUnpublishedChanges ? 'adm-pill--draft' : 'adm-pill--published']}>
+          <span class="adm-dot"></span>
           {meta.hasUnpublishedChanges ? 'יש שינויים שלא פורסמו' : 'מפורסם ועדכני'}
         </span>
       )}
       <span class="msg" id="publish-msg"></span>
       {canPublish && (
-        <button class="ad-btn ad-btn--primary" type="button" id="publish-btn">פרסום</button>
+        <button class="adm-btn adm-btn--primary" type="button" id="publish-btn">פרסום</button>
       )}
     </div>
   </div>
 
   <div class="card new">
-    <p class="ad-label">הוספת שאלה</p>
-    <input class="ad-input" id="new-q" placeholder="השאלה" />
-    <textarea class="ad-textarea" id="new-a" rows="2" placeholder="התשובה"></textarea>
-    <button class="ad-btn ad-btn--primary" type="button" id="add-btn">הוספה</button>
+    <p class="adm-label">הוספת שאלה</p>
+    <input class="adm-input" id="new-q" placeholder="השאלה" />
+    <textarea class="adm-textarea" id="new-a" rows="2" placeholder="התשובה"></textarea>
+    <button class="adm-btn adm-btn--primary" type="button" id="add-btn">הוספה</button>
     <span class="msg" id="add-msg"></span>
   </div>
 
@@ -58,17 +58,17 @@ const canPublish = can(user, 'faq:publish');
           <button class="ord" type="button" data-down disabled={i === items.length - 1}>↓</button>
         </div>
         <div class="row__body">
-          <input class="ad-input" data-q value={item.question} />
-          <textarea class="ad-textarea" rows="2" data-a>{item.answer}</textarea>
-          {!item.published && <span class="ad-hint is-new">טרם פורסם</span>}
+          <input class="adm-input" data-q value={item.question} />
+          <textarea class="adm-textarea" rows="2" data-a>{item.answer}</textarea>
+          {!item.published && <span class="adm-hint is-new">טרם פורסם</span>}
         </div>
         <div class="row__acts">
           <label class="chk">
             <input type="checkbox" data-enabled checked={item.enabled} />
             מוצג
           </label>
-          <button class="ad-btn ad-btn--ghost" type="button" data-save>שמירת טיוטה</button>
-          <button class="ad-btn ad-btn--ghost is-danger" type="button" data-delete>מחיקה</button>
+          <button class="adm-btn adm-btn--ghost" type="button" data-save>שמירת טיוטה</button>
+          <button class="adm-btn adm-btn--ghost is-danger" type="button" data-delete>מחיקה</button>
         </div>
       </li>
     ))}
@@ -198,12 +198,12 @@ const canPublish = can(user, 'faq:publish');
   .chk { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; white-space: nowrap; }
   .is-danger { color: #c23; border-color: #f3c8c8; }
   .empty { color: var(--color-ink-3); }
-  .ad-hint.is-new { color: #b8860b; font-weight: 600; }
+  .adm-hint.is-new { color: #b8860b; font-weight: 600; }
 
   /* Same pill AdminLayout/EditorChrome use elsewhere -- :global here
      because this page's own scoped styles otherwise cannot reach a class
      also referenced from AdminLayout's slot content. */
-  :global(.ad-pill) {
+  :global(.adm-pill) {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
@@ -212,7 +212,7 @@ const canPublish = can(user, 'faq:publish');
     padding: 0.25rem 0.625rem;
     border-radius: 999px;
   }
-  :global(.ad-pill--published) { background: #e7f6ec; color: #15803d; }
-  :global(.ad-pill--draft) { background: #f1f3f7; color: #55627a; }
-  :global(.ad-dot) { width: 0.4375rem; height: 0.4375rem; border-radius: 50%; background: currentColor; }
+  :global(.adm-pill--published) { background: #e7f6ec; color: #15803d; }
+  :global(.adm-pill--draft) { background: #f1f3f7; color: #55627a; }
+  :global(.adm-dot) { width: 0.4375rem; height: 0.4375rem; border-radius: 50%; background: currentColor; }
 </style>
