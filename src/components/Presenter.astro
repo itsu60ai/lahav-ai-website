@@ -142,12 +142,17 @@ const uid = 'pr' + Math.random().toString(36).slice(2, 8);
        the baked studio sweep it dissolves that rectangle's edge into
        the hero, so the fallback does not announce itself as a video
        box. The stops clear his silhouette: his head starts around 10%
-       down and his shoulders sit inside 20-80% across. */
+       down and his shoulders sit inside 20-80% across.
+
+       The bottom stop is 93%, not 86%. He gestures in this footage and
+       his hands sit near the lower edge; fading from 86% erased them,
+       which removes the single thing this version has that the drawn
+       character never did. */
     -webkit-mask-image:
-      linear-gradient(to bottom, transparent 0, #000 6%, #000 86%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 6%, #000 93%, transparent 100%),
       linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
     mask-image:
-      linear-gradient(to bottom, transparent 0, #000 6%, #000 86%, transparent 100%),
+      linear-gradient(to bottom, transparent 0, #000 6%, #000 93%, transparent 100%),
       linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%);
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
