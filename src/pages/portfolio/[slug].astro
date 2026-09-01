@@ -6,15 +6,16 @@
 // authenticated ?preview=1 (see resolvePreview.ts), same rule the rest of
 // the site's preview pages follow.
 //
-// Structure inspired by a reference agency's own case-study page: a
-// full-bleed image dominates the opening view with the name overlaid
-// directly on it, then the story reads as flowing narrative paragraphs,
-// not boxed feature cards -- reworked with LAHAV's own type/colour
-// system, not the reference's own CSS or copy. The first pass here used
-// a small inset image beside a text column and three bordered mini-cards
-// for the story; client feedback ("looks bad", with the reference's own
-// case-study page attached) called for the bolder, more editorial
-// treatment this version uses instead.
+// Structure inspired by a reference agency's own case-study page, seen
+// in full via screenshots the client walked through end to end (their
+// own case-study page fights a custom smooth-scroll library that made it
+// hard to inspect any other way): a full-bleed image with just the name
+// on it, then a two-column "category + opening line" intro, then the
+// story as labelled sections (a bold heading on one side, the paragraph
+// on the other -- not free-flowing prose, and not boxed mini-cards
+// either), then a full-bleed, image-backed "next project" band as
+// dramatic as the opening hero -- reworked with LAHAV's own type/colour
+// system throughout, not the reference's CSS or copy.
 export const prerender = false;
 
 import SiteLayout from '../../layouts/SiteLayout.astro';
@@ -47,13 +48,13 @@ const item = content; // narrowed, non-null from here down
 // link -- draft items aren't a single stable ordered list the way
 // published ones are, and preview's purpose is checking one item, not
 // browsing the set.
-let next: { name: string; slug: string } | null = null;
+let next: { name: string; slug: string; heroImage: string } | null = null;
 if (!preview) {
   const list = await portfolioList.listPublished();
   const idx = list.findIndex((r) => (r.content as PortfolioItemContent).slug === item.slug);
   if (idx !== -1 && list.length > 1) {
     const nextContent = list[(idx + 1) % list.length].content as PortfolioItemContent;
-    next = { name: nextContent.name, slug: nextContent.slug };
+    next = { name: nextContent.name, slug: nextContent.slug, heroImage: nextContent.heroImage };
   }
 }
 ---
@@ -66,53 +67,71 @@ if (!preview) {
   preview={preview}
   headerSolid
 >
+  <!-- ═══ hero: full-bleed image, the name and nothing else on it ═══ -->
   <section class="pd-hero band band--navy">
     {item.heroImage
       ? <img class="pd-hero__img" src={`/api/media/${item.heroImage}`} alt="" />
       : <span class="pd-hero__img pd-hero__placeholder" aria-hidden="true" />}
     <span class="pd-hero__scrim" aria-hidden="true"></span>
-    <div class="u-container u-container--wide pd-hero__in">
-      <p class="t-eyebrow" data-reveal>{item.industry}</p>
-      <h1 class="pd-hero__h1" data-reveal style="--mo-delay:80ms">{item.name}</h1>
-      {item.service && <p class="pd-hero__service" data-reveal style="--mo-delay:180ms">{item.service}</p>}
+    <h1 class="pd-hero__h1" data-reveal>{item.name}</h1>
+  </section>
+
+  <!-- ═══ intro: category on one side, the opening line on the other ═══ -->
+  <section class="pd-intro u-section band">
+    <div class="u-container u-container--wide pd-intro__grid">
+      <div class="pd-intro__tags" data-reveal>
+        <p class="t-eyebrow">{item.industry}</p>
+        {item.service && <p class="pd-intro__service">{item.service}</p>}
+      </div>
+      <p class="pd-intro__lead" data-reveal style="--mo-delay:90ms">{item.challenge}</p>
     </div>
   </section>
 
-  <section class="pd-story u-section band">
-    <Curve tone="surface" shape="wave" />
-    <div class="u-container pd-story__col">
-      <p class="pd-story__p" data-reveal>{item.challenge}</p>
-      <p class="pd-story__p" data-reveal style="--mo-delay:90ms">{item.approach}</p>
-      <p class="pd-story__p pd-story__p--result" data-reveal style="--mo-delay:180ms">{item.result}</p>
+  <!-- ═══ the work: a bold label beside its paragraph, repeated ═══ -->
+  <section class="pd-work band band--soft u-section">
+    <Curve tone="soft" shape="slope" />
+    <div class="u-container u-container--wide pd-work__row">
+      <h2 class="pd-work__k" data-reveal>מה בנינו</h2>
+      <p class="pd-work__t" data-reveal style="--mo-delay:90ms">{item.approach}</p>
+    </div>
+    <div class="u-container u-container--wide pd-work__row pd-work__row--result">
+      <h2 class="pd-work__k" data-reveal>התוצאה</h2>
+      <p class="pd-work__t pd-work__t--result" data-reveal style="--mo-delay:90ms">{item.result}</p>
     </div>
   </section>
 
+  <!-- ═══ next project: as dramatic as the opening hero ═══ -->
   {next && (
-    <nav class="pd-next" aria-label="הפרויקט הבא">
-      <div class="u-container u-container--wide pd-next__in">
+    <a class="pd-next band band--navy" href={`/portfolio/${next.slug}/`} aria-label={`הפרויקט הבא: ${next.name}`}>
+      {next.heroImage
+        ? <img class="pd-next__img" src={`/api/media/${next.heroImage}`} alt="" />
+        : <span class="pd-next__img pd-hero__placeholder" aria-hidden="true" />}
+      <span class="pd-hero__scrim" aria-hidden="true"></span>
+      <span class="pd-next__in">
         <span class="pd-next__k">הפרויקט הבא</span>
-        <a class="pd-next__a" href={`/portfolio/${next.slug}/`}>
+        <span class="pd-next__name">
           {next.name}
           <span class="arrow-inline" aria-hidden="true">←</span>
-        </a>
-      </div>
-    </nav>
+        </span>
+      </span>
+    </a>
   )}
 
   <ContactBlock siteKey={SITE_KEY} preview={preview} />
 </SiteLayout>
 
 <style>
-  /* Full-bleed image hero, name overlaid directly on it -- the bolder
-     treatment the reference case-study page uses, reworked with LAHAV's
-     own dark-band convention (band--navy) instead of one-off colours, so
-     the eyebrow/heading/link colour swap for a dark background comes
-     from the same rule every other navy band on the site already uses. */
+  /* Full-bleed image band, reused for both the opening hero and the
+     closing "next project" band -- LAHAV's dark-band convention
+     (band--navy) instead of one-off colours, so heading/link colour
+     swap for a dark background comes from the same rule every other
+     navy band on the site already uses. */
   .pd-hero {
     position: relative;
-    min-height: clamp(26rem, 78svh, 44rem);
+    min-height: clamp(22rem, 62svh, 34rem);
     display: flex;
     align-items: center;
+    justify-content: center;
     overflow: hidden;
     padding-top: clamp(5.5rem, 10svh, 7rem); /* clears the solid header */
   }
@@ -127,84 +146,133 @@ if (!preview) {
   .pd-hero__placeholder {
     background: linear-gradient(135deg, var(--color-navy), var(--color-royal));
   }
-  /* Darkest at the top (header legibility) and bottom (footer-of-hero
-     legibility), lighter through the middle so the photo still reads. */
+  /* Darkest at the top (header legibility) and bottom, lighter through
+     the middle so the photo still reads. */
   .pd-hero__scrim {
     position: absolute;
     inset: 0;
     background: linear-gradient(
       180deg,
-      rgba(9, 15, 33, 0.72) 0%,
-      rgba(9, 15, 33, 0.38) 32%,
-      rgba(9, 15, 33, 0.38) 60%,
-      rgba(9, 15, 33, 0.75) 100%
+      rgba(9, 15, 33, 0.68) 0%,
+      rgba(9, 15, 33, 0.32) 35%,
+      rgba(9, 15, 33, 0.32) 60%,
+      rgba(9, 15, 33, 0.78) 100%
     );
   }
-  .pd-hero__in {
+  .pd-hero__h1 {
     position: relative;
     z-index: 1;
-    padding-block: clamp(2rem, 5vw, 3.5rem);
-  }
-  .pd-hero__h1 {
     font-family: var(--font-display);
     font-size: clamp(2.5rem, 7vw, 5.5rem);
     font-weight: 900;
     line-height: 1.05;
     letter-spacing: normal;
-    margin-block: 0.6rem 0.5rem;
     color: #fff;
-    max-width: 18ch;
-  }
-  .pd-hero__service {
-    font-size: var(--text-lead);
-    color: rgba(255, 255, 255, 0.82);
-    max-width: 40ch;
+    text-align: center;
+    max-width: 22ch;
+    padding-inline: 1.5rem;
   }
 
-  /* Story: flowing narrative paragraphs in one centred column, not
-     boxed/bordered feature cards. */
-  .pd-story { position: relative; overflow: visible; }
-  .pd-story__col {
-    max-width: 42rem;
-    display: flex;
-    flex-direction: column;
-    gap: clamp(1.5rem, 3vw, 2.25rem);
+  /* Intro: a small category stack on one side, the opening line (the
+     draft's "challenge" field, doing the job the reference's own opening
+     paragraph does) on the other. */
+  .pd-intro__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    align-items: start;
   }
-  .pd-story__p {
+  .pd-intro__service {
+    margin-top: 0.5rem;
     font-family: var(--font-display);
-    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
-    font-weight: 600;
+    font-size: var(--text-body);
+    font-weight: 800;
+    color: var(--color-ink);
+  }
+  .pd-intro__lead {
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 2.6vw, 2rem);
+    font-weight: 700;
     line-height: 1.5;
     letter-spacing: normal;
+    color: var(--color-ink);
+  }
+
+  /* The work: a bold label beside its paragraph, repeated per field --
+     not free-flowing prose, and not a bordered mini-card either. */
+  .pd-work { position: relative; overflow: visible; }
+  .pd-work__row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    align-items: start;
+    padding-block: clamp(1.5rem, 3vw, 2.25rem);
+  }
+  .pd-work__row + .pd-work__row { border-top: 1px solid var(--color-line-strong); }
+  .pd-work__k {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: normal;
+    color: var(--color-ink);
+  }
+  .pd-work__t {
+    font-size: var(--text-body-lg);
+    line-height: 1.65;
     color: var(--color-ink-2);
   }
-  .pd-story__p--result {
-    color: var(--color-ink);
-    font-weight: 800;
-  }
+  .pd-work__t--result { color: var(--color-ink); font-weight: 700; }
 
-  .pd-next {
-    border-top: 1px solid var(--color-line);
-    background: var(--color-surface);
-    padding-block: clamp(1.75rem, 3.5vw, 2.75rem);
+  /* Next project: as dramatic as the opening hero, and a real link. */
+  a.pd-next {
+    display: block;
+    position: relative;
+    min-height: clamp(16rem, 38svh, 22rem);
+    text-decoration: none;
+    overflow: hidden;
   }
-  .pd-next__in { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.75rem 1.5rem; }
-  .pd-next__k { font-size: var(--text-micro); font-weight: 700; letter-spacing: 0.08em; color: var(--color-ink-3); }
-  .pd-next__a {
+  .pd-next__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 500ms var(--ease-out);
+  }
+  a.pd-next:hover .pd-next__img { transform: scale(1.04); }
+  .pd-next__in {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: center;
+    padding-inline: 1.5rem;
+  }
+  .pd-next__k {
+    font-size: var(--text-micro);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .pd-next__name {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     font-family: var(--font-display);
-    font-size: clamp(1.125rem, 1.8vw, 1.5rem);
-    font-weight: 800;
-    color: var(--color-ink);
-    text-decoration: none;
-    transition: color var(--dur) var(--ease-out);
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    font-weight: 900;
+    letter-spacing: normal;
+    color: #fff;
   }
-  .pd-next__a:hover { color: var(--color-royal); }
-  .pd-next__a .arrow-inline { color: var(--color-electric); }
+  .pd-next__name .arrow-inline { color: var(--color-electric); }
 
-  @media (max-width: 560px) {
-    .pd-hero { min-height: 22rem; }
+  @media (max-width: 700px) {
+    .pd-intro__grid,
+    .pd-work__row { grid-template-columns: 1fr; }
   }
 </style>
