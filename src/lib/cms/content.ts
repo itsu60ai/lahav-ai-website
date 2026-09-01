@@ -64,10 +64,10 @@ export interface HomeContent {
 export const HOME_DEFAULT: HomeContent = {
   hero: {
     eyebrow: 'מערכות AI ואוטומציה לעסקים',
-    headlineLine1: 'בסוף מישהו',
-    headlineLine2: 'צריך לזכור.',
+    headlineLine1: 'בזמן שאתם עובדים קשה,',
+    headlineLine2: 'העסק יכול לעבוד לבד.',
     lead:
-      'מי דיבר עם הלקוח, מה סוכם ומה עוד צריך לקרות. אנחנו בונים מערכות שעושות סדר במידע ומטפלות בפעולות שאפשר להגדיר מראש.',
+      'די לרדוף אחרי לידים בוואטסאפ, להעתיק שורות לאקסל ולשכוח לחזור ללקוחות. נבנה לכם מערכת אחת שזוכרת הכל: CRM חכם, אוטומציות שרצות ברקע, ואתר שמביא עבודה.',
   },
   seo: seoDefault(
     'LAHAV AI, מערכות ואוטומציות שעושות סדר בעסק',
@@ -94,9 +94,9 @@ export interface AboutContent {
 export const ABOUT_DEFAULT: AboutContent = {
   hero: {
     eyebrow: 'אודות',
-    headlineLine1: 'מתחילים ממה',
-    headlineLine2: 'שקורה בעסק.',
-    lead: 'לפני שבוחרים כלי, עוברים על התהליך, מבינים איפה הוא מסתבך ומה באמת צריך להשתנות.',
+    headlineLine1: 'קודם העסק,',
+    headlineLine2: 'רק אז הטכנולוגיה.',
+    lead: 'לפני שבוחרים כלי, נבין איך הפניות והכסף זזים אצלכם, איפה זה נתקע, ומה באמת חייב להשתנות.',
   },
   founderRole: FOUNDER.role,
   seo: seoDefault(
@@ -122,11 +122,11 @@ export interface ContactContent {
 export const CONTACT_DEFAULT: ContactContent = {
   hero: {
     eyebrow: 'צור קשר',
-    headlineLine1: 'תכתבו לנו',
-    headlineLine2: 'איפה זה נתקע.',
-    lead: 'לא צריך להתכונן או לדעת מראש מה רוצים לבנות. מספיק לספר מה קורה היום.',
+    headlineLine1: 'בואו נבין',
+    headlineLine2: 'איפה העסק תקוע.',
+    lead: 'לא צריך תוכניות מוכנות ולא צריך להבין בקוד. ספרו לנו מה שואב לכם את הזמן, ומשם כבר נמשיך.',
   },
-  whatsappNote: 'מעדיפים וואטסאפ? זה בסדר גמור.',
+  whatsappNote: 'מעדיפים לדלג על הטופס? בכיף, נדבר בוואטסאפ.',
   bookingNote: '30 דקות, בזום או בטלפון. בלי מצגות, בלי הכנה מצדכם, ובלי התחייבות.',
   seo: seoDefault(
     'צור קשר ותיאום שיחת היכרות | LAHAV AI',
@@ -147,9 +147,9 @@ export interface FaqPageContent {
 }
 
 export const FAQ_PAGE_DEFAULT: FaqPageContent = {
-  headlineLine1: 'מה שכדאי לדעת',
-  headlineLine2: 'לפני שמתחילים.',
-  lead: 'התשובות שמעניינות בעל עסק לפני שיחה ראשונה.',
+  headlineLine1: 'תכל\'ס,',
+  headlineLine2: 'בלי סודות.',
+  lead: 'מה שבעלי עסקים באמת שואלים לפני שיחה ראשונה. תשובות ישירות.',
   seo: seoDefault(
     'שאלות נפוצות | LAHAV AI',
     'התשובות לשאלות שבעלי עסקים שואלים לפני שמתחילים: עלות, זמנים, מה קורה למידע, ואיך בכלל מתחילים.'
@@ -184,10 +184,10 @@ export interface FooterContent {
 }
 
 export const FOOTER_DEFAULT: FooterContent = {
-  invitationLine1: 'נדבר על מה',
+  invitationLine1: 'בואו נדבר על מה',
   invitationLine2: 'שתקוע',
   note: '30 דקות, בלי התחייבות.',
-  blurb: 'מערכות ואוטומציות שעושות סדר בעסק.',
+  blurb: 'הופכים עבודה ידנית למערכות חכמות שעובדות בשבילכם.',
 };
 
 // ──────────────────────────────────────────────────── SERVICES INDEX PAGE
@@ -372,8 +372,26 @@ export interface PortfolioItemContent {
   industry: string;
   /** which of LAHAV's services this example is about, free text, e.g. "CRM ואוטומציות" */
   service: string;
+  /** one of the five fixed service slugs (SERVICE_SLUGS). Picks which
+   *  detail-page layout and living diagram the project gets: a web build
+   *  shows browser frames and the visitor journey, a CRM build shows the
+   *  lead pipeline, and so on. '' falls back to the generic layout. */
+  serviceSlug?: string;
   /** a media id from the `media` table, or '' for none */
   heroImage: string;
+  /** optional: an https URL to an MP4/WebM that autoplays (muted, looped)
+   *  in place of the image on the index tile and the detail hero. The
+   *  media library is images-only and capped at 700KB (D1), so video has
+   *  to be hosted elsewhere; heroImage doubles as its poster. */
+  heroVideo?: string;
+  /** optional one-liner shown under the name on the index tile */
+  tagline?: string;
+  /** optional: media ids of desktop screenshots of the built product,
+   *  laid out on the detail page as two staggered columns */
+  gallery?: string[];
+  /** optional: media ids of phone-sized screenshots, shown as a
+   *  horizontal strip of device frames on the detail page */
+  mobileGallery?: string[];
   challenge: string;
   approach: string;
   result: string;

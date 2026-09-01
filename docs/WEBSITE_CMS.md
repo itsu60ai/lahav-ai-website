@@ -446,3 +446,16 @@ number.
    delete again (expect success).
 10. Log in as an EDITOR-role account (if one exists) and confirm: can save
     drafts, cannot publish, cannot reach Settings, cannot delete media.
+
+## Portfolio fields added 2026-09-02 (F-38, F-39)
+
+A project (`portfolio_items` JSON) gained five OPTIONAL fields, all
+editable in `/admin/website/portfolio/<id>`: `heroVideo` (external https
+MP4/WebM, autoplays muted and looped; the media library stays images-only,
+700KB), `tagline` (the line under the name on the index), `gallery[]` and
+`mobileGallery[]` (media ids, one per line in the editor: desktop
+screenshots in two staggered columns, phone screens as a strip), and
+`serviceSlug` (a select of the five services) which chooses the detail
+page's layout and living diagram. Items saved before this date have none of
+them and render with the generic layout. Set `serviceSlug` on each example
+project and add screenshots to get the per-service pages.

@@ -6,23 +6,32 @@
 // authenticated ?preview=1 (see resolvePreview.ts), same rule the rest of
 // the site's preview pages follow.
 //
-// Structure inspired by a reference agency's own case-study page, seen
-// in full via screenshots the client walked through end to end (their
-// own case-study page fights a custom smooth-scroll library that made it
-// hard to inspect any other way): a full-bleed image with just the name
-// on it, then a two-column "category + opening line" intro, then the
-// story as labelled sections (a bold heading on one side, the paragraph
-// on the other -- not free-flowing prose, and not boxed mini-cards
-// either), then a full-bleed, image-backed "next project" band as
-// dramatic as the opening hero -- reworked with LAHAV's own type/colour
-// system throughout, not the reference's CSS or copy.
+// Shape matched to the client's reference agency case-study page (their
+// desktop screenshots, 2026-09-02): full-bleed hero media with the name
+// on it; a two-column intro (tag column + bold line over a large opening
+// paragraph); the work as a labelled section with the product shown big;
+// a strip of phone screens; a closing paragraph; a giant marquee "next
+// project" band over the next project's media.
+//
+// What the reference does NOT have, and the client asked for (2026-09-02:
+// "it looks the same for every service"): the middle of the page changes
+// with the KIND of project. `serviceSlug` (one of the five services)
+// picks a living, on-brand diagram and a framing that fits that service:
+//   web-development  browser-framed screenshots + the visitor journey
+//   crm              the lead's life on a moving pipeline board
+//   automations      a trigger/rule/action flow + a live run log
+//   app-development  phone screens first + the need/screens/actions map
+//   ai-content       the brief > draft > approval pipeline
+// Everything drawn is a MECHANISM, never a metric, per the truth rules.
 export const prerender = false;
 
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ContactBlock from '../../components/ContactBlock.astro';
-import Curve from '../../components/Curve.astro';
+import Viz from '../../components/Viz.astro';
+import Flow from '../../components/Flow.astro';
 import { turnstileSiteKey } from '../../lib/turnstile.ts';
 import { resolvePreview } from '../../lib/cms/preview.ts';
+import { SERVICE_PAGES } from '../../lib/site';
 import type { PortfolioItemContent } from '../../lib/cms/content.ts';
 
 const SITE_KEY = turnstileSiteKey();
@@ -37,26 +46,39 @@ if (preview) {
 } else {
   content = (await portfolioList.getPublishedBySlug(String(slug))) as PortfolioItemContent | null;
 }
-
 if (!content) {
   return new Response(null, { status: 404, statusText: 'Not found' });
 }
-const item = content; // narrowed, non-null from here down
+const item = content;
 
-// "Next project": the next PUBLISHED item after this one, wrapping to
-// the first when this is the last. Preview does not get a next-project
-// link -- draft items aren't a single stable ordered list the way
-// published ones are, and preview's purpose is checking one item, not
-// browsing the set.
-let next: { name: string; slug: string; heroImage: string } | null = null;
+let next: PortfolioItemContent | null = null;
 if (!preview) {
   const list = await portfolioList.listPublished();
   const idx = list.findIndex((r) => (r.content as PortfolioItemContent).slug === item.slug);
-  if (idx !== -1 && list.length > 1) {
-    const nextContent = list[(idx + 1) % list.length].content as PortfolioItemContent;
-    next = { name: nextContent.name, slug: nextContent.slug, heroImage: nextContent.heroImage };
-  }
+  if (idx !== -1 && list.length > 1) next = list[(idx + 1) % list.length].content as PortfolioItemContent;
 }
+
+type Kind = 'web-development' | 'crm' | 'automations' | 'app-development' | 'ai-content' | '';
+const kind = ((item.serviceSlug as Kind) || '') as Kind;
+const services = (item.service || '').split(/[,،]/).map((s) => s.trim()).filter(Boolean);
+const gallery = item.gallery ?? [];
+const galleryA = gallery.filter((_, i) => i % 2 === 0);
+const galleryB = gallery.filter((_, i) => i % 2 === 1);
+const mobile = item.mobileGallery ?? [];
+const media = (id: string) => `/api/media/${id}`;
+
+// Per-kind framing: what the labelled work section is called, which
+// diagram it gets, and whether screenshots wear a browser chrome.
+const FRAME: Record<Kind, { k: string; sub: string; viz: 'web' | 'crm' | 'automation' | 'app' | 'content' | 'services'; browser: boolean; phonesFirst: boolean; vizTitle: string }> = {
+  'web-development': { k: 'פיתוח אתרים', sub: 'מה בנינו', viz: 'web', browser: true, phonesFirst: false, vizTitle: 'המסלול שתכננו לגולש' },
+  crm: { k: 'מערכת CRM', sub: 'מה בנינו', viz: 'crm', browser: false, phonesFirst: false, vizTitle: 'החיים של פנייה במערכת' },
+  automations: { k: 'אוטומציות', sub: 'מה רץ לבד', viz: 'automation', browser: false, phonesFirst: false, vizTitle: 'מה קורה מרגע שנכנסת פנייה' },
+  'app-development': { k: 'פיתוח אפליקציה', sub: 'מה בנינו', viz: 'app', browser: false, phonesFirst: true, vizTitle: 'מהצורך למסכים' },
+  'ai-content': { k: 'תוכן באמצעות AI', sub: 'איך זה עובד', viz: 'content', browser: false, phonesFirst: false, vizTitle: 'מבריף לפרסום, דרככם' },
+  '': { k: services[0] || item.service || item.industry, sub: 'מה בנינו', viz: 'services', browser: false, phonesFirst: false, vizTitle: 'מה מתחבר למה' },
+};
+const frame = FRAME[kind];
+const flow = kind ? (SERVICE_PAGES as any)[kind]?.flow : null;
 ---
 
 <SiteLayout
@@ -67,52 +89,167 @@ if (!preview) {
   preview={preview}
   headerSolid
 >
-  <!-- ═══ hero: full-bleed image, the name and nothing else on it ═══ -->
+  <!-- ═══ 1. hero ═══ -->
   <section class="pd-hero band band--navy">
-    {item.heroImage
-      ? <img class="pd-hero__img" src={`/api/media/${item.heroImage}`} alt="" />
-      : <span class="pd-hero__img pd-hero__placeholder" aria-hidden="true" />}
+    {item.heroVideo ? (
+      <video class="pd-hero__media" src={item.heroVideo} poster={item.heroImage ? media(item.heroImage) : undefined} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+    ) : item.heroImage ? (
+      <img class="pd-hero__media" src={media(item.heroImage)} alt="" />
+    ) : (
+      <span class="pd-hero__media pd-hero__placeholder" aria-hidden="true" />
+    )}
     <span class="pd-hero__scrim" aria-hidden="true"></span>
     <h1 class="pd-hero__h1" data-reveal>{item.name}</h1>
   </section>
 
-  <!-- ═══ intro: category on one side, the opening line on the other ═══ -->
-  <section class="pd-intro u-section band">
-    <div class="u-container u-container--wide pd-intro__grid">
-      <div class="pd-intro__tags" data-reveal>
-        <p class="t-eyebrow">{item.industry}</p>
-        {item.service && <p class="pd-intro__service">{item.service}</p>}
+  <!-- ═══ 2. intro ═══ -->
+  <section class="pd-intro band u-section">
+    <div class="u-container u-container--wide pd-split">
+      <div class="pd-tags" data-reveal>
+        <p class="pd-tags__k">מה עשינו</p>
+        <ul class="pd-tags__list">
+          {services.length ? services.map((s) => <li>{s}</li>) : <li>{frame.k}</li>}
+        </ul>
+        <p class="pd-tags__k pd-tags__k--gap">התחום</p>
+        <p class="pd-tags__v">{item.industry}</p>
       </div>
-      <p class="pd-intro__lead" data-reveal style="--mo-delay:90ms">{item.challenge}</p>
+      <div class="pd-text" data-reveal style="--mo-delay:90ms">
+        <p class="pd-text__h">{item.tagline || item.industry}</p>
+        <p class="pd-text__lead">{item.challenge}</p>
+      </div>
     </div>
   </section>
 
-  <!-- ═══ the work: a bold label beside its paragraph, repeated ═══ -->
-  <section class="pd-work band band--soft u-section">
-    <Curve tone="soft" shape="slope" />
-    <div class="u-container u-container--wide pd-work__row">
-      <h2 class="pd-work__k" data-reveal>מה בנינו</h2>
-      <p class="pd-work__t" data-reveal style="--mo-delay:90ms">{item.approach}</p>
+  <!-- ═══ 3. the work: labelled section, then the kind-specific stage ═══ -->
+  <section class:list={['pd-work band band--soft u-section', `pd-work--${kind || 'generic'}`]}>
+    <div class="u-container u-container--wide pd-split">
+      <div class="pd-tags" data-reveal>
+        <p class="pd-work__service">{frame.k}</p>
+        <p class="pd-work__sub">{frame.sub}</p>
+      </div>
+      <div class="pd-text" data-reveal style="--mo-delay:90ms">
+        <p class="pd-text__body">{item.approach}</p>
+      </div>
     </div>
-    <div class="u-container u-container--wide pd-work__row pd-work__row--result">
-      <h2 class="pd-work__k" data-reveal>התוצאה</h2>
-      <p class="pd-work__t pd-work__t--result" data-reveal style="--mo-delay:90ms">{item.result}</p>
+
+    {/* app builds: the phones ARE the product, so they come first */}
+    {frame.phonesFirst && mobile.length > 0 && (
+      <div class="pd-phones__track pd-phones__track--inwork" aria-label="מסכי האפליקציה">
+        {mobile.map((id) => (
+          <figure class="pd-phone" data-reveal><img src={media(id)} alt="" loading="lazy" /></figure>
+        ))}
+      </div>
+    )}
+
+    <!-- the living stage: one per kind -->
+    <div class="u-container u-container--wide pd-stage" data-reveal>
+      <p class="pd-stage__k">{frame.vizTitle}</p>
+
+      {kind === 'crm' && (
+        <div class="pd-board" aria-hidden="true">
+          {['פנייה חדשה', 'בשיחה', 'הצעה נשלחה', 'במעקב', 'לקוח'].map((col, i) => (
+            <div class="pd-board__col">
+              <p class="pd-board__h">{col}</p>
+              <div class="pd-board__slot">
+                {i === 0 && <span class="pd-card pd-card--travel"><b>ליד חדש</b><i>שם וטלפון</i></span>}
+                {i === 2 && <span class="pd-card"><b>הצעת מחיר</b><i>נשלחה, ממתין</i></span>}
+                {i === 3 && <span class="pd-card"><b>לחזור מחר</b><i>תזכורת פעילה</i></span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {kind === 'automations' && (
+        <div class="pd-auto">
+          {flow && <Flow stops={flow} tone="light" />}
+          <ol class="pd-log" aria-hidden="true">
+            <li><span class="pd-log__t">09:41</span> פנייה נכנסה מהאתר</li>
+            <li><span class="pd-log__t">09:41</span> נשלח אישור ללקוח</li>
+            <li><span class="pd-log__t">09:41</span> נפתחה משימת מעקב</li>
+            <li><span class="pd-log__t">09:42</span> נוספה ליומן</li>
+            <li class="pd-log__wait"><span class="pd-log__t">עכשיו</span> ממתין לאישור שלכם</li>
+          </ol>
+        </div>
+      )}
+
+      {kind === 'ai-content' && (
+        <div class="pd-draft" aria-hidden="true">
+          <div class="pd-draft__pane">
+            <p class="pd-draft__h">בריף</p>
+            <p class="pd-draft__line pd-draft__line--1">למי: בעלי עסקים קטנים</p>
+            <p class="pd-draft__line pd-draft__line--2">מה: פוסט על סדר בפניות</p>
+            <p class="pd-draft__line pd-draft__line--3">טון: ישיר, בלי מילים גדולות</p>
+          </div>
+          <div class="pd-draft__pane pd-draft__pane--out">
+            <p class="pd-draft__h">טיוטה, ממתינה לאישור</p>
+            <p class="pd-draft__type">כמה פניות נכנסו אליכם השבוע? ואיך יודעים למי כבר חזרתם...</p>
+            <span class="pd-draft__ok">לאישור</span>
+          </div>
+        </div>
+      )}
+
+      {(kind === 'web-development' || kind === 'app-development' || kind === '') && (
+        <Viz kind={frame.viz} class="pd-viz" />
+      )}
     </div>
+
+    {/* screenshots of what was built, two staggered columns */}
+    {gallery.length > 0 && (
+      <div class="u-container u-container--wide pd-shots">
+        {[galleryA, galleryB].map((col, ci) => (
+          <div class:list={['pd-shots__col', { 'pd-shots__col--far': ci === 1 }]}>
+            {col.map((id) => (
+              <figure class:list={['pd-shot', { 'pd-shot--browser': frame.browser }]} data-reveal>
+                {frame.browser && (
+                  <span class="pd-shot__bar" aria-hidden="true"><i></i><i></i><i></i></span>
+                )}
+                <img src={media(id)} alt="" loading="lazy" />
+              </figure>
+            ))}
+          </div>
+        ))}
+      </div>
+    )}
   </section>
 
-  <!-- ═══ next project: as dramatic as the opening hero ═══ -->
+  <!-- ═══ 4. phones ═══ -->
+  {!frame.phonesFirst && mobile.length > 0 && (
+    <section class="pd-phones band" aria-label="מסכי נייד">
+      <div class="pd-phones__track">
+        {mobile.map((id) => (
+          <figure class="pd-phone" data-reveal><img src={media(id)} alt="" loading="lazy" /></figure>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- ═══ 5. closing ═══ -->
+  {item.result && (
+    <section class="pd-close band u-section">
+      <div class="u-container u-container--wide pd-split">
+        <div class="pd-tags" data-reveal><p class="pd-tags__k">מה יצא מזה</p></div>
+        <p class="pd-text pd-text__lead" data-reveal style="--mo-delay:90ms">{item.result}</p>
+      </div>
+    </section>
+  )}
+
+  <!-- ═══ 6. next project ═══ -->
   {next && (
     <a class="pd-next band band--navy" href={`/portfolio/${next.slug}/`} aria-label={`הפרויקט הבא: ${next.name}`}>
-      {next.heroImage
-        ? <img class="pd-next__img" src={`/api/media/${next.heroImage}`} alt="" />
-        : <span class="pd-next__img pd-hero__placeholder" aria-hidden="true" />}
-      <span class="pd-hero__scrim" aria-hidden="true"></span>
+      {next.heroVideo ? (
+        <video class="pd-next__media" src={next.heroVideo} poster={next.heroImage ? media(next.heroImage) : undefined} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+      ) : next.heroImage ? (
+        <img class="pd-next__media" src={media(next.heroImage)} alt="" loading="lazy" />
+      ) : (
+        <span class="pd-next__media pd-hero__placeholder" aria-hidden="true" />
+      )}
+      <span class="pd-next__scrim" aria-hidden="true"></span>
       <span class="pd-next__in">
-        <span class="pd-next__k">הפרויקט הבא</span>
-        <span class="pd-next__name">
-          {next.name}
-          <span class="arrow-inline" aria-hidden="true">←</span>
+        <span class="pd-marquee" aria-hidden="true">
+          <span class="pd-marquee__run">{Array.from({ length: 6 }).map(() => <span>הפרויקט הבא</span>)}</span>
         </span>
+        <span class="pd-next__name"><span class="arrow-inline" aria-hidden="true">←</span>{next.name}</span>
       </span>
     </a>
   )}
@@ -121,158 +258,202 @@ if (!preview) {
 </SiteLayout>
 
 <style>
-  /* Full-bleed image band, reused for both the opening hero and the
-     closing "next project" band -- LAHAV's dark-band convention
-     (band--navy) instead of one-off colours, so heading/link colour
-     swap for a dark background comes from the same rule every other
-     navy band on the site already uses. */
+  /* ── 1. hero ─────────────────────────────────────────────────────── */
   .pd-hero {
     position: relative;
-    min-height: clamp(22rem, 62svh, 34rem);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: clamp(26rem, 86svh, 52rem);
+    display: flex; align-items: center; justify-content: center;
     overflow: hidden;
-    padding-top: clamp(5.5rem, 10svh, 7rem); /* clears the solid header */
+    padding-top: clamp(5.5rem, 10svh, 7rem);
   }
-  .pd-hero__img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  .pd-hero__media, .pd-next__media {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
   }
-  .pd-hero__placeholder {
-    background: linear-gradient(135deg, var(--color-navy), var(--color-royal));
-  }
-  /* Darkest at the top (header legibility) and bottom, lighter through
-     the middle so the photo still reads. */
+  .pd-hero__placeholder { background: linear-gradient(135deg, var(--color-navy), var(--color-royal)); }
   .pd-hero__scrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(9, 15, 33, 0.68) 0%,
-      rgba(9, 15, 33, 0.32) 35%,
-      rgba(9, 15, 33, 0.32) 60%,
-      rgba(9, 15, 33, 0.78) 100%
-    );
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(9,15,33,.55) 0%, rgba(9,15,33,.12) 40%, rgba(9,15,33,.35) 100%);
   }
   .pd-hero__h1 {
-    position: relative;
-    z-index: 1;
+    position: relative; z-index: 1;
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 7vw, 5.5rem);
-    font-weight: 900;
-    line-height: 1.05;
-    letter-spacing: normal;
-    color: #fff;
-    text-align: center;
-    max-width: 22ch;
-    padding-inline: 1.5rem;
+    font-size: clamp(3rem, 9vw, 7.5rem); font-weight: 900; line-height: 1.05; letter-spacing: normal;
+    color: #fff; text-align: center; max-width: 16ch; padding-inline: 1.5rem;
+    text-shadow: 0 6px 40px rgba(0,0,0,.35);
   }
 
-  /* Intro: a small category stack on one side, the opening line (the
-     draft's "challenge" field, doing the job the reference's own opening
-     paragraph does) on the other. */
-  .pd-intro__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
-    gap: clamp(1.5rem, 4vw, 4rem);
-    align-items: start;
+  /* ── split + type ────────────────────────────────────────────────── */
+  .pd-split {
+    display: grid; grid-template-columns: minmax(0,.55fr) minmax(0,1.45fr);
+    gap: clamp(2rem, 6vw, 8rem); align-items: start;
   }
-  .pd-intro__service {
-    margin-top: 0.5rem;
-    font-family: var(--font-display);
-    font-size: var(--text-body);
-    font-weight: 800;
-    color: var(--color-ink);
+  .pd-tags__k, .pd-work__sub {
+    margin: 0; font-size: var(--text-micro); font-weight: 800; letter-spacing: .14em; color: var(--color-ink-3);
   }
-  .pd-intro__lead {
-    font-family: var(--font-display);
-    font-size: clamp(1.375rem, 2.6vw, 2rem);
-    font-weight: 700;
-    line-height: 1.5;
-    letter-spacing: normal;
-    color: var(--color-ink);
+  .pd-tags__k--gap { margin-top: 1.5rem; }
+  .pd-tags__v { margin: .5rem 0 0; font-weight: 700; color: var(--color-ink); }
+  .pd-tags__list {
+    list-style: none; margin: .9rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .55rem;
+    font-family: var(--font-display); font-size: clamp(1.125rem, 1.6vw, 1.5rem); font-weight: 700; color: var(--color-ink);
   }
+  .pd-text__h {
+    margin: 0 0 1rem; font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 800; line-height: 1.3; color: var(--color-ink);
+  }
+  .pd-text__lead {
+    margin: 0; font-family: var(--font-display);
+    font-size: clamp(1.375rem, 2.4vw, 2.125rem); font-weight: 400; line-height: 1.5; letter-spacing: normal; color: var(--color-ink);
+  }
+  .pd-text__body { margin: 0; font-size: var(--text-body-lg); line-height: 1.7; color: var(--color-ink-2); }
+  .pd-work__service {
+    margin: 0; font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.8vw, 2.5rem); font-weight: 900; line-height: 1.15; color: var(--color-ink);
+  }
+  .pd-work__sub { margin-top: .5rem; letter-spacing: .06em; }
 
-  /* The work: a bold label beside its paragraph, repeated per field --
-     not free-flowing prose, and not a bordered mini-card either. */
-  .pd-work { position: relative; overflow: visible; }
-  .pd-work__row {
-    display: grid;
-    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
-    gap: clamp(1.5rem, 4vw, 4rem);
-    align-items: start;
-    padding-block: clamp(1.5rem, 3vw, 2.25rem);
+  /* ── 3. stage (kind-specific) ────────────────────────────────────── */
+  .pd-stage { margin-top: clamp(3rem, 7vw, 6rem); }
+  .pd-stage__k {
+    margin: 0 0 1.25rem; font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 800; color: var(--color-ink);
   }
-  .pd-work__row + .pd-work__row { border-top: 1px solid var(--color-line-strong); }
-  .pd-work__k {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
-    font-weight: 800;
-    letter-spacing: normal;
-    color: var(--color-ink);
-  }
-  .pd-work__t {
-    font-size: var(--text-body-lg);
-    line-height: 1.65;
-    color: var(--color-ink-2);
-  }
-  .pd-work__t--result { color: var(--color-ink); font-weight: 700; }
+  :global(.pd-viz) { width: 100%; height: auto; display: block; }
 
-  /* Next project: as dramatic as the opening hero, and a real link. */
-  a.pd-next {
-    display: block;
-    position: relative;
-    min-height: clamp(16rem, 38svh, 22rem);
-    text-decoration: none;
+  /* CRM: a five-column board; one card travels across it and settles. */
+  .pd-board {
+    display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: .75rem;
+    padding: 1rem; border-radius: var(--radius-xl);
+    background: var(--color-surface); border: 1px solid var(--color-line);
     overflow: hidden;
   }
-  .pd-next__img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 500ms var(--ease-out);
+  .pd-board__h { margin: 0 0 .75rem; font-size: var(--text-micro); font-weight: 800; letter-spacing: .06em; color: var(--color-ink-3); }
+  .pd-board__slot { min-height: 8.5rem; border-radius: var(--radius); background: var(--color-surface-2); padding: .5rem; position: relative; }
+  .pd-card {
+    display: flex; flex-direction: column; gap: .2rem;
+    padding: .7rem .8rem; border-radius: var(--radius);
+    background: var(--color-navy); color: #fff; border: 1px solid rgba(255,255,255,.08);
+    font-size: var(--text-small); box-shadow: 0 10px 24px -10px rgba(0,0,0,.6);
   }
-  a.pd-next:hover .pd-next__img { transform: scale(1.04); }
+  .pd-card b { font-weight: 800; }
+  .pd-card i { font-style: normal; opacity: .7; }
+  /* travels 4 columns to the LEFT (RTL) and back, pausing at each */
+  .pd-card--travel { position: relative; animation: pd-travel 14s ease-in-out infinite; }
+  @keyframes pd-travel {
+    0%,10%   { transform: translateX(0); }
+    22%,32%  { transform: translateX(calc(-100% - .75rem - 1rem)); }
+    44%,54%  { transform: translateX(calc(-200% - 1.5rem - 2rem)); }
+    66%,76%  { transform: translateX(calc(-300% - 2.25rem - 3rem)); }
+    88%,100% { transform: translateX(calc(-400% - 3rem - 4rem)); }
+  }
+
+  /* Automations: the line-art flow, then a run log that writes itself. */
+  .pd-auto { display: grid; gap: 1.5rem; }
+  .pd-log {
+    list-style: none; margin: 0; padding: 1rem 1.25rem; border-radius: var(--radius-xl);
+    background: var(--color-surface); border: 1px solid var(--color-line);
+    font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--text-small); color: var(--color-ink-2);
+    display: flex; flex-direction: column; gap: .45rem;
+  }
+  .pd-log li { opacity: 0; transform: translateY(4px); animation: pd-line .5s var(--ease-out) forwards; }
+  .pd-log li:nth-child(1) { animation-delay: .2s }
+  .pd-log li:nth-child(2) { animation-delay: 1.1s }
+  .pd-log li:nth-child(3) { animation-delay: 2.0s }
+  .pd-log li:nth-child(4) { animation-delay: 2.9s }
+  .pd-log li:nth-child(5) { animation-delay: 3.9s }
+  .pd-log__t { display: inline-block; min-width: 3.5em; color: var(--color-ink-3); }
+  .pd-log__wait { color: var(--color-electric); font-weight: 700; }
+  @keyframes pd-line { to { opacity: 1; transform: none; } }
+
+  /* AI content: brief on one side, a draft typing itself on the other. */
+  .pd-draft { display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); gap: 1rem; }
+  .pd-draft__pane {
+    padding: 1.25rem; border-radius: var(--radius-xl);
+    background: var(--color-surface); border: 1px solid var(--color-line);
+  }
+  .pd-draft__pane--out { background: var(--color-navy); color: #fff; border-color: rgba(255,255,255,.08); position: relative; }
+  .pd-draft__h { margin: 0 0 .75rem; font-size: var(--text-micro); font-weight: 800; letter-spacing: .1em; color: var(--color-ink-3); }
+  .pd-draft__pane--out .pd-draft__h { color: rgba(255,255,255,.6); }
+  .pd-draft__line { margin: .35rem 0; font-size: var(--text-small); color: var(--color-ink); opacity: 0; animation: pd-line .5s var(--ease-out) forwards; }
+  .pd-draft__line--1 { animation-delay: .2s } .pd-draft__line--2 { animation-delay: .7s } .pd-draft__line--3 { animation-delay: 1.2s }
+  .pd-draft__type {
+    margin: 0; font-family: var(--font-display); font-size: var(--text-body-lg); line-height: 1.6;
+    overflow: hidden; white-space: nowrap; max-width: 0;
+    border-inline-end: 2px solid var(--color-electric);
+    animation: pd-type 4s steps(60) 1.6s forwards, pd-caret 1s step-end infinite;
+  }
+  @keyframes pd-type { to { max-width: 100%; } }
+  @keyframes pd-caret { 50% { border-color: transparent; } }
+  .pd-draft__ok {
+    position: absolute; inset-inline-start: 1.25rem; bottom: 1.1rem;
+    padding: .35rem .8rem; border-radius: 999px; font-size: var(--text-micro); font-weight: 800;
+    background: var(--color-electric); color: var(--color-navy);
+    opacity: 0; animation: pd-line .5s var(--ease-out) 5.8s forwards;
+  }
+
+  /* ── screenshots ────────────────────────────────────────────────── */
+  .pd-shots {
+    display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
+    column-gap: clamp(1.5rem, 5vw, 6.5rem); align-items: start;
+    margin-top: clamp(3rem, 7vw, 6rem);
+  }
+  .pd-shots__col { display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 4rem); }
+  .pd-shots__col--far { padding-top: clamp(4rem, 12vw, 10rem); }
+  .pd-shot {
+    margin: 0; border-radius: 8px; overflow: hidden; background: var(--color-surface);
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,.45), 0 0 0 1px var(--color-line);
+  }
+  .pd-shot img { display: block; width: 100%; height: auto; }
+  .pd-shot__bar { display: flex; gap: .4rem; padding: .55rem .75rem; background: var(--color-surface-2); border-bottom: 1px solid var(--color-line); }
+  .pd-shot__bar i { width: .55rem; height: .55rem; border-radius: 50%; background: var(--color-line-strong); }
+
+  /* ── phones ─────────────────────────────────────────────────────── */
+  .pd-phones { padding-block: clamp(3rem, 8vw, 6rem); overflow: hidden; }
+  .pd-phones__track {
+    display: flex; gap: clamp(1.25rem, 3vw, 2.5rem); padding-inline: clamp(1rem, 4vw, 3rem);
+    overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+  }
+  .pd-phones__track--inwork { margin-top: clamp(2.5rem, 6vw, 5rem); }
+  .pd-phones__track::-webkit-scrollbar { display: none; }
+  .pd-phone {
+    flex: 0 0 clamp(14rem, 22vw, 20rem); margin: 0; aspect-ratio: 9 / 19; border-radius: 2rem; overflow: hidden;
+    background: var(--color-surface); box-shadow: 0 30px 60px -20px rgba(0,0,0,.5), 0 0 0 1px var(--color-line);
+    scroll-snap-align: center;
+  }
+  .pd-phone img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+  /* ── next project ───────────────────────────────────────────────── */
+  a.pd-next { display: block; position: relative; min-height: clamp(22rem, 62svh, 40rem); text-decoration: none; overflow: hidden; }
+  .pd-next__media { transition: transform 700ms var(--ease-out); }
+  a.pd-next:hover .pd-next__media { transform: scale(1.04); }
+  .pd-next__scrim { position: absolute; inset: 0; background: rgba(9,15,33,.42); }
   .pd-next__in {
-    position: relative;
-    z-index: 1;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    text-align: center;
-    padding-inline: 1.5rem;
+    position: relative; z-index: 1; min-height: inherit;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem;
   }
-  .pd-next__k {
-    font-size: var(--text-micro);
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: rgba(255, 255, 255, 0.72);
+  .pd-marquee { display: block; width: 100%; overflow: hidden; white-space: nowrap; }
+  .pd-marquee__run {
+    display: inline-flex; gap: clamp(2rem, 6vw, 6rem); padding-inline-end: clamp(2rem, 6vw, 6rem);
+    font-family: var(--font-display); font-size: clamp(3.5rem, 11vw, 9rem); font-weight: 900; line-height: 1.05; color: #fff;
+    animation: pd-marquee 28s linear infinite;
   }
+  @keyframes pd-marquee { from { transform: translateX(0); } to { transform: translateX(50%); } }
   .pd-next__name {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 3rem);
-    font-weight: 900;
-    letter-spacing: normal;
-    color: #fff;
+    display: inline-flex; align-items: center; gap: .6rem;
+    font-size: var(--text-body-lg); font-weight: 800; letter-spacing: .12em; color: #fff;
   }
   .pd-next__name .arrow-inline { color: var(--color-electric); }
 
-  @media (max-width: 700px) {
-    .pd-intro__grid,
-    .pd-work__row { grid-template-columns: 1fr; }
+  @media (max-width: 760px) {
+    .pd-split { grid-template-columns: 1fr; gap: 1.25rem; }
+    .pd-shots { grid-template-columns: 1fr; row-gap: 2rem; }
+    .pd-shots__col--far { padding-top: 0; }
+    .pd-board { grid-template-columns: repeat(5, 9rem); overflow-x: auto; }
+    .pd-draft { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pd-marquee__run, .pd-card--travel, .pd-draft__type { animation: none; }
+    .pd-log li, .pd-draft__line, .pd-draft__ok { animation: none; opacity: 1; transform: none; }
+    .pd-draft__type { max-width: none; white-space: normal; }
+    .pd-next__media { transition: none; }
   }
 </style>

@@ -52,9 +52,21 @@ const previewHref = s.slug ? `/portfolio/${s.slug}/?preview=1` : '/admin/website
           <input class="adm-input" id="f-industry" data-f="industry" value={s.industry} placeholder="למשל: מסעדה, קליניקה" />
         </div>
         <div class="adm-field">
-          <label class="adm-label" for="f-service">איזה שירות של LAHAV זה מדגים</label>
-          <input class="adm-input" id="f-service" data-f="service" value={s.service} placeholder="למשל: CRM ואוטומציות" />
+          <label class="adm-label" for="f-service">איזה שירות של LAHAV זה מדגים (טקסט חופשי, מוצג בעמוד)</label>
+          <input class="adm-input" id="f-service" data-f="service" value={s.service} placeholder="למשל: פיתוח אתרים, אוטומציות" />
         </div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-service-slug">סוג הפרויקט (קובע את מבנה העמוד והתרשים החי)</label>
+        <select class="adm-input" id="f-service-slug" data-f="serviceSlug">
+          <option value="" selected={!s.serviceSlug}>כללי</option>
+          <option value="web-development" selected={s.serviceSlug === 'web-development'}>פיתוח אתרים</option>
+          <option value="crm" selected={s.serviceSlug === 'crm'}>מערכת CRM</option>
+          <option value="automations" selected={s.serviceSlug === 'automations'}>אוטומציות</option>
+          <option value="app-development" selected={s.serviceSlug === 'app-development'}>פיתוח אפליקציה</option>
+          <option value="ai-content" selected={s.serviceSlug === 'ai-content'}>תוכן באמצעות AI</option>
+        </select>
+        <span class="adm-hint">כל סוג מקבל עמוד קצת שונה: אתר מציג מסגרות דפדפן ומסלול גולש, CRM מציג את מסלול הליד, אוטומציה מציגה את התהליך שרץ, וכן הלאה.</span>
       </div>
       <div class="adm-field">
         <label class="adm-label" for="f-slug">כתובת בעמוד (slug)</label>
@@ -68,6 +80,30 @@ const previewHref = s.slug ? `/portfolio/${s.slug}/?preview=1` : '/admin/website
         {s.heroImage && (
           <img class="adm-preview-img" src={`/api/media/${s.heroImage}`} alt="" id="img-preview" />
         )}
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-video">כתובת וידאו (אופציונלי)</label>
+        <input class="adm-input" id="f-video" data-f="heroVideo" value={s.heroVideo ?? ''} dir="ltr" placeholder="https://.../clip.mp4" />
+        <span class="adm-hint">MP4 או WebM שמתנגן אוטומטית (ללא קול, בלופ) במקום התמונה. ספריית המדיה מוגבלת לתמונות, אז הוידאו צריך להיות מאוחסן בכתובת חיצונית. התמונה הראשית משמשת כפריים ראשון עד שהוידאו נטען.</span>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-tagline">שורה מתחת לשם (אופציונלי)</label>
+        <input class="adm-input" id="f-tagline" data-f="tagline" value={s.tagline ?? ''} placeholder="למשל: מהזמנה בטלפון לתור שמנהל את עצמו" />
+        <span class="adm-hint">מוצג בעמוד תיק העבודות מתחת לשם העסק. אם ריק, מוצג התחום.</span>
+      </div>
+    </fieldset>
+
+    <fieldset class="adm-fieldset">
+      <legend>צילומי מסך של מה שנבנה</legend>
+      <div class="adm-field">
+        <label class="adm-label" for="f-gallery">מסכי מחשב (מזהה תמונה בכל שורה)</label>
+        <textarea class="adm-textarea" id="f-gallery" data-f="gallery" rows="4" dir="ltr">{(s.gallery ?? []).join('\n')}</textarea>
+        <span class="adm-hint">מוצגים בעמוד הפרויקט בשתי עמודות מדורגות, לפי הסדר כאן. מעתיקים מזהים מ<a href="/admin/media" target="_blank" rel="noopener">ספריית המדיה</a>.</span>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-mobile">מסכי נייד (מזהה תמונה בכל שורה)</label>
+        <textarea class="adm-textarea" id="f-mobile" data-f="mobileGallery" rows="3" dir="ltr">{(s.mobileGallery ?? []).join('\n')}</textarea>
+        <span class="adm-hint">מוצגים כרצועה אופקית של מסכי טלפון. מומלץ צילומי מסך בפרופורציה של טלפון (למשל 390×844).</span>
       </div>
     </fieldset>
 
@@ -109,6 +145,8 @@ const previewHref = s.slug ? `/portfolio/${s.slug}/?preview=1` : '/admin/website
   import { wireEditor } from '../../../../lib/cms/admin-editor-client.ts';
   const val = (sel: string) => (document.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value ?? '');
   const checked = (sel: string) => document.querySelector<HTMLInputElement>(sel)?.checked ?? false;
+  // One media id per line (commas tolerated); blanks dropped.
+  const ids = (sel: string) => val(sel).split(/[\n,]/).map((x) => x.trim()).filter(Boolean);
   const csrf = document.body.dataset.csrf!;
   // /admin/website/portfolio/<id> -- the last path segment.
   const id = location.pathname.split('/').filter(Boolean).pop()!;
@@ -136,8 +174,13 @@ const previewHref = s.slug ? `/portfolio/${s.slug}/?preview=1` : '/admin/website
       name: val('[data-f="name"]'),
       industry: val('[data-f="industry"]'),
       service: val('[data-f="service"]'),
+      serviceSlug: val('[data-f="serviceSlug"]'),
       slug: val('[data-f="slug"]').trim(),
       heroImage: val('[data-f="heroImage"]').trim(),
+      heroVideo: val('[data-f="heroVideo"]').trim(),
+      tagline: val('[data-f="tagline"]').trim(),
+      gallery: ids('[data-f="gallery"]'),
+      mobileGallery: ids('[data-f="mobileGallery"]'),
       challenge: val('[data-f="challenge"]'),
       approach: val('[data-f="approach"]'),
       result: val('[data-f="result"]'),

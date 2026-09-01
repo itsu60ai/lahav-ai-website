@@ -1,12 +1,17 @@
 ---
 // PORTFOLIO INDEX ("תיק עבודות").
 //
-// Structure borrowed as inspiration from a reference agency's own
-// portfolio page (a giant heading, then a grid of project cards) --
-// not its visuals: no full-bleed photo hero, no imported copy. This
-// stays in LAHAV's own system: a band--hero opener with the same
-// display type used everywhere else, and cards built from the same
-// rounded-surface language as the mega menu / FAQ rows.
+// Structure matched to the client's reference agency portfolio page,
+// seen on desktop via the client's own screenshots (2026-09-02):
+//   1. a giant single-word watermark heading bleeding off both edges
+//      (Hebrew here -- F-22 rules out giant English display type)
+//   2. a short intro paragraph in a narrow column at the reading start
+//   3. a TWO-column staggered gallery: tall media tiles (image, or a
+//      muted autoplaying video), the second column offset downward so the
+//      two columns never line up; the client's name and a one-line
+//      tagline sit UNDER each tile, not on it
+//   4. the site's own contact band
+// Rebuilt in LAHAV's dark type/colour system, not the reference's CSS.
 //
 // EVERY item shown here is a fictional example (client decision,
 // 2026-09-01) -- see docs/WEBSITE_CMS.md. Not linked from navigation and
@@ -17,6 +22,7 @@ import SiteLayout from '../../layouts/SiteLayout.astro';
 import ContactBlock from '../../components/ContactBlock.astro';
 import { turnstileSiteKey } from '../../lib/turnstile.ts';
 import { PORTFOLIO_INDEX_DEFAULT, getPublicContent, getDraftContent } from '../../lib/cms/content.ts';
+import type { PortfolioItemContent } from '../../lib/cms/content.ts';
 import { resolvePreview } from '../../lib/cms/preview.ts';
 
 const SITE_KEY = turnstileSiteKey();
@@ -33,11 +39,8 @@ const page = preview
 // therefore shows every non-deleted draft item (ignoring the enabled
 // flag, so a not-yet-enabled item can still be checked before switching
 // it on), sorted the same way the admin list is.
-let items: { id: string; content: any }[];
+let items: { id: string; content: PortfolioItemContent }[];
 if (preview) {
-  // listDraftMeta only returns each item's name (enough to label an
-  // admin list row); the index page needs the full draft content, fetched
-  // per id through the generic content store (stores.portfolio).
   const meta = await portfolioList.listDraftMeta();
   const { portfolio: portfolioContent } = Astro.locals.stores!;
   items = await Promise.all(
@@ -49,8 +52,16 @@ if (preview) {
     })
   );
 } else {
-  items = await portfolioList.listPublished();
+  items = (await portfolioList.listPublished()) as { id: string; content: PortfolioItemContent }[];
 }
+
+// Two columns, dealt alternately, so the reading-start column holds
+// items 0,2,4... and the far column 1,3,5... The far column is pushed
+// down in CSS; that offset is what makes the reference's grid read as
+// staggered rather than as rows.
+const colA = items.filter((_, i) => i % 2 === 0);
+const colB = items.filter((_, i) => i % 2 === 1);
+const href = (c: PortfolioItemContent) => `/portfolio/${c.slug}/${preview ? '?preview=1' : ''}`;
 ---
 
 <SiteLayout
@@ -60,132 +71,211 @@ if (preview) {
   image={page.seo.ogImage || undefined}
   preview={preview}
 >
-  <section class="pf-hero band band--hero">
+  <!-- ═══ 1. watermark heading, bleeding off both edges ═══ -->
+  <section class="pf-mark band" aria-labelledby="pf-title">
+    <h1 id="pf-title" class="pf-mark__word">
+      <span class="sr-only">{page.hero.eyebrow}</span>
+      <span class="pf-mark__run" aria-hidden="true">
+        {Array.from({ length: 4 }).map(() => <span>{page.hero.eyebrow}</span>)}
+      </span>
+    </h1>
+  </section>
+
+  <!-- ═══ 2. the intro, a narrow column at the reading start ═══ -->
+  <section class="pf-intro band">
     <div class="u-container u-container--wide">
-      <p class="t-eyebrow" data-reveal>{page.hero.eyebrow}</p>
-      <h1 class="pf-hero__h1 t-display-1">
-        <span class="mo-line" style="--mo-delay:80ms"><span>{page.hero.headlineLine1}</span></span>
-        <span class="mo-line" style="--mo-delay:190ms"><span class="pf-hero__accent">{page.hero.headlineLine2}</span></span>
-      </h1>
-      <p class="pf-hero__lead t-lead" data-reveal style="--mo-delay:300ms">{page.hero.lead}</p>
+      <p class="pf-intro__text" data-reveal>
+        <span class="pf-intro__strong">{page.hero.headlineLine1} {page.hero.headlineLine2}</span>
+        {' '}{page.hero.lead}
+      </p>
     </div>
   </section>
 
-  <section class="u-section band">
-    <div class="u-container u-container--wide">
-      {items.length === 0 ? (
+  <!-- ═══ 3. the staggered two-column gallery ═══ -->
+  {items.length === 0 ? (
+    <section class="u-section band">
+      <div class="u-container u-container--wide">
         <p class="pf-empty">עוד אין פרויקטים לדוגמה כאן.</p>
-      ) : (
-        <ul class="pf-grid" data-stagger style="--mo-step:70ms">
-          {items.map(({ content }) => (
-            <li class="pf-card" data-reveal>
-              <a class="pf-card__link" href={`/portfolio/${content.slug}/${preview ? '?preview=1' : ''}`}>
-                <span class="pf-card__frame">
-                  {content.heroImage
-                    ? <img src={`/api/media/${content.heroImage}`} alt={content.name} loading="lazy" />
-                    : <span class="pf-card__placeholder" aria-hidden="true" />}
-                </span>
-                <span class="pf-card__body">
-                  <span class="pf-card__industry">{content.industry}</span>
-                  <span class="pf-card__name">{content.name}</span>
-                  <span class="pf-card__arrow arrow-inline" aria-hidden="true">←</span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  </section>
+      </div>
+    </section>
+  ) : (
+    <section class="pf-gallery band">
+      <div class="u-container u-container--wide pf-cols">
+        {[colA, colB].map((col, ci) => (
+          <ul class:list={['pf-col', { 'pf-col--far': ci === 1 }]}>
+            {col.map(({ content: c }, i) => (
+              <li class:list={['pf-tile', { 'pf-tile--square': (i + ci) % 2 === 1 }]} data-reveal>
+                <a class="pf-tile__link" href={href(c)}>
+                  <span class="pf-tile__media">
+                    {c.heroVideo ? (
+                      <video
+                        class="pf-tile__video"
+                        src={c.heroVideo}
+                        poster={c.heroImage ? `/api/media/${c.heroImage}` : undefined}
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        aria-hidden="true"
+                      ></video>
+                    ) : c.heroImage ? (
+                      <img class="pf-tile__img" src={`/api/media/${c.heroImage}`} alt="" loading="lazy" />
+                    ) : (
+                      <span class="pf-tile__placeholder" aria-hidden="true" />
+                    )}
+                  </span>
+                  <span class="pf-tile__caption">
+                    <span class="pf-tile__name">{c.name}</span>
+                    <span class="pf-tile__tag">{c.tagline || c.industry}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </section>
+  )}
 
   <ContactBlock siteKey={SITE_KEY} preview={preview} />
 </SiteLayout>
 
 <style>
-  .pf-hero {
-    padding-top: clamp(8rem, 16vh, 12rem);
-    padding-bottom: clamp(3rem, 7vw, 6rem);
+  /* 1. Watermark: one word, set so large it leaves the viewport on both
+     sides, in a whisper of the accent so it reads as texture. Clipped by
+     the section, never by the page (no horizontal scrollbar). */
+  .pf-mark {
+    overflow: hidden;
+    padding-top: clamp(6.5rem, 14vh, 10rem);
+    padding-bottom: 0;
   }
-  .pf-hero__h1 { display: flex; flex-direction: column; margin-block: 1.25rem 2rem; }
-  .pf-hero__accent {
-    background: linear-gradient(100deg, #1d4ed8 0%, #2997ff 100%);
+  /* The word is wider than the screen, so instead of cropping it we let
+     it drift: four copies on one line, sliding slowly toward the reading
+     end and looping seamlessly (the run is 4 copies, the keyframe moves
+     exactly half of it). Every letter passes through the viewport. */
+  .pf-mark__word {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(7rem, 22vw, 20rem);
+    line-height: 0.95;
+    letter-spacing: normal;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .pf-mark__run {
+    display: inline-flex;
+    gap: 0.35em;
+    padding-inline-end: 0.35em;
+    color: transparent;
+    background: linear-gradient(180deg, rgba(41, 151, 255, 0.18), rgba(41, 151, 255, 0.06));
     -webkit-background-clip: text;
     background-clip: text;
-    color: transparent;
+    animation: pf-drift 40s linear infinite;
   }
-  .pf-hero__lead { max-width: 46ch; }
+  @keyframes pf-drift {
+    from { transform: translateX(0); }
+    to   { transform: translateX(50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pf-mark__run { animation: none; }
+  }
+
+  /* 2. Intro: the reference sets one paragraph in a narrow column at the
+     reading start, larger than body copy, with the first sentence bold. */
+  .pf-intro { padding-block: clamp(2.5rem, 6vw, 5rem) clamp(1rem, 3vw, 2rem); }
+  .pf-intro__text {
+    max-width: 30ch;
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 2.4vw, 2rem);
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--color-ink-2);
+  }
+  .pf-intro__strong { color: var(--color-ink); font-weight: 800; }
 
   .pf-empty { color: var(--color-ink-3); }
 
-  .pf-grid {
+  /* 3. Gallery: two independent columns so the far one can start lower.
+     Tiles alternate portrait / square within each column, which is the
+     reference's rhythm (Keds tall, Polyron square, ...). */
+  .pf-gallery { padding-block: clamp(1rem, 3vw, 2rem) clamp(4rem, 10vw, 8rem); }
+  .pf-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(1.5rem, 5vw, 6.5rem);
+    align-items: start;
+  }
+  .pf-col {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(1.25rem, 3vw, 2rem);
-  }
-  .pf-card__link {
     display: flex;
     flex-direction: column;
+    gap: clamp(3rem, 7vw, 6.5rem);
+  }
+  .pf-col--far { padding-top: clamp(6rem, 18vw, 16rem); }
+
+  .pf-tile__link {
+    display: block;
     text-decoration: none;
     color: inherit;
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-    transition: border-color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
   }
-  .pf-card__link:hover {
-    border-color: var(--color-royal);
-    transform: translateY(-3px);
-    box-shadow: 0 20px 40px rgba(11, 21, 48, 0.1);
-  }
-  .pf-card__frame {
+  .pf-tile__media {
     display: block;
-    aspect-ratio: 4 / 3;
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
     background: var(--color-surface-2);
-    overflow: hidden;
   }
-  .pf-card__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pf-card__placeholder {
-    display: block;
+  .pf-tile--square .pf-tile__media { aspect-ratio: 1 / 1; }
+  .pf-tile__img,
+  .pf-tile__video {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--color-surface-2), var(--color-line));
+    object-fit: cover;
+    display: block;
+    transition: transform 700ms var(--ease-out);
   }
-  .pf-card__body {
+  .pf-tile__link:hover .pf-tile__img,
+  .pf-tile__link:hover .pf-tile__video,
+  .pf-tile__link:focus-visible .pf-tile__img,
+  .pf-tile__link:focus-visible .pf-tile__video { transform: scale(1.03); }
+  .pf-tile__placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--color-navy), var(--color-royal));
+  }
+  .pf-tile__caption {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1.1rem 1.25rem;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-top: 1.1rem;
   }
-  .pf-card__body { flex-wrap: wrap; }
-  .pf-card__industry {
-    flex-basis: 100%;
-    font-size: var(--text-micro);
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--color-ink-3);
-  }
-  .pf-card__name {
-    flex: 1;
-    min-width: 0;
+  .pf-tile__name {
     font-family: var(--font-display);
-    font-size: var(--text-body-lg);
+    font-size: clamp(1.5rem, 2.4vw, 2.125rem);
     font-weight: 800;
-    line-height: 1.25;
+    line-height: 1.15;
     color: var(--color-ink);
     transition: color var(--dur) var(--ease-out);
   }
-  .pf-card__link:hover .pf-card__name { color: var(--color-royal); }
-  .pf-card__arrow { color: var(--color-electric); flex: none; }
-  .pf-card__link:hover .pf-card__arrow { transform: translateX(-5px); }
-
-  @media (max-width: 900px) {
-    .pf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pf-tile__link:hover .pf-tile__name { color: var(--color-electric); }
+  .pf-tile__tag {
+    font-size: var(--text-body);
+    line-height: 1.5;
+    color: var(--color-ink-2);
   }
-  @media (max-width: 560px) {
-    .pf-grid { grid-template-columns: 1fr; }
+
+  @media (max-width: 700px) {
+    .pf-cols { grid-template-columns: 1fr; row-gap: clamp(3rem, 10vw, 4rem); }
+    .pf-col--far { padding-top: 0; }
+    .pf-intro__text { max-width: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pf-tile__img, .pf-tile__video { transition: none; }
   }
 </style>
