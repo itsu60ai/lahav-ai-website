@@ -7,10 +7,43 @@
 // a persistent primary CTA. Labels and structure stay LAHAV's own.
 import { NAV, CTA_PRIMARY, SERVICES } from '../lib/site';
 import { SERVICE_ICONS } from '../lib/icons';
+import { NAVIGATION_DEFAULT, getPublicContent, getServiceNames } from '../lib/cms/content.ts';
 
-interface Props { currentPath: string; solid?: boolean }
-const { currentPath, solid = false } = Astro.props;
+interface Props { currentPath: string; solid?: boolean; preview?: boolean }
+const { currentPath, solid = false, preview = false } = Astro.props;
 const isActive = (href: string) => (href === '/' ? currentPath === '/' : currentPath.startsWith(href));
+
+// Navigation labels and visibility are CMS-editable; the route each item
+// points to, their order, and the services mega menu are structural and
+// stay in code (NAV itself). `Astro.locals.stores` is undefined during
+// the build-time prerender of the few pages that stay fully static
+// (404, /privacy/, /system/) -- those keep the last-deployed labels
+// until the next code deploy, which is the one documented exception in
+// docs/WEBSITE_CMS.md.
+const navContent = Astro.locals.stores
+  ? await getPublicContent(Astro.locals.stores.content, 'navigation', NAVIGATION_DEFAULT)
+  : NAVIGATION_DEFAULT;
+const navLabel = new Map(navContent.items.map((i) => [i.key, i]));
+const visibleNav = NAV.filter((item) => navLabel.get(item.href)?.enabled !== false).map((item) => ({
+  ...item,
+  label: navLabel.get(item.href)?.label || item.label,
+}));
+
+// The primary CTA's label is a Setting; its route (/contact/) is not.
+// This is the highest-traffic place it renders (every page, both the
+// desktop button and the mobile menu button below). Draft in preview,
+// published otherwise -- see SiteLayout.astro's `preview` prop doc.
+const headerSettings: Record<string, string> = Astro.locals.stores
+  ? await (preview ? Astro.locals.stores.settings.getDraft() : Astro.locals.stores.settings.getPublished()).catch(() => ({}))
+  : {};
+const ctaLabel = headerSettings.cta_primary_label || CTA_PRIMARY.label;
+
+// One published name per service, so the mega menu and mobile menu never
+// disagree with the service's own page (2026-09-01, F-33/F-37).
+const serviceNames: Record<string, string> = Astro.locals.stores
+  ? await getServiceNames(Astro.locals.stores.services, preview).catch(() => ({}))
+  : {};
+const svcName = (slug: string, fallback: string) => serviceNames[slug] || fallback;
 ---
 
 <header class:list={['hdr', solid && 'is-solid']} data-header>
@@ -20,7 +53,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     </a>
 
     <nav class="hdr__nav" aria-label="ניווט ראשי">
-      {NAV.map((item) =>
+      {visibleNav.map((item) =>
         item.href === '/services/' ? (
           <div class="hdr__has-mega" data-mega-wrap>
             <a
@@ -47,7 +80,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
     </nav>
 
     <div class="hdr__end">
-      <a class="btn btn-primary hdr__cta" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
+      <a class="btn btn-primary hdr__cta" href={CTA_PRIMARY.href}>{ctaLabel}</a>
 
       <button class="hdr__burger" type="button" aria-expanded="false" aria-controls="site-menu" data-menu-btn>
         <span class="hdr__burger-bars" aria-hidden="true"></span>
@@ -79,7 +112,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                      stroke-linecap="round" stroke-linejoin="round" set:html={SERVICE_ICONS[s.slug]} />
               </span>
-              <span class="mega__name">{s.name}</span>
+              <span class="mega__name">{svcName(s.slug, s.name)}</span>
               <span class="mega__lead-t">{s.lead}</span>
             </a>
           </li>
@@ -93,7 +126,7 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
 <div class="menu" id="site-menu" data-menu hidden>
   <div class="menu__inner u-container">
     <nav class="menu__nav" aria-label="ניווט">
-      {NAV.map((item, i) => (
+      {visibleNav.map((item, i) => (
         <a class="menu__link" href={item.href} style={`--i:${i}`}>
           <span class="menu__num">{String(i + 1).padStart(2, '0')}</span>
           <span class="menu__label">{item.label}</span>
@@ -114,13 +147,13 @@ const isActive = (href: string) => (href === '/' ? currentPath === '/' : current
             <li>
               <a href={`/services/${s.slug}/`}>
                 <span class="menu__svc-n tabular">{String(i + 1).padStart(2, '0')}</span>
-                <span>{s.name}</span>
+                <span>{svcName(s.slug, s.name)}</span>
               </a>
             </li>
           ))}
         </ul>
       </details>
-      <a class="btn btn-primary btn-lg menu__cta" href={CTA_PRIMARY.href}>{CTA_PRIMARY.label}</a>
+      <a class="btn btn-primary btn-lg menu__cta" href={CTA_PRIMARY.href}>{ctaLabel}</a>
     </div>
   </div>
 </div>

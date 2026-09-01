@@ -1,0 +1,141 @@
+---
+export const prerender = false;
+
+// Media library. Simple by design (brief §10): upload, list, pick an id
+// to paste into an SEO image field, delete with a usage warning. Not a
+// general asset manager, and the approved presenter video/audio are not
+// here -- they are frozen production files, not admin-replaceable media.
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { csrfFor } from '../../lib/cms/auth.ts';
+import { can } from '../../lib/cms/types.ts';
+import { MAX_UPLOAD_BYTES } from '../../lib/cms/media.ts';
+
+const user = Astro.locals.user!;
+const { media } = Astro.locals.stores!;
+const items = await media.list();
+const csrf = await csrfFor(Astro.locals.sessionToken);
+const mayDelete = can(user, 'media:delete');
+---
+
+<AdminLayout title="ספריית מדיה">
+  <div class="hd">
+    <h1 class="hd__h">ספריית מדיה</h1>
+    <p class="hd__sub">
+      תמונות לשימוש כתמונת שיתוף (SEO) בעמודים. גודל מרבי לקובץ:
+      {Math.round(MAX_UPLOAD_BYTES / 1024)}KB. JPG, PNG או WebP בלבד.
+      לאחר ההעלאה, מעתיקים את המזהה ומדביקים בשדה "תמונת שיתוף" בעורך העמוד.
+    </p>
+  </div>
+
+  <div class="card up">
+    <input type="file" id="file" accept="image/jpeg,image/png,image/webp" />
+    <input class="ad-input" id="alt" placeholder="תיאור התמונה (alt)" style="max-width:22rem" />
+    <button class="ad-btn ad-btn--primary" type="button" id="upload-btn">העלאה</button>
+    <span class="msg" id="up-msg"></span>
+  </div>
+
+  <div class="grid" id="grid">
+    {items.map((m) => (
+      <div class="tile" data-id={m.id}>
+        <img src={`/api/media/${m.id}`} alt={m.alt} loading="lazy" />
+        <div class="tile__meta">
+          <button class="idbtn" type="button" data-copy={m.id} title="העתקת מזהה">{m.id.slice(0, 8)}…</button>
+          <span class="tile__size">{Math.round(m.sizeBytes / 1024)}KB</span>
+        </div>
+        {mayDelete && <button class="ad-btn ad-btn--ghost is-danger" type="button" data-delete={m.id}>מחיקה</button>}
+      </div>
+    ))}
+  </div>
+
+  {items.length === 0 && <p class="empty">עוד אין תמונות בספרייה.</p>}
+</AdminLayout>
+
+<script define:vars={{ csrf }}>
+  document.getElementById('upload-btn')?.addEventListener('click', async () => {
+    const fileInput = document.getElementById('file');
+    const alt = document.getElementById('alt').value;
+    const msg = document.getElementById('up-msg');
+    const file = fileInput.files?.[0];
+    if (!file) { msg.textContent = 'נא לבחור קובץ'; msg.className = 'msg is-err'; return; }
+
+    const form = new FormData();
+    form.append('file', file);
+    form.append('alt', alt);
+    const res = await fetch('/api/admin/media/upload', {
+      method: 'POST',
+      headers: { 'x-csrf-token': csrf },
+      body: form,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { msg.textContent = data.error || 'ההעלאה נכשלה'; msg.className = 'msg is-err'; return; }
+    location.reload();
+  });
+
+  document.querySelectorAll('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(btn.dataset.copy);
+      const orig = btn.textContent;
+      btn.textContent = 'הועתק';
+      setTimeout(() => (btn.textContent = orig), 1200);
+    });
+  });
+
+  document.querySelectorAll('[data-delete]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.delete;
+      if (!confirm('למחוק את התמונה?')) return;
+      let res = await fetch('/api/admin/media/delete', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+        body: JSON.stringify({ id }),
+      });
+      if (res.status === 409) {
+        const data = await res.json();
+        const list = (data.usedIn || []).join(', ');
+        if (!confirm(`התמונה בשימוש ב: ${list}. למחוק בכל זאת?`)) return;
+        res = await fetch('/api/admin/media/delete', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+          body: JSON.stringify({ id, force: true }),
+        });
+      }
+      if (res.ok) btn.closest('[data-id]')?.remove();
+    });
+  });
+</script>
+
+<style>
+  .hd { margin-bottom: 1.5rem; max-width: 40rem; }
+  .hd__h { font-size: 1.5rem; font-weight: 800; margin: 0; }
+  .hd__sub { color: var(--color-ink-3); margin: 0.35rem 0 0; line-height: 1.5; }
+
+  .card.up {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  .msg { font-size: 0.8rem; }
+  .msg.is-err { color: #c23; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 1rem; }
+  .tile {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .tile img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: var(--radius-sm); background: var(--color-surface-2); }
+  .tile__meta { display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--color-ink-3); }
+  .idbtn { border: none; background: none; cursor: pointer; font-family: monospace; color: var(--color-royal); padding: 0; }
+  .is-danger { color: #c23; border-color: #f3c8c8; }
+  .empty { color: var(--color-ink-3); }
+</style>

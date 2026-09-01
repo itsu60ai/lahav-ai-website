@@ -37,13 +37,22 @@ const path = new URL(Astro.request.url).pathname;
             </a>
 
             <nav class="ad__nav">
+              <a
+                class:list={[
+                  'ad__navlink',
+                  (path.startsWith('/admin/website') || path === '/admin/faq' || path === '/admin/settings' || path === '/admin/media') && 'is-on',
+                ]}
+                href="/admin/website"
+              >
+                תוכן האתר
+              </a>
               <a class:list={['ad__navlink', path === '/admin' && 'is-on']} href="/admin">
                 מאמרים
               </a>
               <a class:list={['ad__navlink', path.startsWith('/admin/ai') && 'is-on']} href="/admin/ai">
                 מנוע תוכן AI
               </a>
-              <a class="ad__navlink" href="/articles/" target="_blank" rel="noopener">
+              <a class="ad__navlink" href="/" target="_blank" rel="noopener">
                 צפייה באתר
               </a>
             </nav>

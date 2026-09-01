@@ -12,11 +12,18 @@ import type {
   ArticleDraft,
   ArticleStatus,
   ArticleStore,
+  AuditLogStore,
   Block,
   CmsStores,
+  ContentPageStore,
+  FaqItemRow,
+  FaqStore,
+  MediaRow,
+  MediaStore,
   Role,
   Session,
   SessionStore,
+  SettingsStore,
   User,
   UserCredentials,
   UserStore,
@@ -282,10 +289,424 @@ class D1SessionStore implements SessionStore {
   }
 }
 
+// ───────────────────────────────────────────── website content (pages)
+
+/**
+ * Backs BOTH `content_pages` (home/about/contact/navigation/footer) and
+ * `services_content` (keyed by slug instead of a fixed id). One class,
+ * parameterised by table name, because the draft/published/publish
+ * behaviour is identical for both -- only what the id column is called
+ * differs.
+ */
+class D1ContentPageStore implements ContentPageStore {
+  constructor(private db: D1, private table: 'content_pages' | 'services_content') {}
+
+  private col(): 'id' | 'slug' {
+    return this.table === 'content_pages' ? 'id' : 'slug';
+  }
+
+  async getDraftRaw(id: string): Promise<string | null> {
+    const r = await this.db
+      .prepare(`SELECT draft_json FROM ${this.table} WHERE ${this.col()} = ?1`)
+      .bind(id)
+      .first<Row>();
+    return r ? (r.draft_json as string) : null;
+  }
+
+  async getPublishedRaw(id: string): Promise<string | null> {
+    const r = await this.db
+      .prepare(`SELECT published_json FROM ${this.table} WHERE ${this.col()} = ?1`)
+      .bind(id)
+      .first<Row>();
+    return r && r.published_json ? (r.published_json as string) : null;
+  }
+
+  async saveDraft(id: string, json: string, userId: string): Promise<void> {
+    const ts = now();
+    const col = this.col();
+    // UPSERT: the row may not exist yet on a brand new install before the
+    // seed migration has run, which must never 500 the admin page.
+    await this.db
+      .prepare(
+        `INSERT INTO ${this.table} (${col}, draft_json, draft_updated_at, draft_updated_by)
+         VALUES (?1, ?2, ?3, ?4)
+         ON CONFLICT(${col}) DO UPDATE SET
+           draft_json = excluded.draft_json,
+           draft_updated_at = excluded.draft_updated_at,
+           draft_updated_by = excluded.draft_updated_by`
+      )
+      .bind(id, json, ts, userId)
+      .run();
+  }
+
+  async publish(id: string, userId: string): Promise<void> {
+    const ts = now();
+    await this.db
+      .prepare(
+        `UPDATE ${this.table}
+         SET published_json = draft_json, published_at = ?2, published_by = ?3
+         WHERE ${this.col()} = ?1`
+      )
+      .bind(id, ts, userId)
+      .run();
+  }
+
+  async meta(id: string) {
+    const r = await this.db
+      .prepare(`SELECT * FROM ${this.table} WHERE ${this.col()} = ?1`)
+      .bind(id)
+      .first<Row>();
+    if (!r) return null;
+    return {
+      draftUpdatedAt: r.draft_updated_at ?? null,
+      draftUpdatedBy: r.draft_updated_by ?? null,
+      publishedAt: r.published_at ?? null,
+      publishedBy: r.published_by ?? null,
+      hasUnpublishedChanges: r.draft_json !== r.published_json,
+    };
+  }
+}
+
+// ───────────────────────────────────────────────────────────────── FAQ
+
+function toFaq(r: Row): FaqItemRow {
+  return {
+    id: r.id,
+    question: r.draft_question,
+    answer: r.draft_answer,
+    sortOrder: r.draft_sort_order,
+    enabled: !!r.draft_enabled,
+    deleted: !!r.draft_deleted,
+    published:
+      r.published_question == null
+        ? null
+        : {
+            question: r.published_question,
+            answer: r.published_answer,
+            sortOrder: r.published_sort_order,
+            enabled: !!r.published_enabled,
+          },
+    createdAt: r.created_at,
+    updatedAt: r.draft_updated_at,
+    publishedAt: r.published_at ?? null,
+    publishedBy: r.published_by ?? null,
+  };
+}
+
+class D1FaqStore implements FaqStore {
+  constructor(private db: D1) {}
+
+  async listDraft(): Promise<FaqItemRow[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM faq_items WHERE draft_deleted = 0 ORDER BY draft_sort_order ASC')
+      .all();
+    return (results as Row[]).map(toFaq);
+  }
+
+  async listPublished(): Promise<{ question: string; answer: string }[]> {
+    const { results } = await this.db
+      .prepare(
+        `SELECT published_question AS q, published_answer AS a FROM faq_items
+         WHERE published_question IS NOT NULL AND published_enabled = 1
+         ORDER BY published_sort_order ASC`
+      )
+      .all();
+    return (results as Row[]).map((r) => ({ question: r.q, answer: r.a }));
+  }
+
+  async create(question: string, answer: string, userId: string): Promise<FaqItemRow> {
+    const id = crypto.randomUUID();
+    const ts = now();
+    const { results } = await this.db
+      .prepare('SELECT COALESCE(MAX(draft_sort_order), -1) + 1 AS n FROM faq_items')
+      .all();
+    const nextOrder = (results as Row[])[0]?.n ?? 0;
+    await this.db
+      .prepare(
+        `INSERT INTO faq_items
+         (id, draft_question, draft_answer, draft_sort_order, draft_enabled, draft_deleted,
+          created_at, draft_updated_at, draft_updated_by)
+         VALUES (?1, ?2, ?3, ?4, 1, 0, ?5, ?5, ?6)`
+      )
+      .bind(id, question, answer, nextOrder, ts, userId)
+      .run();
+    return {
+      id, question, answer, sortOrder: nextOrder, enabled: true, deleted: false,
+      published: null, createdAt: ts, updatedAt: ts, publishedAt: null, publishedBy: null,
+    };
+  }
+
+  async update(
+    id: string,
+    patch: Partial<Pick<FaqItemRow, 'question' | 'answer' | 'enabled'>>,
+    userId: string
+  ): Promise<FaqItemRow> {
+    const sets: string[] = [];
+    const vals: any[] = [];
+    let n = 1;
+    if (patch.question !== undefined) { sets.push(`draft_question = ?${n++}`); vals.push(patch.question); }
+    if (patch.answer !== undefined) { sets.push(`draft_answer = ?${n++}`); vals.push(patch.answer); }
+    if (patch.enabled !== undefined) { sets.push(`draft_enabled = ?${n++}`); vals.push(patch.enabled ? 1 : 0); }
+    sets.push(`draft_updated_at = ?${n++}`);
+    vals.push(now());
+    sets.push(`draft_updated_by = ?${n++}`);
+    vals.push(userId);
+    vals.push(id);
+    await this.db
+      .prepare(`UPDATE faq_items SET ${sets.join(', ')} WHERE id = ?${n}`)
+      .bind(...vals)
+      .run();
+    const r = await this.db.prepare('SELECT * FROM faq_items WHERE id = ?1').bind(id).first<Row>();
+    return toFaq(r!);
+  }
+
+  async remove(id: string): Promise<void> {
+    const r = await this.db
+      .prepare('SELECT published_question FROM faq_items WHERE id = ?1')
+      .bind(id)
+      .first<Row>();
+    if (!r) return;
+    if (r.published_question == null) {
+      // never published -- nothing live to protect, remove it outright
+      await this.db.prepare('DELETE FROM faq_items WHERE id = ?1').bind(id).run();
+    } else {
+      // still live -- hide from draft/preview, keep public showing it
+      // until Publish actually removes the row
+      await this.db.prepare('UPDATE faq_items SET draft_deleted = 1 WHERE id = ?1').bind(id).run();
+    }
+  }
+
+  async reorder(ids: string[], userId: string): Promise<void> {
+    const ts = now();
+    const stmts = ids.map((id, i) =>
+      this.db
+        .prepare('UPDATE faq_items SET draft_sort_order = ?1, draft_updated_at = ?2, draft_updated_by = ?3 WHERE id = ?4')
+        .bind(i, ts, userId, id)
+    );
+    await this.db.batch(stmts);
+  }
+
+  async publishAll(userId: string): Promise<void> {
+    const ts = now();
+    await this.db
+      .prepare(
+        `UPDATE faq_items SET
+           published_question = draft_question,
+           published_answer = draft_answer,
+           published_sort_order = draft_sort_order,
+           published_enabled = draft_enabled,
+           published_at = ?1,
+           published_by = ?2
+         WHERE draft_deleted = 0`
+      )
+      .bind(ts, userId)
+      .run();
+    // items staged for deletion are only actually removed once published,
+    // so a mistaken delete stays recoverable (by an admin restoring the
+    // row directly) right up until this point
+    await this.db.prepare('DELETE FROM faq_items WHERE draft_deleted = 1').run();
+  }
+
+  async meta() {
+    const r = await this.db
+      .prepare(
+        `SELECT
+           COUNT(*) FILTER (WHERE draft_deleted = 1) AS pending_delete,
+           COUNT(*) FILTER (WHERE published_question IS NULL) AS pending_create,
+           COUNT(*) FILTER (
+             WHERE published_question IS NOT NULL AND draft_deleted = 0 AND (
+               draft_question != published_question OR
+               draft_answer != published_answer OR
+               draft_sort_order != published_sort_order OR
+               draft_enabled != published_enabled
+             )
+           ) AS pending_edit,
+           MAX(published_at) AS published_at
+         FROM faq_items`
+      )
+      .first<Row>();
+    const lastPublisher = await this.db
+      .prepare('SELECT published_by FROM faq_items WHERE published_at = (SELECT MAX(published_at) FROM faq_items) LIMIT 1')
+      .first<Row>();
+    const hasUnpublishedChanges =
+      !!r && (r.pending_delete > 0 || r.pending_create > 0 || r.pending_edit > 0);
+    return {
+      hasUnpublishedChanges,
+      publishedAt: r?.published_at ?? null,
+      publishedBy: lastPublisher?.published_by ?? null,
+    };
+  }
+}
+
+// ──────────────────────────────────────────────────────────── settings
+
+class D1SettingsStore implements SettingsStore {
+  constructor(private db: D1) {}
+
+  async getDraft(): Promise<Record<string, string>> {
+    const { results } = await this.db.prepare('SELECT key, draft_value FROM site_settings').all();
+    const out: Record<string, string> = {};
+    for (const r of results as Row[]) out[r.key] = r.draft_value;
+    return out;
+  }
+
+  async getPublished(): Promise<Record<string, string>> {
+    const { results } = await this.db
+      .prepare('SELECT key, published_value FROM site_settings WHERE published_value IS NOT NULL')
+      .all();
+    const out: Record<string, string> = {};
+    for (const r of results as Row[]) out[r.key] = r.published_value;
+    return out;
+  }
+
+  async setDraft(key: string, value: string, userId: string): Promise<void> {
+    await this.db
+      .prepare(
+        `INSERT INTO site_settings (key, draft_value, draft_updated_at, draft_updated_by)
+         VALUES (?1, ?2, ?3, ?4)
+         ON CONFLICT(key) DO UPDATE SET
+           draft_value = excluded.draft_value,
+           draft_updated_at = excluded.draft_updated_at,
+           draft_updated_by = excluded.draft_updated_by`
+      )
+      .bind(key, value, now(), userId)
+      .run();
+  }
+
+  async publish(userId: string): Promise<void> {
+    const ts = now();
+    await this.db
+      .prepare(
+        `UPDATE site_settings SET published_value = draft_value, published_at = ?1, published_by = ?2`
+      )
+      .bind(ts, userId)
+      .run();
+  }
+
+  async meta() {
+    const r = await this.db
+      .prepare(
+        `SELECT
+           COUNT(*) FILTER (WHERE draft_value IS NOT published_value) AS pending,
+           MAX(published_at) AS published_at
+         FROM site_settings`
+      )
+      .first<Row>();
+    const lastPublisher = await this.db
+      .prepare('SELECT published_by FROM site_settings WHERE published_at = (SELECT MAX(published_at) FROM site_settings) LIMIT 1')
+      .first<Row>();
+    return {
+      hasUnpublishedChanges: !!r && r.pending > 0,
+      publishedAt: r?.published_at ?? null,
+      publishedBy: lastPublisher?.published_by ?? null,
+    };
+  }
+}
+
+// ────────────────────────────────────────────────────────────── media
+
+function toMedia(r: Row): MediaRow {
+  return {
+    id: r.id,
+    filename: r.filename,
+    alt: r.alt,
+    mime: r.mime,
+    width: r.width ?? null,
+    height: r.height ?? null,
+    sizeBytes: r.size_bytes,
+    createdAt: r.created_at,
+  };
+}
+
+class D1MediaStore implements MediaStore {
+  constructor(private db: D1) {}
+
+  async list(): Promise<MediaRow[]> {
+    const { results } = await this.db
+      .prepare(
+        'SELECT id, filename, alt, mime, width, height, size_bytes, created_at FROM media ORDER BY created_at DESC'
+      )
+      .all();
+    return (results as Row[]).map(toMedia);
+  }
+
+  async getWithData(id: string) {
+    const r = await this.db.prepare('SELECT * FROM media WHERE id = ?1').bind(id).first<Row>();
+    return r ? { ...toMedia(r), dataB64: r.data_b64 as string } : null;
+  }
+
+  async create(row: {
+    filename: string;
+    alt: string;
+    mime: string;
+    width: number | null;
+    height: number | null;
+    sizeBytes: number;
+    dataB64: string;
+    createdBy: string;
+  }): Promise<MediaRow> {
+    const id = crypto.randomUUID();
+    const ts = now();
+    await this.db
+      .prepare(
+        `INSERT INTO media (id, filename, alt, mime, width, height, size_bytes, data_b64, created_at, created_by)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)`
+      )
+      .bind(id, row.filename, row.alt, row.mime, row.width, row.height, row.sizeBytes, row.dataB64, ts, row.createdBy)
+      .run();
+    return {
+      id,
+      filename: row.filename,
+      alt: row.alt,
+      mime: row.mime,
+      width: row.width,
+      height: row.height,
+      sizeBytes: row.sizeBytes,
+      createdAt: ts,
+    };
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.db.prepare('DELETE FROM media WHERE id = ?1').bind(id).run();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────── audit
+
+class D1AuditLogStore implements AuditLogStore {
+  constructor(private db: D1) {}
+
+  async record(area: string, action: string, userId: string): Promise<void> {
+    await this.db
+      .prepare('INSERT INTO content_audit_log (id, area, action, user_id, created_at) VALUES (?1,?2,?3,?4,?5)')
+      .bind(crypto.randomUUID(), area, action, userId, now())
+      .run();
+  }
+
+  async recent(limit: number) {
+    const { results } = await this.db
+      .prepare('SELECT * FROM content_audit_log ORDER BY created_at DESC LIMIT ?1')
+      .bind(limit)
+      .all();
+    return (results as Row[]).map((r) => ({
+      area: r.area,
+      action: r.action,
+      userId: r.user_id,
+      createdAt: r.created_at,
+    }));
+  }
+}
+
 export function createStores(db: D1): CmsStores {
   return {
     articles: new D1ArticleStore(db),
     users: new D1UserStore(db),
     sessions: new D1SessionStore(db),
+    content: new D1ContentPageStore(db, 'content_pages'),
+    services: new D1ContentPageStore(db, 'services_content'),
+    faq: new D1FaqStore(db),
+    settings: new D1SettingsStore(db),
+    media: new D1MediaStore(db),
+    audit: new D1AuditLogStore(db),
   };
 }

@@ -1,7 +1,17 @@
 ---
+export const prerender = false;
+
 import ServicePage from '../../layouts/ServicePage.astro';
-import { SERVICE_PAGES } from '../../lib/site';
-const data = SERVICE_PAGES['app-development'];
+import { serviceDefault, toServicePageData, getPublicContent, getDraftContent } from '../../lib/cms/content.ts';
+import { resolvePreview } from '../../lib/cms/preview.ts';
+
+const SLUG = 'app-development';
+const { services: servicesStore } = Astro.locals.stores!;
+const preview = await resolvePreview(Astro, Astro.locals.stores!);
+const content = preview
+  ? await getDraftContent(servicesStore, SLUG, serviceDefault(SLUG))
+  : await getPublicContent(servicesStore, SLUG, serviceDefault(SLUG));
+const data = toServicePageData(SLUG, content);
 
 // App only: the honest half of the offer. Custom software is the most
 // expensive answer on this site, so the page says out loud when it is the
@@ -33,9 +43,12 @@ const verdict = [
 <ServicePage
   slug="app-development"
   data={data}
-  title="פיתוח אפליקציות | LAHAV AI"
-  description="תוכנה מותאמת לתהליך העסקי הספציפי שלכם, כשכלים קיימים פשוט לא מתאימים."
+  title={content.seo.title}
+  description={content.seo.description}
+  noindex={content.seo.noindex}
+  image={content.seo.ogImage || undefined}
   symptomsStyle="rail"
+  preview={preview}
 >
   <!-- App only: when NOT to build -->
   <section class="ad-sec u-section band">

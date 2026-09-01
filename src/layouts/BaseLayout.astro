@@ -11,6 +11,7 @@
 // employee count, because none of those are established facts.
 import '../styles/global.css';
 import { SITE, WHATSAPP_HREF } from '../lib/site';
+import { buildWhatsappHref } from '../lib/cms/content.ts';
 
 interface Props {
   title: string;
@@ -20,15 +21,27 @@ interface Props {
   image?: string;
   /** 'website' for pages, 'article' for a post */
   ogType?: 'website' | 'article';
+  /** see SiteLayout.astro's Props doc -- selects draft vs published
+      Settings for the JSON-LD `sameAs` link below. */
+  preview?: boolean;
 }
 
-const { title, description = '', noindex = false, image = '/brand/og-default.png', ogType = 'website' } = Astro.props;
+const { title, description = '', noindex = false, image = '/brand/og-default.png', ogType = 'website', preview = false } = Astro.props;
 
 // Canonical is derived from the request, with query and fragment dropped:
 // /contact/?sent=1 and /contact/ are the same document.
 const requestUrl = new URL(Astro.request.url);
 const canonical = `${requestUrl.origin}${requestUrl.pathname}`;
 const ogImage = new URL(image, requestUrl.origin).href;
+
+// Same settings-backed WhatsApp link as the rest of the site (found the
+// gap by testing a settings change end to end and finding this the one
+// place it still hadn't reached). Draft in preview, published otherwise
+// -- see the `preview` prop doc above.
+const baseSettings: Record<string, string> = Astro.locals.stores
+  ? await (preview ? Astro.locals.stores.settings.getDraft() : Astro.locals.stores.settings.getPublished()).catch(() => ({}))
+  : {};
+const orgWaHref = Object.keys(baseSettings).length ? buildWhatsappHref(baseSettings) : WHATSAPP_HREF;
 
 const organization = {
   '@context': 'https://schema.org',
@@ -37,7 +50,7 @@ const organization = {
   url: requestUrl.origin,
   logo: new URL('/brand/lahav-primary-lockup.svg', requestUrl.origin).href,
   description: 'מערכות AI ואוטומציה לעסקים: סדר בפניות, פחות עבודה ידנית, יותר שליטה.',
-  sameAs: [WHATSAPP_HREF],
+  sameAs: [orgWaHref],
 };
 ---
 

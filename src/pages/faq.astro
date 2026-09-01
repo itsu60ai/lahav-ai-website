@@ -15,14 +15,44 @@ import ContactBlock from '../components/ContactBlock.astro';
 
 const SITE_KEY = turnstileSiteKey();
 import { turnstileSiteKey } from '../lib/turnstile.ts';
-import { FAQ } from '../lib/site';
+import { FAQ as FAQ_DEFAULT } from '../lib/site';
+import { FAQ_PAGE_DEFAULT, getPublicContent, getDraftContent } from '../lib/cms/content.ts';
+import { resolvePreview } from '../lib/cms/preview.ts';
+
+const { content: contentStore } = Astro.locals.stores!;
+const preview = await resolvePreview(Astro, Astro.locals.stores!);
+const faqPage = preview
+  ? await getDraftContent(contentStore, 'faq', FAQ_PAGE_DEFAULT)
+  : await getPublicContent(contentStore, 'faq', FAQ_PAGE_DEFAULT);
+
+// FAQ is CMS-managed (src/pages/admin/faq.astro) with the same
+// draft/published split as every other content area (2026-09-01,
+// SOURCE_OF_TRUTH.md F-34): the public page reads listPublished() only,
+// ?preview=1 reads listDraft(). A D1 failure or an empty table (before
+// the seed migration runs) falls back to the approved static list, so
+// the page can never render with zero questions.
+const { faq: faqStore } = Astro.locals.stores!;
+let faqRows: { q: string; a: string }[];
+try {
+  if (preview) {
+    const rows = await faqStore.listDraft();
+    const enabled = rows.filter((r) => r.enabled);
+    faqRows = enabled.length ? enabled.map((r) => ({ q: r.question, a: r.answer })) : [...FAQ_DEFAULT];
+  } else {
+    const rows = await faqStore.listPublished();
+    faqRows = rows.length ? rows.map((r) => ({ q: r.question, a: r.answer })) : [...FAQ_DEFAULT];
+  }
+} catch (err) {
+  console.error('[cms] failed to load faq_items:', err);
+  faqRows = [...FAQ_DEFAULT];
+}
 
 // FAQPage structured data. Mirrors exactly what is on the page, so it
 // stays truthful if the copy is edited.
 const faqJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: FAQ.map((f) => ({
+  mainEntity: faqRows.map((f) => ({
     '@type': 'Question',
     name: f.q,
     acceptedAnswer: { '@type': 'Answer', text: f.a },
@@ -31,8 +61,11 @@ const faqJsonLd = {
 ---
 
 <SiteLayout
-  title="שאלות נפוצות | LAHAV AI"
-  description="התשובות לשאלות שבעלי עסקים שואלים לפני שמתחילים: עלות, זמנים, מה קורה למידע, ואיך בכלל מתחילים."
+  title={faqPage.seo.title}
+  description={faqPage.seo.description}
+  noindex={faqPage.seo.noindex}
+  image={faqPage.seo.ogImage || undefined}
+  preview={preview}
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} is:inline />
 
@@ -42,12 +75,12 @@ const faqJsonLd = {
       <SplitLines
         as="h1"
         class="fq-hero__h1 t-display-2"
-        lines={['מה שכדאי לדעת', 'לפני שמתחילים.']}
+        lines={[faqPage.headlineLine1, faqPage.headlineLine2]}
         step={100}
         delay={80}
       />
       <p class="fq-hero__lead t-lead" data-reveal style="--mo-delay:280ms">
-        התשובות שמעניינות בעל עסק לפני שיחה ראשונה.
+        {faqPage.lead}
       </p>
     </div>
   </section>
@@ -55,7 +88,7 @@ const faqJsonLd = {
   <section class="u-section band">
     <div class="u-container u-container--wide">
       <ul class="fq" data-stagger style="--mo-step:70ms">
-        {FAQ.map((item, i) => (
+        {faqRows.map((item, i) => (
           <li class="fq__item" data-reveal>
             <details class="fq__d" name="faq">
               <summary class="fq__q">
@@ -79,6 +112,7 @@ const faqJsonLd = {
     siteKey={SITE_KEY}
     heading="יש משהו שלא ענינו עליו?"
     body="תכתבו את השאלה. נענה בכנות, גם כשהתשובה היא שלא צריך אותנו."
+    preview={preview}
   />
 </SiteLayout>
 

@@ -1,0 +1,117 @@
+---
+export const prerender = false;
+
+// WEBSITE CONTENT hub. One card per editable area, each showing whether
+// it has unpublished draft changes, so the client never has to wonder
+// "did I already publish this."
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+const { content, services } = Astro.locals.stores!;
+
+const PAGES = [
+  { id: 'home', label: 'בית', href: '/admin/website/home', view: '/?preview=1' },
+  { id: 'about', label: 'אודות', href: '/admin/website/about', view: '/about/?preview=1' },
+  { id: 'contact', label: 'צור קשר', href: '/admin/website/contact', view: '/contact/?preview=1' },
+  { id: 'faq', label: 'שאלות נפוצות - כותרת', href: '/admin/website/faq-page', view: '/faq/?preview=1' },
+  { id: 'services', label: 'עמוד השירותים - SEO', href: '/admin/website/services-seo', view: '/services/?preview=1' },
+  { id: 'navigation', label: 'ניווט', href: '/admin/website/navigation', view: '/?preview=1' },
+  { id: 'footer', label: 'פוטר', href: '/admin/website/footer', view: '/?preview=1' },
+];
+
+const statuses = await Promise.all(PAGES.map((p) => content.meta(p.id)));
+
+const SERVICE_LABELS: Record<string, string> = {
+  crm: 'מערכות CRM חכמות',
+  automations: 'אוטומציות עסקיות',
+  'web-development': 'פיתוח אתרים',
+  'app-development': 'פיתוח אפליקציות',
+  'ai-content': 'יצירת תוכן באמצעות AI',
+};
+const serviceSlugs = Object.keys(SERVICE_LABELS);
+const serviceStatuses = await Promise.all(serviceSlugs.map((s) => services.meta(s)));
+---
+
+<AdminLayout title="תוכן האתר">
+  <div class="hd">
+    <div>
+      <h1 class="hd__h">תוכן האתר</h1>
+      <p class="hd__sub">עריכת הטקסטים באתר. העיצוב והמבנה נשארים קבועים בקוד.</p>
+    </div>
+  </div>
+
+  <section class="grp">
+    <h2 class="grp__h">עמודים</h2>
+    <div class="cards">
+      {PAGES.map((p, i) => {
+        const m = statuses[i];
+        const unpublished = m?.hasUnpublishedChanges;
+        return (
+          <a class="card" href={p.href}>
+            <span class="card__t">{p.label}</span>
+            {m && (
+              <span class:list={['card__s', unpublished && 'is-draft']}>
+                {unpublished ? 'יש שינויים שלא פורסמו' : m.publishedAt ? 'מפורסם ועדכני' : 'טרם פורסם'}
+              </span>
+            )}
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <section class="grp">
+    <h2 class="grp__h">חמשת השירותים</h2>
+    <div class="cards">
+      {serviceSlugs.map((slug, i) => {
+        const m = serviceStatuses[i];
+        const unpublished = m?.hasUnpublishedChanges;
+        return (
+          <a class="card" href={`/admin/website/services/${slug}`}>
+            <span class="card__t">{SERVICE_LABELS[slug]}</span>
+            {m && (
+              <span class:list={['card__s', unpublished && 'is-draft']}>
+                {unpublished ? 'יש שינויים שלא פורסמו' : m.publishedAt ? 'מפורסם ועדכני' : 'טרם פורסם'}
+              </span>
+            )}
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <section class="grp">
+    <h2 class="grp__h">ניהול נוסף</h2>
+    <div class="cards">
+      <a class="card" href="/admin/faq"><span class="card__t">שאלות נפוצות - השאלות עצמן</span></a>
+      <a class="card" href="/admin/settings"><span class="card__t">הגדרות כלליות</span></a>
+      <a class="card" href="/admin/media"><span class="card__t">ספריית מדיה</span></a>
+    </div>
+  </section>
+</AdminLayout>
+
+<style>
+  .hd { margin-bottom: 2rem; }
+  .hd__h { font-size: 1.5rem; font-weight: 800; margin: 0; }
+  .hd__sub { color: var(--color-ink-3); margin: 0.35rem 0 0; }
+
+  .grp { margin-bottom: 2.25rem; }
+  .grp__h { font-size: 1rem; font-weight: 700; color: var(--color-ink-2); margin: 0 0 0.85rem; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.85rem; }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1.1rem 1.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--color-ink);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:hover { border-color: var(--color-royal); box-shadow: 0 6px 18px rgba(11, 26, 66, 0.08); }
+  .card__t { font-weight: 700; }
+  .card__s { font-size: 0.8rem; color: var(--color-ink-3); }
+  .card__s.is-draft { color: var(--color-royal); font-weight: 600; }
+</style>

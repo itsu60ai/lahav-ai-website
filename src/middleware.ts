@@ -18,12 +18,14 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   const url = new URL(ctx.request.url);
   const p = url.pathname.replace(/\/+$/, '') || '/';
 
-  // Public pages that read articles need the stores too.
-  const needsStores = PROTECTED.some((b) => p === b || p.startsWith(b + '/')) ||
-    p === '/articles' || p.startsWith('/articles/');
-  if (needsStores) {
-    ctx.locals.stores = getStores();
-  }
+  // Every on-demand route gets the stores. This used to be a whitelist
+  // (admin, /api/admin, /articles) but the website content CMS means
+  // most public pages now read D1 too -- Home, Services, About, Contact,
+  // FAQ, and the header/footer on every page that includes them.
+  // getStores() only wraps the D1 binding; it performs no I/O itself, so
+  // doing this unconditionally costs nothing on the pages that don't
+  // end up querying anything.
+  ctx.locals.stores = getStores();
 
   const isProtected = PROTECTED.some((b) => p === b || p.startsWith(b + '/'));
   if (!isProtected) return next();

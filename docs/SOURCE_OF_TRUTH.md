@@ -3,6 +3,8 @@
 STATUS: CURRENT. Reconciliation complete. Final decisions F-1..F-18 approved by the client 2026-08-29.
 F-19 (2026-08-31) supersedes F-1's "never all-dark" clause - see section 5.
 F-20, F-21, F-22, F-23 (2026-08-29) F-24, F-25, F-26, F-27 (2026-08-31) and F-28, F-29 (2026-09-01) - see section 0.
+F-30..F-33 (2026-09-01), the Website Content CMS - see section 7.
+F-34..F-37 (2026-09-01), CMS finalization (draft/publish gaps closed) - see section 7.
 
 ---
 
@@ -368,3 +370,118 @@ O-11 blocks going live in production; it does not block continuing to build othe
   only the AI article tool, which is late in the sequence.
 - A new section H was added covering the CMS user experience, the AI article system and its learning
   model, the auto-publish safety model, lead storage, booking and temporary hosting.
+
+## 7. Decisions taken 2026-09-01, building the Website Content CMS
+
+Full architecture, test evidence and manual test checklist live in `docs/WEBSITE_CMS.md`. This
+section records only the decisions and their reasoning, in this file's own numbering.
+
+### F-30 — Design and layout stay in code; only content becomes editable
+
+Non-negotiable, stated by the client verbatim: the admin must not become Wix/Webflow. Every editor
+page is a form over a fixed set of named fields (headline, body, a service's 3 points, etc.) — no
+section can be added/removed/reordered, no service can be added or removed (the 5 are fixed), and
+navigation exposes only each item's label and enabled flag, never its route or position. This is
+enforced by what the editor UI physically offers, not by a policy someone could forget.
+
+### F-31 — Draft/Published as two columns on one row, no revision history yet
+
+`content_pages`/`services_content` carry `draft_json` and `published_json` on the same row rather
+than a versioned log of every past publish. The client explicitly approved this simplification —
+"safe published/draft model first" — over building full revision history in this phase. FAQ items
+and Settings are immediate-write (no draft stage): an FAQ's own `enabled` flag already gives a safe
+staging step, and Settings values are facts (a phone number), not marketing copy someone drafts.
+
+### F-32 — Media stays in D1 (base64), not R2, until R2 is enabled on the account
+
+`wrangler r2 bucket create` fails with error code 10042: R2 requires a one-time manual enable in the
+Cloudflare dashboard by the account owner, which was not available during this work. Media uploads
+are capped at 700KB and stored as base64 in a D1 table instead. This is not a real DAM (no folders,
+no transforms) and is documented as a limitation in `docs/WEBSITE_CMS.md`, with the migration path
+(swap `D1MediaStore` for an R2-backed implementation of the same interface) already contained by the
+existing storage-interface pattern.
+
+### F-33 — Two content fields are stored but deliberately not fully wired — SUPERSEDED by F-36/F-37
+
+Renaming a service's `name` updates its own page, card and the contact form's dropdown, but not yet
+the header mega-menu or footer service list (both still read the static `SERVICES` array). Settings'
+`site_name` is stored but no rendering location reads it yet — `SITE.name` from code is still used for
+the footer copyright, JSON-LD `organization.name`, and `og:site_name`. Both were judged lower priority
+than the content areas actually requested, given the time constraint to ship the CMS quickly, and are
+recorded here rather than left as a silent inconsistency. Wiring either is a contained follow-up.
+
+*(2026-09-01: both resolved during CMS finalization. The service-name gap is closed by F-37 — every
+public consumer now reads one published source. The `site_name` gap is closed by F-36 — the client
+chose removal over wiring, since LAHAV AI is a protected business identity.)*
+
+### Bug found and fixed while testing this CMS: WhatsApp/CTA settings were not reaching every consumer
+
+Verifying a Settings change end-to-end (not requested directly, but necessary to honestly report the
+CMS as tested) found `ContactBlock.astro`, `SiteHeader.astro`'s CTA label, `BaseLayout.astro`'s JSON-LD
+`sameAs`, and the main `contact.astro` page still importing the hardcoded `WHATSAPP_HREF`/
+`CTA_PRIMARY`/`DISCOVERY_BOOKING_URL` constants directly instead of resolving them through Settings.
+All four were fixed to match the pattern already used in `SiteFooter.astro`/`SiteDock.astro`, and the
+fix was re-verified against both the local build and the live production site (every WhatsApp link on
+the homepage and the contact page now resolves to one consistent number).
+
+### Security gap found and fixed: Settings values reaching an unescaped `href`
+
+`whatsapp_number` and `discovery_booking_url` render into `href` attributes, which Astro does not
+HTML-escape the way it escapes text content — a `javascript:` URL saved there would execute on click.
+The Settings API now validates both fields before writing anything (digits-only for the number,
+`https://` required for the URL), all-or-nothing per request. Verified directly: both a bad number and
+a `javascript:` URL are rejected with a 400 and neither reaches the database.
+
+## 7a. CMS finalization, 2026-09-01 — closing the draft/publish and consistency gaps
+
+A second pass, after the CMS above first shipped, on the client's own explicit review. Full detail
+and test evidence in `docs/WEBSITE_CMS.md`; this records the decisions.
+
+### F-34 — FAQ moves from immediate-write to draft/published
+
+0007's "FAQ is atomic, `enabled` is staging enough" reasoning (§7, above) was reconsidered and
+rejected: a visitor-facing list must never change production the instant an admin (or an EDITOR)
+clicks Save, no carve-out. Migration 0009 gives each `faq_items` row a full draft copy and a full
+published copy. Every create/edit/enable/reorder/delete action is draft-only; a new `faq:publish`
+permission (ADMIN only, EDITOR does not get it) is the one action that copies draft state onto
+published state. Deleting a never-published item removes it outright; deleting a published one only
+hides it from the draft/preview view until Publish actually removes the row — recoverable right up
+until that point.
+
+### F-35 — Settings moves from immediate-write to draft/published
+
+Same reasoning, same fix, applied to `site_settings`: `draft_value`/`published_value` per key, a
+"שמירת טיוטה" that only ever writes the draft, and a separate "פרסום" that copies every key at once
+(the form is one page, so it publishes as one unit). Every public reader of Settings — header, footer,
+floating dock, the contact band, the JSON-LD organization block, the main contact page — now takes a
+`preview` flag threaded down from `SiteLayout` and reads draft or published accordingly. Settings
+remains entirely ADMIN-only (`settings:sensitive`); EDITOR was never given access to it and still
+isn't, so "EDITOR cannot publish Settings" is inherited from that rather than a new check.
+
+### F-36 — `site_name` is removed, not wired (client decision)
+
+Given the choice between wiring the dead `site_name` setting to every place a business name appears
+(footer copyright, JSON-LD, `og:site_name`, admin brand) or removing it, the client's explicit
+instruction was to remove it: **"LAHAV AI itself is a protected business identity and does NOT need
+casual CMS editing."** Migration 0009 deletes the row; the setting no longer exists in
+`SETTINGS_KEYS`. `SITE.name` in code remains the one place the business name is defined, unchanged
+from before this CMS existed.
+
+### F-37 — One published source for a service's name, everywhere
+
+`getServiceNames(services, preview)` resolves all 5 services' names (draft or published) in one call.
+Every consumer outside a service's own page — header mega menu, mobile menu, footer service list,
+services index cards and its chooser copy, the contact dropdown (both the shared `ContactBlock` and
+the standalone `contact.astro` copy of it), and the "other services" rail on every service page — now
+reads through it instead of the static `SERVICES` array, with that array's own name as the fallback
+when the CMS has nothing (never blank). Verified by renaming CRM in draft and checking all of the
+above stayed on the old name publicly, showed the new name under every page's own `?preview=1`, then
+updated everywhere at once on Publish.
+
+### Repository: CMS work committed and pushed
+
+The CMS implementation (schema, admin UI, public wiring, this finalization pass, and both docs) had
+accumulated as uncommitted local changes across two work sessions before this point — a real gap
+against ordinary repository hygiene, closed by committing and pushing to the existing `main` branch
+once the finalization retest above passed. No secrets were added: `.dev.vars` and
+`data/ADMIN_PASSWORD.txt` remain gitignored, confirmed before the commit, not after.

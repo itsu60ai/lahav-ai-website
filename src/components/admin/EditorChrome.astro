@@ -1,0 +1,75 @@
+---
+// Shared chrome for every simple content editor: breadcrumb, save/preview
+// /publish buttons, unsaved-changes status, and the CSS all of them use.
+// The actual fields are the slot; each page still writes its own
+// data-collection script (see src/lib/cms/admin-editor-client.ts).
+interface Props {
+  title: string;
+  previewHref: string;
+  canPublish: boolean;
+  hasUnpublishedChanges?: boolean;
+  publishedAt?: string | null;
+}
+const { title, previewHref, canPublish, hasUnpublishedChanges, publishedAt } = Astro.props;
+---
+
+<div class="ed__top">
+  <div class="ed__crumbs">
+    <a href="/admin/website">תוכן האתר</a>
+    <span aria-hidden="true">›</span>
+    <span class="ed__crumb-now">{title}</span>
+  </div>
+
+  <div class="ed__acts">
+    {publishedAt && (
+      <span class:list={['ad-pill', hasUnpublishedChanges ? 'ad-pill--draft' : 'ad-pill--published']}>
+        <span class="ad-dot"></span>
+        {hasUnpublishedChanges ? 'יש שינויים שלא פורסמו' : 'מפורסם ועדכני'}
+      </span>
+    )}
+    <span class="ed__saved" data-saved aria-live="polite"></span>
+    <button class="ad-btn ad-btn--ghost" type="button" data-save>שמירת טיוטה</button>
+    <a class="ad-btn ad-btn--ghost" href={previewHref} target="_blank" rel="noopener">תצוגה מקדימה</a>
+    {canPublish && (
+      <button class="ad-btn ad-btn--primary" type="button" data-publish>פרסום</button>
+    )}
+  </div>
+</div>
+
+<div class="ed__main">
+  <div class="card">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .ed__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .ed__crumbs { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--color-ink-3); }
+  .ed__crumbs a { color: var(--color-royal); font-weight: 600; text-decoration: none; }
+  .ed__crumb-now { color: var(--color-ink); font-weight: 700; }
+  .ed__acts { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .ed__saved { font-size: 0.8rem; color: var(--color-ink-3); min-width: 4rem; }
+  .ed__saved.is-ok { color: #1a8a4a; }
+  .ed__saved.is-err { color: #c23; }
+
+  .ed__main { max-width: 46rem; }
+
+  :global(.ad-field) { margin-bottom: 1.15rem; }
+  :global(.ad-field:last-child) { margin-bottom: 0; }
+  :global(.ad-field-row) { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  :global(.ad-hint) { display: block; margin-top: 0.35rem; font-size: 0.8rem; color: var(--color-ink-3); }
+  :global(.ad-fieldset) {
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1.15rem;
+  }
+  :global(.ad-fieldset legend) { padding-inline: 0.4rem; font-weight: 700; font-size: 0.85rem; color: var(--color-ink-2); }
+</style>

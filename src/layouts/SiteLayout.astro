@@ -16,20 +16,31 @@ interface Props {
   title: string;
   description: string;
   noindex?: boolean;
+  /** an id from the media table, for a page-specific social preview
+      image. Falls back to BaseLayout's default when absent. */
+  image?: string;
   /** Pages whose first section is a saturated colour block need a solid
       header from the start: a royal CTA on a royal hero is invisible. */
   headerSolid?: boolean;
+  /** From the calling page's own `resolvePreview()`. Threaded down to
+      every shared component that reads Settings or a service's name, so
+      an authenticated `?preview=1` request sees the DRAFT WhatsApp
+      number/CTA label/service names everywhere on the page, not just in
+      that page's own content (2026-09-01, SOURCE_OF_TRUTH.md F-35/F-37).
+      Omitted (false) on pages that never call resolvePreview -- they
+      only ever show published content, which is the correct default. */
+  preview?: boolean;
 }
-const { title, description, noindex = false, headerSolid = false } = Astro.props;
+const { title, description, noindex = false, image, headerSolid = false, preview = false } = Astro.props;
 const currentPath = new URL(Astro.request.url).pathname;
 ---
 
-<BaseLayout title={title} description={description} noindex={noindex}>
-  <SiteHeader currentPath={currentPath} solid={headerSolid} />
+<BaseLayout title={title} description={description} noindex={noindex} image={image && `/api/media/${image}`} preview={preview}>
+  <SiteHeader currentPath={currentPath} solid={headerSolid} preview={preview} />
   <main id="main">
     <slot />
   </main>
-  <SiteFooter />
-  <SiteDock />
+  <SiteFooter preview={preview} />
+  <SiteDock preview={preview} />
   <Motion />
 </BaseLayout>

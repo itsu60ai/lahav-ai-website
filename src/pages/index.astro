@@ -26,8 +26,20 @@ import FounderPortrait from '../components/FounderPortrait.astro';
 import Flow from '../components/Flow.astro';
 import { SERVICES, PROCESS, FOUNDER } from '../lib/site';
 import { SERVICE_ICONS } from '../lib/icons';
+import { HOME_DEFAULT, getPublicContent, getDraftContent } from '../lib/cms/content.ts';
+import { resolvePreview } from '../lib/cms/preview.ts';
 
 const SITE_KEY = turnstileSiteKey();
+
+// Website content CMS: the hero and this page's SEO come from the
+// published draft in D1, falling back to the exact current approved
+// copy (HOME_DEFAULT) if nothing is published yet or the read fails.
+// See src/lib/cms/content.ts.
+const { content: contentStore } = Astro.locals.stores!;
+const preview = await resolvePreview(Astro, Astro.locals.stores!);
+const home = preview
+  ? await getDraftContent(contentStore, 'home', HOME_DEFAULT)
+  : await getPublicContent(contentStore, 'home', HOME_DEFAULT);
 
 // The four convictions, set as oversized HEBREW words. They used to be
 // Latin (PROCESS / BUZZWORD / LESS / CONTROL); that was removed on
@@ -78,8 +90,11 @@ const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות'
 ---
 
 <SiteLayout
-  title="LAHAV AI, מערכות ואוטומציות שעושות סדר בעסק"
-  description="מערכות שעושות סדר במידע העסקי ומטפלות בפעולות שאפשר להגדיר מראש: CRM, אוטומציות, אתרים, אפליקציות ותוכן בסיוע AI."
+  title={home.seo.title}
+  description={home.seo.description}
+  noindex={home.seo.noindex}
+  image={home.seo.ogImage || undefined}
+  preview={preview}
 >
   <!-- ═════════ 1. HERO ═════════ -->
   <section class="hero band band--hero">
@@ -90,16 +105,15 @@ const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות'
          its lower body. They sit in sequence, not stacked on top of each
          other, which is what keeps both legible. -->
     <div class="u-container u-container--wide hero__inner">
-      <p class="hero__eyebrow t-eyebrow" data-reveal>מערכות AI ואוטומציה לעסקים</p>
+      <p class="hero__eyebrow t-eyebrow" data-reveal>{home.hero.eyebrow}</p>
 
       <h1 class="hero__title t-display-1">
-        <span class="mo-line" style="--mo-delay:80ms"><span>בסוף מישהו</span></span>
-        <span class="mo-line" style="--mo-delay:190ms"><span class="hero__accent">צריך לזכור.</span></span>
+        <span class="mo-line" style="--mo-delay:80ms"><span>{home.hero.headlineLine1}</span></span>
+        <span class="mo-line" style="--mo-delay:190ms"><span class="hero__accent">{home.hero.headlineLine2}</span></span>
       </h1>
 
       <p class="hero__lead" data-reveal style="--mo-delay:330ms">
-        מי דיבר עם הלקוח, מה סוכם ומה עוד צריך לקרות. אנחנו בונים מערכות
-        שעושות סדר במידע ומטפלות בפעולות שאפשר להגדיר מראש.
+        {home.hero.lead}
       </p>
     </div>
 
@@ -323,7 +337,7 @@ const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות'
   </section>
 
   <!-- ═════════ 9. CONTACT ═════════ -->
-  <ContactBlock siteKey={SITE_KEY} />
+  <ContactBlock siteKey={SITE_KEY} preview={preview} />
 </SiteLayout>
 
 <style>

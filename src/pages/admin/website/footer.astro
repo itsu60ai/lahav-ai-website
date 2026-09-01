@@ -1,0 +1,69 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import EditorChrome from '../../../components/admin/EditorChrome.astro';
+import { FOOTER_DEFAULT, getDraftContent } from '../../../lib/cms/content.ts';
+import { can } from '../../../lib/cms/types.ts';
+
+const { content } = Astro.locals.stores!;
+const user = Astro.locals.user!;
+const footer = await getDraftContent(content, 'footer', FOOTER_DEFAULT);
+const meta = await content.meta('footer');
+---
+
+<AdminLayout title="פוטר">
+  <EditorChrome
+    title="פוטר"
+    previewHref="/?preview=1"
+    canPublish={can(user, 'content:publish')}
+    hasUnpublishedChanges={meta?.hasUnpublishedChanges}
+    publishedAt={meta?.publishedAt}
+  >
+    <fieldset class="ad-fieldset">
+      <legend>ההזמנה הגדולה בתחתית האתר</legend>
+      <div class="ad-field-row">
+        <div class="ad-field">
+          <label class="ad-label" for="f-l1">שורה ראשונה</label>
+          <input class="ad-input" id="f-l1" data-f="invitationLine1" value={footer.invitationLine1} />
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" for="f-l2">שורה שנייה</label>
+          <input class="ad-input" id="f-l2" data-f="invitationLine2" value={footer.invitationLine2} />
+          <span class="ad-hint">בלי נקודה בסוף - הנקודה מתווספת אוטומטית ומעוצבת בנפרד.</span>
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label" for="f-note">משפט קטן מתחת להזמנה</label>
+        <input class="ad-input" id="f-note" data-f="note" value={footer.note} />
+      </div>
+    </fieldset>
+
+    <fieldset class="ad-fieldset">
+      <legend>אודות העסק</legend>
+      <div class="ad-field">
+        <label class="ad-label" for="f-blurb">משפט קצר ליד הלוגו</label>
+        <input class="ad-input" id="f-blurb" data-f="blurb" value={footer.blurb} />
+      </div>
+    </fieldset>
+  </EditorChrome>
+</AdminLayout>
+
+<script>
+  import { wireEditor } from '../../../lib/cms/admin-editor-client.ts';
+  const val = (sel: string) => (document.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value ?? '');
+  const csrf = document.body.dataset.csrf!;
+
+  wireEditor({
+    store: 'content',
+    id: 'footer',
+    csrf,
+    canPublish: !!document.querySelector('[data-publish]'),
+    collect: () => ({
+      invitationLine1: val('[data-f="invitationLine1"]'),
+      invitationLine2: val('[data-f="invitationLine2"]'),
+      note: val('[data-f="note"]'),
+      blurb: val('[data-f="blurb"]'),
+    }),
+  });
+</script>

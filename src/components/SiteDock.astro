@@ -15,6 +15,23 @@
 import WhatsApp from './icons/WhatsApp.astro';
 import { WHATSAPP_HREF, DISCOVERY_BOOKING_URL } from '../lib/site';
 import { SUGGESTIONS } from '../lib/chat/knowledge.ts';
+import { buildWhatsappHref } from '../lib/cms/content.ts';
+
+interface Props { preview?: boolean }
+const { preview = false } = Astro.props;
+
+// Same resilience pattern as SiteHeader/SiteFooter: falls back to the
+// code defaults on the few pages that stay fully static (404, /privacy/,
+// /system/), where Astro.locals.stores is unavailable at build time.
+// Draft in preview, published otherwise -- see SiteLayout.astro's
+// `preview` prop doc. The AI chat below this is untouched by this: it
+// reads only its own approved knowledge base, never Settings or CMS
+// content, draft or published.
+const settings: Record<string, string> = Astro.locals.stores
+  ? await (preview ? Astro.locals.stores.settings.getDraft() : Astro.locals.stores.settings.getPublished()).catch(() => ({}))
+  : {};
+const waHref = Object.keys(settings).length ? buildWhatsappHref(settings) : WHATSAPP_HREF;
+const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
 ---
 
 <div class="dock" data-dock>
@@ -24,7 +41,7 @@ import { SUGGESTIONS } from '../lib/chat/knowledge.ts';
 
   <a
     class="dock__wa"
-    href={WHATSAPP_HREF}
+    href={waHref}
     target="_blank"
     rel="noopener noreferrer"
     aria-label="שיחה בוואטסאפ"
@@ -82,10 +99,10 @@ import { SUGGESTIONS } from '../lib/chat/knowledge.ts';
     </div>
 
     <div class="chat__actions">
-      <a class="chat__action" href={DISCOVERY_BOOKING_URL} target="_blank" rel="noopener noreferrer">
+      <a class="chat__action" href={bookingUrl} target="_blank" rel="noopener noreferrer">
         לתיאום שיחת היכרות
       </a>
-      <a class="chat__action" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+      <a class="chat__action" href={waHref} target="_blank" rel="noopener noreferrer">
         לוואטסאפ
       </a>
     </div>

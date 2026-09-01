@@ -1,0 +1,98 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import EditorChrome from '../../../components/admin/EditorChrome.astro';
+import { CONTACT_DEFAULT, getDraftContent } from '../../../lib/cms/content.ts';
+import { can } from '../../../lib/cms/types.ts';
+
+const { content } = Astro.locals.stores!;
+const user = Astro.locals.user!;
+const contact = await getDraftContent(content, 'contact', CONTACT_DEFAULT);
+const meta = await content.meta('contact');
+---
+
+<AdminLayout title="צור קשר">
+  <EditorChrome
+    title="צור קשר"
+    previewHref="/contact/?preview=1"
+    canPublish={can(user, 'content:publish')}
+    hasUnpublishedChanges={meta?.hasUnpublishedChanges}
+    publishedAt={meta?.publishedAt}
+  >
+    <fieldset class="ad-fieldset">
+      <legend>הכותרת הראשית</legend>
+      <div class="ad-field">
+        <label class="ad-label" for="f-eyebrow">תווית קטנה מעל הכותרת</label>
+        <input class="ad-input" id="f-eyebrow" data-f="hero.eyebrow" value={contact.hero.eyebrow} />
+      </div>
+      <div class="ad-field-row">
+        <div class="ad-field">
+          <label class="ad-label" for="f-h1">שורה ראשונה בכותרת</label>
+          <input class="ad-input" id="f-h1" data-f="hero.headlineLine1" value={contact.hero.headlineLine1} />
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" for="f-h2">שורה שנייה בכותרת</label>
+          <input class="ad-input" id="f-h2" data-f="hero.headlineLine2" value={contact.hero.headlineLine2} />
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label" for="f-lead">טקסט מתחת לכותרת</label>
+        <textarea class="ad-textarea" id="f-lead" data-f="hero.lead" rows="3">{contact.hero.lead}</textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="ad-fieldset">
+      <legend>הזמנות לפעולה</legend>
+      <div class="ad-field">
+        <label class="ad-label" for="f-booking">משפט מתחת ל"שיחת היכרות"</label>
+        <textarea class="ad-textarea" id="f-booking" data-f="bookingNote" rows="2">{contact.bookingNote}</textarea>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label" for="f-wa">טקסט כפתור הוואטסאפ</label>
+        <input class="ad-input" id="f-wa" data-f="whatsappNote" value={contact.whatsappNote} />
+      </div>
+    </fieldset>
+
+    <fieldset class="ad-fieldset">
+      <legend>קידום באתרי חיפוש (SEO)</legend>
+      <div class="ad-field">
+        <label class="ad-label" for="f-seo-title">כותרת הדף</label>
+        <input class="ad-input" id="f-seo-title" data-f="seo.title" value={contact.seo.title} />
+      </div>
+      <div class="ad-field">
+        <label class="ad-label" for="f-seo-desc">תיאור הדף</label>
+        <textarea class="ad-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{contact.seo.description}</textarea>
+      </div>
+    </fieldset>
+  </EditorChrome>
+</AdminLayout>
+
+<script>
+  import { wireEditor } from '../../../lib/cms/admin-editor-client.ts';
+  const val = (sel: string) => (document.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value ?? '');
+  const csrf = document.body.dataset.csrf!;
+
+  wireEditor({
+    store: 'content',
+    id: 'contact',
+    csrf,
+    canPublish: !!document.querySelector('[data-publish]'),
+    collect: () => ({
+      hero: {
+        eyebrow: val('[data-f="hero.eyebrow"]'),
+        headlineLine1: val('[data-f="hero.headlineLine1"]'),
+        headlineLine2: val('[data-f="hero.headlineLine2"]'),
+        lead: val('[data-f="hero.lead"]'),
+      },
+      bookingNote: val('[data-f="bookingNote"]'),
+      whatsappNote: val('[data-f="whatsappNote"]'),
+      seo: {
+        title: val('[data-f="seo.title"]'),
+        description: val('[data-f="seo.description"]'),
+        ogTitle: val('[data-f="seo.title"]'),
+        ogDescription: val('[data-f="seo.description"]'),
+      },
+    }),
+  });
+</script>

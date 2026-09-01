@@ -11,7 +11,49 @@
 import { SITE, NAV, SERVICES, WHATSAPP_HREF, CTA_PRIMARY } from '../lib/site';
 import WhatsApp from './icons/WhatsApp.astro';
 import Curve from './Curve.astro';
+import {
+  FOOTER_DEFAULT,
+  NAVIGATION_DEFAULT,
+  getPublicContent,
+  getDraftContent,
+  getServiceNames,
+  buildWhatsappHref,
+} from '../lib/cms/content.ts';
 const year = new Date().getFullYear();
+
+interface Props { preview?: boolean }
+const { preview = false } = Astro.props;
+
+// Same resilience pattern as SiteHeader: Astro.locals.stores is undefined
+// during the build-time prerender of the few pages that stay fully
+// static (404, /privacy/, /system/), which then show the last-deployed
+// footer until the next code deploy -- documented in docs/WEBSITE_CMS.md.
+const stores = Astro.locals.stores;
+const footer = stores
+  ? preview
+    ? await getDraftContent(stores.content, 'footer', FOOTER_DEFAULT)
+    : await getPublicContent(stores.content, 'footer', FOOTER_DEFAULT)
+  : FOOTER_DEFAULT;
+const navContent = stores
+  ? preview
+    ? await getDraftContent(stores.content, 'navigation', NAVIGATION_DEFAULT)
+    : await getPublicContent(stores.content, 'navigation', NAVIGATION_DEFAULT)
+  : NAVIGATION_DEFAULT;
+const navLabel = new Map(navContent.items.map((i) => [i.key, i]));
+const visibleNav = NAV.filter((item) => navLabel.get(item.href)?.enabled !== false).map((item) => ({
+  ...item,
+  label: navLabel.get(item.href)?.label || item.label,
+}));
+const settings: Record<string, string> = stores
+  ? await (preview ? stores.settings.getDraft() : stores.settings.getPublished()).catch(() => ({}))
+  : {};
+const waHref = Object.keys(settings).length ? buildWhatsappHref(settings) : WHATSAPP_HREF;
+
+// One published name per service, so the footer list agrees with the
+// header, the index cards and the service's own page (F-33/F-37).
+const serviceNames: Record<string, string> = stores
+  ? await getServiceNames(stores.services, preview).catch(() => ({}))
+  : {};
 ---
 
 <footer class="ftr band band--warm">
@@ -32,16 +74,16 @@ const year = new Date().getFullYear();
     <div class="ftr__top">
       <p class="t-eyebrow" data-reveal>בואו נתחיל</p>
       <a class="ftr__big" href={CTA_PRIMARY.href} data-reveal style="--mo-delay:80ms">
-        <span class="ftr__big-l">נדבר על מה</span>
+        <span class="ftr__big-l">{footer.invitationLine1}</span>
         <span class="ftr__big-l">
-          שתקוע<span class="ftr__dot">.</span>
+          {footer.invitationLine2}<span class="ftr__dot">.</span>
           <span class="ftr__arrow" aria-hidden="true">←</span>
         </span>
       </a>
-      <p class="ftr__note" data-reveal style="--mo-delay:160ms">30 דקות, בלי התחייבות.</p>
+      <p class="ftr__note" data-reveal style="--mo-delay:160ms">{footer.note}</p>
 
       <div class="ftr__routes" data-reveal style="--mo-delay:220ms">
-        <a class="ftr__route" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+        <a class="ftr__route" href={waHref} target="_blank" rel="noopener noreferrer">
           <WhatsApp />
           <span>מעדיפים וואטסאפ? זה בסדר גמור.</span>
         </a>
@@ -53,13 +95,13 @@ const year = new Date().getFullYear();
     <div class="ftr__cols">
       <div class="ftr__col ftr__col--brand">
         <img class="ftr__logo" src="/brand/lahav-primary-lockup.svg" alt="LAHAV AI" width="120" height="89" />
-        <p class="ftr__blurb">מערכות ואוטומציות שעושות סדר בעסק.</p>
+        <p class="ftr__blurb">{footer.blurb}</p>
       </div>
 
       <nav class="ftr__col" aria-label="ניווט תחתון">
         <p class="ftr__h">ניווט</p>
         <ul class="ftr__list">
-          {NAV.map((item) => (
+          {visibleNav.map((item) => (
             <li><a href={item.href}>{item.label}</a></li>
           ))}
         </ul>
@@ -69,7 +111,7 @@ const year = new Date().getFullYear();
         <p class="ftr__h">שירותים</p>
         <ul class="ftr__list">
           {SERVICES.map((s) => (
-            <li><a href={`/services/${s.slug}/`}>{s.name}</a></li>
+            <li><a href={`/services/${s.slug}/`}>{serviceNames[s.slug] || s.name}</a></li>
           ))}
         </ul>
       </nav>
@@ -78,7 +120,7 @@ const year = new Date().getFullYear();
         <p class="ftr__h">יצירת קשר</p>
         <ul class="ftr__list">
           <li><a href="/contact/">תיאום שיחת היכרות</a></li>
-          <li><a href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">שיחה בוואטסאפ</a></li>
+          <li><a href={waHref} target="_blank" rel="noopener noreferrer">שיחה בוואטסאפ</a></li>
           <li><a href="/privacy/">מדיניות פרטיות</a></li>
         </ul>
       </div>

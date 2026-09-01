@@ -22,6 +22,14 @@ import Flow from '../components/Flow.astro';
 import FounderPortrait from '../components/FounderPortrait.astro';
 import Presenter from '../components/Presenter.astro';
 import { FOUNDER, PROCESS, SERVICES } from '../lib/site';
+import { ABOUT_DEFAULT, getPublicContent, getDraftContent } from '../lib/cms/content.ts';
+import { resolvePreview } from '../lib/cms/preview.ts';
+
+const { content: contentStore } = Astro.locals.stores!;
+const preview = await resolvePreview(Astro, Astro.locals.stores!);
+const about = preview
+  ? await getDraftContent(contentStore, 'about', ABOUT_DEFAULT)
+  : await getPublicContent(contentStore, 'about', ABOUT_DEFAULT);
 
 // The three beliefs. Short, declarative, one idea each: the reference
 // states its principles as headline-sized statements with a single
@@ -52,20 +60,22 @@ const guideLines = [
 ---
 
 <SiteLayout
-  title="אודות | LAHAV AI"
-  description="LAHAV AI מתמחה בתכנון ובהקמה של מערכות חכמות לעסקים. מתחילים מהתהליך העסקי, ורק אחר כך בוחרים טכנולוגיה."
+  title={about.seo.title}
+  description={about.seo.description}
+  noindex={about.seo.noindex}
+  image={about.seo.ogImage || undefined}
+  preview={preview}
 >
   <!-- ═════════ 1. OPENER: type owns the screen ═════════ -->
   <section class="ab-hero band band--hero">
     <div class="u-container u-container--wide">
-      <p class="t-eyebrow" data-reveal>אודות</p>
+      <p class="t-eyebrow" data-reveal>{about.hero.eyebrow}</p>
       <h1 class="ab-hero__h1 t-display-1">
-        <span class="mo-line" style="--mo-delay:80ms"><span>מתחילים ממה</span></span>
-        <span class="mo-line" style="--mo-delay:190ms"><span class="ab-hero__accent">שקורה בעסק.</span></span>
+        <span class="mo-line" style="--mo-delay:80ms"><span>{about.hero.headlineLine1}</span></span>
+        <span class="mo-line" style="--mo-delay:190ms"><span class="ab-hero__accent">{about.hero.headlineLine2}</span></span>
       </h1>
       <p class="ab-hero__lead" data-reveal style="--mo-delay:380ms">
-        לפני שבוחרים כלי, עוברים על התהליך, מבינים איפה הוא מסתבך ומה באמת
-        צריך להשתנות.
+        {about.hero.lead}
       </p>
     </div>
     <span class="ab-hero__cue" aria-hidden="true"></span>
@@ -80,7 +90,7 @@ const guideLines = [
             <FounderPortrait scale="about" sizes="(max-width: 1024px) 60vw, 26rem" />
           </div>
           <p class="ab-story__name">{FOUNDER.name}</p>
-          <p class="ab-story__role">{FOUNDER.role}</p>
+          <p class="ab-story__role">{about.founderRole}</p>
         </div>
       </aside>
 
@@ -215,7 +225,7 @@ const guideLines = [
     </div>
   </section>
 
-  <ContactBlock siteKey={SITE_KEY} />
+  <ContactBlock siteKey={SITE_KEY} preview={preview} />
 </SiteLayout>
 
 <style>

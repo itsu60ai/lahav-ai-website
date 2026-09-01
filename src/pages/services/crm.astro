@@ -1,15 +1,28 @@
 ---
+export const prerender = false;
+
 import ServicePage from '../../layouts/ServicePage.astro';
-import { SERVICE_PAGES } from '../../lib/site';
-const data = SERVICE_PAGES['crm'];
+import { serviceDefault, toServicePageData, getPublicContent, getDraftContent } from '../../lib/cms/content.ts';
+import { resolvePreview } from '../../lib/cms/preview.ts';
+
+const SLUG = 'crm';
+const { services: servicesStore } = Astro.locals.stores!;
+const preview = await resolvePreview(Astro, Astro.locals.stores!);
+const content = preview
+  ? await getDraftContent(servicesStore, SLUG, serviceDefault(SLUG))
+  : await getPublicContent(servicesStore, SLUG, serviceDefault(SLUG));
+const data = toServicePageData(SLUG, content);
 ---
 
 <ServicePage
   slug="crm"
   data={data}
-  title="מערכות CRM חכמות | LAHAV AI"
-  description="בונים מערכת CRM שמרכזת לקוחות, פניות ומשימות במקום אחד, ונותנת תמונה ברורה של כל לקוח ומה השלב הבא."
+  title={content.seo.title}
+  description={content.seo.description}
+  noindex={content.seo.noindex}
+  image={content.seo.ogImage || undefined}
   symptomsStyle="rail"
+  preview={preview}
 >
 
   <!-- CRM only: what changes day to day -->

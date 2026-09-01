@@ -1,0 +1,81 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import EditorChrome from '../../../components/admin/EditorChrome.astro';
+import { NAVIGATION_DEFAULT, getDraftContent } from '../../../lib/cms/content.ts';
+import { can } from '../../../lib/cms/types.ts';
+
+const { content } = Astro.locals.stores!;
+const user = Astro.locals.user!;
+const nav = await getDraftContent(content, 'navigation', NAVIGATION_DEFAULT);
+const meta = await content.meta('navigation');
+---
+
+<AdminLayout title="ניווט">
+  <EditorChrome
+    title="ניווט"
+    previewHref="/?preview=1"
+    canPublish={can(user, 'content:publish')}
+    hasUnpublishedChanges={meta?.hasUnpublishedChanges}
+    publishedAt={meta?.publishedAt}
+  >
+    <p class="ad-hint" style="margin-bottom:1rem">
+      אפשר לשנות את שם כל פריט בתפריט, ואת האם הוא מוצג. הסדר והיעד של
+      כל פריט קבועים בעיצוב, כדי שלא ישבר קישור בטעות.
+    </p>
+
+    {nav.items.map((item, i) => (
+      <div class="row" data-item data-key={item.key}>
+        <div class="row__grid">
+          <div class="ad-field">
+            <label class="ad-label">שם התצוגה</label>
+            <input class="ad-input" data-f={`items.${i}.label`} value={item.label} />
+          </div>
+          <label class="chk">
+            <input type="checkbox" data-f={`items.${i}.enabled`} checked={item.enabled} />
+            מוצג בתפריט
+          </label>
+        </div>
+        <span class="row__key" dir="ltr">{item.key}</span>
+      </div>
+    ))}
+  </EditorChrome>
+</AdminLayout>
+
+<script>
+  import { wireEditor } from '../../../lib/cms/admin-editor-client.ts';
+  const csrf = document.body.dataset.csrf!;
+
+  wireEditor({
+    store: 'content',
+    id: 'navigation',
+    csrf,
+    canPublish: !!document.querySelector('[data-publish]'),
+    collect: () => {
+      const items = Array.from(document.querySelectorAll<HTMLElement>('[data-item]')).map((row) => {
+        const key = row.dataset.key!;
+        const label = row.querySelector<HTMLInputElement>('[data-f$=".label"]')!.value;
+        const enabled = row.querySelector<HTMLInputElement>('[data-f$=".enabled"]')!.checked;
+        return { key, label, enabled };
+      });
+      return { items };
+    },
+  });
+</script>
+
+<style>
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.85rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .row:last-child { border-bottom: none; }
+  .row__grid { display: flex; align-items: flex-end; gap: 1.25rem; flex: 1; }
+  .row__grid .ad-field { flex: 1; margin: 0; }
+  .chk { display: flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; white-space: nowrap; }
+  .row__key { font-size: 0.75rem; color: var(--color-ink-3); }
+</style>

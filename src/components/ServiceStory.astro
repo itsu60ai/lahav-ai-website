@@ -17,6 +17,14 @@
 import { SERVICES } from '../lib/site';
 import { SERVICE_ICONS } from '../lib/icons';
 
+// The published (or, in preview, draft) name per service, resolved once
+// by the caller (services/index.astro) and passed down here so this
+// stays a plain presentational component. Falls back to the static name
+// when a slug is missing from the map, e.g. before the CMS has ever
+// been asked (F-33/F-37).
+interface Props { names?: Record<string, string> }
+const { names = {} } = Astro.props;
+
 // Each station gets its own path shape so the journey never repeats.
 // `d` is the connector drawn ABOVE the station, arriving into it.
 const PATHS = [
@@ -43,7 +51,7 @@ const PATHS = [
         <div class="story__copy">
           <p class="story__n tabular" dir="ltr" data-reveal>{String(i + 1).padStart(2, '0')} / 05</p>
           <h2 class="story__name">
-            <span class="mo-line" style="--mo-delay:60ms"><span>{s.name}</span></span>
+            <span class="mo-line" style="--mo-delay:60ms"><span>{names[s.slug] || s.name}</span></span>
           </h2>
           <p class="story__lead" data-reveal style="--mo-delay:180ms">{s.lead}</p>
           <p class="story__pain" data-reveal style="--mo-delay:260ms">{s.pain}</p>

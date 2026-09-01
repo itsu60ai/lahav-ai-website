@@ -42,6 +42,11 @@ migrations/*_seed.sql
 # local Cloudflare secrets for `astro dev` / `wrangler dev`, never commit
 .dev.vars
 
+# curl cookie jars from manual/scripted admin-session testing -- can hold
+# a real session token, never commit
+cookies.txt
+*cookies*.txt
+
 # Third-party design reference (STG.AI mirror + screen recordings).
 # Kept locally at docs/reference/stg/ so the redesign can be checked
 # against it, but NEVER committed: this repository is public, and the

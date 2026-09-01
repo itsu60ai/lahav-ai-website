@@ -1,0 +1,218 @@
+---
+export const prerender = false;
+
+// FAQ manager. Draft/published, like every other content area (2026-09-01,
+// SOURCE_OF_TRUTH.md F-34): every action below (add, edit, enable/disable,
+// reorder, delete) writes to the DRAFT state only. The public /faq/ page
+// keeps showing the last PUBLISHED state until an ADMIN clicks "פרסום".
+// EDITOR can do everything on this page except that one button.
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { csrfFor } from '../../lib/cms/auth.ts';
+import { can } from '../../lib/cms/types.ts';
+
+const { faq } = Astro.locals.stores!;
+const user = Astro.locals.user!;
+const items = await faq.listDraft();
+const meta = await faq.meta();
+const csrf = await csrfFor(Astro.locals.sessionToken);
+const canPublish = can(user, 'faq:publish');
+---
+
+<AdminLayout title="שאלות נפוצות">
+  <div class="hd">
+    <div>
+      <h1 class="hd__h">שאלות נפוצות</h1>
+      <p class="hd__sub">
+        כל שינוי כאן הוא טיוטה בלבד. העמוד החי ממשיך להראות את הגרסה
+        המפורסמת עד שלוחצים "פרסום". <a href="/faq/?preview=1" target="_blank" rel="noopener">תצוגה מקדימה</a>
+        · <a href="/faq/" target="_blank" rel="noopener">העמוד החי</a>
+      </p>
+    </div>
+    <div class="hd__acts">
+      {meta.publishedAt && (
+        <span class:list={['ad-pill', meta.hasUnpublishedChanges ? 'ad-pill--draft' : 'ad-pill--published']}>
+          <span class="ad-dot"></span>
+          {meta.hasUnpublishedChanges ? 'יש שינויים שלא פורסמו' : 'מפורסם ועדכני'}
+        </span>
+      )}
+      <span class="msg" id="publish-msg"></span>
+      {canPublish && (
+        <button class="ad-btn ad-btn--primary" type="button" id="publish-btn">פרסום</button>
+      )}
+    </div>
+  </div>
+
+  <div class="card new">
+    <p class="ad-label">הוספת שאלה</p>
+    <input class="ad-input" id="new-q" placeholder="השאלה" />
+    <textarea class="ad-textarea" id="new-a" rows="2" placeholder="התשובה"></textarea>
+    <button class="ad-btn ad-btn--primary" type="button" id="add-btn">הוספה</button>
+    <span class="msg" id="add-msg"></span>
+  </div>
+
+  <ul class="list" id="faq-list">
+    {items.map((item, i) => (
+      <li class="row" data-id={item.id}>
+        <div class="row__order">
+          <button class="ord" type="button" data-up disabled={i === 0}>↑</button>
+          <button class="ord" type="button" data-down disabled={i === items.length - 1}>↓</button>
+        </div>
+        <div class="row__body">
+          <input class="ad-input" data-q value={item.question} />
+          <textarea class="ad-textarea" rows="2" data-a>{item.answer}</textarea>
+          {!item.published && <span class="ad-hint is-new">טרם פורסם</span>}
+        </div>
+        <div class="row__acts">
+          <label class="chk">
+            <input type="checkbox" data-enabled checked={item.enabled} />
+            מוצג
+          </label>
+          <button class="ad-btn ad-btn--ghost" type="button" data-save>שמירת טיוטה</button>
+          <button class="ad-btn ad-btn--ghost is-danger" type="button" data-delete>מחיקה</button>
+        </div>
+      </li>
+    ))}
+  </ul>
+
+  {items.length === 0 && <p class="empty">עוד אין שאלות. הוסיפו את הראשונה למעלה.</p>}
+</AdminLayout>
+
+<script define:vars={{ csrf, canPublish }}>
+  const post = (body) =>
+    fetch('/api/admin/faq', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+      body: JSON.stringify(body),
+    });
+
+  document.getElementById('add-btn')?.addEventListener('click', async () => {
+    const q = document.getElementById('new-q');
+    const a = document.getElementById('new-a');
+    const msg = document.getElementById('add-msg');
+    const res = await post({ action: 'create', question: q.value, answer: a.value });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { msg.textContent = data.error || 'שגיאה'; msg.className = 'msg is-err'; return; }
+    location.reload();
+  });
+
+  document.querySelectorAll('[data-id]').forEach((row) => {
+    const id = row.dataset.id;
+    row.querySelector('[data-save]')?.addEventListener('click', async () => {
+      const question = row.querySelector('[data-q]').value;
+      const answer = row.querySelector('[data-a]').value;
+      const enabled = row.querySelector('[data-enabled]').checked;
+      const res = await post({ action: 'update', id, question, answer, enabled });
+      if (res.ok) {
+        const btn = row.querySelector('[data-save]');
+        const orig = btn.textContent;
+        btn.textContent = 'נשמרה טיוטה';
+        setTimeout(() => (btn.textContent = orig), 1400);
+      }
+    });
+
+    row.querySelector('[data-enabled]')?.addEventListener('change', async (e) => {
+      await post({ action: 'update', id, enabled: e.target.checked });
+    });
+
+    row.querySelector('[data-delete]')?.addEventListener('click', async () => {
+      if (!confirm('להסיר את השאלה הזו מהטיוטה? היא תיעלם מהאתר החי רק אחרי פרסום.')) return;
+      const res = await post({ action: 'delete', id });
+      if (res.ok) row.remove();
+    });
+
+    row.querySelector('[data-up]')?.addEventListener('click', () => move(row, -1));
+    row.querySelector('[data-down]')?.addEventListener('click', () => move(row, 1));
+  });
+
+  async function move(row, dir) {
+    const list = document.getElementById('faq-list');
+    const rows = Array.from(list.children);
+    const idx = rows.indexOf(row);
+    const swapWith = rows[idx + dir];
+    if (!swapWith) return;
+    if (dir === -1) list.insertBefore(row, swapWith);
+    else list.insertBefore(swapWith, row);
+    const ids = Array.from(list.children).map((r) => r.dataset.id);
+    await post({ action: 'reorder', ids });
+    location.reload();
+  }
+
+  document.getElementById('publish-btn')?.addEventListener('click', async () => {
+    if (!canPublish) return;
+    const btn = document.getElementById('publish-btn');
+    const msg = document.getElementById('publish-msg');
+    btn.disabled = true;
+    const res = await fetch('/api/admin/faq/publish', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+    });
+    btn.disabled = false;
+    if (!res.ok) { msg.textContent = 'הפרסום נכשל'; msg.className = 'msg is-err'; return; }
+    location.reload();
+  });
+</script>
+
+<style>
+  .hd { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .hd__h { font-size: 1.5rem; font-weight: 800; margin: 0; }
+  .hd__sub { color: var(--color-ink-3); margin: 0.35rem 0 0; max-width: 40rem; }
+  .hd__sub a { color: var(--color-royal); }
+  .hd__acts { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+
+  .card.new {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: 40rem;
+  }
+  .msg { font-size: 0.8rem; }
+  .msg.is-err { color: #c23; }
+
+  .list { list-style: none; margin: 0; padding: 0; max-width: 46rem; }
+  .row {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    margin-bottom: 0.75rem;
+    align-items: flex-start;
+  }
+  .row__order { display: flex; flex-direction: column; gap: 0.2rem; }
+  .ord {
+    width: 1.75rem; height: 1.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    cursor: pointer;
+  }
+  .ord:disabled { opacity: 0.3; cursor: default; }
+  .row__body { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+  .row__acts { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+  .chk { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; white-space: nowrap; }
+  .is-danger { color: #c23; border-color: #f3c8c8; }
+  .empty { color: var(--color-ink-3); }
+  .ad-hint.is-new { color: #b8860b; font-weight: 600; }
+
+  /* Same pill AdminLayout/EditorChrome use elsewhere -- :global here
+     because this page's own scoped styles otherwise cannot reach a class
+     also referenced from AdminLayout's slot content. */
+  :global(.ad-pill) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+  }
+  :global(.ad-pill--published) { background: #e7f6ec; color: #15803d; }
+  :global(.ad-pill--draft) { background: #f1f3f7; color: #55627a; }
+  :global(.ad-dot) { width: 0.4375rem; height: 0.4375rem; border-radius: 50%; background: currentColor; }
+</style>

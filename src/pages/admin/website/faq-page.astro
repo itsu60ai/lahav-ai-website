@@ -1,0 +1,82 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import EditorChrome from '../../../components/admin/EditorChrome.astro';
+import { FAQ_PAGE_DEFAULT, getDraftContent } from '../../../lib/cms/content.ts';
+import { can } from '../../../lib/cms/types.ts';
+
+const { content } = Astro.locals.stores!;
+const user = Astro.locals.user!;
+const faqPage = await getDraftContent(content, 'faq', FAQ_PAGE_DEFAULT);
+const meta = await content.meta('faq');
+---
+
+<AdminLayout title="שאלות נפוצות - כותרת">
+  <EditorChrome
+    title="שאלות נפוצות - כותרת"
+    previewHref="/faq/?preview=1"
+    canPublish={can(user, 'content:publish')}
+    hasUnpublishedChanges={meta?.hasUnpublishedChanges}
+    publishedAt={meta?.publishedAt}
+  >
+    <p class="ad-hint" style="margin-bottom:1rem">
+      זה עורך את הכותרת שמעל רשימת השאלות בלבד. את השאלות והתשובות עצמן
+      עורכים ב<a href="/admin/faq">ניהול שאלות נפוצות</a>.
+    </p>
+
+    <fieldset class="ad-fieldset">
+      <legend>הכותרת</legend>
+      <div class="ad-field-row">
+        <div class="ad-field">
+          <label class="ad-label" for="f-h1">שורה ראשונה</label>
+          <input class="ad-input" id="f-h1" data-f="headlineLine1" value={faqPage.headlineLine1} />
+        </div>
+        <div class="ad-field">
+          <label class="ad-label" for="f-h2">שורה שנייה</label>
+          <input class="ad-input" id="f-h2" data-f="headlineLine2" value={faqPage.headlineLine2} />
+        </div>
+      </div>
+      <div class="ad-field">
+        <label class="ad-label" for="f-lead">טקסט מתחת לכותרת</label>
+        <textarea class="ad-textarea" id="f-lead" data-f="lead" rows="2">{faqPage.lead}</textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="ad-fieldset">
+      <legend>קידום באתרי חיפוש (SEO)</legend>
+      <div class="ad-field">
+        <label class="ad-label" for="f-seo-title">כותרת הדף</label>
+        <input class="ad-input" id="f-seo-title" data-f="seo.title" value={faqPage.seo.title} />
+      </div>
+      <div class="ad-field">
+        <label class="ad-label" for="f-seo-desc">תיאור הדף</label>
+        <textarea class="ad-textarea" id="f-seo-desc" data-f="seo.description" rows="2">{faqPage.seo.description}</textarea>
+      </div>
+    </fieldset>
+  </EditorChrome>
+</AdminLayout>
+
+<script>
+  import { wireEditor } from '../../../lib/cms/admin-editor-client.ts';
+  const val = (sel: string) => (document.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel)?.value ?? '');
+  const csrf = document.body.dataset.csrf!;
+
+  wireEditor({
+    store: 'content',
+    id: 'faq',
+    csrf,
+    canPublish: !!document.querySelector('[data-publish]'),
+    collect: () => ({
+      headlineLine1: val('[data-f="headlineLine1"]'),
+      headlineLine2: val('[data-f="headlineLine2"]'),
+      lead: val('[data-f="lead"]'),
+      seo: {
+        title: val('[data-f="seo.title"]'),
+        description: val('[data-f="seo.description"]'),
+        ogTitle: val('[data-f="seo.title"]'),
+        ogDescription: val('[data-f="seo.description"]'),
+      },
+    }),
+  });
+</script>

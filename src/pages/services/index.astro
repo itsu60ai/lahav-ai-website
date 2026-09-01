@@ -22,17 +22,33 @@ import Flow from '../../components/Flow.astro';
 import ServiceStory from '../../components/ServiceStory.astro';
 import { turnstileSiteKey } from '../../lib/turnstile.ts';
 import { SERVICES } from '../../lib/site';
+import { SERVICES_INDEX_DEFAULT, getPublicContent, getDraftContent, getServiceNames } from '../../lib/cms/content.ts';
+import { resolvePreview } from '../../lib/cms/preview.ts';
 
 const SITE_KEY = turnstileSiteKey();
 
+const { content: contentStore, services: servicesStore } = Astro.locals.stores!;
+const preview = await resolvePreview(Astro, Astro.locals.stores!);
+const servicesIndex = preview
+  ? await getDraftContent(contentStore, 'services', SERVICES_INDEX_DEFAULT)
+  : await getPublicContent(contentStore, 'services', SERVICES_INDEX_DEFAULT);
+
+// One published (or, in preview, draft) name per service -- the cards in
+// <ServiceStory> and the "leads to" name below must agree with the
+// header, the footer and the service's own page (F-33/F-37).
+const serviceNames = await getServiceNames(servicesStore, preview).catch(() => ({} as Record<string, string>));
+
 // Each row: a problem stated in the owner's words, and where it leads.
+// The problem statements are bespoke page copy (not a CMS field, see
+// SERVICES_INDEX_DEFAULT's own comment); the service NAME shown is the
+// one published source.
 const chooser = [
-  { problem: 'אף אחד לא באמת יודע מה קורה עם הפניות', slug: 'crm', name: 'מערכות CRM חכמות' },
-  { problem: 'חצי מהיום הולך על עבודה שחוזרת על עצמה', slug: 'automations', name: 'אוטומציות עסקיות' },
-  { problem: 'נכנסים לאתר ולא משאירים פרטים', slug: 'web-development', name: 'פיתוח אתרים' },
-  { problem: 'משלמים על מערכות ועדיין עובדים באקסל', slug: 'app-development', name: 'פיתוח אפליקציות' },
-  { problem: 'יודעים שצריך לכתוב, ואף פעם אין זמן', slug: 'ai-content', name: 'יצירת תוכן באמצעות AI' },
-];
+  { problem: 'אף אחד לא באמת יודע מה קורה עם הפניות', slug: 'crm' },
+  { problem: 'חצי מהיום הולך על עבודה שחוזרת על עצמה', slug: 'automations' },
+  { problem: 'נכנסים לאתר ולא משאירים פרטים', slug: 'web-development' },
+  { problem: 'משלמים על מערכות ועדיין עובדים באקסל', slug: 'app-development' },
+  { problem: 'יודעים שצריך לכתוב, ואף פעם אין זמן', slug: 'ai-content' },
+].map((c) => ({ ...c, name: serviceNames[c.slug] || SERVICES.find((s) => s.slug === c.slug)!.name }));
 
 // The אפיון position. It has to be visible before a visitor picks.
 const discovery = [
@@ -43,8 +59,11 @@ const discovery = [
 ---
 
 <SiteLayout
-  title="השירותים שלנו | LAHAV AI"
-  description="חמישה תחומי שירות: מערכות CRM, אוטומציות עסקיות, פיתוח אתרים, פיתוח אפליקציות ויצירת תוכן באמצעות AI."
+  title={servicesIndex.seo.title}
+  description={servicesIndex.seo.description}
+  noindex={servicesIndex.seo.noindex}
+  image={servicesIndex.seo.ogImage || undefined}
+  preview={preview}
 >
   <!-- ========= opener ========= -->
   <section class="sv-hero band band--hero">
@@ -74,7 +93,7 @@ const discovery = [
   <!-- ========= the five, as one continuous story ========= -->
   <section class="stops band" aria-label="השירותים">
     <Curve tone="surface" shape="wave" />
-    <ServiceStory />
+    <ServiceStory names={serviceNames} />
   </section>
 
   <!-- ========= chooser ========= -->
@@ -144,6 +163,7 @@ const discovery = [
     heading="תכתבו לנו איפה זה נתקע."
     body="לא צריך להתכונן או לדעת מראש מה רוצים לבנות. מספיק לספר מה קורה היום."
     curve={false}
+    preview={preview}
   />
 </SiteLayout>
 

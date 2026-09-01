@@ -1,0 +1,149 @@
+---
+export const prerender = false;
+
+// Global settings. ADMIN only -- see require_('settings:sensitive') in
+// /api/admin/settings.ts and /api/admin/settings/publish.ts. Draft/
+// published, like every other public-facing content area (2026-09-01,
+// SOURCE_OF_TRUTH.md F-35): "Save" writes a draft only, visible via
+// `?preview=1` on any public page; "Publish" is the separate, explicit
+// action that changes what a visitor sees.
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { csrfFor } from '../../lib/cms/auth.ts';
+import { can } from '../../lib/cms/types.ts';
+import { SETTINGS_KEYS, SETTINGS_DEFAULT, SETTINGS_LABELS } from '../../lib/cms/content.ts';
+
+const user = Astro.locals.user!;
+if (!can(user, 'settings:sensitive')) return Astro.redirect('/admin', 302);
+
+const { settings } = Astro.locals.stores!;
+const draft = await settings.getDraft();
+const meta = await settings.meta();
+const csrf = await csrfFor(Astro.locals.sessionToken);
+---
+
+<AdminLayout title="הגדרות כלליות">
+  <div class="hd">
+    <div>
+      <h1 class="hd__h">הגדרות כלליות</h1>
+      <p class="hd__sub">
+        פרטים שחוזרים בכמה מקומות באתר: מספר וואטסאפ, קישור לתיאום שיחה,
+        וטקסט כפתור הפעולה הראשי. "שמירה" שומרת טיוטה בלבד -- האתר החי
+        ממשיך להראות את הערכים הקודמים עד "פרסום".
+        <a href="/?preview=1" target="_blank" rel="noopener">תצוגה מקדימה בעמוד הבית</a>
+      </p>
+    </div>
+    <div class="hd__acts">
+      {meta.publishedAt && (
+        <span class:list={['ad-pill', meta.hasUnpublishedChanges ? 'ad-pill--draft' : 'ad-pill--published']}>
+          <span class="ad-dot"></span>
+          {meta.hasUnpublishedChanges ? 'יש שינויים שלא פורסמו' : 'מפורסם ועדכני'}
+        </span>
+      )}
+    </div>
+  </div>
+
+  <div class="card">
+    {SETTINGS_KEYS.map((key) => (
+      <div class="ad-field">
+        <label class="ad-label" for={`f-${key}`}>{SETTINGS_LABELS[key]}</label>
+        {key === 'whatsapp_message' ? (
+          <textarea class="ad-textarea" id={`f-${key}`} data-key={key} rows="2">{draft[key] ?? SETTINGS_DEFAULT[key]}</textarea>
+        ) : (
+          <input
+            class="ad-input"
+            id={`f-${key}`}
+            data-key={key}
+            dir={key === 'whatsapp_number' || key === 'discovery_booking_url' ? 'ltr' : undefined}
+            value={draft[key] ?? SETTINGS_DEFAULT[key]}
+          />
+        )}
+      </div>
+    ))}
+
+    <div class="acts">
+      <button class="ad-btn ad-btn--ghost" type="button" data-save>שמירת טיוטה</button>
+      <button class="ad-btn ad-btn--primary" type="button" data-publish>פרסום</button>
+      <span class="msg" data-msg></span>
+    </div>
+  </div>
+</AdminLayout>
+
+<script define:vars={{ csrf }}>
+  const collect = () => {
+    const values = {};
+    document.querySelectorAll('[data-key]').forEach((el) => (values[el.dataset.key] = el.value));
+    return values;
+  };
+  const msg = document.querySelector('[data-msg]');
+
+  async function saveDraft() {
+    const res = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+      body: JSON.stringify({ values: collect() }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      msg.textContent = 'הטיוטה נשמרה';
+      msg.className = 'msg is-ok';
+    } else {
+      const fieldErrors = data.fields ? Object.values(data.fields).join(' | ') : '';
+      msg.textContent = fieldErrors || 'השמירה נכשלה';
+      msg.className = 'msg is-err';
+    }
+    return res.ok;
+  }
+
+  document.querySelector('[data-save]')?.addEventListener('click', () => saveDraft());
+
+  document.querySelector('[data-publish]')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    const saved = await saveDraft();
+    if (!saved) { btn.disabled = false; return; }
+    const res = await fetch('/api/admin/settings/publish', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+    });
+    btn.disabled = false;
+    if (res.ok) {
+      location.reload();
+    } else {
+      msg.textContent = 'הפרסום נכשל';
+      msg.className = 'msg is-err';
+    }
+  });
+</script>
+
+<style>
+  .hd { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .hd__h { font-size: 1.5rem; font-weight: 800; margin: 0; }
+  .hd__sub { color: var(--color-ink-3); margin: 0.35rem 0 0; max-width: 40rem; }
+  .hd__sub a { color: var(--color-royal); }
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    max-width: 34rem;
+  }
+  .ad-field { margin-bottom: 1.1rem; }
+  .acts { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem; }
+  .msg { font-size: 0.85rem; }
+  .msg.is-ok { color: #1a8a4a; }
+  .msg.is-err { color: #c23; }
+
+  /* see admin/faq.astro's comment on why this is :global here too */
+  :global(.ad-pill) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+  }
+  :global(.ad-pill--published) { background: #e7f6ec; color: #15803d; }
+  :global(.ad-pill--draft) { background: #f1f3f7; color: #55627a; }
+  :global(.ad-dot) { width: 0.4375rem; height: 0.4375rem; border-radius: 50%; background: currentColor; }
+</style>

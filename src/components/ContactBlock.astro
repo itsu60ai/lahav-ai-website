@@ -16,6 +16,7 @@
 import { WHATSAPP_HREF, SERVICES, CTA_PRIMARY } from '../lib/site';
 import WhatsApp from './icons/WhatsApp.astro';
 import Curve from './Curve.astro';
+import { buildWhatsappHref, getServiceNames } from '../lib/cms/content.ts';
 
 export interface Props {
   /** public Turnstile site key, from the page's own env read */
@@ -27,6 +28,8 @@ export interface Props {
   /** the curve that introduces the band, false on a page that follows a blue band */
   curve?: boolean;
   id?: string;
+  /** see SiteLayout.astro's Props doc */
+  preview?: boolean;
 }
 
 const {
@@ -36,7 +39,25 @@ const {
   service = '',
   curve = true,
   id = 'contact-block',
+  preview = false,
 } = Astro.props;
+
+// Same settings-backed WhatsApp link as SiteFooter/SiteDock. This
+// component renders on every page that closes with a contact band
+// (Home, About, FAQ, Services index, every service page), so it was the
+// one real gap when a Settings change to the WhatsApp number did not
+// reach every WhatsApp link on the site -- found by testing the lifecycle
+// end to end, not by inspection. Draft in preview, published otherwise.
+const contactBlockSettings: Record<string, string> = Astro.locals.stores
+  ? await (preview ? Astro.locals.stores.settings.getDraft() : Astro.locals.stores.settings.getPublished()).catch(() => ({}))
+  : {};
+const waHref = Object.keys(contactBlockSettings).length ? buildWhatsappHref(contactBlockSettings) : WHATSAPP_HREF;
+
+// One published name per service in the dropdown, agreeing with the
+// header/footer/index everywhere else this is shown (F-33/F-37).
+const serviceNames: Record<string, string> = Astro.locals.stores
+  ? await getServiceNames(Astro.locals.stores.services, preview).catch(() => ({}))
+  : {};
 ---
 
 <section class="cb band band--blue" id={id}>
@@ -51,7 +72,7 @@ const {
       <p class="cb__body" data-reveal style="--mo-delay:240ms">{body}</p>
 
       <div class="cb__routes" data-reveal style="--mo-delay:360ms">
-        <a class="cb__route" href={WHATSAPP_HREF} target="_blank" rel="noopener noreferrer">
+        <a class="cb__route" href={waHref} target="_blank" rel="noopener noreferrer">
           <WhatsApp />
           <span>מעדיפים וואטסאפ? זה בסדר גמור.</span>
         </a>
@@ -84,7 +105,7 @@ const {
           <select class="input" id={`${id}-service`} name="service">
             <option value="">עוד לא בטוח</option>
             {SERVICES.map((s) => (
-              <option value={s.slug} selected={s.slug === service}>{s.name}</option>
+              <option value={s.slug} selected={s.slug === service}>{serviceNames[s.slug] || s.name}</option>
             ))}
           </select>
         </div>
