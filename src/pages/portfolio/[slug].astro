@@ -6,12 +6,15 @@
 // authenticated ?preview=1 (see resolvePreview.ts), same rule the rest of
 // the site's preview pages follow.
 //
-// Structure inspired by a reference agency's own case-study page (image,
-// name, a short challenge/approach/result story, a link to the next
-// project) -- reworked in LAHAV's own visual system: a colour-band hero
-// with the same display type as a service page, the image framed as an
-// inset visual rather than a full-bleed photo, alternating text blocks
-// like a service page's symptoms/build rhythm.
+// Structure inspired by a reference agency's own case-study page: a
+// full-bleed image dominates the opening view with the name overlaid
+// directly on it, then the story reads as flowing narrative paragraphs,
+// not boxed feature cards -- reworked with LAHAV's own type/colour
+// system, not the reference's own CSS or copy. The first pass here used
+// a small inset image beside a text column and three bordered mini-cards
+// for the story; client feedback ("looks bad", with the reference's own
+// case-study page attached) called for the bolder, more editorial
+// treatment this version uses instead.
 export const prerender = false;
 
 import SiteLayout from '../../layouts/SiteLayout.astro';
@@ -61,37 +64,26 @@ if (!preview) {
   noindex={item.seo.noindex}
   image={item.seo.ogImage || undefined}
   preview={preview}
+  headerSolid
 >
-  <section class="pd-hero band band--hero">
-    <div class="u-container u-container--wide pd-hero__grid">
-      <div>
-        <p class="t-eyebrow" data-reveal>{item.industry}</p>
-        <h1 class="pd-hero__h1 t-display-1" data-reveal style="--mo-delay:80ms">{item.name}</h1>
-        {item.service && <p class="pd-hero__service" data-reveal style="--mo-delay:180ms">{item.service}</p>}
-      </div>
-      <div class="pd-hero__frame" data-reveal style="--mo-delay:140ms">
-        {item.heroImage
-          ? <img src={`/api/media/${item.heroImage}`} alt={item.name} />
-          : <span class="pd-hero__placeholder" aria-hidden="true" />}
-      </div>
+  <section class="pd-hero band band--navy">
+    {item.heroImage
+      ? <img class="pd-hero__img" src={`/api/media/${item.heroImage}`} alt="" />
+      : <span class="pd-hero__img pd-hero__placeholder" aria-hidden="true" />}
+    <span class="pd-hero__scrim" aria-hidden="true"></span>
+    <div class="u-container u-container--wide pd-hero__in">
+      <p class="t-eyebrow" data-reveal>{item.industry}</p>
+      <h1 class="pd-hero__h1" data-reveal style="--mo-delay:80ms">{item.name}</h1>
+      {item.service && <p class="pd-hero__service" data-reveal style="--mo-delay:180ms">{item.service}</p>}
     </div>
   </section>
 
   <section class="pd-story u-section band">
     <Curve tone="surface" shape="wave" />
-    <div class="u-container u-container--wide pd-story__grid">
-      <div class="pd-block" data-reveal>
-        <p class="t-eyebrow pd-block__k">האתגר</p>
-        <p class="pd-block__t">{item.challenge}</p>
-      </div>
-      <div class="pd-block" data-reveal style="--mo-delay:90ms">
-        <p class="t-eyebrow pd-block__k">מה בנינו</p>
-        <p class="pd-block__t">{item.approach}</p>
-      </div>
-      <div class="pd-block" data-reveal style="--mo-delay:180ms">
-        <p class="t-eyebrow pd-block__k">התוצאה</p>
-        <p class="pd-block__t">{item.result}</p>
-      </div>
+    <div class="u-container pd-story__col">
+      <p class="pd-story__p" data-reveal>{item.challenge}</p>
+      <p class="pd-story__p" data-reveal style="--mo-delay:90ms">{item.approach}</p>
+      <p class="pd-story__p pd-story__p--result" data-reveal style="--mo-delay:180ms">{item.result}</p>
     </div>
   </section>
 
@@ -111,47 +103,84 @@ if (!preview) {
 </SiteLayout>
 
 <style>
+  /* Full-bleed image hero, name overlaid directly on it -- the bolder
+     treatment the reference case-study page uses, reworked with LAHAV's
+     own dark-band convention (band--navy) instead of one-off colours, so
+     the eyebrow/heading/link colour swap for a dark background comes
+     from the same rule every other navy band on the site already uses. */
   .pd-hero {
-    padding-top: clamp(7rem, 12svh, 9.5rem);
-    padding-bottom: clamp(2.5rem, 5vw, 4.5rem);
-  }
-  .pd-hero__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
-    gap: clamp(2rem, 5vw, 4rem);
+    position: relative;
+    min-height: clamp(26rem, 78svh, 44rem);
+    display: flex;
     align-items: center;
-  }
-  .pd-hero__h1 { margin-block: 0.75rem 0.5rem; }
-  .pd-hero__service {
-    font-size: var(--text-lead);
-    color: var(--color-ink-2);
-    max-width: 40ch;
-  }
-  .pd-hero__frame {
-    aspect-ratio: 4 / 3;
-    border-radius: var(--radius-xl);
     overflow: hidden;
-    box-shadow: 0 30px 60px rgba(11, 21, 48, 0.14);
+    padding-top: clamp(5.5rem, 10svh, 7rem); /* clears the solid header */
   }
-  .pd-hero__frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pd-hero__placeholder {
-    display: block;
+  .pd-hero__img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--color-surface-2), var(--color-line));
+    object-fit: cover;
+    display: block;
+  }
+  .pd-hero__placeholder {
+    background: linear-gradient(135deg, var(--color-navy), var(--color-royal));
+  }
+  /* Darkest at the top (header legibility) and bottom (footer-of-hero
+     legibility), lighter through the middle so the photo still reads. */
+  .pd-hero__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(9, 15, 33, 0.72) 0%,
+      rgba(9, 15, 33, 0.38) 32%,
+      rgba(9, 15, 33, 0.38) 60%,
+      rgba(9, 15, 33, 0.75) 100%
+    );
+  }
+  .pd-hero__in {
+    position: relative;
+    z-index: 1;
+    padding-block: clamp(2rem, 5vw, 3.5rem);
+  }
+  .pd-hero__h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: normal;
+    margin-block: 0.6rem 0.5rem;
+    color: #fff;
+    max-width: 18ch;
+  }
+  .pd-hero__service {
+    font-size: var(--text-lead);
+    color: rgba(255, 255, 255, 0.82);
+    max-width: 40ch;
   }
 
+  /* Story: flowing narrative paragraphs in one centred column, not
+     boxed/bordered feature cards. */
   .pd-story { position: relative; overflow: visible; }
-  .pd-story__grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(1.5rem, 4vw, 3rem);
+  .pd-story__col {
+    max-width: 42rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.5rem, 3vw, 2.25rem);
   }
-  .pd-block__k { color: var(--color-electric); margin-bottom: 0.5rem; }
-  .pd-block__t {
-    font-size: var(--text-body-lg);
-    line-height: 1.65;
+  .pd-story__p {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: normal;
     color: var(--color-ink-2);
+  }
+  .pd-story__p--result {
+    color: var(--color-ink);
+    font-weight: 800;
   }
 
   .pd-next {
@@ -175,9 +204,7 @@ if (!preview) {
   .pd-next__a:hover { color: var(--color-royal); }
   .pd-next__a .arrow-inline { color: var(--color-electric); }
 
-  @media (max-width: 900px) {
-    .pd-hero__grid { grid-template-columns: 1fr; }
-    .pd-hero__frame { order: -1; }
-    .pd-story__grid { grid-template-columns: 1fr; }
+  @media (max-width: 560px) {
+    .pd-hero { min-height: 22rem; }
   }
 </style>
