@@ -7,7 +7,12 @@
 import type {
   AiSettings,
   AiStores,
+  AllowlistTopic,
+  ArmAutoPublishInput,
   AssetStore,
+  AutoPublication,
+  AutoPublicationStore,
+  EngineSettingsPatch,
   Feedback,
   FeedbackStore,
   Generation,
@@ -21,6 +26,8 @@ import type {
   Rule,
   RuleStore,
   SettingsStore,
+  TopicAllowlistStore,
+  VerificationState,
   VisualAsset,
 } from './types.ts';
 
@@ -51,6 +58,8 @@ function toOpportunity(r: Row): Opportunity {
     serviceSlug: r.service_slug,
     verification: r.verification,
     verificationNote: r.verification_note,
+    verifiedBy: r.verified_by ?? '',
+    verifiedAt: r.verified_at ?? null,
     freshnessScore: r.freshness_score,
     priority: r.priority,
     status: r.status,
@@ -113,6 +122,36 @@ class D1OpportunityStore implements OpportunityStore {
     await this.db
       .prepare('UPDATE ai_opportunities SET status = ?1, updated_at = ?2 WHERE id = ?3')
       .bind(status, now(), id)
+      .run();
+    const r = await this.get(id);
+    if (!r) throw new Error('opportunity not found');
+    return r;
+  }
+
+  /**
+   * The human verification write (Stage C, docs/AI_ENGINE.md 3.4).
+   *
+   * `verifiedBy` is stamped from the signed-in admin by the calling route,
+   * never from the request body, so "who verified this" cannot be forged
+   * by whoever submits the form.
+   */
+  async setVerification(
+    id: string,
+    v: { verification: VerificationState; note: string; verifiedBy: string }
+  ): Promise<Opportunity> {
+    const t = now();
+    // Clearing a verification (back to unverified) must also clear who
+    // verified it, or the audit line would keep claiming a person stood
+    // behind a claim they have since withdrawn.
+    const cleared = v.verification === 'unverified';
+    await this.db
+      .prepare(
+        `UPDATE ai_opportunities
+         SET verification = ?1, verification_note = ?2, verified_by = ?3,
+             verified_at = ?4, updated_at = ?5
+         WHERE id = ?6`
+      )
+      .bind(v.verification, v.note, cleared ? '' : v.verifiedBy, cleared ? null : t, t, id)
       .run();
     const r = await this.get(id);
     if (!r) throw new Error('opportunity not found');
@@ -313,16 +352,56 @@ class D1RuleStore implements RuleStore {
     return { id, ruleText, sourceCount: 1, active: true, createdAt: t, updatedAt: t };
   }
 
+  async listAll(): Promise<Rule[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM ai_rules ORDER BY active DESC, source_count DESC, updated_at DESC')
+      .all();
+    return (results as Row[]).map(toRule);
+  }
+
+  async get(id: string): Promise<Rule | null> {
+    const r = await this.db.prepare('SELECT * FROM ai_rules WHERE id = ?1').bind(id).first<Row>();
+    return r ? toRule(r) : null;
+  }
+
   async setActive(id: string, active: boolean): Promise<void> {
     await this.db
       .prepare('UPDATE ai_rules SET active = ?1, updated_at = ?2 WHERE id = ?3')
       .bind(active ? 1 : 0, now(), id)
       .run();
   }
+
+  async updateText(id: string, ruleText: string): Promise<void> {
+    await this.db
+      .prepare('UPDATE ai_rules SET rule_text = ?1, updated_at = ?2 WHERE id = ?3')
+      .bind(ruleText, now(), id)
+      .run();
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.db.prepare('DELETE FROM ai_rules WHERE id = ?1').bind(id).run();
+  }
 }
 
-// ───────────────────────────────────────────────── settings (read only)
+// ───────────────────────────────────────────────── settings
 
+/**
+ * The settings store gained writers in Stage D. The auto publish safety
+ * property from docs/AI_ENGINE.md section 12 layer 2 is preserved, but it
+ * is now enforced by SHAPE rather than by absence:
+ *
+ *   arm() is the only method that can write auto_publish_enabled = 1. It
+ *   demands a named human (`armedBy`) and an expiry date, both required,
+ *   and it is imported by exactly ONE file in the codebase:
+ *   src/pages/api/admin/ai/auto-publish.ts, which sits behind the admin
+ *   session, CSRF, the `settings:manage` permission and a typed Hebrew
+ *   confirmation phrase.
+ *
+ *   Nothing under src/lib/ai/* calls arm(). The unattended scheduled job
+ *   in autopublish.ts reads get() and calls disarm()/recordAutoPublishUse()
+ *   only, so the machine can switch itself OFF and can never switch itself
+ *   ON. Grep for `.arm(` to confirm: one call site, in an admin route.
+ */
 class D1SettingsStore implements SettingsStore {
   constructor(private db: D1) {}
 
@@ -339,6 +418,11 @@ class D1SettingsStore implements SettingsStore {
         autoPublishWeeklyCap: 0,
         autoPublishWeekStart: null,
         autoPublishCountThisWeek: 0,
+        autoPublishArmedBy: '',
+        autoPublishArmedAt: null,
+        autoPublishNotifyEmail: '',
+        autoPublishKilledAt: null,
+        autoPublishKilledBy: '',
         updatedAt: now(),
         updatedBy: '',
       };
@@ -354,9 +438,231 @@ class D1SettingsStore implements SettingsStore {
       autoPublishWeeklyCap: r.auto_publish_weekly_cap,
       autoPublishWeekStart: r.auto_publish_week_start ?? null,
       autoPublishCountThisWeek: r.auto_publish_count_this_week,
+      autoPublishArmedBy: r.auto_publish_armed_by ?? '',
+      autoPublishArmedAt: r.auto_publish_armed_at ?? null,
+      autoPublishNotifyEmail: r.auto_publish_notify_email ?? '',
+      autoPublishKilledAt: r.auto_publish_killed_at ?? null,
+      autoPublishKilledBy: r.auto_publish_killed_by ?? '',
       updatedAt: r.updated_at,
       updatedBy: r.updated_by,
     };
+  }
+
+  /**
+   * Engine modes only. Note what is NOT in EngineSettingsPatch:
+   * auto_publish_enabled and auto_publish_expires_at. Even the settings
+   * form cannot reach them; arming has its own method and its own route.
+   */
+  async update(patch: EngineSettingsPatch, updatedBy: string): Promise<AiSettings> {
+    const map: [keyof EngineSettingsPatch, string, (v: any) => any][] = [
+      ['providerMode', 'provider_mode', (v) => v],
+      ['recommendationMode', 'recommendation_mode', (v) => v],
+      ['disclosureEnabled', 'disclosure_enabled', (v) => (v ? 1 : 0)],
+      ['autoPublishWeeklyCap', 'auto_publish_weekly_cap', (v) => Math.max(0, Math.floor(v))],
+      ['autoPublishNotifyEmail', 'auto_publish_notify_email', (v) => String(v)],
+    ];
+    const sets: string[] = [];
+    const vals: any[] = [];
+    let i = 1;
+    for (const [key, col, conv] of map) {
+      if (!(key in patch) || patch[key] === undefined) continue;
+      sets.push(`${col} = ?${i++}`);
+      vals.push(conv(patch[key]));
+    }
+    const t = now();
+    sets.push(`updated_at = ?${i++}`);
+    vals.push(t);
+    sets.push(`updated_by = ?${i++}`);
+    vals.push(updatedBy);
+    await this.db.prepare(`UPDATE ai_settings SET ${sets.join(', ')} WHERE id = 1`).bind(...vals).run();
+    return this.get();
+  }
+
+  async arm(input: ArmAutoPublishInput): Promise<AiSettings> {
+    // Defence in depth. The route already validates all three, but a
+    // store method that can turn auto publish on must never accept a
+    // missing operator, a missing expiry, or an unlimited cap, no matter
+    // who calls it or from where.
+    if (!input.armedBy) throw new Error('arm() requires the name of the admin who armed it');
+    if (!input.expiresAt) throw new Error('arm() requires an expiry date');
+    const expiry = new Date(input.expiresAt).getTime();
+    if (!Number.isFinite(expiry) || expiry <= Date.now()) {
+      throw new Error('arm() requires an expiry date in the future');
+    }
+    const cap = Math.floor(input.weeklyCap);
+    if (!Number.isFinite(cap) || cap < 1) throw new Error('arm() requires a weekly cap of at least 1');
+
+    const t = now();
+    await this.db
+      .prepare(
+        `UPDATE ai_settings
+         SET auto_publish_enabled = 1,
+             auto_publish_expires_at = ?1,
+             auto_publish_weekly_cap = ?2,
+             auto_publish_week_start = ?3,
+             auto_publish_count_this_week = 0,
+             auto_publish_armed_by = ?4,
+             auto_publish_armed_at = ?5,
+             auto_publish_killed_at = NULL,
+             auto_publish_killed_by = '',
+             updated_at = ?5,
+             updated_by = ?4
+         WHERE id = 1`
+      )
+      .bind(input.expiresAt, cap, weekStartOf(new Date()), input.armedBy, t)
+      .run();
+    return this.get();
+  }
+
+  async disarm(by: string, killed: boolean): Promise<AiSettings> {
+    const t = now();
+    await this.db
+      .prepare(
+        `UPDATE ai_settings
+         SET auto_publish_enabled = 0,
+             auto_publish_expires_at = NULL,
+             auto_publish_killed_at = ?1,
+             auto_publish_killed_by = ?2,
+             updated_at = ?3,
+             updated_by = ?4
+         WHERE id = 1`
+      )
+      .bind(killed ? t : null, killed ? by : '', t, by)
+      .run();
+    return this.get();
+  }
+
+  async recordAutoPublishUse(weekStart: string, count: number): Promise<void> {
+    await this.db
+      .prepare(
+        'UPDATE ai_settings SET auto_publish_week_start = ?1, auto_publish_count_this_week = ?2, updated_at = ?3 WHERE id = 1'
+      )
+      .bind(weekStart, count, now())
+      .run();
+  }
+}
+
+/** ISO date (yyyy-mm-dd) of the Sunday that starts this date's week. */
+export function weekStartOf(d: Date): string {
+  const copy = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  copy.setUTCDate(copy.getUTCDate() - copy.getUTCDay());
+  return copy.toISOString().slice(0, 10);
+}
+
+// ───────────────────────────────────────────────── auto publish allow list
+
+class D1TopicAllowlistStore implements TopicAllowlistStore {
+  constructor(private db: D1) {}
+
+  async list(): Promise<AllowlistTopic[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM ai_topic_allowlist ORDER BY created_at DESC')
+      .all();
+    return (results as Row[]).map((r) => ({
+      id: r.id,
+      topic: r.topic,
+      createdAt: r.created_at,
+      createdBy: r.created_by ?? '',
+    }));
+  }
+
+  async add(topic: string, createdBy: string): Promise<void> {
+    const clean = topic.trim().toLowerCase();
+    if (!clean) return;
+    await this.db
+      .prepare(
+        'INSERT OR IGNORE INTO ai_topic_allowlist (id, topic, created_at, created_by) VALUES (?1,?2,?3,?4)'
+      )
+      .bind(crypto.randomUUID(), clean, now(), createdBy)
+      .run();
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.db.prepare('DELETE FROM ai_topic_allowlist WHERE id = ?1').bind(id).run();
+  }
+}
+
+// ───────────────────────────────────────────────── auto publish audit trail
+
+function toAutoPublication(r: Row): AutoPublication {
+  return {
+    id: r.id,
+    articleId: r.article_id,
+    generationId: r.generation_id,
+    articleTitle: r.article_title ?? '',
+    articleSlug: r.article_slug ?? '',
+    publishedAt: r.published_at,
+    armedBy: r.armed_by ?? '',
+    unpublishToken: r.unpublish_token,
+    unpublishedAt: r.unpublished_at ?? null,
+    unpublishedBy: r.unpublished_by ?? '',
+    notified: !!r.notified,
+    notifyError: r.notify_error ?? '',
+  };
+}
+
+class D1AutoPublicationStore implements AutoPublicationStore {
+  constructor(private db: D1) {}
+
+  async create(
+    p: Omit<AutoPublication, 'id' | 'unpublishedAt' | 'unpublishedBy' | 'notified' | 'notifyError'>
+  ): Promise<AutoPublication> {
+    const id = crypto.randomUUID();
+    const t = now();
+    await this.db
+      .prepare(
+        `INSERT INTO ai_auto_publications
+         (id, article_id, generation_id, article_title, article_slug, published_at,
+          armed_by, unpublish_token, created_at)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)`
+      )
+      .bind(
+        id, p.articleId, p.generationId, p.articleTitle, p.articleSlug,
+        p.publishedAt, p.armedBy, p.unpublishToken, t
+      )
+      .run();
+    return { ...p, id, unpublishedAt: null, unpublishedBy: '', notified: false, notifyError: '' };
+  }
+
+  async listRecent(limit: number): Promise<AutoPublication[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM ai_auto_publications ORDER BY published_at DESC LIMIT ?1')
+      .bind(limit)
+      .all();
+    return (results as Row[]).map(toAutoPublication);
+  }
+
+  async listSince(isoDate: string): Promise<AutoPublication[]> {
+    const { results } = await this.db
+      .prepare(
+        'SELECT * FROM ai_auto_publications WHERE published_at >= ?1 AND unpublished_at IS NULL ORDER BY published_at DESC'
+      )
+      .bind(isoDate)
+      .all();
+    return (results as Row[]).map(toAutoPublication);
+  }
+
+  async byToken(token: string): Promise<AutoPublication | null> {
+    if (!token) return null;
+    const r = await this.db
+      .prepare('SELECT * FROM ai_auto_publications WHERE unpublish_token = ?1')
+      .bind(token)
+      .first<Row>();
+    return r ? toAutoPublication(r) : null;
+  }
+
+  async markUnpublished(id: string, by: string): Promise<void> {
+    await this.db
+      .prepare('UPDATE ai_auto_publications SET unpublished_at = ?1, unpublished_by = ?2 WHERE id = ?3')
+      .bind(now(), by, id)
+      .run();
+  }
+
+  async markNotified(id: string, error: string): Promise<void> {
+    await this.db
+      .prepare('UPDATE ai_auto_publications SET notified = ?1, notify_error = ?2 WHERE id = ?3')
+      .bind(error ? 0 : 1, error, id)
+      .run();
   }
 }
 
@@ -399,6 +705,14 @@ class D1AssetStore implements AssetStore {
     const { results } = await this.db
       .prepare('SELECT * FROM ai_assets WHERE generation_id = ?1 ORDER BY created_at')
       .bind(generationId)
+      .all();
+    return (results as Row[]).map(toAsset);
+  }
+
+  async listByArticle(articleId: string): Promise<VisualAsset[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM ai_assets WHERE article_id = ?1 ORDER BY created_at')
+      .bind(articleId)
       .all();
     return (results as Row[]).map(toAsset);
   }
@@ -459,5 +773,7 @@ export function createAiStores(db: D1): AiStores {
     settings: new D1SettingsStore(db),
     assets: new D1AssetStore(db),
     recommendations: new D1RecommendationStore(db),
+    allowlist: new D1TopicAllowlistStore(db),
+    autoPublications: new D1AutoPublicationStore(db),
   };
 }

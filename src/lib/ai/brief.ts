@@ -2,9 +2,29 @@
 // or from fields typed by hand. Shared by the mock-generate route and the
 // manual (Stage B) prepare route, so both interpret the same form shape
 // identically — one definition of "what a brief is," not two that could drift.
-import type { AiStores, Brief, ContentKind } from './types.ts';
+import type { AiStores, Brief, ContentKind, Opportunity } from './types.ts';
 
 const VALID_KINDS: ContentKind[] = ['hack', 'release', 'workflow', 'comparison', 'evergreen', 'trend'];
+
+/**
+ * The one definition of "what a brief built from a radar item is".
+ *
+ * Shared by the admin's own buttons (through buildBriefFromForm below) and
+ * by the unattended scheduled run (autopublish.ts), so the article the
+ * machine writes at 3am is briefed identically to the one a person asks
+ * for at noon. There is no separate, looser brief for the automated path.
+ */
+export function buildBriefFromOpportunity(opp: Opportunity): Brief {
+  return {
+    topic: opp.headline,
+    goal: opp.whyItMatters,
+    audience: 'בעלי עסקים קטנים בישראל',
+    contentKind: opp.contentKind,
+    serviceSlug: opp.serviceSlug,
+    notes: opp.suggestedAngle,
+    opportunityId: opp.id,
+  };
+}
 
 /** Returns null when the form has neither a valid opportunity nor a topic. */
 export async function buildBriefFromForm(f: FormData, aiStores: AiStores): Promise<Brief | null> {
@@ -13,15 +33,7 @@ export async function buildBriefFromForm(f: FormData, aiStores: AiStores): Promi
   if (opportunityId) {
     const opp = await aiStores.opportunities.get(opportunityId);
     if (!opp) return null;
-    return {
-      topic: opp.headline,
-      goal: opp.whyItMatters,
-      audience: 'בעלי עסקים קטנים בישראל',
-      contentKind: opp.contentKind,
-      serviceSlug: opp.serviceSlug,
-      notes: opp.suggestedAngle,
-      opportunityId: opp.id,
-    };
+    return buildBriefFromOpportunity(opp);
   }
 
   const topic = String(f.get('topic') ?? '').trim();

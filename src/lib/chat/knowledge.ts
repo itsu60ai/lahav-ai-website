@@ -91,3 +91,128 @@ export const SUGGESTIONS = [
   'איך מתחילים?',
   'רוצה לקבוע שיחה קצרה',
 ] as const;
+
+// ─────────────────────────────────────────── suggested follow-ups
+//
+// After every answer the panel offers two or three next questions. They
+// are chosen by a keyword table, NOT by a second model call: a follow-up
+// chip must cost nothing and must never be able to invent a claim, so
+// every string below is written here by hand.
+//
+// Matching is on the visitor's own words first, then on the reply.
+
+interface FollowUpRule {
+  /** any one of these substrings in the text selects this rule */
+  match: readonly string[];
+  questions: readonly string[];
+}
+
+const FOLLOW_UP_RULES: readonly FollowUpRule[] = [
+  {
+    match: ['מחיר', 'עולה', 'עלות', 'תקציב', 'כמה כסף', 'תמחור'],
+    questions: ['מה קורה בשיחת ההיכרות?', 'איך בונים הצעה לעסק שלי?', 'רוצה שתחזרו אליי'],
+  },
+  {
+    match: ['כמה זמן', 'לוח זמנים', 'מתי יהיה', 'תוך כמה'],
+    questions: ['איך נראה תהליך העבודה?', 'מה מוכן ראשון?', 'רוצה שתחזרו אליי'],
+  },
+  {
+    match: ['crm', 'לקוחות', 'לידים', 'פניות', 'ניהול לקוחות'],
+    questions: ['מה זה CRM בעצם?', 'איך זה מתחבר לוואטסאפ ולאימייל?', 'איזה שירות מתאים לי?'],
+  },
+  {
+    match: ['אוטומצי', 'תהליך ידני', 'אקסל', 'חוזר על עצמו', 'לחסוך זמן'],
+    questions: ['מה אפשר לאוטמט אצלי?', 'איך מתחילים אוטומציה?', 'איזה שירות מתאים לי?'],
+  },
+  {
+    match: ['אתר', 'לנדינג', 'דף נחיתה', 'עיצוב אתר'],
+    questions: ['מה כולל אתר כזה?', 'איך אתר מביא פניות?', 'איך מתחילים?'],
+  },
+  {
+    match: ['אפליקצי', 'מובייל', 'אנדרואיד', 'אייפון'],
+    questions: ['מתי בכלל צריך אפליקציה?', 'איך נראה תהליך העבודה?', 'איזה שירות מתאים לי?'],
+  },
+  {
+    match: ['תוכן', 'פוסט', 'סושיאל', 'מאמר', 'ניוזלטר'],
+    questions: ['איך יוצרים תוכן עם AI?', 'זה מתאים לעסק שלי?', 'איך מתחילים?'],
+  },
+  {
+    match: ['תהליך', 'איך עובדים', 'אפיון', 'שלבים'],
+    questions: ['מה קורה בשיחת ההיכרות?', 'מה צריך להכין מראש?', 'איזה שירות מתאים לי?'],
+  },
+  {
+    match: ['שיחה', 'פגישה', 'לתאם', 'לקבוע', 'ליצור קשר'],
+    questions: ['מה קורה בשיחת ההיכרות?', 'רוצה שתחזרו אליי', 'איזה שירות מתאים לי?'],
+  },
+];
+
+/** Shown when nothing matches. Safe on any page and after any answer. */
+const DEFAULT_FOLLOW_UPS = [
+  'איזה שירות מתאים לי?',
+  'איך מתחילים?',
+  'רוצה שתחזרו אליי',
+] as const;
+
+/**
+ * Two or three next questions, chosen deterministically from the last
+ * exchange. No model call, no network, no cost.
+ */
+export function followUps(userText: string, replyText: string): string[] {
+  const primary = String(userText ?? '').toLowerCase();
+  const secondary = String(replyText ?? '').toLowerCase();
+  const picked: string[] = [];
+
+  const collect = (haystack: string) => {
+    for (const rule of FOLLOW_UP_RULES) {
+      if (picked.length >= 3) return;
+      if (!rule.match.some((m) => haystack.includes(m))) continue;
+      for (const q of rule.questions) {
+        if (picked.length >= 3) break;
+        if (!picked.includes(q)) picked.push(q);
+      }
+    }
+  };
+
+  collect(primary);
+  if (picked.length < 2) collect(secondary);
+  for (const q of DEFAULT_FOLLOW_UPS) {
+    if (picked.length >= 3) break;
+    if (!picked.includes(q)) picked.push(q);
+  }
+  return picked.slice(0, 3);
+}
+
+// ─────────────────────────────────────────── "call me back" intent
+//
+// Deliberately dumb and deterministic. A model call to classify intent
+// would cost money on every message and could be talked into anything;
+// a fixed Hebrew keyword list cannot. A false negative just means the
+// visitor uses the button, which is always on screen anyway.
+const LEAD_INTENT_WORDS = [
+  'תחזרו אליי',
+  'תחזרו אלי',
+  'שתחזרו',
+  'נחזור אליכם',
+  'לחזור אליי',
+  'לחזור אלי',
+  'תתקשרו',
+  'להתקשר',
+  'רוצה שיחה',
+  'לקבוע שיחה',
+  'לתאם שיחה',
+  'לקבוע פגישה',
+  'לתאם פגישה',
+  'שיחת היכרות',
+  'ליצור קשר',
+  'להשאיר פרטים',
+  'הצעת מחיר',
+  'מעוניין להתחיל',
+  'מעוניינת להתחיל',
+  'רוצה להתחיל',
+] as const;
+
+/** true when the exchange reads like the visitor wants to be contacted */
+export function wantsCallback(userText: string, replyText: string): boolean {
+  const hay = `${String(userText ?? '')} ${String(replyText ?? '')}`.toLowerCase();
+  return LEAD_INTENT_WORDS.some((w) => hay.includes(w));
+}

@@ -101,9 +101,21 @@ export interface CleanFields {
   message: string;
 }
 
+export interface ValidateOptions {
+  /**
+   * Allow an empty email. OFF by default, so the approved contact form
+   * (F-10: name, phone, email, service, message) keeps requiring it
+   * exactly as before. The chat panel opts in, because asking for three
+   * fields inside a bubble loses people, and storing a placeholder
+   * address instead would put a fake email in the leads table.
+   */
+  emailOptional?: boolean;
+}
+
 export function validateAndClean(
   input: Record<string, unknown>,
-  knownServiceSlugs: readonly string[]
+  knownServiceSlugs: readonly string[],
+  options: ValidateOptions = {}
 ): { ok: true; fields: CleanFields } | { ok: false; error: string } {
   const name = clean(input.name, MAX.name);
   const phone = clean(input.phone, MAX.phone);
@@ -114,7 +126,12 @@ export function validateAndClean(
 
   if (!name) return { ok: false, error: 'נא למלא שם' };
   if (!phone || !PHONE_RE.test(phone)) return { ok: false, error: 'מספר הטלפון לא תקין' };
-  if (!email || !EMAIL_RE.test(email)) return { ok: false, error: 'כתובת האימייל לא תקינה' };
+  if (options.emailOptional) {
+    // Given but malformed is still an error; simply absent is fine.
+    if (email && !EMAIL_RE.test(email)) return { ok: false, error: 'כתובת האימייל לא תקינה' };
+  } else if (!email || !EMAIL_RE.test(email)) {
+    return { ok: false, error: 'כתובת האימייל לא תקינה' };
+  }
   if (!message || message.length < 3) return { ok: false, error: 'נא לכתוב כמה מילים על הפנייה' };
 
   return { ok: true, fields: { name, phone, email, serviceSlug, message } };

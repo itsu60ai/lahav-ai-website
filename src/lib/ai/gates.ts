@@ -231,14 +231,106 @@ function checkImageCompleteness(output: GeneratorOutput): GateFailure[] {
     ];
   }
   if (!output.visual.altText?.trim()) {
+    // BLOCKING, per docs/AI_ENGINE.md section 8: alt text must exist on
+    // every non-decorative image. A generated article diagram is always
+    // non-decorative, because it carries the explanation the body refers
+    // to; there is no decorative case to exempt here. A decorative image
+    // would be marked with a deliberately empty alt in the template, not
+    // produced by this generator.
     return [
-      fail('image-completeness', 'review', 'טקסט חלופי (alt) חסר לתמונה', 'לתמונת הכתבה אין תיאור נגישות.', {
-        location: 'תמונת הכתבה',
-        suggestion: 'הוסיפו תיאור קצר של מה שהתרשים מציג.',
-      }),
+      fail(
+        'image-alt-missing',
+        'blocking',
+        'טקסט חלופי (alt) חסר לתמונה',
+        'לתרשים הכתבה אין תיאור נגישות. תרשים שמסביר תוכן אינו תמונה דקורטיבית, ולכן חובה שיהיה לו תיאור. פרסום נחסם עד שיתווסף.',
+        {
+          location: 'תמונת הכתבה',
+          suggestion: 'הוסיפו תיאור קצר בעברית של מה שהתרשים מציג בפועל, ואז הריצו בדיקה מחדש.',
+        }
+      ),
     ];
   }
   return [];
+}
+
+// ─────────────────────────────────────────────── freshness and fact
+
+/**
+ * The freshness/fact gate, and the free fallback that satisfies it.
+ *
+ * docs/AI_ENGINE.md section 3.4: in zero cost mode this gate is NOT
+ * satisfied by a paid search. It is satisfied by a person opening the
+ * source link and confirming, which the admin records with the "אימתתי"
+ * action. That writes `verifiedBy` and `verifiedAt` on the opportunity,
+ * and this function reads them.
+ *
+ * The gate is never satisfied by the engine itself: nothing in
+ * src/lib/ai/* writes verifiedBy, and setVerification() is called from
+ * exactly one authenticated admin route.
+ */
+function checkFactVerification(output: GeneratorOutput, opportunity: Opportunity | null): GateFailure[] {
+  // A brief typed by hand has no radar source to verify against. The
+  // citations check below is what applies there.
+  if (!opportunity) {
+    if (output.seo.citations.length > 0) return [];
+    return [
+      fail(
+        'fact-verification',
+        'review',
+        'אין מקור מצוטט לכתבה',
+        'הכתבה נכתבה מבריף ידני ולא צורף לה אף מקור. טענה עובדתית ללא מקור אינה עומדת בכלל האמת של האתר.',
+        {
+          location: 'חבילת ה-SEO, שדה המקורות',
+          suggestion: 'הוסיפו לפחות מקור אחד לטענות שבכתבה, או ודאו שהכתבה אינה מציגה עובדות חדשותיות.',
+        }
+      ),
+    ];
+  }
+
+  // THE PASS CASE: a human verified it. This is what replaces a paid
+  // verification search, and it is recorded with a name and a timestamp.
+  if (opportunity.verification === 'verified' && opportunity.verifiedBy) return [];
+
+  const partial = opportunity.verification === 'partial' && opportunity.verifiedBy;
+  return [
+    fail(
+      'fact-verification',
+      'review',
+      partial ? 'המקור אומת חלקית בלבד' : 'המקור עדיין לא אומת על ידי אדם',
+      partial
+        ? `אומת חלקית על ידי ${opportunity.verifiedBy}. חלק מהטענות בכתבה עדיין אינן מכוסות באימות.`
+        : 'אף אחד עדיין לא פתח את קישור המקור ואישר את הטענה. עד שזה קורה, אין לנסח את הטענה ככתבה עובדתית.',
+      {
+        evidence: opportunity.headline,
+        location: 'מקור ההזדמנות',
+        suggestion:
+          'פתחו את קישור המקור במסך מנוע התוכן, קראו את הפריט, ולחצו "אימתתי". פעולה זו מתעדת מי אימת ומתי, והיא מה שמאפשר לבדיקה הזו לעבור.',
+        meta: { sourceUrl: opportunity.sourceUrl, sourceChecked: opportunity.sourceName },
+      }
+    ),
+  ];
+}
+
+/** trend articles lean on a recent source; a stale one is worth a look */
+const TREND_FRESHNESS_WINDOW_DAYS = 45;
+
+function checkSourceFreshness(opportunity: Opportunity | null, contentKind: string): GateFailure[] {
+  if (contentKind !== 'trend' && contentKind !== 'release') return [];
+  if (!opportunity?.publishedAt) return [];
+  const ageDays = (Date.now() - new Date(opportunity.publishedAt).getTime()) / 86_400_000;
+  if (!Number.isFinite(ageDays) || ageDays <= TREND_FRESHNESS_WINDOW_DAYS) return [];
+  return [
+    fail(
+      'source-freshness',
+      'review',
+      'המקור ישן יחסית לסוג הכתבה',
+      `תאריך הפרסום של המקור מוקדם ביותר מ-${TREND_FRESHNESS_WINDOW_DAYS} ימים. בכתבת מגמה או עדכון מוצר, שווה לבדוק שלא יצא מאז עדכון חדש יותר שסותר את מה שכתוב כאן.`,
+      {
+        location: 'מקור ההזדמנות',
+        suggestion: 'בדקו אם יצא עדכון חדש יותר באותו נושא. אם כן, עדכנו את הכתבה לפני פרסום.',
+      }
+    ),
+  ];
 }
 
 // ─────────────────────────────────────────────── fact / interpretation / recommendation
@@ -307,6 +399,8 @@ export function runGates(args: {
     ...checkDuplicateTopic(args.output, args.existingArticles),
     ...checkSeoCompleteness(args.output),
     ...checkImageCompleteness(args.output),
+    ...checkFactVerification(args.output, args.opportunity),
+    ...checkSourceFreshness(args.opportunity, args.contentKind),
     ...checkFactSeparation(args.output, args.contentKind),
     ...checkKeywordStuffing(args.output),
     ...checkMinimumContent(args.output),

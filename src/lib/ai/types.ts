@@ -59,6 +59,13 @@ export interface Opportunity {
   serviceSlug: string;
   verification: VerificationState;
   verificationNote: string;
+  /**
+   * Stage C, the free fallback for verification (docs/AI_ENGINE.md 3.4):
+   * the name/email of the person who opened the source link and confirmed
+   * the claim. Empty means nobody has. A machine never writes these.
+   */
+  verifiedBy: string;
+  verifiedAt: string | null;
   freshnessScore: number;
   priority: Priority;
   status: OpportunityStatus;
@@ -66,7 +73,10 @@ export interface Opportunity {
   updatedAt: string;
 }
 
-export type OpportunityDraft = Omit<Opportunity, 'id' | 'status' | 'createdAt' | 'updatedAt'>;
+export type OpportunityDraft = Omit<
+  Opportunity,
+  'id' | 'status' | 'createdAt' | 'updatedAt' | 'verifiedBy' | 'verifiedAt'
+>;
 
 export interface OpportunityStore {
   list(opts?: { status?: OpportunityStatus }): Promise<Opportunity[]>;
@@ -75,6 +85,15 @@ export interface OpportunityStore {
   urlExists(sourceUrl: string): Promise<boolean>;
   create(d: OpportunityDraft): Promise<Opportunity>;
   setStatus(id: string, status: OpportunityStatus): Promise<Opportunity>;
+  /**
+   * Records a HUMAN verification. `verifiedBy` is required and is never
+   * an empty string in practice, because the only caller is an
+   * authenticated admin route that passes the signed-in user.
+   */
+  setVerification(
+    id: string,
+    v: { verification: VerificationState; note: string; verifiedBy: string }
+  ): Promise<Opportunity>;
 }
 
 // ─────────────────────────────────────────────── the brief (input to a generation)
@@ -131,6 +150,8 @@ export interface VisualAsset {
 export interface AssetStore {
   create(generationId: string, a: Omit<VisualAsset, 'id'>): Promise<VisualAsset & { id: string }>;
   listByGeneration(generationId: string): Promise<VisualAsset[]>;
+  /** Stage C: the public /api/og/<slug>.svg route resolves by article. */
+  listByArticle(articleId: string): Promise<VisualAsset[]>;
   attachToArticle(generationId: string, articleId: string): Promise<void>;
 }
 
@@ -285,8 +306,15 @@ export interface Rule {
 
 export interface RuleStore {
   listActive(): Promise<Rule[]>;
+  /** Stage C: the editable rule screen shows inactive rules too. */
+  listAll(): Promise<Rule[]>;
+  get(id: string): Promise<Rule | null>;
   upsertByText(ruleText: string): Promise<Rule>;
   setActive(id: string, active: boolean): Promise<void>;
+  /** Stage C: the admin rewrote a rule in their own words. */
+  updateText(id: string, ruleText: string): Promise<void>;
+  /** Stage C: a rule that is simply wrong gets removed, not hidden. */
+  remove(id: string): Promise<void>;
 }
 
 // ─────────────────────────────────────────────── recommendations ("what to write today")
@@ -357,19 +385,105 @@ export interface AiSettings {
   autoPublishWeeklyCap: number;
   autoPublishWeekStart: string | null;
   autoPublishCountThisWeek: number;
+  autoPublishArmedBy: string;
+  autoPublishArmedAt: string | null;
+  autoPublishNotifyEmail: string;
+  autoPublishKilledAt: string | null;
+  autoPublishKilledBy: string;
   updatedAt: string;
   updatedBy: string;
 }
 
+/** The engine-mode settings a `settings:manage` admin may change freely. */
+export interface EngineSettingsPatch {
+  providerMode?: ProviderMode;
+  recommendationMode?: RecommendationMode;
+  disclosureEnabled?: boolean;
+  autoPublishWeeklyCap?: number;
+  autoPublishNotifyEmail?: string;
+}
+
 /**
- * READ ONLY, deliberately. There is no `SettingsStore.enableAutoPublish()`
- * anywhere in this file or in d1.ts. The capability to turn Auto Publish on
- * does not exist in code the engine can reach — see docs/AI_ENGINE.md
- * section 12, layer 2. When Auto Publish is built (Stage D), its one writer
- * lives in an admin-only route gated on `settings:manage`, never here.
+ * The ONE shape that can turn auto publish on, and the reason it looks
+ * like this.
+ *
+ * docs/AI_ENGINE.md section 12, layer 2: auto publish must be structurally
+ * unable to enable itself. That is enforced by three things together:
+ *
+ *  1. `armedBy` is a REQUIRED, non-optional string. Every caller must name
+ *     a human. There is no default and no "system" value.
+ *  2. `expiresAt` is REQUIRED. There is no way to express "on forever";
+ *     the arming call must state a date on which it switches itself off.
+ *  3. `arm()` is only ever called from ONE file:
+ *     src/pages/api/admin/ai/auto-publish.ts, which is behind the admin
+ *     session, CSRF, `settings:manage`, and a typed confirmation phrase.
+ *     Nothing in src/lib/ai/* imports it. The scheduled job (autopublish.ts)
+ *     imports `get()` and `recordAutoPublish()` and nothing else, so the
+ *     unattended path can read the switch and can never flip it.
  */
+export interface ArmAutoPublishInput {
+  expiresAt: string;
+  weeklyCap: number;
+  armedBy: string;
+}
+
 export interface SettingsStore {
   get(): Promise<AiSettings>;
+  /** Stage D: engine mode switches. Records updated_by and updated_at. */
+  update(patch: EngineSettingsPatch, updatedBy: string): Promise<AiSettings>;
+  /** See ArmAutoPublishInput. The only way auto_publish_enabled becomes 1. */
+  arm(input: ArmAutoPublishInput): Promise<AiSettings>;
+  /**
+   * Turns auto publish off. Safe to call from anywhere, including the
+   * unattended job (expiry enforcement) and the kill switch, because
+   * turning a dangerous thing OFF never needs to be guarded.
+   */
+  disarm(by: string, killed: boolean): Promise<AiSettings>;
+  /** Weekly cap bookkeeping. Rolls the window when the week has changed. */
+  recordAutoPublishUse(weekStart: string, count: number): Promise<void>;
+}
+
+// ─────────────────────────────────────────────── auto publish allow list + audit
+
+export interface AllowlistTopic {
+  id: string;
+  topic: string;
+  createdAt: string;
+  createdBy: string;
+}
+
+export interface TopicAllowlistStore {
+  list(): Promise<AllowlistTopic[]>;
+  add(topic: string, createdBy: string): Promise<void>;
+  remove(id: string): Promise<void>;
+}
+
+/** One row per article that reached the public site without a human click. */
+export interface AutoPublication {
+  id: string;
+  articleId: string;
+  generationId: string;
+  articleTitle: string;
+  articleSlug: string;
+  publishedAt: string;
+  armedBy: string;
+  unpublishToken: string;
+  unpublishedAt: string | null;
+  unpublishedBy: string;
+  notified: boolean;
+  notifyError: string;
+}
+
+export interface AutoPublicationStore {
+  create(
+    p: Omit<AutoPublication, 'id' | 'unpublishedAt' | 'unpublishedBy' | 'notified' | 'notifyError'>
+  ): Promise<AutoPublication>;
+  listRecent(limit: number): Promise<AutoPublication[]>;
+  /** everything auto published in the last N days and not already reverted */
+  listSince(isoDate: string): Promise<AutoPublication[]>;
+  byToken(token: string): Promise<AutoPublication | null>;
+  markUnpublished(id: string, by: string): Promise<void>;
+  markNotified(id: string, error: string): Promise<void>;
 }
 
 // ─────────────────────────────────────────────── everything a request needs
@@ -382,6 +496,8 @@ export interface AiStores {
   settings: SettingsStore;
   assets: AssetStore;
   recommendations: RecommendationStore;
+  allowlist: TopicAllowlistStore;
+  autoPublications: AutoPublicationStore;
 }
 
 export type { Article, ArticleKind, Block, VizKind };

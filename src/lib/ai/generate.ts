@@ -11,6 +11,7 @@ import { SERVICES } from '../site.ts';
 import { assemblePrompt } from './prompt.ts';
 import { runGates } from './gates.ts';
 import { contentKindToArticleKind, vizForServiceSlug } from './mapping.ts';
+import { apiGenerator } from './providers/api.ts';
 import { mockGenerator } from './providers/mock.ts';
 import { validateGeneratorOutput } from './validate.ts';
 import type { AiStores, Brief, GateResult, Generation, TextGenerator } from './types.ts';
@@ -24,12 +25,22 @@ function internalFailure(message: string): GateResult {
 
 function pickProvider(mode: string): TextGenerator {
   if (mode === 'mock') return mockGenerator;
-  // Stage B (manual paste) and Stage D (a real API) are designed but not
-  // built — see docs/AI_ENGINE.md. Failing loudly here is the point: a
-  // setting that silently fell back to mock would hide a real gap.
-  throw new Error(
-    `מצב ספק "${mode}" עדיין לא מוטמע. שלב א' תומך רק במצב בדיקה (mock). ראו docs/AI_ENGINE.md.`
-  );
+  // Stage D: the paid provider. Reached only when a `settings:manage`
+  // admin has set provider_mode to 'api'; the column defaults to 'mock'.
+  if (mode === 'api') return apiGenerator;
+  // MANUAL keeps its own separate two-step route (manual-prepare, then the
+  // paste-back screen at /admin/ai/manual/[id]) because it needs a human
+  // in the middle. It never runs through this one-shot path, so reaching
+  // here in manual mode means the wrong button was wired, and saying so is
+  // more useful than silently producing a mock draft.
+  if (mode === 'manual') {
+    throw new Error(
+      'מצב "הדבקה ידנית" עובד במסלול נפרד: לחצו "כתיבת מאמר אמיתי" כדי לקבל את הבקשה להדבקה, במקום "טיוטת בדיקה".'
+    );
+  }
+  // Failing loudly is the point: a setting that silently fell back to mock
+  // would hide a real gap.
+  throw new Error(`מצב ספק "${mode}" אינו מוכר. ראו docs/AI_ENGINE.md.`);
 }
 
 export interface GenerateArgs {

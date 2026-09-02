@@ -1,8 +1,19 @@
 ---
-// AI content engine, Stage A: opportunities (the radar) + a manual brief +
-// recent generation history. See docs/AI_ENGINE.md. Everything here reads
-// and writes through the SAME permission model as the rest of the admin —
-// this page requires nothing new in middleware.ts.
+// Stage C: the five-tab dashboard from docs/AI_ENGINE.md section 11.
+//
+//   LATEST     fresh opportunities from the radar, ranked
+//   TRENDING   gaining attention now
+//   EVERGREEN  durable topics worth owning
+//   DRAFTS     generated, waiting for you
+//   PUBLISHED  live, with whether you edited each one
+//
+// The tabs are plain links with a ?tab= query parameter, so they work with
+// JavaScript switched off and each tab is its own shareable URL. No
+// client-side script is needed and none is loaded.
+//
+// Nothing on this page calls a paid API. The recommendation card is the
+// free heuristic (recommend/heuristic.ts) and every list below is a read of
+// data the radar already collected.
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
@@ -10,6 +21,7 @@ import { can } from '../../../lib/cms/types.ts';
 import { csrfFor } from '../../../lib/cms/auth.ts';
 import { getAiStores } from '../../../lib/ai/context.ts';
 import { CONTENT_KIND_LABELS } from '../../../lib/ai/types.ts';
+import type { Opportunity } from '../../../lib/ai/types.ts';
 import { getOrComputeRecommendation } from '../../../lib/ai/recommend/index.ts';
 import { SERVICES } from '../../../lib/site.ts';
 
@@ -17,17 +29,91 @@ const user = Astro.locals.user!;
 const csrf = await csrfFor(Astro.locals.sessionToken);
 const mayCreate = can(user, 'article:create');
 
+const TABS = ['latest', 'trending', 'evergreen', 'drafts', 'published'] as const;
+type Tab = (typeof TABS)[number];
+const TAB_LABELS: Record<Tab, string> = {
+  latest: 'חדש',
+  trending: 'תופס תאוצה',
+  evergreen: 'תוכן יסוד',
+  drafts: 'טיוטות',
+  published: 'פורסם',
+};
+const TAB_BLURB: Record<Tab, string> = {
+  latest: 'הזדמנויות טריות שנאספו מהמקורות הרשמיים, לפי סדר רעננות.',
+  trending: 'נושאים שיותר ממקור אחד ברדאר כיסה, או עדכונים שיצאו בשבועיים האחרונים.',
+  evergreen: 'נושאים שלא מתיישנים, ששווה להיות הכתובת עליהם לאורך זמן.',
+  drafts: 'טיוטות שנוצרו וממתינות לכם. אף אחת מהן אינה גלויה לציבור.',
+  published: 'מה שכבר עלה לאתר, ואם ערכתם אותו לפני הפרסום.',
+};
+
+const tabParam = Astro.url.searchParams.get('tab');
+const tab: Tab = (TABS as readonly string[]).includes(tabParam ?? '') ? (tabParam as Tab) : 'latest';
+
 const aiStores = getAiStores();
-const [opportunities, generations, settings, recommendation] = await Promise.all([
-  aiStores.opportunities.list({ status: 'new' }),
-  aiStores.generations.list(),
-  aiStores.settings.get(),
-  // Automatic, free, no button: computed on load (reusing a recent run
-  // instead of recomputing every time) — see recommend/index.ts.
-  getOrComputeRecommendation(aiStores),
-]);
-const recentGenerations = generations.slice(0, 10);
+const { articles } = Astro.locals.stores!;
+
+const [opportunities, generations, settings, recommendation, allArticles, recentFeedback] =
+  await Promise.all([
+    aiStores.opportunities.list({ status: 'new' }),
+    aiStores.generations.list(),
+    aiStores.settings.get(),
+    getOrComputeRecommendation(aiStores),
+    articles.list(),
+    aiStores.feedback.listRecent(500),
+  ]);
+
 const opportunityById = new Map(opportunities.map((o) => [o.id, o]));
+const articleById = new Map(allArticles.map((a) => [a.id, a]));
+
+// ── which generations have a real edit recorded against them ──
+// The brief for the PUBLISHED tab asks for "how much you edited it". The
+// only truthful source for that is ai_feedback rows of kind 'edit'. There
+// is no stored before/after diff to measure a percentage from, so this
+// shows נערך / לא נערך rather than a number that would be invented.
+const editedGenerations = new Set(
+  recentFeedback.filter((f) => f.kind === 'edit').map((f) => f.generationId)
+);
+
+// ── tab contents, all derived from real stored fields ──
+const RECENT_DAYS = 14;
+const isRecent = (o: Opportunity) =>
+  !!o.publishedAt && Date.now() - new Date(o.publishedAt).getTime() < RECENT_DAYS * 86_400_000;
+
+// "Gaining attention" without inventing a metric: the heuristic
+// recommender already clusters items that cover the same development
+// across sources (relatedOpportunityIds). More than one source on one
+// story is a real signal. A brand-new product update counts too.
+const relatedIds = new Set<string>();
+for (const pick of recommendation?.picks ?? []) {
+  if (pick.relatedOpportunityIds.length > 0) {
+    relatedIds.add(pick.opportunityId);
+    for (const rid of pick.relatedOpportunityIds) relatedIds.add(rid);
+  }
+}
+
+const latest = opportunities;
+const trending = opportunities.filter(
+  (o) => relatedIds.has(o.id) || ((o.contentKind === 'trend' || o.contentKind === 'release') && isRecent(o))
+);
+const evergreen = opportunities.filter((o) => o.contentKind === 'evergreen' || o.contentKind === 'comparison');
+
+const withArticles = generations
+  .filter((g) => g.articleId && articleById.has(g.articleId))
+  .map((g) => ({ g, a: articleById.get(g.articleId!)! }));
+
+const drafts = withArticles.filter((x) => x.a.status !== 'published');
+const published = withArticles.filter((x) => x.a.status === 'published');
+
+// pending manual pastes are drafts-in-waiting and belong on the drafts tab
+const pendingPastes = generations.filter((g) => g.status === 'pending');
+
+const TAB_COUNTS: Record<Tab, number> = {
+  latest: latest.length,
+  trending: trending.length,
+  evergreen: evergreen.length,
+  drafts: drafts.length + pendingPastes.length,
+  published: published.length,
+};
 
 const VERIFICATION_LABEL: Record<string, string> = {
   unverified: 'לא מאומת',
@@ -35,9 +121,18 @@ const VERIFICATION_LABEL: Record<string, string> = {
   verified: 'מאומת',
 };
 const PRIORITY_LABEL: Record<string, string> = { high: 'גבוהה', medium: 'בינונית', low: 'נמוכה' };
+const MODE_LABEL: Record<string, string> = {
+  mock: 'בדיקה (ללא עלות)',
+  manual: 'הדבקה ידנית (ללא עלות)',
+  api: 'API בתשלום',
+};
 
 const fmt = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+const backHere = `/admin/ai?tab=${tab}`;
+const tabList = TABS.map((t) => ({ id: t, label: TAB_LABELS[t], count: TAB_COUNTS[t] }));
+const currentList = tab === 'latest' ? latest : tab === 'trending' ? trending : evergreen;
 ---
 
 <AdminLayout title="מנוע תוכן AI">
@@ -45,25 +140,28 @@ const fmt = (iso: string | null) =>
     <div>
       <h1 class="hd__h">מנוע תוכן AI</h1>
       <p class="hd__sub">
-        מצב עבודה נוכחי: <strong>{settings.providerMode === 'mock' ? 'בדיקה (ללא עלות)' : settings.providerMode}</strong>
-        · הפעלה אוטומטית: <strong>{settings.autoPublishEnabled ? 'פעילה' : 'כבויה'}</strong>
+        מצב עבודה נוכחי: <strong>{MODE_LABEL[settings.providerMode] ?? settings.providerMode}</strong>
+        · פרסום אוטומטי: <strong>{settings.autoPublishEnabled ? 'מופעל' : 'כבוי'}</strong>
       </p>
     </div>
-    {
-      mayCreate && (
-        <form method="post" action={`/api/admin/ai/collect?csrf=${csrf}`}>
-          <button class="adm-btn adm-btn--ghost" type="submit">איסוף עדכונים עכשיו</button>
-        </form>
-      )
-    }
+    <div class="hd__acts">
+      <a class="adm-btn adm-btn--ghost" href="/admin/ai/rules">הכללים שנלמדו</a>
+      {
+        mayCreate && (
+          <form method="post" action={`/api/admin/ai/collect?csrf=${csrf}`}>
+            <button class="adm-btn adm-btn--ghost" type="submit">איסוף עדכונים עכשיו</button>
+          </form>
+        )
+      }
+    </div>
   </div>
 
   <p class="foot-note">
     כל טיוטה שנוצרת כאן היא טיוטה רגילה במערכת התוכן, מסומנת "תוכן לדוגמה" ולא מפורסמת
-    ולא מאונדקסת עד שתעברו עליה ותפרסמו בעצמכם. שום דבר כאן לא יכול לפרסם לבד.
+    ולא מאונדקסת עד שתעברו עליה ותפרסמו בעצמכם.
   </p>
 
-  <!-- ─────────── today's recommendations: the primary interaction ─────────── -->
+  <!-- ─────────── today's recommendation, kept at the top ─────────── -->
   <section class="card card--rec">
     <h2 class="card__h">
       מה כדאי לכתוב עליו היום
@@ -79,50 +177,277 @@ const fmt = (iso: string | null) =>
           <p class="empty__b">לחצו "איסוף עדכונים עכשיו" כדי לשלוף עדכונים, וההמלצה תופיע כאן אוטומטית.</p>
         </div>
       ) : (
-        <>
-          <div class="recs">
-            {recommendation.picks.map((pick) => {
-              const opp = opportunityById.get(pick.opportunityId);
-              return (
-                <div class="rec">
-                  <div class="rec__rank">{pick.rank}</div>
-                  <div class="rec__main">
-                    <p class="rec__headline">{pick.headline}</p>
-                    <p class="rec__reason"><strong>למה עכשיו:</strong> {pick.reason}</p>
-                    <p class="rec__angle"><strong>זווית ל-LAHAV AI:</strong> {pick.angle}</p>
-                    {opp && (
-                      <a class="rec__source" href={opp.sourceUrl} target="_blank" rel="noopener">
-                        מקור: {opp.sourceName} ←
-                      </a>
-                    )}
-                  </div>
-                  {
-                    mayCreate && (
-                      <div class="rec__actions">
-                        <form method="post" action={`/api/admin/ai/manual-prepare?csrf=${csrf}`}>
-                          <input type="hidden" name="opportunityId" value={pick.opportunityId} />
-                          <button class="adm-btn adm-btn--primary" type="submit">כתיבת מאמר אמיתי</button>
-                        </form>
-                        <form method="post" action={`/api/admin/ai/generate?csrf=${csrf}`}>
-                          <input type="hidden" name="opportunityId" value={pick.opportunityId} />
-                          <button class="adm-btn adm-btn--ghost" type="submit">טיוטת בדיקה</button>
-                        </form>
-                      </div>
-                    )
-                  }
+        <div class="recs">
+          {recommendation.picks.map((pick) => {
+            const opp = opportunityById.get(pick.opportunityId);
+            return (
+              <div class="rec">
+                <div class="rec__rank">{pick.rank}</div>
+                <div class="rec__main">
+                  <p class="rec__headline">{pick.headline}</p>
+                  <p class="rec__reason"><strong>למה עכשיו:</strong> {pick.reason}</p>
+                  <p class="rec__angle"><strong>זווית ל-LAHAV AI:</strong> {pick.angle}</p>
+                  {opp && (
+                    <div class="opp__meta">
+                      <span>{opp.sourceName}</span>
+                      {opp.publishedAt && <span>{fmt(opp.publishedAt)}</span>}
+                      <span class:list={['adm-pill', `adm-pill--v-${opp.verification}`]}>
+                        {VERIFICATION_LABEL[opp.verification]}
+                      </span>
+                      <a class="opp__src" href={opp.sourceUrl} target="_blank" rel="noopener">פתיחת המקור</a>
+                    </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-          <p class="foot-note">
-            ההמלצה מחושבת אוטומטית מנתונים אמיתיים שכבר נאספו (תאריך פרסום, מקור, שירות תואם,
-            עדכונים קשורים) — ללא שימוש במודל שפה, ולכן ללא עלות. שכבת המלצה חכמה יותר מבוססת
-            AI מחוברת בארכיטקטורה ומוכנה, אך כבויה עד שתאשרו הפעלה בתשלום.
-          </p>
-        </>
+                {
+                  mayCreate && (
+                    <div class="rec__actions">
+                      <form method="post" action={`/api/admin/ai/manual-prepare?csrf=${csrf}`}>
+                        <input type="hidden" name="opportunityId" value={pick.opportunityId} />
+                        <button class="adm-btn adm-btn--primary" type="submit">כתיבת מאמר אמיתי</button>
+                      </form>
+                      <form method="post" action={`/api/admin/ai/generate?csrf=${csrf}`}>
+                        <input type="hidden" name="opportunityId" value={pick.opportunityId} />
+                        <button class="adm-btn adm-btn--ghost" type="submit">טיוטת בדיקה</button>
+                      </form>
+                    </div>
+                  )
+                }
+              </div>
+            );
+          })}
+        </div>
       )
     }
   </section>
+
+  <!-- ─────────── the five tabs ─────────── -->
+  <nav class="tabs" aria-label="תצוגות מנוע התוכן">
+    {
+      tabList.map((t) => (
+        <a
+          class:list={['tabs__t', t.id === tab && 'is-on']}
+          href={`/admin/ai?tab=${t.id}`}
+          aria-current={t.id === tab ? 'page' : undefined}
+        >
+          {t.label}
+          <span class="tabs__n">{t.count}</span>
+        </a>
+      ))
+    }
+  </nav>
+
+  <p class="tabs__blurb">{TAB_BLURB[tab]}</p>
+
+  {
+    (tab === 'latest' || tab === 'trending' || tab === 'evergreen') &&
+      (currentList.length === 0 ? (
+        <div class="card empty">
+          <p class="empty__t">אין כאן פריטים כרגע</p>
+          <p class="empty__b">
+            לחצו "איסוף עדכונים עכשיו" כדי לשלוף עדכונים אמיתיים ממקורות רשמיים חינמיים.
+          </p>
+        </div>
+      ) : (
+        <div class="opps">
+          {currentList.map((o) => (
+            <article class="opp">
+              <div class="opp__main">
+                <a class="opp__title" href={o.sourceUrl} target="_blank" rel="noopener">{o.headline}</a>
+
+                <div class="opp__meta">
+                  <span>{o.sourceName}</span>
+                  {o.publishedAt && <span>{fmt(o.publishedAt)}</span>}
+                  <span class:list={['adm-pill', `adm-pill--v-${o.verification}`]}>
+                    {VERIFICATION_LABEL[o.verification]}
+                  </span>
+                  <span class:list={['adm-pill', `adm-pill--p-${o.priority}`]}>עדיפות {PRIORITY_LABEL[o.priority]}</span>
+                  <span class="opp__kind">{CONTENT_KIND_LABELS[o.contentKind]}</span>
+                </div>
+
+                <p class="opp__why"><strong>למה זה חשוב:</strong> {o.whyItMatters}</p>
+                {o.suggestedAngle && <p class="opp__angle"><strong>זווית מוצעת:</strong> {o.suggestedAngle}</p>}
+
+                {/* C3: verification state, its source link, and the action
+                    that satisfies the fact gate, all visible before any click */}
+                <div class="ver">
+                  {
+                    o.verification === 'verified' && o.verifiedBy ? (
+                      <p class="ver__ok">
+                        אומת על ידי {o.verifiedBy}{o.verifiedAt ? ` בתאריך ${fmt(o.verifiedAt)}` : ''}.
+                        {o.verificationNote && <span class="ver__note"> {o.verificationNote}</span>}
+                      </p>
+                    ) : (
+                      <p class="ver__warn">
+                        {o.verification === 'partial'
+                          ? 'אומת חלקית. חלק מהטענות עדיין לא נבדקו מול המקור.'
+                          : 'הטענה עדיין לא נבדקה מול המקור. עד לאימות, בדיקת האמת של המערכת תסמן את הכתבה.'}
+                      </p>
+                    )
+                  }
+
+                  {
+                    mayCreate && (
+                      <form method="post" action={`/api/admin/ai/verify?csrf=${csrf}`} class="ver__form">
+                        <input type="hidden" name="id" value={o.id} />
+                        <input type="hidden" name="back" value={backHere} />
+                        <a class="ver__link" href={o.sourceUrl} target="_blank" rel="noopener">
+                          פתיחת המקור לקריאה
+                        </a>
+                        <input
+                          class="adm-input ver__input"
+                          type="text"
+                          name="note"
+                          value={o.verificationNote}
+                          placeholder="מה בדקתם (לא חובה)"
+                        />
+                        {
+                          o.verification === 'verified' ? (
+                            <button class="adm-btn adm-btn--ghost ver__btn" type="submit" name="verification" value="unverified">
+                              ביטול האימות
+                            </button>
+                          ) : (
+                            <>
+                              <button class="adm-btn adm-btn--primary ver__btn" type="submit" name="verification" value="verified">
+                                אימתתי
+                              </button>
+                              <button class="adm-btn adm-btn--ghost ver__btn" type="submit" name="verification" value="partial">
+                                אומת חלקית
+                              </button>
+                            </>
+                          )
+                        }
+                      </form>
+                    )
+                  }
+                </div>
+              </div>
+
+              {
+                mayCreate && (
+                  <div class="opp__actions">
+                    <form method="post" action={`/api/admin/ai/manual-prepare?csrf=${csrf}`}>
+                      <input type="hidden" name="opportunityId" value={o.id} />
+                      <button class="adm-btn adm-btn--primary row__btn" type="submit">כתיבת מאמר אמיתי</button>
+                    </form>
+                    <form method="post" action={`/api/admin/ai/generate?csrf=${csrf}`}>
+                      <input type="hidden" name="opportunityId" value={o.id} />
+                      <button class="adm-btn adm-btn--ghost row__btn" type="submit">טיוטת בדיקה</button>
+                    </form>
+                    <form method="post" action={`/api/admin/ai/dismiss?csrf=${csrf}`}>
+                      <input type="hidden" name="id" value={o.id} />
+                      <button class="adm-btn adm-btn--ghost row__btn" type="submit">התעלמות</button>
+                    </form>
+                  </div>
+                )
+              }
+            </article>
+          ))}
+        </div>
+      ))
+  }
+
+  {
+    tab === 'drafts' && (
+      <div class="opps">
+        {pendingPastes.map((g) => (
+          <article class="opp">
+            <div class="opp__main">
+              <p class="opp__title">{g.brief.topic}</p>
+              <div class="opp__meta">
+                <span>{fmt(g.createdAt)}</span>
+                <span class="adm-pill adm-pill--placeholder">ממתין להדבקת התשובה</span>
+              </div>
+              <p class="opp__why">
+                הבקשה הוכנה ונשמרה. צריך להדביק את התשובה מהמנוי שלכם כדי להפוך אותה לטיוטה.
+              </p>
+            </div>
+            <div class="opp__actions">
+              <a class="adm-btn adm-btn--primary row__btn" href={`/admin/ai/manual/${g.id}`}>המשך הדבקה</a>
+            </div>
+          </article>
+        ))}
+
+        {drafts.map(({ g, a }) => {
+          const blocking = g.gates.failures.filter((f) => f.severity === 'blocking').length;
+          const review = g.gates.failures.filter((f) => f.severity === 'review').length;
+          const opp = g.opportunityId ? opportunityById.get(g.opportunityId) : undefined;
+          return (
+            <article class="opp">
+              <div class="opp__main">
+                <p class="opp__title">{a.title}</p>
+                <div class="opp__meta">
+                  <span>נוצר {fmt(g.createdAt)}</span>
+                  {opp && <span>{opp.sourceName}</span>}
+                  {opp?.publishedAt && <span>{fmt(opp.publishedAt)}</span>}
+                  {opp && (
+                    <span class:list={['adm-pill', `adm-pill--v-${opp.verification}`]}>
+                      {VERIFICATION_LABEL[opp.verification]}
+                    </span>
+                  )}
+                  <span class:list={['adm-pill', blocking > 0 ? 'adm-pill--blocked' : review > 0 ? 'adm-pill--placeholder' : 'adm-pill--published']}>
+                    {blocking > 0
+                      ? `${blocking} חסימות לפני פרסום`
+                      : review > 0
+                        ? `${review} נקודות לבדיקה`
+                        : 'עברה את כל הבדיקות'}
+                  </span>
+                </div>
+                <p class="opp__why">{a.excerpt}</p>
+                {opp && <p class="opp__angle"><strong>למה זה חשוב:</strong> {opp.whyItMatters}</p>}
+              </div>
+              <div class="opp__actions">
+                <a class="adm-btn adm-btn--primary row__btn" href={`/admin/ai/${g.id}`}>בדיקה ופרטים</a>
+                <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/${a.id}`}>עריכה</a>
+              </div>
+            </article>
+          );
+        })}
+
+        {drafts.length === 0 && pendingPastes.length === 0 && (
+          <div class="card empty">
+            <p class="empty__t">אין טיוטות ממתינות</p>
+            <p class="empty__b">בחרו נושא מלשונית "חדש" והתחילו כתיבה.</p>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  {
+    tab === 'published' &&
+      (published.length === 0 ? (
+        <div class="card empty">
+          <p class="empty__t">עוד לא פורסם מאמר שנוצר כאן</p>
+          <p class="empty__b">מאמר עולה לאתר רק אחרי שאתם לוחצים פרסום בעורך.</p>
+        </div>
+      ) : (
+        <div class="opps">
+          {published.map(({ g, a }) => (
+            <article class="opp">
+              <div class="opp__main">
+                <a class="opp__title" href={`/articles/${a.slug}`} target="_blank" rel="noopener">{a.title}</a>
+                <div class="opp__meta">
+                  <span>פורסם {fmt(a.publishedAt)}</span>
+                  {/* Only what is actually derivable from ai_feedback edit
+                      records. No percentage is shown, because none is stored. */}
+                  <span class:list={['adm-pill', editedGenerations.has(g.id) ? 'adm-pill--rec' : 'adm-pill--draft']}>
+                    {editedGenerations.has(g.id) ? 'נערך' : 'לא נערך'}
+                  </span>
+                  <span class:list={['adm-pill', g.gates.passed ? 'adm-pill--published' : 'adm-pill--placeholder']}>
+                    {g.gates.passed ? 'עבר את כל הבדיקות' : `${g.gates.failures.length} הערות בבדיקה`}
+                  </span>
+                </div>
+                <p class="opp__why">{a.excerpt}</p>
+              </div>
+              <div class="opp__actions">
+                <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/ai/${g.id}`}>פרטי היצירה</a>
+                <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/${a.id}`}>עריכה</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      ))
+  }
 
   <!-- ─────────── manual brief: for when you already know the topic ─────────── -->
   {
@@ -173,119 +498,6 @@ const fmt = (iso: string | null) =>
       </details>
     )
   }
-
-  <!-- ─────────── the full list: browsing everything yourself, secondary now ─────────── -->
-  <details class="card card--collapsed">
-    <summary class="card__h card__h--summary">כל ההזדמנויות שנאספו ({opportunities.length})</summary>
-    {
-      opportunities.length === 0 ? (
-        <div class="empty">
-          <p class="empty__t">אין עדיין הזדמנויות</p>
-          <p class="empty__b">לחצו "איסוף עדכונים עכשיו" כדי לשלוף עדכונים אמיתיים ממקורות רשמיים חינמיים.</p>
-        </div>
-      ) : (
-        <div class="opps">
-          {opportunities.map((o) => (
-            <div class="opp">
-              <div class="opp__main">
-                <a class="opp__title" href={o.sourceUrl} target="_blank" rel="noopener">{o.headline}</a>
-                <div class="opp__meta">
-                  <span>{o.sourceName}</span>
-                  {o.publishedAt && <span>· {fmt(o.publishedAt)}</span>}
-                  <span class:list={['adm-pill', `adm-pill--v-${o.verification}`]}>{VERIFICATION_LABEL[o.verification]}</span>
-                  <span class:list={['adm-pill', `adm-pill--p-${o.priority}`]}>עדיפות {PRIORITY_LABEL[o.priority]}</span>
-                  <span class="opp__kind">{CONTENT_KIND_LABELS[o.contentKind]}</span>
-                </div>
-                <p class="opp__why">{o.whyItMatters}</p>
-              </div>
-              {
-                mayCreate && (
-                  <div class="opp__actions">
-                    <form method="post" action={`/api/admin/ai/manual-prepare?csrf=${csrf}`}>
-                      <input type="hidden" name="opportunityId" value={o.id} />
-                      <button class="adm-btn adm-btn--primary row__btn" type="submit">כתיבת מאמר אמיתי</button>
-                    </form>
-                    <form method="post" action={`/api/admin/ai/generate?csrf=${csrf}`}>
-                      <input type="hidden" name="opportunityId" value={o.id} />
-                      <button class="adm-btn adm-btn--ghost row__btn" type="submit">טיוטת בדיקה</button>
-                    </form>
-                    <form method="post" action={`/api/admin/ai/dismiss?csrf=${csrf}`}>
-                      <input type="hidden" name="id" value={o.id} />
-                      <button class="adm-btn adm-btn--ghost row__btn" type="submit">התעלמות</button>
-                    </form>
-                  </div>
-                )
-              }
-            </div>
-          ))}
-        </div>
-      )
-    }
-  </details>
-
-  <!-- ─────────── recent generations ─────────── -->
-  <section class="card">
-    <h2 class="card__h">יצירות אחרונות</h2>
-    {
-      recentGenerations.length === 0 ? (
-        <p class="empty__b">עוד לא נוצרה אף טיוטה.</p>
-      ) : (
-        <div class="tbl">
-          <div class="tbl__head">
-            <span>כותרת בריף</span>
-            <span>סטטוס</span>
-            <span>בדיקות איכות</span>
-            <span>עלות</span>
-            <span class="tbl__actions-h">פעולות</span>
-          </div>
-          {recentGenerations.map((g) => (
-            <div class="row">
-              <div class="row__main">
-                <span class="row__title">{g.brief.topic}</span>
-                <div class="row__meta">
-                  <span class="row__date">{fmt(g.createdAt)}</span>
-                </div>
-              </div>
-              <span>
-                {
-                  g.status === 'pending' ? (
-                    <span class="adm-pill adm-pill--placeholder">ממתין להדבקה</span>
-                  ) : (
-                    <span class:list={['adm-pill', g.status === 'succeeded' ? 'adm-pill--published' : 'adm-pill--draft']}>
-                      {g.status === 'succeeded' ? 'הצליח' : 'נכשל'}
-                    </span>
-                  )
-                }
-                {g.providerMode === 'manual' && <span class="row__mode">הדבקה ידנית</span>}
-              </span>
-              <span>
-                {
-                  g.status !== 'pending' && (
-                    <span class:list={['adm-pill', g.gates.passed ? 'adm-pill--published' : 'adm-pill--placeholder']}>
-                      {g.gates.passed ? 'עברו הכל' : `${g.gates.failures.length} דגלים`}
-                    </span>
-                  )
-                }
-              </span>
-              <span class="row__date">${g.costUsd.toFixed(4)}</span>
-              <span class="row__actions">
-                {
-                  g.status === 'pending' ? (
-                    <a class="adm-btn adm-btn--primary row__btn" href={`/admin/ai/manual/${g.id}`}>המשך הדבקה</a>
-                  ) : (
-                    <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/ai/${g.id}`}>פרטים</a>
-                  )
-                }
-                {g.articleId && (
-                  <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/${g.articleId}`}>עריכה</a>
-                )}
-              </span>
-            </div>
-          ))}
-        </div>
-      )
-    }
-  </section>
 </AdminLayout>
 
 <style>
@@ -297,16 +509,10 @@ const fmt = (iso: string | null) =>
     margin-bottom: 1rem;
     flex-wrap: wrap;
   }
-  .hd__h {
-    font-family: var(--font-display);
-    font-size: 1.75rem;
-    font-weight: 800;
-  }
-  .hd__sub {
-    font-size: 0.875rem;
-    color: var(--color-ink-3);
-    margin-top: 0.25rem;
-  }
+  .hd__h { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; }
+  .hd__sub { font-size: 0.875rem; color: var(--color-ink-3); margin-top: 0.25rem; }
+  .hd__acts { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
   .foot-note {
     font-size: 0.8125rem;
     color: var(--color-ink-3);
@@ -332,26 +538,11 @@ const fmt = (iso: string | null) =>
     gap: 0.625rem;
   }
 
-  /* the primary card: today's recommendations */
-  .card--rec {
-    border-color: var(--color-royal);
-    box-shadow: 0 0 0 1px var(--color-royal);
-  }
-  .adm-pill--rec {
-    background: #eaf0ff;
-    color: var(--color-royal);
-    font-weight: 700;
-  }
-  .recs {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .rec__actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
+  .card--rec { border-color: var(--color-royal); box-shadow: 0 0 0 1px var(--color-royal); }
+  .adm-pill--rec { background: #eaf0ff; color: var(--color-royal); font-weight: 700; }
+  .adm-pill--blocked { background: #fdeceb; color: var(--color-error); }
+
+  .recs { display: flex; flex-direction: column; gap: 1rem; }
   .rec {
     display: grid;
     grid-template-columns: 2.25rem 1fr auto;
@@ -373,118 +564,64 @@ const fmt = (iso: string | null) =>
     font-family: var(--font-display);
     font-weight: 800;
   }
-  .rec__main {
-    min-width: 0;
+  .rec__main { min-width: 0; }
+  .rec__headline { font-family: var(--font-display); font-weight: 700; font-size: 1.0625rem; margin-bottom: 0.375rem; }
+  .rec__reason, .rec__angle { font-size: 0.9375rem; color: var(--color-ink-2); margin-bottom: 0.25rem; }
+  .rec__actions { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  /* ── tabs ── */
+  .tabs {
+    display: flex;
+    gap: 0.375rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--color-line);
+    margin-bottom: 0.75rem;
   }
-  .rec__headline {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.0625rem;
-    margin-bottom: 0.375rem;
-  }
-  .rec__reason,
-  .rec__angle {
+  .tabs__t {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 0.9rem;
     font-size: 0.9375rem;
-    color: var(--color-ink-2);
-    margin-bottom: 0.25rem;
-  }
-  .rec__source {
-    display: inline-block;
-    margin-top: 0.25rem;
-    font-size: 0.8125rem;
+    font-weight: 700;
     color: var(--color-ink-3);
     text-decoration: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
   }
-  .rec__source:hover {
-    color: var(--color-royal);
-  }
-
-  /* collapsed-by-default secondary sections (manual brief, full list) */
-  .card--collapsed {
-    background: #fff;
-    border: 1px solid var(--color-line);
-    border-radius: 0.875rem;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-  }
-  .card__h--summary {
-    cursor: pointer;
-    list-style: none;
-    margin-bottom: 0;
-  }
-  .card--collapsed[open] .card__h--summary {
-    margin-bottom: 1rem;
-  }
-  .card__h--summary::-webkit-details-marker {
-    display: none;
-  }
-  .card__h--summary::before {
-    content: '▸';
-    color: var(--color-ink-3);
-    font-size: 0.875rem;
-  }
-  .card--collapsed[open] .card__h--summary::before {
-    content: '▾';
-  }
-
-  .brief-form {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    align-items: end;
-  }
-  .adm-field--wide {
-    grid-column: 1 / -1;
-  }
-  .brief-actions {
-    grid-column: 1 / -1;
-    display: flex;
-    gap: 0.625rem;
-    justify-self: start;
-  }
-
-  .empty {
-    text-align: center;
-    padding: 2rem 1rem;
-  }
-  .empty__t {
-    font-family: var(--font-display);
+  .tabs__t:hover { color: var(--color-royal); }
+  .tabs__t.is-on { color: var(--color-royal); border-bottom-color: var(--color-royal); }
+  .tabs__n {
+    font-size: 0.75rem;
     font-weight: 700;
-    margin-bottom: 0.375rem;
+    background: var(--color-surface-2);
+    border-radius: 999px;
+    padding: 0.1rem 0.45rem;
   }
-  .empty__b {
-    font-size: 0.9375rem;
-    color: var(--color-ink-2);
-  }
+  .tabs__t.is-on .tabs__n { background: #eaf0ff; }
+  .tabs__blurb { font-size: 0.875rem; color: var(--color-ink-3); margin-bottom: 1rem; }
 
-  .opps {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-  }
+  /* ── cards ── */
+  .opps { display: flex; flex-direction: column; gap: 0.875rem; margin-bottom: 1.5rem; }
   .opp {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.875rem;
+    padding: 1rem;
     border: 1px solid var(--color-line);
-    border-radius: 0.625rem;
+    border-radius: 0.75rem;
+    background: #fff;
     flex-wrap: wrap;
   }
-  .opp__main {
-    min-width: 0;
-    flex: 1;
-  }
+  .opp__main { min-width: 0; flex: 1; }
   .opp__title {
     font-family: var(--font-display);
     font-weight: 700;
+    font-size: 1.0625rem;
     color: var(--color-ink);
     text-decoration: none;
   }
-  .opp__title:hover {
-    color: var(--color-royal);
-    text-decoration: underline;
-  }
+  a.opp__title:hover { color: var(--color-royal); text-decoration: underline; }
   .opp__meta {
     display: flex;
     flex-wrap: wrap;
@@ -494,20 +631,32 @@ const fmt = (iso: string | null) =>
     font-size: 0.8125rem;
     color: var(--color-ink-3);
   }
-  .opp__kind {
-    font-weight: 700;
-    color: var(--color-royal);
+  .opp__src { color: var(--color-royal); }
+  .opp__kind { font-weight: 700; color: var(--color-royal); }
+  .opp__why, .opp__angle { margin-top: 0.5rem; font-size: 0.9375rem; color: var(--color-ink-2); }
+  .opp__actions { display: flex; flex-direction: column; gap: 0.375rem; }
+
+  /* ── verification block ── */
+  .ver {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line);
   }
-  .opp__why {
-    margin-top: 0.5rem;
-    font-size: 0.9375rem;
-    color: var(--color-ink-2);
-  }
-  .opp__actions {
+  .ver__ok { font-size: 0.875rem; color: #15803d; font-weight: 600; }
+  .ver__warn { font-size: 0.875rem; color: #8a5300; font-weight: 600; }
+  .ver__note { font-weight: 400; color: var(--color-ink-2); }
+  .ver__form {
     display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
   }
+  .ver__link { font-size: 0.8125rem; color: var(--color-royal); }
+  .ver__input { flex: 1; min-width: 12rem; padding: 0.35rem 0.6rem; font-size: 0.8125rem; }
+  .ver__btn { padding: 0.35rem 0.7rem; font-size: 0.8125rem; }
 
   .adm-pill--v-unverified { background: #fff4e5; color: #8a5300; }
   .adm-pill--v-partial { background: #eaf0ff; color: var(--color-royal); }
@@ -516,39 +665,36 @@ const fmt = (iso: string | null) =>
   .adm-pill--p-medium { background: #fff4e5; color: #8a5300; }
   .adm-pill--p-low { background: #f1f3f7; color: #55627a; }
 
-  .tbl {
+  .empty { text-align: center; padding: 2rem 1rem; }
+  .empty__t { font-family: var(--font-display); font-weight: 700; margin-bottom: 0.375rem; }
+  .empty__b { font-size: 0.9375rem; color: var(--color-ink-2); }
+
+  .card--collapsed {
     background: #fff;
     border: 1px solid var(--color-line);
     border-radius: 0.875rem;
-    overflow: hidden;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
   }
-  .tbl__head,
-  .row {
+  .card__h--summary { cursor: pointer; list-style: none; margin-bottom: 0; }
+  .card--collapsed[open] .card__h--summary { margin-bottom: 1rem; }
+  .card__h--summary::-webkit-details-marker { display: none; }
+  .card__h--summary::before { content: '▸'; color: var(--color-ink-3); font-size: 0.875rem; }
+  .card--collapsed[open] .card__h--summary::before { content: '▾'; }
+
+  .brief-form {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 6rem 8rem 6rem auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
-    align-items: center;
-    padding: 0.875rem 1.125rem;
+    align-items: end;
   }
-  .tbl__head {
-    background: var(--color-surface-2);
-    border-bottom: 1px solid var(--color-line);
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--color-ink-3);
-  }
-  .tbl__actions-h { text-align: start; }
-  .row + .row, .tbl__head + .row { border-top: 1px solid var(--color-line); }
-  .row__title { font-weight: 700; }
-  .row__meta { margin-top: 0.25rem; }
-  .row__date { font-size: 0.8125rem; color: var(--color-ink-3); }
-  .row__mode { display: block; margin-top: 0.25rem; font-size: 0.75rem; color: var(--color-ink-3); }
-  .row__actions { display: flex; gap: 0.375rem; }
+  .adm-field--wide { grid-column: 1 / -1; }
+  .brief-actions { grid-column: 1 / -1; display: flex; gap: 0.625rem; justify-self: start; }
   .row__btn { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
 
   @media (max-width: 900px) {
     .brief-form { grid-template-columns: 1fr; }
-    .tbl__head { display: none; }
-    .row { grid-template-columns: 1fr; gap: 0.5rem; }
+    .rec { grid-template-columns: 2.25rem 1fr; }
+    .rec__actions { grid-column: 1 / -1; flex-direction: row; }
   }
 </style>

@@ -42,7 +42,7 @@ export async function sendLeadEmail(
   const rows: [string, string][] = [
     ['שם', fields.name],
     ['טלפון', fields.phone],
-    ['אימייל', fields.email],
+    ['אימייל', fields.email || 'לא נמסר, השאירו טלפון בלבד'],
     ['שירות מבוקש', serviceName || 'לא צוין'],
   ];
   const html =
@@ -72,8 +72,10 @@ export async function sendLeadEmail(
         to: [TO_EMAIL],
         // lets the business owner just hit reply to answer the lead
         // directly; the address was already validated server-side, so it
-        // cannot be used to inject extra headers here
-        reply_to: fields.email,
+        // cannot be used to inject extra headers here. Omitted entirely
+        // when the visitor left a phone number only (chat panel), because
+        // a reply-to that bounces is worse than no reply-to.
+        ...(fields.email ? { reply_to: fields.email } : {}),
         subject: `פנייה חדשה מהאתר: ${fields.name}`,
         html,
       }),

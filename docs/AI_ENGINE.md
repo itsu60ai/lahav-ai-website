@@ -637,3 +637,81 @@ Verified 2026-08-30.
 - Cloudflare Workers AI free allowance, 10,000 neurons/day, FLUX and Stable Diffusion available: [Workers AI free tier limits](https://costbench.com/software/llm-api-providers/cloudflare-workers-ai/free-plan/), [10K neurons/day guide](https://aicreditmart.com/ai-credits-providers/cloudflare-workers-ai-free-tier-10k-neurons-day-guide-2026/)
 - Google guidance on AI content, automation disclosure, people first content and E-E-A-T: [Google Search Central, Creating helpful content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
 - RSS feed availability: tested directly by HTTP request, results in section 4.
+
+---
+
+## 16. Stage C and Stage D, built 2026-09-02
+
+Status of this document's plan: **Stages A, B, C and D are now built.** Stage D
+ships OFF and costs nothing until a person turns it on.
+
+### Stage C (free, no model calls)
+- **Five-tab dashboard** at `/admin/ai`: LATEST / TRENDING / EVERGREEN /
+  DRAFTS / PUBLISHED, plain `?tab=` links so each tab is its own URL and
+  works without JavaScript. TRENDING is derived from real data (items more
+  than one radar source covers, plus recent trend/release items), never an
+  invented engagement metric. PUBLISHED shows נערך / לא נערך from
+  `ai_feedback`, not a made-up edit percentage.
+- **Editable learned rules** at `/admin/ai/rules`: read, rewrite, deactivate,
+  reactivate, add by hand (`article:create`); delete is `settings:manage`,
+  because deactivate is the reversible alternative.
+- **Human fact verification**: `ai_opportunities.verified_by` / `verified_at`,
+  stamped from the SESSION and never from the form body. A new
+  `checkFactVerification` gate passes only on a human-verified opportunity,
+  plus a `source-freshness` gate for stale trend items. This is the free
+  alternative to paid verification search, exactly as section 3.4 planned.
+- **Visuals**: a missing alt text on an article diagram is now BLOCKING.
+  `/api/og/<slug>.svg` serves an article's own stored SVG (published only,
+  re-checked with `isSvgSafe`).
+  **Honest limitation:** `og:image` still points at `/brand/og-default.png`.
+  Rasterising SVG in a Worker needs a wasm renderer plus an embedded Hebrew
+  font, which is the heavy dependency this project rules out, and no paid
+  image API was added. The cheap fix, when it matters, is rendering to PNG at
+  build time into `/public`.
+
+### Stage D (paid tier, ships OFF)
+- `src/lib/ai/providers/api.ts`: Anthropic Messages API by raw fetch (no SDK,
+  bundle size), `claude-sonnet-5`. It reuses manual mode's output format and
+  parser, so API mode cannot drift from manual mode, and runs the same
+  validation and gates. Real token counts and measured `cost_usd` per call.
+  Every failure throws a clear Hebrew error; none fabricates an article.
+- Settings writer plus a section on `/admin/settings` (`settings:manage`).
+  `EngineSettingsPatch` deliberately CANNOT express `auto_publish_enabled`:
+  arming is a separate route, so "switch to paid mode" and "let the site
+  publish in my name" are never the same button.
+- **Cron decision**: a Cloudflare cron trigger invokes an exported
+  `scheduled()` handler, and the Astro Cloudflare v14 worker entry is
+  generated as `{ fetch: handle }` with no `scheduled` anywhere in the
+  adapter. Rather than replace a generated entry and re-check it on every
+  adapter upgrade, the scheduled job is `POST /api/ai-cron`, guarded by a
+  `CRON_SECRET` with a constant-time compare and **failing closed when the
+  secret is unset**. The trigger block sits commented out in
+  `wrangler.jsonc`. Job order: collect radar, compute recommendations, and
+  generate ONE draft only if auto-publish is armed and within cap.
+- **Auto publish, all eleven layers**: ships off; `arm()` requires a named
+  human and a mandatory future expiry and has exactly one call site, the
+  admin route; `settings:manage`; typed phrase `אני מאשר פרסום אוטומטי`;
+  30-day default expiry the job disarms itself on; hard weekly cap with a
+  rolling week; topic allow-list (empty ships, so it blocks everything); any
+  blocking OR review gate failure keeps it a draft, which is stricter than
+  the human path because nobody will look; Resend notification with a
+  one-click unpublish token; kill switch; `ai_auto_publications` audit table
+  written before the email is attempted. Beyond the plan, auto-publish also
+  requires `provider_mode = 'api'` and a human-verified opportunity, and
+  clears `isPlaceholder` so a mock draft can never go live.
+
+### Turning Stage D on (what a person must actually do)
+1. `wrangler secret put CRON_SECRET` (`ANTHROPIC_API_KEY` is already set).
+2. `/admin/settings` -> "איך נכתבות הכתבות" -> API -> save. That alone gives
+   one-click paid generation and nothing else.
+3. For auto publish additionally: add at least one allow-list topic, verify
+   opportunities with "אימתתי", set days and weekly cap, type the
+   confirmation phrase, submit.
+4. Point a scheduler at `POST /api/ai-cron`.
+
+### Cost, measured not guessed
+Sonnet 5 at $2.00/MTok in and $10.00/MTok out. A typical prompt of roughly
+4-6k input tokens with a 3-5k-token article is about **$0.04-$0.06 per
+article**; the real figure is recorded per call in `ai_generations.cost_usd`.
+Stage C and the heuristic recommender stay at $0. `recommendation_mode: 'api'`
+remains wired but throwing, as designed.

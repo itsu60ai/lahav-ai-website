@@ -14,7 +14,7 @@
 // and the AI chat are both required, side by side.
 import WhatsApp from './icons/WhatsApp.astro';
 import { WHATSAPP_HREF, DISCOVERY_BOOKING_URL } from '../lib/site';
-import { SUGGESTIONS } from '../lib/chat/knowledge.ts';
+import { pageContext } from '../lib/chat/pages.ts';
 import { buildWhatsappHref } from '../lib/cms/content.ts';
 
 interface Props { preview?: boolean }
@@ -32,6 +32,14 @@ const settings: Record<string, string> = Astro.locals.stores
   : {};
 const waHref = Object.keys(settings).length ? buildWhatsappHref(settings) : WHATSAPP_HREF;
 const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
+
+// PAGE AWARENESS. The greeting and the opening chips come from the closed
+// table in lib/chat/pages.ts, keyed on the page this component is being
+// rendered into. The home entry keeps the original approved greeting word
+// for word. The same table runs server-side on /api/chat, so the model's
+// one line of page context and the panel's copy can never disagree.
+const chatPath = Astro.url.pathname;
+const chatPage = pageContext(chatPath);
 ---
 
 <div class="dock" data-dock>
@@ -69,7 +77,14 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
 </div>
 
 <!-- ═════════ the assistant ═════════ -->
-<div class="chat" id="lahav-chat" data-chat hidden>
+<div
+  class="chat"
+  id="lahav-chat"
+  data-chat
+  data-chat-path={chatPath}
+  data-chat-pagekey={chatPage.key}
+  hidden
+>
   <div class="chat__panel" role="dialog" aria-modal="false" aria-label="העוזר של LAHAV AI">
     <header class="chat__head">
       <span class="chat__badge" aria-hidden="true">
@@ -82,29 +97,58 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
         <span class="chat__name">העוזר של LAHAV AI</span>
         <span class="chat__sub" data-chat-status>הדגמה חיה של מה ש-AI יכול לעשות בעסק שלכם</span>
       </span>
+      <button class="chat__reset" type="button" data-chat-reset>התחלה מחדש</button>
       <button class="chat__x" type="button" data-chat-close aria-label="סגירת הצ׳אט">✕</button>
     </header>
 
     <div class="chat__log" data-chat-log role="log" aria-live="polite">
-      <div class="chat__msg chat__msg--bot">
-        <p>היי! יש לכם שאלות על AI או אוטומציות? אני כאן כדי לעשות סדר ולחסוך לכם זמן.</p>
+      <div class="chat__msg chat__msg--bot" data-chat-greeting>
+        <p>{chatPage.greeting}</p>
       </div>
     </div>
 
     <div class="chat__sugg" data-chat-sugg>
-      {SUGGESTIONS.map((q) => (
+      {chatPage.chips.map((q) => (
         <button class="chat__chip" type="button" data-chat-suggest={q}>{q}</button>
       ))}
     </div>
 
     <div class="chat__actions">
+      <button class="chat__action chat__action--btn" type="button" data-chat-lead-open>
+        רוצה שנחזור אליכם?
+      </button>
       <a class="chat__action" href={bookingUrl} target="_blank" rel="noopener noreferrer">
-        רוצה לקבוע שיחה קצרה
+        לקבוע שיחה קצרה
       </a>
       <a class="chat__action" href={waHref} target="_blank" rel="noopener noreferrer">
         לדבר בוואטסאפ
       </a>
     </div>
+
+    <!-- Leaving details without leaving the chat. Same lead pipeline as
+         the contact form; see src/pages/api/chat/lead.ts. -->
+    <form class="chat__lead" data-chat-lead-form hidden>
+      <p class="chat__lead-title">נשמח לחזור אליכם. מספיק שם וטלפון.</p>
+      <label class="sr-only" for="chat-lead-name">שם</label>
+      <input class="chat__lead-field" id="chat-lead-name" name="name" type="text"
+             autocomplete="name" maxlength="120" placeholder="השם שלכם" required />
+      <label class="sr-only" for="chat-lead-phone">טלפון</label>
+      <input class="chat__lead-field" id="chat-lead-phone" name="phone" type="tel"
+             autocomplete="tel" maxlength="40" placeholder="טלפון" required />
+      <label class="sr-only" for="chat-lead-email">אימייל, לא חובה</label>
+      <input class="chat__lead-field" id="chat-lead-email" name="email" type="email"
+             autocomplete="email" maxlength="200" placeholder="אימייל (לא חובה)" />
+      <!-- honeypot: hidden from people, tempting to bots -->
+      <div class="chat__trap" aria-hidden="true">
+        <label for="chat-lead-website">אל תמלאו שדה זה</label>
+        <input id="chat-lead-website" name="website_url" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+      <p class="chat__lead-error" data-chat-lead-error hidden></p>
+      <div class="chat__lead-row">
+        <button class="chat__lead-send" type="submit" data-chat-lead-send>שליחה</button>
+        <button class="chat__lead-cancel" type="button" data-chat-lead-cancel>ביטול</button>
+      </div>
+    </form>
 
     <form class="chat__form" data-chat-form>
       <label class="sr-only" for="chat-input">מה תרצו לשאול?</label>
@@ -139,6 +183,14 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
     const send = chat.querySelector<HTMLButtonElement>('[data-chat-send]')!;
     const sugg = chat.querySelector<HTMLElement>('[data-chat-sugg]')!;
     const status = chat.querySelector<HTMLElement>('[data-chat-status]')!;
+    const greeting = chat.querySelector<HTMLElement>('[data-chat-greeting]');
+    const resetBtn = chat.querySelector<HTMLButtonElement>('[data-chat-reset]');
+    const leadOpen = chat.querySelector<HTMLButtonElement>('[data-chat-lead-open]');
+    const leadForm = chat.querySelector<HTMLFormElement>('[data-chat-lead-form]');
+    const leadError = chat.querySelector<HTMLElement>('[data-chat-lead-error]');
+    const leadCancel = chat.querySelector<HTMLButtonElement>('[data-chat-lead-cancel]');
+    const leadSend = chat.querySelector<HTMLButtonElement>('[data-chat-lead-send]');
+    const pagePath = chat.dataset.chatPath || location.pathname;
 
     // ---------- back to top ----------
     let raf = 0;
@@ -183,15 +235,20 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
 
     // ---------- transcript ----------
     type Turn = { role: 'user' | 'assistant'; content: string };
-    const history: Turn[] = [];
+    let history: Turn[] = [];
 
-    const bubble = (role: 'user' | 'bot', text: string) => {
-      const div = document.createElement('div');
-      div.className = `chat__msg chat__msg--${role}`;
-      const p = document.createElement('p');
-      // Render URLs (and the site's own /paths/) as real links. Built
-      // from text nodes and anchors only, never innerHTML, so the model's
-      // reply can never inject markup.
+    // Same window the server enforces, so what we remember can never be
+    // larger than what we are allowed to send.
+    const MAX_TURNS = 8;
+    const MAX_CHARS = 500;
+
+    // Renders text into an existing <p> as text nodes and anchors only,
+    // never innerHTML, so the model's reply can never inject markup.
+    // Called once with the FINAL text of every bot bubble, so links look
+    // the same whether the reply streamed in or arrived in one piece.
+    const renderInto = (p: HTMLElement, text: string) => {
+      while (p.firstChild) p.removeChild(p.firstChild);
+      // Render URLs (and the site's own /paths/) as real links.
       const linkRe = /(https?:\/\/[^\s<>"']+|(?:^|(?<=[\s(]))\/[a-z0-9\-]+(?:\/[a-z0-9\-]+)*\/?)/gi;
       let last = 0;
       for (const m of text.matchAll(linkRe)) {
@@ -209,48 +266,231 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
         last = at + url.length;
       }
       if (last < text.length) p.appendChild(document.createTextNode(text.slice(last)));
+    };
+
+    const bubble = (role: 'user' | 'bot', text: string) => {
+      const div = document.createElement('div');
+      div.className = `chat__msg chat__msg--${role}`;
+      const p = document.createElement('p');
+      renderInto(p, text);
       div.appendChild(p);
       log.appendChild(div);
       log.scrollTop = log.scrollHeight;
       return div;
     };
 
+    /** An empty bot bubble that text can be poured into as it arrives. */
+    const growingBubble = () => {
+      const div = document.createElement('div');
+      div.className = 'chat__msg chat__msg--bot';
+      const p = document.createElement('p');
+      div.appendChild(p);
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+      return {
+        el: div,
+        /** progressive: plain text only, no linkifying mid-word */
+        grow(text: string) {
+          p.textContent = text;
+          log.scrollTop = log.scrollHeight;
+        },
+        /** the final pass, where links are built */
+        finish(text: string) {
+          renderInto(p, text);
+          log.scrollTop = log.scrollHeight;
+        },
+      };
+    };
+
+    // ---------- memory across pages ----------
+    // sessionStorage can throw outright (Safari private mode, blocked
+    // third-party storage, a full quota), so every read and write is
+    // wrapped. Losing the transcript is a small thing; throwing inside
+    // the dock script would take the WhatsApp and back-to-top buttons
+    // down with it.
+    const STORE_KEY = 'lahav.chat.v1';
+
+    const saveState = () => {
+      try {
+        const bubbles = [...log.querySelectorAll<HTMLElement>('.chat__msg')]
+          .filter((b) => !b.classList.contains('chat__msg--typing') && !b.hasAttribute('data-chat-greeting'))
+          .map((b) => ({
+            role: b.classList.contains('chat__msg--user') ? 'user' : 'bot',
+            text: b.textContent ?? '',
+          }))
+          .slice(-MAX_TURNS * 2);
+        sessionStorage.setItem(STORE_KEY, JSON.stringify({ history: history.slice(-MAX_TURNS), bubbles }));
+      } catch {
+        /* storage unavailable; the chat still works for this page */
+      }
+    };
+
+    const clearState = () => {
+      try { sessionStorage.removeItem(STORE_KEY); } catch { /* nothing to do */ }
+    };
+
+    const restoreState = () => {
+      let saved: any = null;
+      try {
+        const raw = sessionStorage.getItem(STORE_KEY);
+        if (raw) saved = JSON.parse(raw);
+      } catch {
+        return;
+      }
+      if (!saved || !Array.isArray(saved.bubbles) || !saved.bubbles.length) return;
+      for (const b of saved.bubbles) {
+        const role = b?.role === 'user' ? 'user' : 'bot';
+        const text = typeof b?.text === 'string' ? b.text.slice(0, MAX_CHARS * 4) : '';
+        if (text) bubble(role, text);
+      }
+      if (Array.isArray(saved.history)) {
+        history = saved.history
+          .filter((m: any) => (m?.role === 'user' || m?.role === 'assistant') && typeof m.content === 'string')
+          .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, MAX_CHARS) }))
+          .slice(-MAX_TURNS);
+      }
+      // A returning visitor is mid-conversation, so the opening greeting
+      // and the opening chips are no longer the right thing to show.
+      if (greeting) greeting.hidden = true;
+      sugg.hidden = true;
+      if (resetBtn) resetBtn.hidden = false;
+    };
+
+    // ---------- suggestion chips ----------
+    const showChips = (questions: string[]) => {
+      while (sugg.firstChild) sugg.removeChild(sugg.firstChild);
+      for (const q of questions) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        // :global in the style block below, because this node is built here
+        b.className = 'chat__chip';
+        b.textContent = q;
+        b.addEventListener('click', () => ask(q));
+        sugg.appendChild(b);
+      }
+      sugg.hidden = questions.length === 0;
+    };
+
+    // ---------- asking ----------
     let busy = false;
+
+    const finishReply = (text: string, followUps: string[], leadIntent: boolean) => {
+      history.push({ role: 'assistant', content: text.slice(0, MAX_CHARS) });
+      history = history.slice(-MAX_TURNS);
+      showChips(Array.isArray(followUps) ? followUps.slice(0, 3) : []);
+      if (leadIntent) openLead();
+      saveState();
+    };
+
+    /**
+     * Reads a Server-Sent Events body. Returns false when the response
+     * turned out not to be SSE at all, so the caller can fall back to the
+     * plain JSON shape the endpoint still supports.
+     */
+    const readStream = async (
+      res: Response,
+      onDelta: (piece: string) => void
+    ): Promise<{ reply?: string; followUps?: string[]; leadIntent?: boolean; error?: string; code?: string }> => {
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      let out: any = {};
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let cut: number;
+        while ((cut = buf.indexOf('\n\n')) >= 0) {
+          const frame = buf.slice(0, cut);
+          buf = buf.slice(cut + 2);
+          let name = 'message';
+          let data = '';
+          for (const line of frame.split('\n')) {
+            if (line.startsWith('event:')) name = line.slice(6).trim();
+            else if (line.startsWith('data:')) data += line.slice(5).trim();
+          }
+          if (!data) continue;
+          let payload: any;
+          try { payload = JSON.parse(data); } catch { continue; }
+          if (name === 'delta' && typeof payload.text === 'string') onDelta(payload.text);
+          else if (name === 'done') out = payload;
+          else if (name === 'error') out = payload;
+        }
+      }
+      return out;
+    };
+
     const ask = async (question: string) => {
       if (busy || !question.trim()) return;
       busy = true;
       sugg.hidden = true;
+      if (greeting) greeting.hidden = true;
+      if (resetBtn) resetBtn.hidden = false;
       input.value = '';
       send.disabled = true;
-      bubble('user', question);
-      history.push({ role: 'user', content: question });
+      const asked = question.trim().slice(0, MAX_CHARS);
+      bubble('user', asked);
+      history.push({ role: 'user', content: asked });
+      history = history.slice(-MAX_TURNS);
 
       const typing = document.createElement('div');
       typing.className = 'chat__msg chat__msg--bot chat__msg--typing';
-      typing.innerHTML = '<span></span><span></span><span></span>';
+      // three static dots, built as elements rather than markup
+      for (let i = 0; i < 3; i++) typing.appendChild(document.createElement('span'));
       log.appendChild(typing);
       log.scrollTop = log.scrollHeight;
 
       try {
         const res = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ messages: history.slice(-8) }),
+          headers: { 'content-type': 'application/json', accept: 'text/event-stream' },
+          body: JSON.stringify({ messages: history.slice(-MAX_TURNS), page: pagePath }),
         });
-        const data = (await res.json().catch(() => ({}))) as {
-          ok?: boolean; reply?: string; error?: string; code?: string;
-        };
-        typing.remove();
-        if (res.ok && data.ok && data.reply) {
-          bubble('bot', data.reply);
-          history.push({ role: 'assistant', content: data.reply });
+        const ctype = res.headers.get('content-type') ?? '';
+        // FEATURE DETECTION, not an assumption: an older deployment, a
+        // proxy that buffers, or an error response all answer in JSON.
+        const streamed = res.ok && res.body && ctype.includes('text/event-stream');
+
+        if (streamed) {
+          let shown = '';
+          // a box rather than a plain variable: it is written from inside
+          // the stream callback, and TypeScript cannot narrow that
+          const live: { b: ReturnType<typeof growingBubble> | null } = { b: null };
+          const out = await readStream(res, (piece) => {
+            if (!live.b) { typing.remove(); live.b = growingBubble(); }
+            shown += piece;
+            live.b.grow(shown);
+          });
+          typing.remove();
+          if (typeof out.reply === 'string' && out.reply) {
+            if (!live.b) live.b = growingBubble();
+            live.b.finish(out.reply);
+            finishReply(out.reply, out.followUps ?? [], !!out.leadIntent);
+          } else {
+            live.b?.el.remove();
+            bubble('bot', out.error || 'משהו לא עבד כרגע. אפשר לנסות שוב.');
+            if (out.code === 'not_configured') status.textContent = 'לא פעיל כרגע';
+            saveState();
+          }
         } else {
-          bubble('bot', data.error || 'משהו לא עבד כרגע. אפשר לנסות שוב.');
-          if (data.code === 'not_configured') status.textContent = 'לא פעיל כרגע';
+          const data = (await res.json().catch(() => ({}))) as {
+            ok?: boolean; reply?: string; error?: string; code?: string;
+            followUps?: string[]; leadIntent?: boolean;
+          };
+          typing.remove();
+          if (res.ok && data.ok && data.reply) {
+            bubble('bot', data.reply);
+            finishReply(data.reply, data.followUps ?? [], !!data.leadIntent);
+          } else {
+            bubble('bot', data.error || 'משהו לא עבד כרגע. אפשר לנסות שוב.');
+            if (data.code === 'not_configured') status.textContent = 'לא פעיל כרגע';
+            saveState();
+          }
         }
       } catch {
         typing.remove();
         bubble('bot', 'לא הצלחנו להתחבר. אפשר לנסות שוב, או לכתוב לנו בוואטסאפ.');
+        saveState();
       } finally {
         busy = false;
         send.disabled = false;
@@ -258,13 +498,106 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
       }
     };
 
+    // ---------- leaving details ----------
+    let leadShownAt = 0;
+    let leadDone = false;
+
+    function openLead() {
+      if (!leadForm || leadDone) return;
+      if (!leadForm.hidden) return;
+      leadForm.hidden = false;
+      // the server requires a minimum dwell time; this is where it starts
+      leadShownAt = Date.now();
+      if (leadError) { leadError.hidden = true; leadError.textContent = ''; }
+      leadForm.scrollIntoView({ block: 'nearest' });
+    }
+
+    const closeLead = () => {
+      if (leadForm) leadForm.hidden = true;
+    };
+
+    leadOpen?.addEventListener('click', () => {
+      if (leadForm?.hidden) openLead();
+      else closeLead();
+    });
+    leadCancel?.addEventListener('click', closeLead);
+
+    leadForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!leadSend || leadSend.disabled) return;
+      const fd = new FormData(leadForm);
+      const showError = (msg: string) => {
+        if (!leadError) return;
+        leadError.textContent = msg;
+        leadError.hidden = false;
+      };
+      if (!String(fd.get('name') ?? '').trim()) return showError('נא למלא שם');
+      if (!String(fd.get('phone') ?? '').trim()) return showError('נא למלא טלפון');
+      leadSend.disabled = true;
+      if (leadError) leadError.hidden = true;
+      try {
+        const res = await fetch('/api/chat/lead', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name: fd.get('name'),
+            phone: fd.get('phone'),
+            email: fd.get('email'),
+            note: '',
+            website_url: fd.get('website_url'),
+            form_rendered_at: leadShownAt,
+            page: pagePath,
+            messages: history.slice(-6),
+          }),
+        });
+        const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        if (res.ok && data.ok) {
+          leadDone = true;
+          leadForm.hidden = true;
+          if (leadOpen) leadOpen.hidden = true;
+          bubble('bot', 'תודה, קיבלנו את הפרטים. נחזור אליכם בהקדם.');
+          saveState();
+        } else {
+          showError(data.error || 'משהו לא עבד כרגע. אפשר לנסות שוב, או לכתוב לנו בוואטסאפ.');
+        }
+      } catch {
+        showError('לא הצלחנו לשלוח. אפשר לנסות שוב, או לכתוב לנו בוואטסאפ.');
+      } finally {
+        leadSend.disabled = false;
+      }
+    });
+
+    // ---------- start over ----------
+    resetBtn?.addEventListener('click', () => {
+      clearState();
+      history = [];
+      leadDone = false;
+      closeLead();
+      if (leadOpen) leadOpen.hidden = false;
+      for (const b of [...log.querySelectorAll<HTMLElement>('.chat__msg')]) {
+        if (!b.hasAttribute('data-chat-greeting')) b.remove();
+      }
+      if (greeting) greeting.hidden = false;
+      showChips([...openingChips]);
+      resetBtn.hidden = true;
+      input.focus();
+    });
+
+    // ---------- wiring ----------
+    const openingChips = [...sugg.querySelectorAll<HTMLButtonElement>('[data-chat-suggest]')].map(
+      (b) => b.dataset.chatSuggest || b.textContent || ''
+    );
+    sugg.querySelectorAll<HTMLButtonElement>('[data-chat-suggest]').forEach((b) =>
+      b.addEventListener('click', () => ask(b.dataset.chatSuggest || b.textContent || ''))
+    );
+
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       ask(input.value);
     });
-    sugg.querySelectorAll<HTMLButtonElement>('[data-chat-suggest]').forEach((b) =>
-      b.addEventListener('click', () => ask(b.dataset.chatSuggest || b.textContent || ''))
-    );
+
+    if (resetBtn) resetBtn.hidden = true;
+    restoreState();
   })();
 </script>
 
@@ -490,7 +823,106 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
     cursor: pointer;
     transition: border-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
   }
-  .chat__chip:hover { border-color: var(--color-royal); color: var(--color-royal); }
+  /* :global BECAUSE THE FOLLOW-UP CHIPS ARE BUILT IN JAVASCRIPT after
+     every answer. Astro's scoping attribute never reaches a node made
+     with document.createElement, so the chips would come out unstyled
+     exactly the way the message bubbles once did. */
+  .chat__chip:hover,
+  :global(.chat__chip:hover) { border-color: var(--color-royal); color: var(--color-royal); }
+  :global(.chat__chip) {
+    border: 1px solid var(--color-line-strong);
+    background: transparent;
+    color: var(--color-ink-2);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    padding: 0.4rem 0.7rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+  }
+  /* the container is a flex row, so `hidden` alone would not hide it */
+  .chat__sugg[hidden] { display: none; }
+
+  /* start over: quiet until there is actually something to clear */
+  .chat__reset {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: transparent;
+    color: #fff;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    cursor: pointer;
+    margin-inline-end: 0.35rem;
+  }
+  .chat__reset:hover { background: rgba(255, 255, 255, 0.16); }
+  .chat__reset[hidden] { display: none; }
+
+  /* ══════ leaving details inside the chat ══════ */
+  .chat__lead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0 1rem 0.75rem;
+  }
+  .chat__lead[hidden] { display: none; }
+  .chat__lead-title {
+    margin: 0;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    color: var(--color-ink-2);
+  }
+  .chat__lead-field {
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    color: var(--color-ink);
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.7rem;
+    min-width: 0;
+  }
+  .chat__lead-field:focus { outline: none; border-color: var(--color-royal); }
+  .chat__lead-row { display: flex; gap: 0.4rem; }
+  .chat__lead-send {
+    flex: 1;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--color-royal);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: var(--text-micro);
+    font-weight: 700;
+    padding: 0.5rem;
+    cursor: pointer;
+  }
+  .chat__lead-send:disabled { opacity: 0.5; cursor: progress; }
+  .chat__lead-cancel {
+    border: 1px solid var(--color-line-strong);
+    background: transparent;
+    color: var(--color-ink-2);
+    font-family: var(--font-body);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    border-radius: var(--radius);
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+  }
+  .chat__lead-error {
+    margin: 0;
+    font-size: var(--text-micro);
+    color: #b42318;
+  }
+  .chat__lead-error[hidden] { display: none; }
+  /* the honeypot: out of sight and out of the tab order, never
+     display:none, which some bots check for */
+  .chat__trap {
+    position: absolute;
+    inset-inline-start: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
 
   .chat__actions {
     display: flex; gap: 0.4rem;
@@ -508,6 +940,14 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
     background: color-mix(in srgb, var(--color-royal) 8%, transparent);
   }
   .chat__action:hover { background: color-mix(in srgb, var(--color-royal) 14%, transparent); }
+  /* the same pill, but it opens the in-panel form instead of leaving */
+  .chat__action--btn {
+    border: 0;
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+  .chat__action--btn[hidden] { display: none; }
+  .chat__actions { flex-wrap: wrap; }
 
   .chat__form {
     display: flex;

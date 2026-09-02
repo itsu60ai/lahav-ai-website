@@ -6,6 +6,7 @@ F-20, F-21, F-22, F-23 (2026-08-29) F-24, F-25, F-26, F-27 (2026-08-31) and F-28
 F-30..F-33 (2026-09-01), the Website Content CMS - see section 7.
 F-34..F-37 (2026-09-01), CMS finalization (draft/publish gaps closed) - see section 7.
 F-38..F-40 (2026-09-02), Portfolio redesign to the STG reference and COPY V2 - see section 8.
+F-41, F-42 (2026-09-02), chat upgrade and AI engine Stages C+D - see section 9.
 
 ---
 
@@ -534,3 +535,51 @@ Strings that live in page code rather than the CMS (the home page's pain
 cards, principles, section headings, founder blurb; the about page's
 principles and founder story) change on the next deploy without a
 publish step, because they were never CMS fields.
+
+## 9. Decisions taken 2026-09-02, later: chat upgrade and AI engine Stages C+D
+
+### F-41 - The site chat becomes a live demo, and can open a real lead
+Client instruction: the assistant should demonstrate what AI does for a
+business, not just answer. Built: streaming replies (Anthropic streams for
+real; Workers AI stays non-streaming and emits once, because the degeneracy
+guard can only judge a finished reply and streaming text we intend to discard
+would be worse), page awareness from a CLOSED table of known paths (the raw
+path never reaches the prompt), deterministic follow-up chips from a Hebrew
+keyword table (no extra model call, zero cost), conversation memory in
+sessionStorage with a "התחלה מחדש" control, and a lead form inside the panel.
+
+`POST /api/chat/lead` reuses the approved contact pipeline step for step:
+honeypot and dwell-time check, `CONTACT_RATE_LIMITER`, `validateAndClean`,
+store FIRST, then email, then `markEmailResult`. It holds no admin path and
+imports nothing from the CMS.
+
+**Email is genuinely optional there, not faked.** The chat asks for name and
+phone only. The first implementation stored `no-email@example.com` when none
+was given; that was rejected, because a fake address in the leads table is
+worse than an absent one both for whoever reads the list and for anyone who
+hits reply. Instead `validateAndClean` gained an opt-in `emailOptional` flag
+(OFF by default, so the approved contact form of F-10 is byte-for-byte
+unchanged) and the notifier omits `reply_to` entirely when there is no email.
+Verified end to end locally: the stored row has an empty email, the service
+slug resolved from the page, and the conversation in the message field.
+
+### F-42 - The AI article engine reaches Stages C and D
+Full detail in `docs/AI_ENGINE.md` section 16. Summary: Stage C (five-tab
+dashboard, editable learned rules, human fact verification wired into the
+gates, article visuals) is free and on. Stage D (Anthropic API mode,
+settings writer, scheduled run, auto publish with all eleven safety layers)
+is built and **ships OFF**: `provider_mode = 'mock'`, `auto_publish_enabled = 0`,
+empty topic allow-list. Verified in both databases after deploy.
+
+B-1 is therefore no longer a blocker on the BUILD; it remains a client
+decision about spending, now with a measured figure (~$0.04-$0.06 per
+article) rather than an estimate. O-9's safety model is implemented as
+approved and still requires the client's deliberate arming action.
+
+### Known environment issue, not a site bug
+`npm run build` can abort on this machine before compiling: Node 25 removed
+`fs.rmdirSync({recursive:true})`, which this Astro version calls to empty
+`dist/`, and a running preview server locks `dist/`. Workaround used
+throughout: stop node processes first, or build with
+`npx astro build --outDir dist-verify`. Worth fixing properly by pinning Node
+or upgrading Astro.
