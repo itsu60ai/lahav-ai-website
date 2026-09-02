@@ -29,32 +29,30 @@
       <span>אוטומציה פעילה</span>
     </header>
     <ul class="fc__steps">
-      <li><span class="fc__tick">✓</span> נשלח וואטסאפ ללקוח</li>
-      <li><span class="fc__tick">✓</span> נפתחה משימה ב-CRM</li>
-      <li><span class="fc__tick fc__tick--now"></span> פגישה ננעלת ביומן</li>
+      <li><span class="fc__tick">✓</span> נשלחה הודעה</li>
+      <li><span class="fc__tick">✓</span> נפתחה משימה</li>
+      <li><span class="fc__tick fc__tick--now"></span> נקבעה פגישה</li>
     </ul>
   </article>
 
-  <!-- pipeline -->
+  <!-- customer journey -->
   <article class="fc__card fc__card--c" data-parallax="0.16">
     <header class="fc__head"><span>מסלול הלקוח</span></header>
-    <div class="fc__bars">
-      <span style="--h:38%"></span>
-      <span style="--h:62%"></span>
-      <span style="--h:80%"></span>
-      <span style="--h:54%"></span>
-    </div>
-    <p class="fc__sub">תמיד ברור מה קרה ומה הצעד הבא</p>
+    <ul class="fc__journey">
+      <li><span class="fc__journey-t">פנייה חדשה</span><span class="fc__journey-d">נכנס ליד חדש</span></li>
+      <li><span class="fc__journey-t">נוצר מעקב</span><span class="fc__journey-d">הכל נכנס למקום אחד</span></li>
+      <li><span class="fc__journey-t">פולואפ בזמן</span><span class="fc__journey-d">שום ליד לא נופל</span></li>
+      <li><span class="fc__journey-t">לקוח חוזר</span><span class="fc__journey-d">המערכת מזכירה מתי לפנות</span></li>
+    </ul>
   </article>
 
-  <!-- reminder -->
+  <!-- bottom bubble -->
   <article class="fc__card fc__card--d" data-parallax="-0.09">
     <header class="fc__head">
       <span class="fc__dot"></span>
-      <span>תזכורת</span>
+      <span>מה קורה עכשיו?</span>
     </header>
-    <p class="fc__title">לחזור ללקוח היום</p>
-    <p class="fc__sub">נקבעה כשהפנייה נכנסה</p>
+    <p class="fc__sub">רואים את כל התהליך במקום אחד</p>
   </article>
 </div>
 
@@ -116,6 +114,12 @@
     border-radius: 3px 3px 0 0;
     opacity: 0.85;
   }
+
+  /* the customer-journey card: four short stops, header + one line each */
+  .fc__journey { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .fc__journey li { display: flex; flex-direction: column; }
+  .fc__journey-t { font-family: var(--font-display); font-weight: 800; font-size: var(--text-small); color: var(--color-ink); }
+  .fc__journey-d { color: var(--color-ink-3); font-size: 0.72rem; }
 
   @keyframes fc-float {
     0%, 100% { transform: translateY(0); }
