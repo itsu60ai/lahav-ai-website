@@ -157,3 +157,29 @@ act on:
 7. **Close by restating the one principle from step 2** in a single
    summary line, then a low-pressure next step or invitation, not a
    hard sales pitch.
+
+## 11. Production values: links and images that earn their place
+
+Added 2026-09-02, same source situation as section 10 — a production
+pattern noticed in reference material, described here in our own
+words, no outside text stored.
+
+A guide reads as hand-made, not templated, when its media is specific
+rather than decorative:
+
+- **Link out inline, not only in a closing list.** When the body
+  mentions a real destination worth reaching, an official doc, a
+  specific tool's settings page, a relevant video, that becomes a real
+  link exactly where it's mentioned, not a bare URL saved for the end.
+  This is now possible in practice: article body text renders real
+  clickable links (`src/lib/cms/linkify.ts`), so a generated draft's
+  inline links survive into the published piece.
+- **Every image should be the specific thing being described, not a
+  generic illustration of the topic.** A step that changes a setting
+  shows that setting's actual screen; a comparison shows the actual
+  things compared. A generic "AI concept" graphic in its place is a
+  tell that nobody actually did the step.
+- This is a production bar, not a new claims rule — section 7's ban on
+  invented figures and section 3's concreteness rule already point the
+  same direction. It just extends "be concrete" to the images and
+  links, not only the sentences.
