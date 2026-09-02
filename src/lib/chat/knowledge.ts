@@ -86,8 +86,8 @@ export const CLOSING_RULES = `
 
 /** Opening suggestions. Kept short deliberately. */
 export const SUGGESTIONS = [
+  'איך זה חוסך לי כסף?',
   'איזה שירות מתאים לי?',
-  'מה ההבדל בין CRM לאוטומציה?',
   'איך מתחילים?',
-  'אני רוצה לקבוע שיחה',
+  'רוצה לקבוע שיחה קצרה',
 ] as const;

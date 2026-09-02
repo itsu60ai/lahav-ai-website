@@ -34,8 +34,8 @@ export interface Props {
 
 const {
   siteKey,
-  heading = 'תכתבו לנו איפה זה נתקע.',
-  body = 'לא צריך להתכונן או לדעת מראש מה רוצים לבנות. מספיק לספר מה קורה היום.',
+  heading = 'בואו נבין איפה העסק שלכם תקוע.',
+  body = 'אתם לא צריכים להגיע עם תוכניות מוגדרות מראש או להבין בקוד. פשוט ספרו לנו מה שואב לכם את הזמן היום, ואנחנו כבר נדאג לפתרון.',
   service = '',
   curve = true,
   id = 'contact-block',
@@ -74,10 +74,10 @@ const serviceNames: Record<string, string> = Astro.locals.stores
       <div class="cb__routes" data-reveal style="--mo-delay:360ms">
         <a class="cb__route" href={waHref} target="_blank" rel="noopener noreferrer">
           <WhatsApp />
-          <span>מעדיפים וואטסאפ? זה בסדר גמור.</span>
+          <span>מעדיפים לדלג על הטופס? בכיף. נדבר ישר בוואטסאפ.</span>
         </a>
         <a class="cb__route" href={CTA_PRIMARY.href}>
-          <span>לתיאום שיחת היכרות</span>
+          <span>לסגור פגישה ביומן</span>
           <span class="arrow-inline" aria-hidden="true">←</span>
         </a>
       </div>
@@ -86,11 +86,11 @@ const serviceNames: Record<string, string> = Astro.locals.stores
     <form class="cb__form" method="post" action="/api/contact" novalidate data-cb-form>
       <div class="cb__row">
         <div class="field">
-          <label class="field-label" for={`${id}-name`}>שם מלא</label>
+          <label class="field-label" for={`${id}-name`}>איך קוראים לכם?</label>
           <input class="input" id={`${id}-name`} name="name" type="text" autocomplete="name" required maxlength="120" />
         </div>
         <div class="field">
-          <label class="field-label" for={`${id}-phone`}>טלפון</label>
+          <label class="field-label" for={`${id}-phone`}>מספר נייד (כדי שנוכל לחזור אליכם)</label>
           <input class="input input-ltr" id={`${id}-phone`} name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="40" />
         </div>
       </div>
@@ -101,9 +101,9 @@ const serviceNames: Record<string, string> = Astro.locals.stores
           <input class="input input-ltr" id={`${id}-email`} name="email" type="email" autocomplete="email" required maxlength="200" />
         </div>
         <div class="field">
-          <label class="field-label" for={`${id}-service`}>מה מעניין אתכם</label>
+          <label class="field-label" for={`${id}-service`}>מה מעניין אתכם?</label>
           <select class="input" id={`${id}-service`} name="service">
-            <option value="">עוד לא בטוח</option>
+            <option value="">עדיין לא בטוח, תעזרו לי?</option>
             {SERVICES.map((s) => (
               <option value={s.slug} selected={s.slug === service}>{serviceNames[s.slug] || s.name}</option>
             ))}
@@ -112,7 +112,7 @@ const serviceNames: Record<string, string> = Astro.locals.stores
       </div>
 
       <div class="field">
-        <label class="field-label" for={`${id}-message`}>מה תקוע היום?</label>
+        <label class="field-label" for={`${id}-message`}>מה הכי תוקע אתכם בעסק כרגע?</label>
         <textarea class="input" id={`${id}-message`} name="message" rows="3" required maxlength="4000"></textarea>
       </div>
 
@@ -128,7 +128,7 @@ const serviceNames: Record<string, string> = Astro.locals.stores
 
       <div class="cb__status" data-cb-status role="status" aria-live="polite" hidden></div>
 
-      <button class="btn btn-primary btn-lg cb__submit" type="submit" data-cb-submit>שלחו ונחזור אליכם</button>
+      <button class="btn btn-primary btn-lg cb__submit" type="submit" data-cb-submit>שלחו ונעשה סדר</button>
     </form>
   </div>
 </section>
@@ -163,7 +163,7 @@ const serviceNames: Record<string, string> = Astro.locals.stores
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.ok) {
             form.reset();
-            show('success', 'קיבלנו. נחזור אליכם.');
+            show('success', 'קיבלנו! ניפגש בשיחת ההיכרות.');
           } else {
             show('error', data.error || 'לא הצלחנו לשלוח. אפשר לנסות שוב.');
             if (window.turnstile) window.turnstile.reset();
@@ -171,7 +171,7 @@ const serviceNames: Record<string, string> = Astro.locals.stores
         } catch {
           show('error', 'לא הצלחנו לשלוח. אפשר לנסות שוב.');
         } finally {
-          if (submit) { submit.disabled = false; submit.textContent = 'שלחו ונחזור אליכם'; }
+          if (submit) { submit.disabled = false; submit.textContent = 'שלחו ונעשה סדר'; }
         }
       });
     });

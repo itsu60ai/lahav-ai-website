@@ -121,7 +121,7 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'לא הצלחנ�
 
       <!-- SECONDARY: form -->
       <div class="ct-form-wrap" data-reveal>
-        <h2 class="ct-form__title">או פשוט השאירו פרטים</h2>
+        <h2 class="ct-form__title">או פשוט ספרו לנו מה תוקע</h2>
         <p class="ct-form__sub">נחזור אליכם ונתאם משם.</p>
 
         <div
@@ -131,18 +131,18 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'לא הצלחנ�
           aria-live="polite"
           hidden={!sent && !errorMessage}
         >
-          {sent && 'קיבלנו. נחזור אליכם.'}
+          {sent && 'קיבלנו! ניפגש בשיחת ההיכרות.'}
           {errorMessage}
         </div>
 
         <form class="ct-form" method="post" action="/api/contact" novalidate data-ct-form>
           <div class="field">
-            <label class="field-label" for="name">שם מלא</label>
+            <label class="field-label" for="name">איך קוראים לכם?</label>
             <input class="input" id="name" name="name" type="text" autocomplete="name" required maxlength="120" />
           </div>
 
           <div class="field">
-            <label class="field-label" for="phone">טלפון</label>
+            <label class="field-label" for="phone">מספר נייד (כדי שנוכל לחזור אליכם)</label>
             <input class="input input-ltr" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="40" />
           </div>
 
@@ -152,15 +152,15 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'לא הצלחנ�
           </div>
 
           <div class="field">
-            <label class="field-label" for="service">מה מעניין אתכם</label>
+            <label class="field-label" for="service">מה מעניין אתכם?</label>
             <select class="input" id="service" name="service">
-              <option value="">עוד לא בטוח</option>
+              <option value="">עדיין לא בטוח, תעזרו לי?</option>
               {SERVICES.map((s) => <option value={s.slug}>{serviceNames[s.slug] || s.name}</option>)}
             </select>
           </div>
 
           <div class="field">
-            <label class="field-label" for="message">מה תקוע היום?</label>
+            <label class="field-label" for="message">מה הכי תוקע אתכם בעסק כרגע?</label>
             <textarea class="input" id="message" name="message" rows="4" required maxlength="4000"></textarea>
             <span class="field-hint">כמה מילים על מה שקורה היום יעזרו לנו להתכונן.</span>
           </div>
@@ -182,7 +182,7 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'לא הצלחנ�
 
           <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-ct-turnstile></div>
 
-          <button class="btn btn-primary ct-submit" type="submit" data-ct-submit>שלחו ונחזור אליכם</button>
+          <button class="btn btn-primary ct-submit" type="submit" data-ct-submit>שלחו ונעשה סדר</button>
 
           <p class="ct-form__note">הפרטים מגיעים אלינו ישירות.</p>
         </form>
@@ -280,7 +280,7 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'לא הצלחנ�
         const data = await res.json().catch(() => ({}));
 
         if (res.ok && data.ok) {
-          showStatus('success', 'קיבלנו. נחזור אליכם.');
+          showStatus('success', 'קיבלנו! ניפגש בשיחת ההיכרות.');
           form.reset();
           if (renderedAtInput) renderedAtInput.value = String(Date.now());
           if (window.turnstile) window.turnstile.reset();
@@ -293,7 +293,7 @@ const errorMessage = errorCode ? (ERROR_MESSAGES[errorCode] ?? 'לא הצלחנ�
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'שלחו ונחזור אליכם';
+          submitBtn.textContent = 'שלחו ונעשה סדר';
         }
       }
     });

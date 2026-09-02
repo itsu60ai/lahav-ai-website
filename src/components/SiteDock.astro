@@ -80,15 +80,14 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
       </span>
       <span class="chat__title">
         <span class="chat__name">העוזר של LAHAV AI</span>
-        <span class="chat__sub" data-chat-status>עונה על שאלות מהאתר</span>
+        <span class="chat__sub" data-chat-status>הדגמה חיה של מה ש-AI יכול לעשות בעסק שלכם</span>
       </span>
       <button class="chat__x" type="button" data-chat-close aria-label="סגירת הצ׳אט">✕</button>
     </header>
 
     <div class="chat__log" data-chat-log role="log" aria-live="polite">
       <div class="chat__msg chat__msg--bot">
-        <p>שלום. אני יכול לענות על שאלות על מה שאנחנו עושים, לעזור להבין מה
-        מתאים לכם, ולתאם שיחה קצרה.</p>
+        <p>היי! יש לכם שאלות על AI או אוטומציות? אני כאן כדי לעשות סדר ולחסוך לכם זמן.</p>
       </div>
     </div>
 
@@ -100,10 +99,10 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
 
     <div class="chat__actions">
       <a class="chat__action" href={bookingUrl} target="_blank" rel="noopener noreferrer">
-        לתיאום שיחת היכרות
+        רוצה לקבוע שיחה קצרה
       </a>
       <a class="chat__action" href={waHref} target="_blank" rel="noopener noreferrer">
-        לוואטסאפ
+        לדבר בוואטסאפ
       </a>
     </div>
 
@@ -116,7 +115,7 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
         type="text"
         autocomplete="off"
         maxlength="500"
-        placeholder="מה תרצו לשאול?"
+        placeholder="שאלו אותי כל דבר על AI לעסק"
         data-chat-input
       />
       <button class="chat__send" type="submit" data-chat-send aria-label="שליחה">
