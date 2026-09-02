@@ -1,0 +1,252 @@
+---
+// F-46: self-service radar sources, on top of the built-in list in
+// src/lib/ai/radar/feeds.ts. See docs/AI_ENGINE.md section 4.
+//
+// This is a real RSS/Atom feed URL field, not a free-text "search the web
+// for a topic" box: the radar only ever reads real feeds, so a topic with
+// no feed behind it genuinely cannot be added -- explained on the page
+// itself rather than silently accepted and doing nothing.
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { can } from '../../../lib/cms/types.ts';
+import { csrfFor } from '../../../lib/cms/auth.ts';
+import { getAiStores } from '../../../lib/ai/context.ts';
+import { FEED_SOURCES } from '../../../lib/ai/radar/feeds.ts';
+
+const user = Astro.locals.user!;
+if (!can(user, 'article:create')) return Astro.redirect('/admin', 302);
+
+const csrf = await csrfFor(Astro.locals.sessionToken);
+const mayDelete = can(user, 'settings:manage');
+
+const sources = await getAiStores().radarSources.listAll();
+
+const done = Astro.url.searchParams.get('done');
+const err = Astro.url.searchParams.get('err');
+
+const DONE_TEXT: Record<string, string> = {
+  added: 'המקור נוסף ויסרק בפעימת האיסוף הבאה',
+  deleted: 'המקור נמחק',
+  activated: 'המקור הופעל מחדש',
+  deactivated: 'המקור הושבת',
+};
+const ERR_TEXT: Record<string, string> = {
+  empty: 'צריך שם וכתובת קישור',
+  badurl: 'הכתובת לא תקינה. חייבת להתחיל ב-https://',
+  unreachable: 'לא הצלחנו להתחבר לכתובת הזו. בדקו שהיא נכונה ונגישה',
+  notfeed: 'הכתובת הזו לא נראית כמו פיד RSS/Atom אמיתי, אלא כמו דף רגיל',
+};
+
+const fmt = (iso: string) =>
+  new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+
+<AdminLayout title="מקורות סריקה מותאמים אישית">
+  <div class="hd">
+    <div>
+      <h1 class="hd__h">מקורות סריקה מותאמים אישית</h1>
+      <p class="hd__sub">
+        המנוע סורק כרגע {FEED_SOURCES.length} מקורות קבועים באנגלית (OpenAI, Google, Microsoft ועוד).
+        כאן אפשר להוסיף מקורות משלכם, כל עוד יש להם עמוד RSS/Atom אמיתי, כמו בלוג של אתר ישראלי.
+        אי אפשר להזין נושא חופשי כמו "פריצות AI" בלי קישור אמיתי, כי המנוע לא "מחפש בגוגל" בשבילכם,
+        הוא רק קורא פידים אמיתיים שקיימים כבר.
+      </p>
+    </div>
+    <a class="adm-btn adm-btn--ghost" href="/admin/ai">חזרה למנוע התוכן</a>
+  </div>
+
+  {done && DONE_TEXT[done] && <p class="flash flash--ok">{DONE_TEXT[done]}</p>}
+  {err && ERR_TEXT[err] && <p class="flash flash--err">{ERR_TEXT[err]}</p>}
+
+  <section class="card">
+    <h2 class="card__h">הוספת מקור</h2>
+    <form method="post" action={`/api/admin/ai/sources?csrf=${csrf}`} class="add">
+      <input type="hidden" name="action" value="add" />
+      <div class="add__row">
+        <div class="field">
+          <label class="adm-label" for="srcName">שם המקור</label>
+          <input class="adm-input" id="srcName" name="name" type="text" required maxlength="120"
+            placeholder="לדוגמה: הבלוג של [שם האתר]" />
+        </div>
+        <div class="field">
+          <label class="adm-label" for="srcTopic">נושא (לתיוג בלבד, לא חובה)</label>
+          <input class="adm-input" id="srcTopic" name="topic" type="text" maxlength="80"
+            placeholder="לדוגמה: אבטחת מידע ב-AI" />
+        </div>
+      </div>
+      <label class="adm-label" for="srcUrl">כתובת ה-RSS/Atom של המקור</label>
+      <input class="adm-input input-ltr" id="srcUrl" name="url" type="url" required maxlength="500"
+        placeholder="https://example.co.il/feed" dir="ltr" />
+      <p class="hint">
+        לרוב אפשר למצוא את זה על ידי הוספת <code>/feed</code> או <code>/rss</code> לכתובת האתר,
+        או חיפוש "שם האתר RSS". אם אין למקור פיד, אי אפשר להוסיף אותו כרגע.
+      </p>
+      <button class="adm-btn adm-btn--primary" type="submit">בדיקה והוספה</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2 class="card__h">המקורות שהוספתם ({sources.length})</h2>
+
+    {
+      sources.length === 0 ? (
+        <div class="empty">
+          <p class="empty__t">עוד לא הוספתם מקור בעצמכם</p>
+          <p class="empty__b">המנוע ימשיך לסרוק את {FEED_SOURCES.length} המקורות הקבועים גם בלי זה.</p>
+        </div>
+      ) : (
+        <div class="rules">
+          {sources.map((s) => (
+            <div class:list={['rule', !s.active && 'rule--off']}>
+              <div class="rule__edit">
+                <p class="src__name">
+                  {s.name} {s.topic && <span class="src__topic">{s.topic}</span>}
+                </p>
+                <p class="src__url" dir="ltr">{s.url}</p>
+                <div class="rule__meta">
+                  <span class:list={['adm-pill', s.active ? 'adm-pill--published' : 'adm-pill--draft']}>
+                    {s.active ? 'פעיל' : 'מושבת'}
+                  </span>
+                  <span>נוסף {fmt(s.createdAt)}</span>
+                </div>
+              </div>
+
+              <div class="rule__acts">
+                <form method="post" action={`/api/admin/ai/sources?csrf=${csrf}`}>
+                  <input type="hidden" name="action" value={s.active ? 'deactivate' : 'activate'} />
+                  <input type="hidden" name="id" value={s.id} />
+                  <button class="adm-btn adm-btn--ghost rule__btn" type="submit">
+                    {s.active ? 'השבתה' : 'הפעלה מחדש'}
+                  </button>
+                </form>
+                {
+                  mayDelete && (
+                    <form method="post" action={`/api/admin/ai/sources?csrf=${csrf}`}>
+                      <input type="hidden" name="action" value="delete" />
+                      <input type="hidden" name="id" value={s.id} />
+                      <button class="adm-btn adm-btn--ghost rule__btn rule__btn--danger" type="submit">
+                        מחיקה
+                      </button>
+                    </form>
+                  )
+                }
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    <p class="foot-note">
+      מקורות חדשים נכנסים לסריקה בפעם הבאה שלוחצים "איסוף עדכונים עכשיו" במסך מנוע התוכן.
+      השבתה היא הפיכה. מחיקה מוחקת לתמיד, ולכן פתוחה רק למשתמש עם הרשאת ניהול הגדרות.
+    </p>
+  </section>
+</AdminLayout>
+
+<style>
+  .hd {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .hd__h { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; }
+  .hd__sub { font-size: 0.9375rem; color: var(--color-ink-3); margin-top: 0.35rem; max-width: 46rem; }
+
+  .flash {
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .flash--ok { background: #e7f6ec; color: #15803d; }
+  .flash--err { background: #fdeceb; color: var(--color-error); }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 0.875rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .card__h {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .add { display: grid; gap: 0.625rem; justify-items: start; }
+  .add__row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; width: 100%; }
+  .field { display: grid; gap: 0.375rem; }
+  .add .adm-input { width: 100%; }
+  .hint { font-size: 0.8125rem; color: var(--color-ink-3); margin-top: -0.25rem; }
+  .hint code { background: var(--color-surface-2); padding: 0.1rem 0.3rem; border-radius: 0.25rem; }
+
+  .rules { display: flex; flex-direction: column; gap: 0.875rem; }
+  .rule {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.875rem;
+    border: 1px solid var(--color-line);
+    border-radius: 0.625rem;
+    flex-wrap: wrap;
+  }
+  .rule--off { background: var(--color-surface-2); opacity: 0.75; }
+  .rule__edit { flex: 1; min-width: 16rem; display: grid; gap: 0.375rem; justify-items: start; }
+  .src__name { font-weight: 700; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .src__topic {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-royal);
+    background: #eaf0ff;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+  .src__url { font-size: 0.8125rem; color: var(--color-ink-3); word-break: break-all; }
+  .rule__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: var(--color-ink-3);
+  }
+  .rule__acts { display: flex; flex-direction: column; gap: 0.375rem; }
+  .rule__btn { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
+  .rule__btn--danger { color: var(--color-error); }
+
+  .empty { text-align: center; padding: 2rem 1rem; }
+  .empty__t { font-family: var(--font-display); font-weight: 700; margin-bottom: 0.375rem; }
+  .empty__b { font-size: 0.9375rem; color: var(--color-ink-2); max-width: 34rem; margin-inline: auto; }
+
+  .foot-note {
+    font-size: 0.8125rem;
+    color: var(--color-ink-3);
+    border-inline-start: 3px solid var(--color-electric);
+    padding-inline-start: 0.875rem;
+    margin-top: 1.25rem;
+  }
+
+  :global(.adm-pill) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+  }
+  :global(.adm-pill--published) { background: #e7f6ec; color: #15803d; }
+  :global(.adm-pill--draft) { background: #f1f3f7; color: #55627a; }
+
+  @media (max-width: 640px) {
+    .add__row { grid-template-columns: 1fr; }
+  }
+</style>

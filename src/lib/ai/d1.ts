@@ -21,6 +21,8 @@ import type {
   OpportunityDraft,
   OpportunityStatus,
   OpportunityStore,
+  RadarSource,
+  RadarSourceStore,
   RecommendationRun,
   RecommendationStore,
   Rule,
@@ -764,6 +766,57 @@ class D1RecommendationStore implements RecommendationStore {
   }
 }
 
+// ───────────────────────────────────────────────── radar sources (admin-added)
+
+function toRadarSource(r: Row): RadarSource {
+  return {
+    id: r.id,
+    name: r.name,
+    url: r.url,
+    topic: r.topic ?? '',
+    active: !!r.active,
+    createdAt: r.created_at,
+  };
+}
+
+class D1RadarSourceStore implements RadarSourceStore {
+  constructor(private db: D1) {}
+
+  async listActive(): Promise<RadarSource[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM ai_radar_sources WHERE active = 1 ORDER BY created_at DESC')
+      .all();
+    return (results as Row[]).map(toRadarSource);
+  }
+
+  async listAll(): Promise<RadarSource[]> {
+    const { results } = await this.db
+      .prepare('SELECT * FROM ai_radar_sources ORDER BY active DESC, created_at DESC')
+      .all();
+    return (results as Row[]).map(toRadarSource);
+  }
+
+  async add(input: { name: string; url: string; topic: string }): Promise<RadarSource> {
+    const id = crypto.randomUUID();
+    const t = now();
+    await this.db
+      .prepare(
+        'INSERT INTO ai_radar_sources (id, name, url, topic, active, created_at) VALUES (?1,?2,?3,?4,1,?5)'
+      )
+      .bind(id, input.name, input.url, input.topic, t)
+      .run();
+    return { id, name: input.name, url: input.url, topic: input.topic, active: true, createdAt: t };
+  }
+
+  async setActive(id: string, active: boolean): Promise<void> {
+    await this.db.prepare('UPDATE ai_radar_sources SET active = ?1 WHERE id = ?2').bind(active ? 1 : 0, id).run();
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.db.prepare('DELETE FROM ai_radar_sources WHERE id = ?1').bind(id).run();
+  }
+}
+
 export function createAiStores(db: D1): AiStores {
   return {
     opportunities: new D1OpportunityStore(db),
@@ -775,5 +828,6 @@ export function createAiStores(db: D1): AiStores {
     recommendations: new D1RecommendationStore(db),
     allowlist: new D1TopicAllowlistStore(db),
     autoPublications: new D1AutoPublicationStore(db),
+    radarSources: new D1RadarSourceStore(db),
   };
 }

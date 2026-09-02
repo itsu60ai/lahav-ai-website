@@ -486,6 +486,32 @@ export interface AutoPublicationStore {
   markNotified(id: string, error: string): Promise<void>;
 }
 
+/**
+ * A radar source the admin added themselves, on top of the built-in feed
+ * list in radar/feeds.ts. Same shape as FeedSource, but stored so it can
+ * be added and removed from the admin screen with no code change. Only a
+ * real RSS/Atom feed URL, verified by a live fetch when it is added — a
+ * plain topic phrase with no feed cannot be "scanned" for free, so the
+ * add form only accepts a URL (docs/AI_ENGINE.md section 4's honesty
+ * rule: no fake scraper, no invented result).
+ */
+export interface RadarSource {
+  id: string;
+  name: string;
+  url: string;
+  topic: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface RadarSourceStore {
+  listActive(): Promise<RadarSource[]>;
+  listAll(): Promise<RadarSource[]>;
+  add(input: { name: string; url: string; topic: string }): Promise<RadarSource>;
+  setActive(id: string, active: boolean): Promise<void>;
+  remove(id: string): Promise<void>;
+}
+
 // ─────────────────────────────────────────────── everything a request needs
 
 export interface AiStores {
@@ -498,6 +524,7 @@ export interface AiStores {
   recommendations: RecommendationStore;
   allowlist: TopicAllowlistStore;
   autoPublications: AutoPublicationStore;
+  radarSources: RadarSourceStore;
 }
 
 export type { Article, ArticleKind, Block, VizKind };

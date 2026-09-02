@@ -30,7 +30,23 @@ export interface CollectResult {
 export async function collectOpportunities(stores: AiStores): Promise<CollectResult> {
   const result: CollectResult = { fetched: 0, created: 0, skippedDuplicate: 0, errors: [] };
 
-  for (const source of FEED_SOURCES) {
+  // Built-in sources plus whatever the admin added themselves on
+  // /admin/ai/sources. Custom sources default to the 'hack' content kind
+  // and a middle weight, since most are added for a specific niche topic
+  // (F-46) rather than being an official product blog.
+  const custom = await stores.radarSources.listActive();
+  const allSources = [
+    ...FEED_SOURCES,
+    ...custom.map((c) => ({
+      id: `custom-${c.id}`,
+      name: c.name,
+      url: c.url,
+      weight: 0.6,
+      defaultContentKind: 'hack' as const,
+    })),
+  ];
+
+  for (const source of allSources) {
     let xml: string;
     try {
       const res = await fetch(source.url, {

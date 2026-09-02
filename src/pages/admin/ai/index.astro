@@ -146,6 +146,7 @@ const currentList = tab === 'latest' ? latest : tab === 'trending' ? trending : 
     </div>
     <div class="hd__acts">
       <a class="adm-btn adm-btn--ghost" href="/admin/ai/rules">הכללים שנלמדו</a>
+      <a class="adm-btn adm-btn--ghost" href="/admin/ai/sources">מקורות סריקה</a>
       {
         mayCreate && (
           <form method="post" action={`/api/admin/ai/collect?csrf=${csrf}`}>
