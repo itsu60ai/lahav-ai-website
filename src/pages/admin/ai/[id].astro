@@ -114,6 +114,25 @@ const orderedFailures = [...blocking, ...review, ...info];
           </button>
         )
       }
+      {
+        // General "delete this draft" action -- previously this only
+        // appeared buried inside one specific blocking-gate card, so a
+        // draft you simply didn't want had no visible way to remove.
+        // Never shown for a published article: that one goes through
+        // /admin/[id].astro's own delete, which also unpublishes it from
+        // the live site first.
+        article && article.status !== 'published' && mayDelete && (
+          <button
+            class="adm-btn adm-btn--danger"
+            type="button"
+            data-discard-draft
+            data-article-id={article.id}
+            data-csrf={csrf}
+          >
+            מחיקת הטיוטה
+          </button>
+        )
+      }
     </div>
     {
       article && outcome !== 'pass' && article.status !== 'published' && (

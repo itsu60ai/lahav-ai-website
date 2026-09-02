@@ -28,6 +28,7 @@ import { SERVICES } from '../../../lib/site.ts';
 const user = Astro.locals.user!;
 const csrf = await csrfFor(Astro.locals.sessionToken);
 const mayCreate = can(user, 'article:create');
+const mayDelete = can(user, 'article:delete');
 
 const TABS = ['latest', 'trending', 'evergreen', 'drafts', 'published'] as const;
 type Tab = (typeof TABS)[number];
@@ -52,7 +53,7 @@ const tab: Tab = (TABS as readonly string[]).includes(tabParam ?? '') ? (tabPara
 const aiStores = getAiStores();
 const { articles } = Astro.locals.stores!;
 
-const [opportunities, generations, settings, recommendation, allArticles, recentFeedback] =
+const [opportunitiesRaw, generations, settings, recommendation, allArticles, recentFeedback] =
   await Promise.all([
     aiStores.opportunities.list({ status: 'new' }),
     aiStores.generations.list(),
@@ -61,6 +62,39 @@ const [opportunities, generations, settings, recommendation, allArticles, recent
     articles.list(),
     aiStores.feedback.listRecent(500),
   ]);
+
+// ── filters for the three "ideas" tabs (latest/trending/evergreen) ──
+// Plain query params, same pattern as the tab links: works with no
+// client JS, and every combination is a shareable/bookmarkable URL.
+// "מדינה" in the client's own words maps to source here, since every
+// source is already either an Israeli/Hebrew outlet or an
+// international one -- a country field would just duplicate that.
+const KIND_FILTER_OPTIONS = Object.entries(CONTENT_KIND_LABELS) as [string, string][];
+const DAYS_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'כל הזמנים' },
+  { value: '1', label: '24 שעות אחרונות' },
+  { value: '7', label: 'שבוע אחרון' },
+  { value: '30', label: 'חודש אחרון' },
+];
+const sourceNames = Array.from(new Set(opportunitiesRaw.map((o) => o.sourceName))).sort((a, b) =>
+  a.localeCompare(b, 'he')
+);
+
+const kindFilter = Astro.url.searchParams.get('kind') ?? '';
+const sourceFilter = Astro.url.searchParams.get('source') ?? '';
+const daysFilter = Astro.url.searchParams.get('days') ?? '';
+const hasActiveFilter = !!(kindFilter || sourceFilter || daysFilter);
+
+const opportunities = opportunitiesRaw.filter((o) => {
+  if (kindFilter && o.contentKind !== kindFilter) return false;
+  if (sourceFilter && o.sourceName !== sourceFilter) return false;
+  if (daysFilter) {
+    const days = Number(daysFilter);
+    const ref = o.publishedAt ?? o.createdAt;
+    if (!ref || Date.now() - new Date(ref).getTime() > days * 86_400_000) return false;
+  }
+  return true;
+});
 
 const opportunityById = new Map(opportunities.map((o) => [o.id, o]));
 const articleById = new Map(allArticles.map((a) => [a.id, a]));
@@ -133,6 +167,20 @@ const fmt = (iso: string | null) =>
 const backHere = `/admin/ai?tab=${tab}`;
 const tabList = TABS.map((t) => ({ id: t, label: TAB_LABELS[t], count: TAB_COUNTS[t] }));
 const currentList = tab === 'latest' ? latest : tab === 'trending' ? trending : evergreen;
+
+// Feedback for "איסוף עדכונים עכשיו", which used to redirect back with no
+// sign of whether anything actually happened. Read once, straight from
+// collect.ts's own result, so this can never say something the collector
+// itself didn't report.
+const collected = Astro.url.searchParams.get('collected') === '1';
+const collectStats = collected
+  ? {
+      created: Number(Astro.url.searchParams.get('created') ?? 0),
+      fetched: Number(Astro.url.searchParams.get('fetched') ?? 0),
+      dup: Number(Astro.url.searchParams.get('dup') ?? 0),
+      errors: Number(Astro.url.searchParams.get('errors') ?? 0),
+    }
+  : null;
 ---
 
 <AdminLayout title="מנוע תוכן AI">
@@ -145,6 +193,16 @@ const currentList = tab === 'latest' ? latest : tab === 'trending' ? trending : 
       </p>
     </div>
     <div class="hd__acts">
+      {
+        collectStats && (
+          <p class:list={['flash', collectStats.errors > 0 ? 'flash--err' : 'flash--ok']}>
+            {collectStats.created > 0
+              ? `נוספו ${collectStats.created} עדכונים חדשים (מתוך ${collectStats.fetched} שנסרקו, ${collectStats.dup} כבר היו קיימים).`
+              : `לא נוסף כלום חדש (${collectStats.dup} מתוך ${collectStats.fetched} כבר היו קיימים אצלכם, אין עדכונים חדשים במקורות כרגע).`}
+            {collectStats.errors > 0 && ` ${collectStats.errors} מקורות לא הצליחו להיסרק.`}
+          </p>
+        )
+      }
       <a class="adm-btn adm-btn--ghost" href="/admin/ai/rules">הכללים שנלמדו</a>
       <a class="adm-btn adm-btn--ghost" href="/admin/ai/sources">מקורות סריקה</a>
       {
@@ -240,12 +298,57 @@ const currentList = tab === 'latest' ? latest : tab === 'trending' ? trending : 
   <p class="tabs__blurb">{TAB_BLURB[tab]}</p>
 
   {
+    (tab === 'latest' || tab === 'trending' || tab === 'evergreen') && (
+      <form class="filters" method="get" action="/admin/ai">
+        <input type="hidden" name="tab" value={tab} />
+        <div class="filters__field">
+          <label class="filters__lbl" for="f-kind">סוג תוכן</label>
+          <select class="adm-input filters__sel" id="f-kind" name="kind">
+            <option value="">הכל</option>
+            {KIND_FILTER_OPTIONS.map(([value, label]) => (
+              <option value={value} selected={value === kindFilter}>{label}</option>
+            ))}
+          </select>
+        </div>
+        <div class="filters__field">
+          <label class="filters__lbl" for="f-source">מקור</label>
+          <select class="adm-input filters__sel" id="f-source" name="source">
+            <option value="">כל המקורות</option>
+            {sourceNames.map((name) => (
+              <option value={name} selected={name === sourceFilter}>{name}</option>
+            ))}
+          </select>
+        </div>
+        <div class="filters__field">
+          <label class="filters__lbl" for="f-days">פורסם</label>
+          <select class="adm-input filters__sel" id="f-days" name="days">
+            {DAYS_FILTER_OPTIONS.map((o) => (
+              <option value={o.value} selected={o.value === daysFilter}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+        <button class="adm-btn adm-btn--primary filters__go" type="submit">סינון</button>
+        {hasActiveFilter && (
+          <a class="adm-btn adm-btn--ghost filters__go" href={`/admin/ai?tab=${tab}`}>ניקוי סינון</a>
+        )}
+      </form>
+    )
+  }
+  {
+    hasActiveFilter && (tab === 'latest' || tab === 'trending' || tab === 'evergreen') && (
+      <p class="filters__count">{currentList.length} תוצאות מתוך {opportunitiesRaw.length} לפי הסינון שבחרתם.</p>
+    )
+  }
+
+  {
     (tab === 'latest' || tab === 'trending' || tab === 'evergreen') &&
       (currentList.length === 0 ? (
         <div class="card empty">
-          <p class="empty__t">אין כאן פריטים כרגע</p>
+          <p class="empty__t">{hasActiveFilter ? 'אין תוצאות לסינון הזה' : 'אין כאן פריטים כרגע'}</p>
           <p class="empty__b">
-            לחצו "איסוף עדכונים עכשיו" כדי לשלוף עדכונים אמיתיים ממקורות רשמיים חינמיים.
+            {hasActiveFilter
+              ? 'נסו לנקות את הסינון או לבחור קריטריון אחר.'
+              : 'לחצו "איסוף עדכונים עכשיו" כדי לשלוף עדכונים אמיתיים ממקורות רשמיים חינמיים.'}
           </p>
         </div>
       ) : (
@@ -399,6 +502,13 @@ const currentList = tab === 'latest' ? latest : tab === 'trending' ? trending : 
               <div class="opp__actions">
                 <a class="adm-btn adm-btn--primary row__btn" href={`/admin/ai/${g.id}`}>בדיקה ופרטים</a>
                 <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/${a.id}`}>עריכה</a>
+                {
+                  mayDelete && (
+                    <button class="adm-btn adm-btn--danger row__btn" type="button" data-discard-draft data-article-id={a.id} data-csrf={csrf}>
+                      מחיקה
+                    </button>
+                  )
+                }
               </div>
             </article>
           );
@@ -513,6 +623,33 @@ const currentList = tab === 'latest' ? latest : tab === 'trending' ? trending : 
   .hd__h { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; }
   .hd__sub { font-size: 0.875rem; color: var(--color-ink-3); margin-top: 0.25rem; }
   .hd__acts { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+  .flash {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    flex-basis: 100%;
+  }
+  .flash--ok { background: #e7f6ec; color: #15803d; }
+  .flash--err { background: #fdeceb; color: var(--color-error); }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 0.75rem;
+    padding: 0.875rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .filters__field { display: grid; gap: 0.3rem; }
+  .filters__lbl { font-size: 0.75rem; font-weight: 700; color: var(--color-ink-3); }
+  .filters__sel { min-width: 10rem; }
+  .filters__go { align-self: end; }
+  .filters__count { font-size: 0.8125rem; color: var(--color-ink-3); margin-bottom: 0.75rem; }
 
   .foot-note {
     font-size: 0.8125rem;
