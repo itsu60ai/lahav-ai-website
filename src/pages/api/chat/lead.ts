@@ -37,12 +37,9 @@ const CONTEXT_TURNS = 6;
 const CONTEXT_CHARS = 300;
 const MAX_MESSAGE = 3500;
 
-// The chat asks for name and phone only, because asking for three
-// fields inside a chat bubble loses people. Email is genuinely optional
-// here (validateAndClean's emailOptional), so a lead that arrives without
-// one is STORED WITHOUT ONE. We never write a placeholder address into
-// the leads table: a fake email is worse than an absent one, both for
-// whoever reads the list and for anyone who tries to reply.
+// The chat asks for name, phone and email. Email is REQUIRED here, exactly
+// as on the contact form: the client wants every lead to carry one so the
+// list can feed automations later.
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -107,7 +104,6 @@ export const POST: APIRoute = async ({ request }) => {
   const email = String(data.email ?? '').trim();
   const parts = ['פנייה שנפתחה מתוך הצ׳אט באתר.'];
   if (ctx.line) parts.push(ctx.line);
-  if (!email) parts.push('המבקר השאיר טלפון בלבד, בלי אימייל.');
   if (note) parts.push(`מה שנכתב בטופס: ${note}`);
   const turns = transcript(data.messages);
   if (turns) parts.push(`מהשיחה:\n${turns}`);
@@ -122,8 +118,7 @@ export const POST: APIRoute = async ({ request }) => {
       service: ctx.serviceSlug,
       message,
     },
-    SERVICE_SLUGS,
-    { emailOptional: true }
+    SERVICE_SLUGS
   );
   if (!result.ok) {
     return json({ ok: false, code: 'validation', error: result.error }, 400);

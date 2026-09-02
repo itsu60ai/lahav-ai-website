@@ -128,16 +128,26 @@ const chatPage = pageContext(chatPath);
     <!-- Leaving details without leaving the chat. Same lead pipeline as
          the contact form; see src/pages/api/chat/lead.ts. -->
     <form class="chat__lead" data-chat-lead-form hidden>
-      <p class="chat__lead-title">נשמח לחזור אליכם. מספיק שם וטלפון.</p>
-      <label class="sr-only" for="chat-lead-name">שם</label>
+      <div class="chat__lead-head">
+        <p class="chat__lead-title">נשמח לחזור אליכם</p>
+        <button class="chat__lead-x" type="button" data-chat-lead-cancel aria-label="סגירת הטופס">✕</button>
+      </div>
+      <p class="chat__lead-sub">משאירים פרטים ואנחנו חוזרים אליכם. אפשר גם להמשיך לשאול כאן.</p>
+
+      <label class="chat__lead-label" for="chat-lead-name">שם מלא</label>
       <input class="chat__lead-field" id="chat-lead-name" name="name" type="text"
-             autocomplete="name" maxlength="120" placeholder="השם שלכם" required />
-      <label class="sr-only" for="chat-lead-phone">טלפון</label>
+             autocomplete="name" maxlength="120" placeholder="איך קוראים לכם?" required />
+
+      <label class="chat__lead-label" for="chat-lead-phone">טלפון</label>
       <input class="chat__lead-field" id="chat-lead-phone" name="phone" type="tel"
-             autocomplete="tel" maxlength="40" placeholder="טלפון" required />
-      <label class="sr-only" for="chat-lead-email">אימייל, לא חובה</label>
+             inputmode="tel" autocomplete="tel" maxlength="15" placeholder="050-1234567"
+             dir="ltr" required />
+
+      <label class="chat__lead-label" for="chat-lead-email">אימייל</label>
       <input class="chat__lead-field" id="chat-lead-email" name="email" type="email"
-             autocomplete="email" maxlength="200" placeholder="אימייל (לא חובה)" />
+             autocomplete="email" maxlength="200" placeholder="name@example.com"
+             dir="ltr" required />
+
       <!-- honeypot: hidden from people, tempting to bots -->
       <div class="chat__trap" aria-hidden="true">
         <label for="chat-lead-website">אל תמלאו שדה זה</label>
@@ -145,7 +155,7 @@ const chatPage = pageContext(chatPath);
       </div>
       <p class="chat__lead-error" data-chat-lead-error hidden></p>
       <div class="chat__lead-row">
-        <button class="chat__lead-send" type="submit" data-chat-lead-send>שליחה</button>
+        <button class="chat__lead-send" type="submit" data-chat-lead-send>שלחו ונחזור אליכם</button>
         <button class="chat__lead-cancel" type="button" data-chat-lead-cancel>ביטול</button>
       </div>
     </form>
@@ -499,6 +509,22 @@ const chatPage = pageContext(chatPath);
     };
 
     // ---------- leaving details ----------
+    // Kept in step with src/lib/leads/spam.ts. Israeli numbering plan:
+    // 05X / 07X mobile and VoIP, 0[2,3,4,8,9] landline, 1-700/800/55X/59X
+    // service numbers. +972 and 00972 are normalised to the local 0 form.
+    function normalisePhone(raw: string): string {
+      let d = raw.replace(/[^\d+]/g, '');
+      if (d.startsWith('+972')) d = '0' + d.slice(4);
+      else if (d.startsWith('00972')) d = '0' + d.slice(5);
+      else if (d.startsWith('972') && d.length >= 11) d = '0' + d.slice(3);
+      return d.replace(/\D/g, '');
+    }
+    function isIsraeliPhone(d: string): boolean {
+      return /^05\d{8}$/.test(d) || /^07\d{8}$/.test(d) ||
+             /^0(?:2|3|4|8|9)\d{7}$/.test(d) ||
+             /^1(?:70[0-9]|80[0-9]|55[0-9]|59[0-9])\d{6}$/.test(d);
+    }
+
     let leadShownAt = 0;
     let leadDone = false;
 
@@ -513,14 +539,30 @@ const chatPage = pageContext(chatPath);
     }
 
     const closeLead = () => {
-      if (leadForm) leadForm.hidden = true;
+      if (!leadForm) return;
+      leadForm.hidden = true;
+      leadForm.querySelectorAll('.is-bad').forEach((el) => el.classList.remove('is-bad'));
+      if (leadError) { leadError.hidden = true; leadError.textContent = ''; }
+      input?.focus();
     };
+
+    // Escape closes the form first, so it never feels like a trap. The
+    // panel's own Escape handler still closes the chat when the form is
+    // already shut.
+    leadForm?.addEventListener('keydown', (e) => {
+      if ((e as KeyboardEvent).key === 'Escape') {
+        e.stopPropagation();
+        closeLead();
+      }
+    });
 
     leadOpen?.addEventListener('click', () => {
       if (leadForm?.hidden) openLead();
       else closeLead();
     });
-    leadCancel?.addEventListener('click', closeLead);
+    chat.querySelectorAll('[data-chat-lead-cancel]').forEach((b) =>
+      b.addEventListener('click', closeLead)
+    );
 
     leadForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -531,8 +573,28 @@ const chatPage = pageContext(chatPath);
         leadError.textContent = msg;
         leadError.hidden = false;
       };
-      if (!String(fd.get('name') ?? '').trim()) return showError('נא למלא שם');
-      if (!String(fd.get('phone') ?? '').trim()) return showError('נא למלא טלפון');
+      const focusField = (sel: string) => {
+        const el = leadForm.querySelector<HTMLInputElement>(sel);
+        el?.classList.add('is-bad');
+        el?.focus();
+      };
+      leadForm.querySelectorAll('.is-bad').forEach((el) => el.classList.remove('is-bad'));
+      if (!String(fd.get('name') ?? '').trim()) {
+        focusField('#chat-lead-name');
+        return showError('נא למלא שם');
+      }
+      // Same Israeli numbering plan the server enforces, so a person is
+      // told what is wrong here instead of after a round trip.
+      const phoneDigits = normalisePhone(String(fd.get('phone') ?? ''));
+      if (!isIsraeliPhone(phoneDigits)) {
+        focusField('#chat-lead-phone');
+        return showError('מספר טלפון ישראלי לא תקין. לדוגמה: 050-1234567');
+      }
+      const emailValue = String(fd.get('email') ?? '').trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailValue)) {
+        focusField('#chat-lead-email');
+        return showError('כתובת האימייל לא תקינה');
+      }
       leadSend.disabled = true;
       if (leadError) leadError.hidden = true;
       try {
@@ -541,8 +603,8 @@ const chatPage = pageContext(chatPath);
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             name: fd.get('name'),
-            phone: fd.get('phone'),
-            email: fd.get('email'),
+            phone: phoneDigits,
+            email: emailValue,
             note: '',
             website_url: fd.get('website_url'),
             form_rendered_at: leadShownAt,
@@ -866,6 +928,43 @@ const chatPage = pageContext(chatPath);
     padding: 0 1rem 0.75rem;
   }
   .chat__lead[hidden] { display: none; }
+  .chat__lead-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .chat__lead-x {
+    flex: none;
+    width: 1.6rem;
+    height: 1.6rem;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-ink-3);
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .chat__lead-x:hover { background: #e6e9f2; color: var(--color-ink); }
+  .chat__lead-sub {
+    margin: 0.15rem 0 0.5rem;
+    font-size: var(--text-micro);
+    line-height: 1.5;
+    color: var(--color-ink-3);
+  }
+  .chat__lead-label {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: var(--text-micro);
+    font-weight: 700;
+    color: var(--color-ink-2);
+  }
+  .chat__lead-field.is-bad {
+    border-color: #b91c1c;
+    background: #fff5f5;
+  }
   .chat__lead-title {
     margin: 0;
     font-size: var(--text-micro);

@@ -15,13 +15,13 @@ const DEFAULT_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 function pickRecommender(mode: RecommendationMode): Recommender {
   if (mode === 'heuristic') return heuristicRecommender;
-  // Wired, not built: recommendation_mode can only become 'api' through a
-  // direct database change today (there is no toggle in the UI yet,
-  // because flipping it would only reach this line and stop here). When
-  // real AI reasoning is built, this is the only line that changes.
-  throw new Error(
-    'מצב המלצות "api" מחובר לארכיטקטורה אך טרם מומש. הפעלה אמיתית דורשת אישור מפורש ושימוש בתשלום.'
-  );
+  // 'api' is wired, not built. It used to throw here, which meant a value
+  // saved in settings took the whole AI screen down; that happened in
+  // production on 2026-09-02. Falling back to the FREE recommender is
+  // both safer and honest: it cannot silently start billing (heuristic
+  // costs nothing), and the admin screen states which mode actually ran.
+  // When real AI reasoning is built, this is the only line that changes.
+  return heuristicRecommender;
 }
 
 export async function getOrComputeRecommendation(

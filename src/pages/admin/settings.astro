@@ -56,7 +56,6 @@ const PROVIDER_OPTIONS: { v: string; label: string }[] = [
 ];
 const RECOMMENDATION_OPTIONS: { v: string; label: string }[] = [
   { v: 'heuristic', label: 'חישוב אוטומטי, ללא עלות (heuristic)' },
-  { v: 'api', label: 'AI בתשלום (api), טרם מומש' },
 ];
 
 const aiFmt = (iso: string | null) =>
@@ -167,7 +166,7 @@ const autoPublishArmed =
           ))}
         </select>
         <p class="ai__hint">
-          מצב "AI בתשלום" מחובר בארכיטקטורה אך טרם מומש, ובחירה בו תציג שגיאה ברורה במסך המנוע
+          בחירת הנושאים המומלצים רצה על חישוב חינמי מהנתונים שכבר נאספו. מצב AI בתשלום מחובר בארכיטקטורה אך טרם מומש, ולכן אינו ניתן לבחירה
           במקום לחשב משהו.
         </p>
       </div>

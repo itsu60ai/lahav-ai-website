@@ -91,7 +91,46 @@ function clean(v: unknown, max: number): string {
 
 const EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/;
 // lenient on purpose: real leads should never be rejected over formatting
-const PHONE_RE = /^[0-9+\-\s()]{7,20}$/;
+// ISRAELI PHONE NUMBERS.
+//
+// The old rule accepted any 7 to 20 characters made of digits and
+// punctuation, so "1234567890123456789" and "((((((((((" both passed and
+// landed in the leads table as if they were real. The business serves
+// Israeli businesses, so the rule is the Israeli numbering plan:
+//
+//   mobile      05X XXXXXXX          10 digits, always starts 05
+//   landline    0X XXXXXXX           9 digits, area codes 2,3,4,8,9
+//   VoIP        07X XXXXXXX          10 digits
+//   1-700/1-800 1XXX XXXXXX          10 digits, service numbers
+//
+// International input is accepted in +972 / 00972 form and normalised to
+// the local 0 form, because that is what a person will actually dial.
+const IL_MOBILE = /^05\d{8}$/;
+const IL_VOIP = /^07\d{8}$/;
+const IL_LANDLINE = /^0(?:2|3|4|8|9)\d{7}$/;
+const IL_SERVICE = /^1(?:70[0-9]|80[0-9]|55[0-9]|59[0-9])\d{6}$/;
+
+/**
+ * Strips punctuation, converts a +972 / 00972 prefix to a local 0, and
+ * returns digits only. Returns '' when there is nothing usable.
+ */
+export function normalisePhone(raw: string): string {
+  let d = raw.replace(/[^\d+]/g, '');
+  if (d.startsWith('+972')) d = '0' + d.slice(4);
+  else if (d.startsWith('00972')) d = '0' + d.slice(5);
+  else if (d.startsWith('972') && d.length >= 11) d = '0' + d.slice(3);
+  d = d.replace(/\D/g, '');
+  return d;
+}
+
+export function isIsraeliPhone(digits: string): boolean {
+  return (
+    IL_MOBILE.test(digits) ||
+    IL_VOIP.test(digits) ||
+    IL_LANDLINE.test(digits) ||
+    IL_SERVICE.test(digits)
+  );
+}
 
 export interface CleanFields {
   name: string;
@@ -101,21 +140,9 @@ export interface CleanFields {
   message: string;
 }
 
-export interface ValidateOptions {
-  /**
-   * Allow an empty email. OFF by default, so the approved contact form
-   * (F-10: name, phone, email, service, message) keeps requiring it
-   * exactly as before. The chat panel opts in, because asking for three
-   * fields inside a bubble loses people, and storing a placeholder
-   * address instead would put a fake email in the leads table.
-   */
-  emailOptional?: boolean;
-}
-
 export function validateAndClean(
   input: Record<string, unknown>,
-  knownServiceSlugs: readonly string[],
-  options: ValidateOptions = {}
+  knownServiceSlugs: readonly string[]
 ): { ok: true; fields: CleanFields } | { ok: false; error: string } {
   const name = clean(input.name, MAX.name);
   const phone = clean(input.phone, MAX.phone);
@@ -125,14 +152,14 @@ export function validateAndClean(
   const serviceSlug = knownServiceSlugs.includes(serviceRaw) ? serviceRaw : '';
 
   if (!name) return { ok: false, error: 'נא למלא שם' };
-  if (!phone || !PHONE_RE.test(phone)) return { ok: false, error: 'מספר הטלפון לא תקין' };
-  if (options.emailOptional) {
-    // Given but malformed is still an error; simply absent is fine.
-    if (email && !EMAIL_RE.test(email)) return { ok: false, error: 'כתובת האימייל לא תקינה' };
-  } else if (!email || !EMAIL_RE.test(email)) {
-    return { ok: false, error: 'כתובת האימייל לא תקינה' };
+  const phoneDigits = normalisePhone(phone);
+  if (!phoneDigits || !isIsraeliPhone(phoneDigits)) {
+    return { ok: false, error: 'מספר טלפון ישראלי לא תקין. לדוגמה: 050-1234567' };
   }
+  // Required everywhere, including the chat panel: the client wants every
+  // lead to carry an email so it can feed automations later.
+  if (!email || !EMAIL_RE.test(email)) return { ok: false, error: 'כתובת האימייל לא תקינה' };
   if (!message || message.length < 3) return { ok: false, error: 'נא לכתוב כמה מילים על הפנייה' };
 
-  return { ok: true, fields: { name, phone, email, serviceSlug, message } };
+  return { ok: true, fields: { name, phone: phoneDigits, email, serviceSlug, message } };
 }
