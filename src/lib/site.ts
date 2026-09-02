@@ -23,11 +23,10 @@ export const SITE = {
 
 // F-43 (2026-09-02): LAHAV AI is owned and run by two partners. Ethan is
 // no longer presented as the sole founder anywhere on the public site.
-// Role labels are the client's own words, verbatim. NO biography text is
-// invented here: a partner's `bio` stays empty until the client supplies
-// verified background facts, and every component that renders `bio` must
-// handle '' by simply not printing a paragraph, never a placeholder
-// sentence. See docs/SOURCE_OF_TRUTH.md F-43.
+// Role labels are the client's own words, verbatim. The bio TEXT lives in
+// the CMS only (AboutContent.partners in content.ts, editable at
+// /admin/website/about) -- not duplicated here -- so there is exactly one
+// place that can drift from what the client actually approved.
 //
 // Photos: three approved assets (Yehiel solo, Ethan solo, both together)
 // are referenced below but NOT YET on disk -- the client shared them as
@@ -41,7 +40,6 @@ export const PARTNERS = [
     name: 'יחיאל',
     role: 'שותף',
     focus: 'שיווק, מכירות וקשרי לקוחות',
-    bio: '',
     photo: {
       src: '/partners/yehiel.jpg',
       width: 1120,
@@ -54,7 +52,6 @@ export const PARTNERS = [
     name: 'איתן',
     role: 'שותף',
     focus: 'תפעול, מערכות וטכנולוגיה',
-    bio: '',
     // Legacy cutout kept for the presenter/hero uses that are explicitly
     // frozen (F-43 does not touch presenter video or its architecture).
     cutout: {
