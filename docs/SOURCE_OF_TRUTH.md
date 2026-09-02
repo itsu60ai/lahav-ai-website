@@ -8,6 +8,7 @@ F-34..F-37 (2026-09-01), CMS finalization (draft/publish gaps closed) - see sect
 F-38..F-40 (2026-09-02), Portfolio redesign to the STG reference and COPY V2 - see section 8.
 F-41, F-42 (2026-09-02), chat upgrade and AI engine Stages C+D - see section 9.
 F-43 (2026-09-02), LAHAV AI becomes a two-partner business - see section 10. NOT PUBLISHED, client review pending.
+F-44 (2026-09-02), footer/mega-menu duplicate-CTA cleanup and rewrite; F-45, chat tone fix and AI-engine rules seeded from docs/COPY_STYLE.md; F-46, self-service AI-engine radar sources (`/admin/ai/sources`) plus verified YouTube feeds; F-47, long-form article structure distilled (not copied) from a client-referenced blog and added to docs/COPY_STYLE.md section 10 and the AI engine's rules.
 
 ---
 

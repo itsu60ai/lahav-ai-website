@@ -123,3 +123,37 @@ Saying plainly what a thing does *not* do also buys trust:
 5. Is the headline construction different from the previous page's?
 6. Does anything promise a result we cannot stand behind?
 7. Read aloud: does any sentence sound translated?
+
+## 10. Long-form structure (articles and guides)
+
+Added 2026-09-02, distilled from the shape of a popular Hebrew AI-tips
+blog the client pointed to as a reference for "how good Hebrew copy is
+built" — the STRUCTURE only, described here in our own words. No text
+from that or any other outside source is stored anywhere in this repo;
+see F-47 in `docs/SOURCE_OF_TRUTH.md`.
+
+The pattern that makes a long how-to piece easy to start and easy to
+act on:
+
+1. **Open on a scene the reader already recognises**, not a definition.
+   Name the frustrating moment before naming the topic.
+2. **State one underlying principle early**, in a single sentence, and
+   say plainly that it is the one thing worth remembering. Everything
+   after it should read as a consequence of that one sentence, not a
+   new, unrelated tip.
+3. **Grade the advice by difficulty**, easiest and most universal first,
+   more specific or advanced later. A reader who only wants the basics
+   should be able to stop partway through and already have value.
+4. **Number concrete steps**, each with its own short bold label
+   followed by one to three sentences of plain explanation. No step
+   should require reading the ones after it to make sense.
+5. **Back a claim with one real, specific number when we have one we
+   can stand behind** — this site's own rule against invented figures
+   (section 7) still wins; only use a number that is actually true for
+   us.
+6. **Name and knock down a myth or two near the end**, phrased as
+   "people think X, actually Y" — short, myth then correction, no
+   elaboration needed.
+7. **Close by restating the one principle from step 2** in a single
+   summary line, then a low-pressure next step or invitation, not a
+   hard sales pitch.

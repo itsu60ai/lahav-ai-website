@@ -17,6 +17,7 @@ import { ARTICLE_KINDS } from '../lib/cms/types.ts';
 import type { Article } from '../lib/cms/types.ts';
 import { CTA_PRIMARY } from '../lib/site';
 import { isSvgSafe } from '../lib/ai/validate.ts';
+import { linkifyText } from '../lib/cms/linkify.ts';
 
 interface Props {
   a: Article;
@@ -52,12 +53,12 @@ const { a, more = [] } = Astro.props;
       a.body.map((b) => {
         if (b.t === 'h2') return <h2>{b.x}</h2>;
         if (b.t === 'h3') return <h3>{b.x}</h3>;
-        if (b.t === 'quote') return <blockquote>{b.x}</blockquote>;
+        if (b.t === 'quote') return <blockquote set:html={linkifyText(b.x)} />;
         if (b.t === 'ul')
           return (
             <ul>
               {b.items.map((li) => (
-                <li>{li}</li>
+                <li set:html={linkifyText(li)} />
               ))}
             </ul>
           );
@@ -94,7 +95,7 @@ const { a, more = [] } = Astro.props;
               <figcaption>{a.vizCaption}</figcaption>
             </figure>
           );
-        return <p>{b.x}</p>;
+        return <p set:html={linkifyText(b.x)} />;
       })
     }
   </div>
@@ -279,6 +280,13 @@ const { a, more = [] } = Astro.props;
     color: var(--color-ink);
     max-width: none;
   }
+  /* links pasted from a generated draft (see src/lib/cms/linkify.ts) */
+  .art__body :global(a) {
+    color: var(--color-royal);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  .art__body :global(a:hover) { color: var(--color-electric); }
   .art__body h2 {
     font-family: var(--font-display);
     font-size: clamp(1.75rem, 3vw, 2.75rem);
