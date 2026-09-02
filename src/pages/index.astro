@@ -302,8 +302,9 @@ const svcHome = [
     <Curve tone="warm" shape="wave" flip />
     <div class="u-container u-container--wide">
       <div class="proc__head">
-        <p class="t-eyebrow" data-reveal>איך זה מתנהל</p>
-        <SplitLines class="t-display-2" lines={['תהליך העבודה:', 'שישה שלבים.']} step={100} />
+        <p class="t-eyebrow" data-reveal>איך זה עובד</p>
+        <SplitLines class="t-display-2" lines={['מרעיון,', 'למערכת שעובדת.']} step={100} />
+        <p class="proc__lead t-lead" data-reveal style="--mo-delay:240ms">משיחה ראשונית למערכת שעובדת.</p>
       </div>
 
       <ol class="proc__list" data-stagger style="--mo-step:90ms">
@@ -767,6 +768,7 @@ const svcHome = [
 
   /* ══════ process ══════ */
   .proc__head { margin-bottom: clamp(3rem, 6vw, 5rem); }
+  .proc__lead { margin-top: 1rem; max-width: 48ch; }
   .proc__list { list-style: none; margin: 0; padding: 0; }
   .proc__row {
     display: grid;
