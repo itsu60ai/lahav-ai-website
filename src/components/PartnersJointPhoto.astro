@@ -10,7 +10,7 @@ interface Props {
   class?: string;
 }
 const { class: cls = '' } = Astro.props;
-const PHOTOS_READY = false;
+const PHOTOS_READY = true;
 ---
 
 <figure class:list={['pj', cls]} data-reveal>

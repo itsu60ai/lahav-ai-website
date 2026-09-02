@@ -28,12 +28,10 @@ export const SITE = {
 // /admin/website/about) -- not duplicated here -- so there is exactly one
 // place that can drift from what the client actually approved.
 //
-// Photos: three approved assets (Yehiel solo, Ethan solo, both together)
-// are referenced below but NOT YET on disk -- the client shared them as
-// pasted chat images, which this tooling cannot save to the filesystem.
-// Every PartnerPortrait / PartnersJointPhoto usage therefore renders its
-// honest "photo pending" placeholder until the real files land at these
-// exact paths. Never regenerate, retouch or substitute a stand-in photo.
+// Photos: the three approved assets (Yehiel solo, Ethan solo, both
+// together) are in public/partners/ as supplied, saved straight to JPEG
+// with no crop, retouch or regeneration. PartnerPortrait.astro and
+// PartnersJointPhoto.astro both have PHOTOS_READY = true.
 export const PARTNERS = [
   {
     key: 'yehiel',
@@ -42,8 +40,8 @@ export const PARTNERS = [
     focus: 'שיווק, מכירות וקשרי לקוחות',
     photo: {
       src: '/partners/yehiel.jpg',
-      width: 1120,
-      height: 1400,
+      width: 1365,
+      height: 1515,
     },
     alt: 'יחיאל, שותף ב-LAHAV AI',
   },
@@ -66,8 +64,8 @@ export const PARTNERS = [
     },
     photo: {
       src: '/partners/ethan.jpg',
-      width: 1120,
-      height: 1400,
+      width: 1122,
+      height: 1402,
     },
     alt: 'איתן, שותף ב-LAHAV AI',
   },
@@ -75,8 +73,8 @@ export const PARTNERS = [
 
 export const PARTNERS_PHOTO = {
   src: '/partners/together.jpg',
-  width: 1600,
-  height: 1067,
+  width: 1448,
+  height: 1086,
   alt: 'יחיאל ואיתן, השותפים מאחורי LAHAV AI',
 };
 
