@@ -49,24 +49,20 @@ const home = preview
 // figures and no claims in them.
 const beliefs = [
   {
-    kicker: 'קודם הפיצוח, רק אז הטכנולוגיה',
-    word: 'התהליך',
-    body: 'אנחנו לא דוחפים מערכות סתם כי הן טרנדיות. לפני שאנחנו בוחרים כלי, אנחנו מבינים איך הכסף והלידים זזים אצלכם.',
+    word: 'מתחילים במה שקורה אצלכם היום',
+    body: 'איך מגיעים לידים, מי מטפל בהם, איפה נשמר המידע, מה לוקח יותר מדי זמן ואיפה דברים נתקעים. רק אחרי שיש תמונה ברורה, מחליטים מה צריך לשנות.',
   },
   {
-    kicker: 'מדברים בגובה העיניים, בלי סינית',
-    word: 'בעברית',
-    body: 'לא נשגע אתכם עם מושגי פיתוח מסובכים או שמות קוד טכנולוגיים. נדבר איתכם על השורה התחתונה: מה זה משנה ליום-יום שלכם.',
+    word: 'לא מסבכים אתכם עם טכנולוגיה',
+    body: 'אתם לא צריכים לדעת איך המערכת בנויה מאחורי הקלעים. אתם צריכים להבין מה היא עושה, איך עובדים איתה ומה היא משנה ביום-יום.',
   },
   {
-    kicker: 'מינימום פיתוח, מקסימום יעילות',
-    word: 'רק מה שצריך',
-    body: 'אם אפשר לפתור בעיה באמצעות כלי קיים ופשוט במקום לבנות קוד יקר מאפס, נגיד לכם את זה מיד. אנחנו כאן כדי לחסוך לכם כסף.',
+    word: 'בונים רק מה שבאמת צריך',
+    body: 'לא כל בעיה דורשת מערכת חדשה ולא כל תהליך צריך אוטומציה. אם יש דרך פשוטה יותר לפתור משהו, נעדיף אותה.',
   },
   {
-    kicker: 'השליטה נשארת בבעלותכם',
-    word: 'השליטה אצלכם',
-    body: 'המערכת פותרת את מה שאפשר להפוך לרובוטי. ההחלטות האסטרטגיות, שיקול הדעת והקשר האנושי נשארים שלכם ב-100%.',
+    word: 'המערכת מתאימה לעסק, לא להפך',
+    body: 'אנחנו בונים סביב הדרך שבה אתם עובדים, במקום לגרום לכם לשנות את כל העסק כדי להתאים למערכת.',
   },
 ];
 
@@ -329,14 +325,13 @@ const svcHome = [
       <div class="blf__head">
         <p class="t-eyebrow" data-reveal>אודות</p>
         <h2 class="blf__h t-display-3" data-reveal style="--mo-delay:80ms">
-          איך אנחנו עובדים
+          לא מתחילים מהמערכת. מתחילים מכם.
         </h2>
       </div>
 
       <ul class="blf__grid">
         {beliefs.map((b, i) => (
           <li class="blf__item" data-reveal style={`--mo-delay:${i * 90}ms`}>
-            <p class="blf__kicker">{b.kicker}</p>
             <p class="blf__word">{b.word}</p>
             <p class="blf__body">{b.body}</p>
           </li>
@@ -344,7 +339,7 @@ const svcHome = [
       </ul>
 
       <a class="link-arrow blf__more" href="/about/" data-reveal>
-        הסיפור המלא <span class="arrow-inline" aria-hidden="true">←</span>
+        להכיר אותנו קצת יותר <span class="arrow-inline" aria-hidden="true">←</span>
       </a>
     </div>
   </section>
@@ -751,7 +746,6 @@ const svcHome = [
     gap: clamp(2rem, 5vw, 4.5rem) clamp(2rem, 6vw, 6rem);
   }
   .blf__item { padding-top: 1.25rem; border-top: 1px solid var(--color-line-strong); }
-  .blf__kicker { font-size: var(--text-small); font-weight: 700; color: var(--color-ink-3); }
   .blf__word {
     font-family: var(--font-display);
     font-size: clamp(1.875rem, 4.4vw, 3.75rem);
