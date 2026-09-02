@@ -34,8 +34,8 @@ export interface Props {
 
 const {
   siteKey,
-  heading = 'בואו נבין איפה העסק שלכם תקוע.',
-  body = 'אתם לא צריכים להגיע עם תוכניות מוגדרות מראש או להבין בקוד. פשוט ספרו לנו מה שואב לכם את הזמן היום, ואנחנו כבר נדאג לפתרון.',
+  heading = 'בואו נדבר על מה שלא עובד לכם בעסק.',
+  body = 'לא צריך להגיע עם פתרון מוכן. ספרו לנו מה תקוע, מה לוקח יותר מדי זמן ומה הייתם רוצים שיעבוד אחרת.',
   service = '',
   curve = true,
   id = 'contact-block',
@@ -74,10 +74,10 @@ const serviceNames: Record<string, string> = Astro.locals.stores
       <div class="cb__routes" data-reveal style="--mo-delay:360ms">
         <a class="cb__route" href={waHref} target="_blank" rel="noopener noreferrer">
           <WhatsApp />
-          <span>מעדיפים לדלג על הטופס? בכיף. נדבר ישר בוואטסאפ.</span>
+          <span>מעדיפים וואטסאפ? דברו איתנו שם.</span>
         </a>
         <a class="cb__route" href={CTA_PRIMARY.href}>
-          <span>לסגור פגישה ביומן</span>
+          <span>לפגישת היכרות קצרה</span>
           <span class="arrow-inline" aria-hidden="true">←</span>
         </a>
       </div>
