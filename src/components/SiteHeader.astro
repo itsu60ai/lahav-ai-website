@@ -44,6 +44,46 @@ const serviceNames: Record<string, string> = Astro.locals.stores
   ? await getServiceNames(Astro.locals.stores.services, preview).catch(() => ({}))
   : {};
 const svcName = (slug: string, fallback: string) => serviceNames[slug] || fallback;
+
+// The desktop mega menu's own order and copy (client, 2026-09-02):
+// product-plus-outcome instead of a dry service list -- a short name, a
+// bold one-line hook, then a plain-language description. Deliberately a
+// local override, not SERVICES itself (which still drives the nav order,
+// the mobile menu, the footer and the services index): `svcName()` above
+// still wins if the client renames a service in the CMS, so this never
+// goes stale next to a real rename.
+const megaServices = [
+  {
+    slug: 'crm',
+    name: 'מערכות CRM',
+    hook: 'כל הלידים. כל הלקוחות. מקום אחד.',
+    desc: 'רואים מה נכנס, מה בטיפול, מה נסגר ומה מחכה לפולואפ.',
+  },
+  {
+    slug: 'web-development',
+    name: 'פיתוח אתרים',
+    hook: 'האתר שלכם צריך לעשות יותר מלהיראות טוב.',
+    desc: 'בונים חוויית שימוש ברורה שמובילה את הלקוח לפעולה ומתחברת לעסק מאחורי הקלעים.',
+  },
+  {
+    slug: 'app-development',
+    name: 'פיתוח אפליקציות',
+    hook: 'כשאין פתרון שמתאים לכם, בונים אחד.',
+    desc: 'מערכת שנבנית סביב הדרך שבה אתם עובדים, במקום לכופף את העסק למוצר מדף.',
+  },
+  {
+    slug: 'ai-content',
+    name: 'מערכות AI וכלים חכמים',
+    hook: 'פחות עבודה ידנית. יותר עבודה שנעשית בשבילכם.',
+    desc: 'כלים לתוכן, מסמכים, מידע ותהליכים שחוזרים על עצמם.',
+  },
+  {
+    slug: 'automations',
+    name: 'אוטומציות עסקיות',
+    hook: 'תפסיקו להתעסק בדברים שחוזרים על עצמם.',
+    desc: 'הודעות, עדכונים, תזכורות ומשימות קבועות קורות בלי שמישהו צריך לזכור.',
+  },
+] as const;
 ---
 
 <header class:list={['hdr', solid && 'is-solid']} data-header>
@@ -97,14 +137,15 @@ const svcName = (slug: string, fallback: string) => serviceNames[slug] || fallba
     <div class="u-container u-container--wide mega__inner">
       <div class="mega__lead">
         <p class="t-eyebrow">השירותים שלנו</p>
-        <p class="mega__h">מתחילים במה שהכי מציק.</p>
+        <p class="mega__h">בונים את מה שהעסק צריך.</p>
+        <p class="mega__body">CRM, אתרים, אפליקציות ומערכות חכמות. כל פתרון מתחיל מבעיה אמיתית בעסק.</p>
         <a class="link-arrow mega__all" href="/services/">
-          לכל השירותים <span class="arrow-inline" aria-hidden="true">←</span>
+          כל הפתרונות במקום אחד <span class="arrow-inline" aria-hidden="true">←</span>
         </a>
       </div>
 
       <ul class="mega__list">
-        {SERVICES.map((s, i) => (
+        {megaServices.map((s, i) => (
           <li>
             <a class="mega__card" href={`/services/${s.slug}/`}>
               <span class="mega__n tabular">{String(i + 1).padStart(2, '0')}</span>
@@ -113,7 +154,8 @@ const svcName = (slug: string, fallback: string) => serviceNames[slug] || fallba
                      stroke-linecap="round" stroke-linejoin="round" set:html={SERVICE_ICONS[s.slug]} />
               </span>
               <span class="mega__name">{svcName(s.slug, s.name)}</span>
-              <span class="mega__lead-t">{s.lead}</span>
+              <span class="mega__hook">{s.hook}</span>
+              <span class="mega__lead-t">{s.desc}</span>
             </a>
           </li>
         ))}
@@ -355,8 +397,15 @@ const svcName = (slug: string, fallback: string) => serviceNames[slug] || fallba
     letter-spacing: normal;
     line-height: 1.1;
     color: var(--color-ink);
-    margin-block: 0.5rem 1rem;
-    max-width: 12ch;
+    margin-block: 0.5rem 0.75rem;
+    max-width: 16ch;
+  }
+  .mega__body {
+    font-size: var(--text-small);
+    line-height: 1.55;
+    color: var(--color-ink-3);
+    max-width: 26ch;
+    margin-bottom: 1.25rem;
   }
 
   .mega__list {
@@ -401,7 +450,15 @@ const svcName = (slug: string, fallback: string) => serviceNames[slug] || fallba
     color: var(--color-ink);
   }
   .mega__card:hover .mega__name { color: var(--color-royal); }
-  .mega__lead-t { font-size: var(--text-micro); line-height: 1.5; color: var(--color-ink-3); }
+  .mega__hook {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: var(--text-small);
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--color-ink-2);
+  }
+  .mega__lead-t { display: block; margin-top: 0.35rem; font-size: var(--text-micro); line-height: 1.5; color: var(--color-ink-3); }
 
   /* ══════ mobile services group ══════ */
   .menu__svc-group { border-top: 1px solid var(--color-line); }
