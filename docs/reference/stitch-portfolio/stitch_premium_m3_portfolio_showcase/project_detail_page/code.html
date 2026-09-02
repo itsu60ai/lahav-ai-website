@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Studio Premium - Portfolio Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800;900&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#1a1c1c",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#474746",
+                        "surface-container-highest": "#e2e2e2",
+                        "surface-container-low": "#f3f3f4",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#1c1b1b",
+                        "inverse-on-surface": "#f0f1f1",
+                        "surface-container-high": "#e8e8e8",
+                        "background": "#f9f9f9",
+                        "on-surface": "#1a1c1c",
+                        "outline": "#747878",
+                        "soft-clay": "#F6D8CC",
+                        "tertiary-fixed": "#e6e2df",
+                        "on-tertiary-container": "#868382",
+                        "surface-dim": "#dadada",
+                        "surface-tint": "#5f5e5e",
+                        "on-secondary-container": "#7a4732",
+                        "tertiary": "#000000",
+                        "surface": "#f9f9f9",
+                        "surface-bright": "#f9f9f9",
+                        "surface-container": "#eeeeee",
+                        "primary-fixed-dim": "#c8c6c5",
+                        "tertiary-fixed-dim": "#cac6c4",
+                        "on-tertiary-fixed": "#1c1b1a",
+                        "paper-white": "#FDFDFD",
+                        "on-primary-fixed": "#1c1b1b",
+                        "inverse-surface": "#2f3131",
+                        "on-secondary-fixed": "#351002",
+                        "secondary-container": "#ffb99e",
+                        "secondary-fixed": "#ffdbce",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#858383",
+                        "deep-charcoal": "#2A2A2A",
+                        "tertiary-container": "#1c1b1a",
+                        "on-secondary-fixed-variant": "#6a3a26",
+                        "secondary-fixed-dim": "#fcb69b",
+                        "outline-variant": "#c4c7c7",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#000000",
+                        "surface-variant": "#e2e2e2",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#e5e2e1",
+                        "on-surface-variant": "#444748",
+                        "on-tertiary-fixed-variant": "#484645",
+                        "inverse-primary": "#c8c6c5",
+                        "secondary": "#86513b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "unit": "8px",
+                        "margin-desktop": "64px",
+                        "masonry-gap": "32px",
+                        "gutter": "24px",
+                        "sidebar-width": "320px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "nav-item": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg-mobile": ["Hanken Grotesk"],
+                        "label-caps": ["Space Mono"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "nav-item": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+                        "display-lg": ["84px", { "lineHeight": "92px", "letterSpacing": "-0.04em", "fontWeight": "800" }],
+                        "headline-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .lift-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .lift-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col antialiased">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 w-full transition-all duration-300">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-screen-2xl mx-auto">
+<a class="font-headline-md text-headline-md font-black tracking-tighter text-primary dark:text-on-primary" href="#">
+                STUDIO
+            </a>
+<nav class="hidden md:flex items-center space-x-8">
+<a class="font-nav-item text-nav-item uppercase tracking-widest text-primary dark:text-on-primary border-b-2 border-primary dark:border-on-primary pb-1" href="#">Portfolio</a>
+<a class="font-nav-item text-nav-item uppercase tracking-widest text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-on-primary transition-colors" href="#">Story</a>
+<a class="font-nav-item text-nav-item uppercase tracking-widest text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-on-primary transition-colors" href="#">Talents</a>
+<a class="font-nav-item text-nav-item uppercase tracking-widest text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-on-primary transition-colors" href="#">Contact</a>
+</nav>
+<button class="hidden md:inline-flex bg-primary text-on-primary font-nav-item text-nav-item uppercase tracking-widest px-6 py-3 rounded-DEFAULT hover:bg-surface-tint transition-all scale-95 active:scale-90 lift-hover">
+                Hire Us
+            </button>
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-screen-2xl mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-24">
+<!-- Hero Section -->
+<section class="mb-24">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6">
+                Lumina Space
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl">
+                A transformative digital experience redefining how light and space interact within virtual environments. This project explores the boundaries of generative design and real-time rendering.
+            </p>
+</section>
+<!-- Detail Layout: Sidebar + Canvas -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter md:gap-masonry-gap items-start">
+<!-- Sticky Sidebar (3 columns) -->
+<aside class="md:col-span-3 md:sticky md:top-32 bg-paper-white p-6 border border-outline-variant/10 rounded-lg shadow-sm">
+<div class="mb-8">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Client</h3>
+<p class="font-body-md text-body-md font-semibold text-primary">Aura Technologies</p>
+</div>
+<hr class="border-outline-variant/20 mb-8"/>
+<div class="mb-8">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Role</h3>
+<p class="font-body-md text-body-md text-primary">Lead Design &amp; Development</p>
+</div>
+<hr class="border-outline-variant/20 mb-8"/>
+<div class="mb-8">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-2">Year</h3>
+<p class="font-body-md text-body-md text-primary">2024</p>
+</div>
+<hr class="border-outline-variant/20 mb-8"/>
+<div>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-3">Expertise</h3>
+<div class="flex flex-wrap gap-2">
+<span class="inline-block bg-soft-clay/20 px-3 py-1 font-label-caps text-label-caps text-primary rounded-sm">WebGL</span>
+<span class="inline-block bg-soft-clay/20 px-3 py-1 font-label-caps text-label-caps text-primary rounded-sm">Generative UI</span>
+<span class="inline-block bg-soft-clay/20 px-3 py-1 font-label-caps text-label-caps text-primary rounded-sm">Spatial Audio</span>
+</div>
+</div>
+</aside>
+<!-- Media Canvas (9 columns) -->
+<div class="md:col-span-9 space-y-16">
+<!-- Main Image -->
+<figure class="w-full">
+<img alt="Main visual of Lumina Space project" class="w-full h-auto object-cover rounded-xl shadow-sm border border-outline-variant/10" src="https://lh3.googleusercontent.com/aida/AEtjO1XIzVulwUHm8S19ZMPEZR7sgt3KrFDkCKubr3Ly-KqMATahOuVQuBi_wQRxtXLMYDFWIWP9xu0oHlu0P15UsTuKbYOW8hDVrkPt7g8M1zFpbzmOtVRO3lpryMW3Pp9d5RBRfi5e6RYMdbz1svHXOjxMxrfoaXjh_kizncSdAVm5EtasJZnkuRa_BEIdp68DqyWj3T1qYQYEXXvqn6C0SeLAFQH4I5w4UjmcHC-WD886iK2Gh8C3pd51hig"/>
+<figcaption class="mt-4 font-label-caps text-label-caps text-on-surface-variant text-right">Interactive light simulation interface</figcaption>
+</figure>
+<!-- Description Block -->
+<div class="prose max-w-none text-on-surface">
+<h2 class="font-headline-md text-headline-md text-primary mb-6">The Challenge</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed mb-6">
+                        Aura Technologies approached us to create a digital platform that could visually articulate their complex architectural lighting systems. Traditional 2D renderings were insufficient; they needed a solution that allowed architects to 'feel' the light.
+                    </p>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                        Our approach involved abandoning static assets entirely. We built a custom WebGL pipeline that simulates ray-tracing in real-time, directly within the browser, offering an unprecedented level of fidelity and interaction.
+                    </p>
+</div>
+<!-- 2-Up Image Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<figure class="w-full group">
+<div class="overflow-hidden rounded-xl border border-outline-variant/10 shadow-sm">
+<img alt="Detail view of the control panel" class="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AEtjO1UwsOsQ0khv6UBf1RAOsGW3VVEABbzHULTSZA3cHoGFesvEpfAMScOt9dsq5dGAcpzSV_cvViGHhvpdRnhwx5SNLLTZQedTB3EL2Fd-y6QtDdqp8kOCVYNBd4coiyihe8yLCmIjlaNQBhxu8-N53gxrSaS0_vx2IH_zCZyclnDZKEh-fmEf6iFB6kivHdIhV5gTAQRPsZ8_VEVLZjsjOd7kjkqs4WdxvsB-8qskZ5kGkQO9q19FBI5ia9eu"/>
+</div>
+</figure>
+<figure class="w-full group">
+<div class="overflow-hidden rounded-xl border border-outline-variant/10 shadow-sm">
+<img alt="Abstract visualization of the lighting algorithm" class="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida/AEtjO1WT3dr36XlfXvgZMUwWqIFxjZq0BMLpQINkrOhgKDowhvJT61ygLqwNFdwkG3Ml5B4vEIM1EqVwMHdfr2xTEItLm4ducNwOr0nNHC0gpZsCeQLS-8o0XZ-i00CY5SCiSZhrrFkMp5BzLt0LIcZTG7U93p8Ve6KgW9b_wYFI76Qr_RGmchmZmP1kKkegwPJNVCPmdNzuLeWdaBCUGqF_TO0GeYx1kTTq71I1T9qAiw2JvFFdmxF55bVOzfjR"/>
+</div>
+</figure>
+</div>
+<!-- Quote -->
+<blockquote class="border-l-4 border-primary pl-6 py-2 my-16">
+<p class="font-headline-md text-headline-md text-primary mb-4">
+                        "The studio didn't just build a tool; they created an experiential canvas that fundamentally changed how we sell our vision."
+                    </p>
+<footer class="font-label-caps text-label-caps text-on-surface-variant uppercase">
+                        — Sarah Jenkins, CDO Aura Tech
+                    </footer>
+</blockquote>
+<!-- Next Project Link -->
+<div class="pt-16 border-t border-outline-variant/20 flex justify-between items-center">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase block mb-2">Next Project</span>
+<a class="font-headline-md text-headline-md text-primary hover:text-secondary transition-colors inline-flex items-center group" href="#">
+                            Echoes of Silence
+                        </a>
+</div>
+<a class="w-12 h-12 rounded-full border border-primary flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-container-lowest border-t border-outline-variant w-full mt-24">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-mobile md:px-margin-desktop py-16 w-full max-w-screen-2xl mx-auto">
+<div class="md:col-span-1">
+<span class="font-headline-lg text-headline-lg font-black text-primary dark:text-on-primary block mb-6">STUDIO</span>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xs">
+                    Crafting digital experiences that merge high-end aesthetics with deep technical precision.
+                </p>
+</div>
+<div class="md:col-span-1">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-6">Social</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Instagram</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Twitter / X</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">LinkedIn</a></li>
+</ul>
+</div>
+<div class="md:col-span-1">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-6">Legal</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Career</a></li>
+</ul>
+</div>
+<div class="md:col-span-1 flex flex-col justify-end md:text-right mt-12 md:mt-0">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    © 2024 STUDIO PREMIUM. ALL RIGHTS RESERVED.
+                </p>
+</div>
+</div>
+</footer>
+</body></html>

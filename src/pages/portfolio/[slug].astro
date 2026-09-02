@@ -1,28 +1,24 @@
 ---
 // PORTFOLIO DETAIL -- one example project.
 //
-// Only a PUBLISHED item resolves publicly; a draft-only or disabled item
-// 404s exactly like a non-existent slug, unless the request is an
-// authenticated ?preview=1 (see resolvePreview.ts), same rule the rest of
-// the site's preview pages follow.
+// Structure matched to the client's Stitch reference "Premium Editorial
+// Portfolio / project_detail_page" (docs/reference/stitch-portfolio,
+// 2026-09-02): a large title with a short lead at the top; then a
+// 3 + 9 column grid: a STICKY metadata sidebar (client, role, kind,
+// expertise chips, hairline dividers) and a free-scrolling main column
+// with the hero screenshot in a soft frame and a mono caption, "the
+// challenge" as a heading over two paragraphs, a pair of images, a
+// pull-quote block, and a "next project" row with an arrow button.
+// Rebuilt in LAHAV's tokens and type, RTL (sidebar sits at the reading
+// start, i.e. the right).
 //
-// Shape matched to the client's reference agency case-study page (their
-// desktop screenshots, 2026-09-02): full-bleed hero media with the name
-// on it; a two-column intro (tag column + bold line over a large opening
-// paragraph); the work as a labelled section with the product shown big;
-// a strip of phone screens; a closing paragraph; a giant marquee "next
-// project" band over the next project's media.
-//
-// What the reference does NOT have, and the client asked for (2026-09-02:
-// "it looks the same for every service"): the middle of the page changes
-// with the KIND of project. `serviceSlug` (one of the five services)
-// picks a living, on-brand diagram and a framing that fits that service:
-//   web-development  browser-framed screenshots + the visitor journey
-//   crm              the lead's life on a moving pipeline board
-//   automations      a trigger/rule/action flow + a live run log
-//   app-development  phone screens first + the need/screens/actions map
-//   ai-content       the brief > draft > approval pipeline
-// Everything drawn is a MECHANISM, never a metric, per the truth rules.
+// Kept from the client's own earlier request (2026-09-02, "make it
+// different per service"): the main column carries a living stage that
+// changes with `serviceSlug` -- the visitor journey for web builds, a
+// moving lead board for CRM, a flow + run log for automations, phones
+// first for apps, brief-to-draft for AI content. Mechanisms, never
+// metrics. The pull-quote is the project's RESULT paragraph in our own
+// words -- never a testimonial, which the truth rules forbid.
 export const prerender = false;
 
 import SiteLayout from '../../layouts/SiteLayout.astro';
@@ -46,9 +42,7 @@ if (preview) {
 } else {
   content = (await portfolioList.getPublishedBySlug(String(slug))) as PortfolioItemContent | null;
 }
-if (!content) {
-  return new Response(null, { status: 404, statusText: 'Not found' });
-}
+if (!content) return new Response(null, { status: 404, statusText: 'Not found' });
 const item = content;
 
 let next: PortfolioItemContent | null = null;
@@ -60,25 +54,24 @@ if (!preview) {
 
 type Kind = 'web-development' | 'crm' | 'automations' | 'app-development' | 'ai-content' | '';
 const kind = ((item.serviceSlug as Kind) || '') as Kind;
+const KIND_LABEL: Record<Kind, string> = {
+  'web-development': 'פיתוח אתרים', crm: 'מערכת CRM', automations: 'אוטומציות',
+  'app-development': 'פיתוח אפליקציה', 'ai-content': 'תוכן באמצעות AI', '': 'מערכת עסקית',
+};
+const STAGE_TITLE: Record<Kind, string> = {
+  'web-development': 'המסלול שתכננו לגולש', crm: 'החיים של פנייה במערכת', automations: 'מה קורה מרגע שנכנסת פנייה',
+  'app-development': 'מהצורך למסכים', 'ai-content': 'מבריף לפרסום, דרככם', '': 'מה מתחבר למה',
+};
 const services = (item.service || '').split(/[,،]/).map((s) => s.trim()).filter(Boolean);
 const gallery = item.gallery ?? [];
-const galleryA = gallery.filter((_, i) => i % 2 === 0);
-const galleryB = gallery.filter((_, i) => i % 2 === 1);
 const mobile = item.mobileGallery ?? [];
 const media = (id: string) => `/api/media/${id}`;
-
-// Per-kind framing: what the labelled work section is called, which
-// diagram it gets, and whether screenshots wear a browser chrome.
-const FRAME: Record<Kind, { k: string; sub: string; viz: 'web' | 'crm' | 'automation' | 'app' | 'content' | 'services'; browser: boolean; phonesFirst: boolean; vizTitle: string }> = {
-  'web-development': { k: 'פיתוח אתרים', sub: 'מה בנינו', viz: 'web', browser: true, phonesFirst: false, vizTitle: 'המסלול שתכננו לגולש' },
-  crm: { k: 'מערכת CRM', sub: 'מה בנינו', viz: 'crm', browser: false, phonesFirst: false, vizTitle: 'החיים של פנייה במערכת' },
-  automations: { k: 'אוטומציות', sub: 'מה רץ לבד', viz: 'automation', browser: false, phonesFirst: false, vizTitle: 'מה קורה מרגע שנכנסת פנייה' },
-  'app-development': { k: 'פיתוח אפליקציה', sub: 'מה בנינו', viz: 'app', browser: false, phonesFirst: true, vizTitle: 'מהצורך למסכים' },
-  'ai-content': { k: 'תוכן באמצעות AI', sub: 'איך זה עובד', viz: 'content', browser: false, phonesFirst: false, vizTitle: 'מבריף לפרסום, דרככם' },
-  '': { k: services[0] || item.service || item.industry, sub: 'מה בנינו', viz: 'services', browser: false, phonesFirst: false, vizTitle: 'מה מתחבר למה' },
-};
-const frame = FRAME[kind];
 const flow = kind ? (SERVICE_PAGES as any)[kind]?.flow : null;
+const browser = kind === 'web-development' || kind === '';
+// The main image is the first gallery shot when there is one (a real
+// screen of the product); otherwise the project's hero media.
+const lead = gallery[0] ?? '';
+const rest = gallery.slice(1);
 ---
 
 <SiteLayout
@@ -89,371 +82,284 @@ const flow = kind ? (SERVICE_PAGES as any)[kind]?.flow : null;
   preview={preview}
   headerSolid
 >
-  <!-- ═══ 1. hero ═══ -->
-  <section class="pd-hero band band--navy">
-    {item.heroVideo ? (
-      <video class="pd-hero__media" src={item.heroVideo} poster={item.heroImage ? media(item.heroImage) : undefined} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
-    ) : item.heroImage ? (
-      <img class="pd-hero__media" src={media(item.heroImage)} alt="" />
-    ) : (
-      <span class="pd-hero__media pd-hero__placeholder" aria-hidden="true" />
-    )}
-    <span class="pd-hero__scrim" aria-hidden="true"></span>
-    <h1 class="pd-hero__h1" data-reveal>{item.name}</h1>
-  </section>
-
-  <!-- ═══ 2. intro ═══ -->
-  <section class="pd-intro band u-section">
-    <div class="u-container u-container--wide pd-split">
-      <div class="pd-tags" data-reveal>
-        <p class="pd-tags__k">מה עשינו</p>
-        <ul class="pd-tags__list">
-          {services.length ? services.map((s) => <li>{s}</li>) : <li>{frame.k}</li>}
-        </ul>
-        <p class="pd-tags__k pd-tags__k--gap">התחום</p>
-        <p class="pd-tags__v">{item.industry}</p>
-      </div>
-      <div class="pd-text" data-reveal style="--mo-delay:90ms">
-        <p class="pd-text__h">{item.tagline || item.industry}</p>
-        <p class="pd-text__lead">{item.challenge}</p>
-      </div>
+  <!-- ═══ 1. title + lead ═══ -->
+  <section class="pd-top band">
+    <div class="u-container u-container--wide">
+      <p class="pd-mono" data-reveal>{item.industry}</p>
+      <h1 class="pd-h1" data-reveal style="--mo-delay:60ms">{item.name}</h1>
+      <p class="pd-lead" data-reveal style="--mo-delay:140ms">{item.tagline || item.challenge}</p>
     </div>
   </section>
 
-  <!-- ═══ 3. the work: labelled section, then the kind-specific stage ═══ -->
-  <section class:list={['pd-work band band--soft u-section', `pd-work--${kind || 'generic'}`]}>
-    <div class="u-container u-container--wide pd-split">
-      <div class="pd-tags" data-reveal>
-        <p class="pd-work__service">{frame.k}</p>
-        <p class="pd-work__sub">{frame.sub}</p>
-      </div>
-      <div class="pd-text" data-reveal style="--mo-delay:90ms">
-        <p class="pd-text__body">{item.approach}</p>
-      </div>
-    </div>
+  <!-- ═══ 2. sidebar + main ═══ -->
+  <section class="pd-body band">
+    <div class="u-container u-container--wide pd-grid">
 
-    {/* app builds: the phones ARE the product, so they come first */}
-    {frame.phonesFirst && mobile.length > 0 && (
-      <div class="pd-phones__track pd-phones__track--inwork" aria-label="מסכי האפליקציה">
-        {mobile.map((id) => (
-          <figure class="pd-phone" data-reveal><img src={media(id)} alt="" loading="lazy" /></figure>
-        ))}
-      </div>
-    )}
+      <aside class="pd-side" data-reveal>
+        <div class="pd-side__card">
+          <dl class="pd-meta">
+            <div class="pd-meta__row"><dt class="pd-mono">הלקוח</dt><dd>{item.name}</dd></div>
+            <div class="pd-meta__row"><dt class="pd-mono">התחום</dt><dd>{item.industry}</dd></div>
+            <div class="pd-meta__row"><dt class="pd-mono">סוג הפרויקט</dt><dd>{KIND_LABEL[kind]}</dd></div>
+            <div class="pd-meta__row">
+              <dt class="pd-mono">מה עשינו</dt>
+              <dd class="pd-chips">
+                {(services.length ? services : [KIND_LABEL[kind]]).map((s) => <span class="pd-chip">{s}</span>)}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
 
-    <!-- the living stage: one per kind -->
-    <div class="u-container u-container--wide pd-stage" data-reveal>
-      <p class="pd-stage__k">{frame.vizTitle}</p>
+      <div class="pd-main">
+        <!-- hero shot -->
+        <figure class:list={['pd-fig', 'pd-fig--hero', { 'pd-fig--browser': browser }]} data-reveal>
+          {browser && <span class="pd-fig__bar" aria-hidden="true"><i></i><i></i><i></i></span>}
+          {lead ? (
+            <img src={media(lead)} alt="" />
+          ) : item.heroVideo ? (
+            <video src={item.heroVideo} poster={item.heroImage ? media(item.heroImage) : undefined} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
+          ) : item.heroImage ? (
+            <img src={media(item.heroImage)} alt="" />
+          ) : (
+            <span class="pd-fig__placeholder" aria-hidden="true" />
+          )}
+          <figcaption class="pd-mono pd-fig__cap">{KIND_LABEL[kind]} · {item.name}</figcaption>
+        </figure>
 
-      {kind === 'crm' && (
-        <div class="pd-board" aria-hidden="true">
-          {['פנייה חדשה', 'בשיחה', 'הצעה נשלחה', 'במעקב', 'לקוח'].map((col, i) => (
-            <div class="pd-board__col">
-              <p class="pd-board__h">{col}</p>
-              <div class="pd-board__slot">
-                {i === 0 && <span class="pd-card pd-card--travel"><b>ליד חדש</b><i>שם וטלפון</i></span>}
-                {i === 2 && <span class="pd-card"><b>הצעת מחיר</b><i>נשלחה, ממתין</i></span>}
-                {i === 3 && <span class="pd-card"><b>לחזור מחר</b><i>תזכורת פעילה</i></span>}
+        <!-- the challenge -->
+        <div class="pd-prose" data-reveal>
+          <h2 class="pd-h2">האתגר</h2>
+          <p>{item.challenge}</p>
+          <p>{item.approach}</p>
+        </div>
+
+        <!-- living stage, per kind -->
+        <div class="pd-stage" data-reveal>
+          <p class="pd-mono pd-stage__k">{STAGE_TITLE[kind]}</p>
+
+          {kind === 'crm' && (
+            <div class="pd-board" aria-hidden="true">
+              {['פנייה חדשה', 'בשיחה', 'הצעה נשלחה', 'במעקב', 'לקוח'].map((col, i) => (
+                <div class="pd-board__col">
+                  <p class="pd-board__h">{col}</p>
+                  <div class="pd-board__slot">
+                    {i === 0 && <span class="pd-card pd-card--travel"><b>ליד חדש</b><i>שם וטלפון</i></span>}
+                    {i === 2 && <span class="pd-card"><b>הצעת מחיר</b><i>נשלחה, ממתין</i></span>}
+                    {i === 3 && <span class="pd-card"><b>לחזור מחר</b><i>תזכורת פעילה</i></span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {kind === 'automations' && (
+            <div class="pd-auto">
+              {flow && <Flow stops={flow} tone="light" />}
+              <ol class="pd-log" aria-hidden="true">
+                <li><span class="pd-log__t">09:41</span> פנייה נכנסה מהאתר</li>
+                <li><span class="pd-log__t">09:41</span> נשלח אישור ללקוח</li>
+                <li><span class="pd-log__t">09:41</span> נפתחה משימת מעקב</li>
+                <li><span class="pd-log__t">09:42</span> נוספה ליומן</li>
+                <li class="pd-log__wait"><span class="pd-log__t">עכשיו</span> ממתין לאישור שלכם</li>
+              </ol>
+            </div>
+          )}
+
+          {kind === 'ai-content' && (
+            <div class="pd-draft" aria-hidden="true">
+              <div class="pd-draft__pane">
+                <p class="pd-mono">בריף</p>
+                <p class="pd-draft__line pd-draft__line--1">למי: בעלי עסקים קטנים</p>
+                <p class="pd-draft__line pd-draft__line--2">מה: פוסט על סדר בפניות</p>
+                <p class="pd-draft__line pd-draft__line--3">טון: ישיר, בלי מילים גדולות</p>
+              </div>
+              <div class="pd-draft__pane pd-draft__pane--out">
+                <p class="pd-mono">טיוטה, ממתינה לאישור</p>
+                <p class="pd-draft__type">כמה פניות נכנסו אליכם השבוע? ואיך יודעים למי כבר חזרתם...</p>
+                <span class="pd-draft__ok">לאישור</span>
               </div>
             </div>
-          ))}
+          )}
+
+          {(kind === 'web-development' || kind === 'app-development' || kind === '') && (
+            <Viz kind={kind === 'web-development' ? 'web' : kind === 'app-development' ? 'app' : 'services'} class="pd-viz" />
+          )}
         </div>
-      )}
 
-      {kind === 'automations' && (
-        <div class="pd-auto">
-          {flow && <Flow stops={flow} tone="light" />}
-          <ol class="pd-log" aria-hidden="true">
-            <li><span class="pd-log__t">09:41</span> פנייה נכנסה מהאתר</li>
-            <li><span class="pd-log__t">09:41</span> נשלח אישור ללקוח</li>
-            <li><span class="pd-log__t">09:41</span> נפתחה משימת מעקב</li>
-            <li><span class="pd-log__t">09:42</span> נוספה ליומן</li>
-            <li class="pd-log__wait"><span class="pd-log__t">עכשיו</span> ממתין לאישור שלכם</li>
-          </ol>
-        </div>
-      )}
-
-      {kind === 'ai-content' && (
-        <div class="pd-draft" aria-hidden="true">
-          <div class="pd-draft__pane">
-            <p class="pd-draft__h">בריף</p>
-            <p class="pd-draft__line pd-draft__line--1">למי: בעלי עסקים קטנים</p>
-            <p class="pd-draft__line pd-draft__line--2">מה: פוסט על סדר בפניות</p>
-            <p class="pd-draft__line pd-draft__line--3">טון: ישיר, בלי מילים גדולות</p>
-          </div>
-          <div class="pd-draft__pane pd-draft__pane--out">
-            <p class="pd-draft__h">טיוטה, ממתינה לאישור</p>
-            <p class="pd-draft__type">כמה פניות נכנסו אליכם השבוע? ואיך יודעים למי כבר חזרתם...</p>
-            <span class="pd-draft__ok">לאישור</span>
-          </div>
-        </div>
-      )}
-
-      {(kind === 'web-development' || kind === 'app-development' || kind === '') && (
-        <Viz kind={frame.viz} class="pd-viz" />
-      )}
-    </div>
-
-    {/* screenshots of what was built, two staggered columns */}
-    {gallery.length > 0 && (
-      <div class="u-container u-container--wide pd-shots">
-        {[galleryA, galleryB].map((col, ci) => (
-          <div class:list={['pd-shots__col', { 'pd-shots__col--far': ci === 1 }]}>
-            {col.map((id) => (
-              <figure class:list={['pd-shot', { 'pd-shot--browser': frame.browser }]} data-reveal>
-                {frame.browser && (
-                  <span class="pd-shot__bar" aria-hidden="true"><i></i><i></i><i></i></span>
-                )}
+        <!-- two-up images: more screens, and the phones -->
+        {(rest.length > 0 || mobile.length > 0) && (
+          <div class="pd-two" data-reveal>
+            {rest.slice(0, 1).map((id) => (
+              <figure class:list={['pd-fig', { 'pd-fig--browser': browser }]}>
+                {browser && <span class="pd-fig__bar" aria-hidden="true"><i></i><i></i><i></i></span>}
+                <img src={media(id)} alt="" loading="lazy" />
+              </figure>
+            ))}
+            {mobile.length > 0 && (
+              <figure class="pd-fig pd-fig--phones">
+                <span class="pd-phones">
+                  {mobile.slice(0, 3).map((id) => (
+                    <span class="pd-phone"><img src={media(id)} alt="" loading="lazy" /></span>
+                  ))}
+                </span>
+              </figure>
+            )}
+            {rest.slice(1).map((id) => (
+              <figure class:list={['pd-fig', { 'pd-fig--browser': browser }]}>
+                {browser && <span class="pd-fig__bar" aria-hidden="true"><i></i><i></i><i></i></span>}
                 <img src={media(id)} alt="" loading="lazy" />
               </figure>
             ))}
           </div>
-        ))}
+        )}
+
+        <!-- result, set as a pull-quote (our words, never a testimonial) -->
+        {item.result && (
+          <blockquote class="pd-quote" data-reveal>
+            <p>{item.result}</p>
+            <footer class="pd-mono">מה יצא מזה</footer>
+          </blockquote>
+        )}
+
+        <!-- next project -->
+        {next && (
+          <a class="pd-next" href={`/portfolio/${next.slug}/`} data-reveal>
+            <span class="pd-next__text">
+              <span class="pd-mono">הפרויקט הבא</span>
+              <span class="pd-next__name">{next.name}</span>
+            </span>
+            <span class="pd-next__btn" aria-hidden="true">←</span>
+          </a>
+        )}
       </div>
-    )}
+    </div>
   </section>
-
-  <!-- ═══ 4. phones ═══ -->
-  {!frame.phonesFirst && mobile.length > 0 && (
-    <section class="pd-phones band" aria-label="מסכי נייד">
-      <div class="pd-phones__track">
-        {mobile.map((id) => (
-          <figure class="pd-phone" data-reveal><img src={media(id)} alt="" loading="lazy" /></figure>
-        ))}
-      </div>
-    </section>
-  )}
-
-  <!-- ═══ 5. closing ═══ -->
-  {item.result && (
-    <section class="pd-close band u-section">
-      <div class="u-container u-container--wide pd-split">
-        <div class="pd-tags" data-reveal><p class="pd-tags__k">מה יצא מזה</p></div>
-        <p class="pd-text pd-text__lead" data-reveal style="--mo-delay:90ms">{item.result}</p>
-      </div>
-    </section>
-  )}
-
-  <!-- ═══ 6. next project ═══ -->
-  {next && (
-    <a class="pd-next band band--navy" href={`/portfolio/${next.slug}/`} aria-label={`הפרויקט הבא: ${next.name}`}>
-      {next.heroVideo ? (
-        <video class="pd-next__media" src={next.heroVideo} poster={next.heroImage ? media(next.heroImage) : undefined} autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video>
-      ) : next.heroImage ? (
-        <img class="pd-next__media" src={media(next.heroImage)} alt="" loading="lazy" />
-      ) : (
-        <span class="pd-next__media pd-hero__placeholder" aria-hidden="true" />
-      )}
-      <span class="pd-next__scrim" aria-hidden="true"></span>
-      <span class="pd-next__in">
-        <span class="pd-marquee" aria-hidden="true">
-          <span class="pd-marquee__run">{Array.from({ length: 6 }).map(() => <span>הפרויקט הבא</span>)}</span>
-        </span>
-        <span class="pd-next__name"><span class="arrow-inline" aria-hidden="true">←</span>{next.name}</span>
-      </span>
-    </a>
-  )}
 
   <ContactBlock siteKey={SITE_KEY} preview={preview} />
 </SiteLayout>
 
 <style>
-  /* ── 1. hero ─────────────────────────────────────────────────────── */
-  .pd-hero {
-    position: relative;
-    min-height: clamp(26rem, 86svh, 52rem);
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-    padding-top: clamp(5.5rem, 10svh, 7rem);
-  }
-  .pd-hero__media, .pd-next__media {
-    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
-  }
-  .pd-hero__placeholder { background: linear-gradient(135deg, var(--color-navy), var(--color-royal)); }
-  .pd-hero__scrim {
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(9,15,33,.55) 0%, rgba(9,15,33,.12) 40%, rgba(9,15,33,.35) 100%);
-  }
-  .pd-hero__h1 {
-    position: relative; z-index: 1;
-    font-family: var(--font-display);
-    font-size: clamp(3rem, 9vw, 7.5rem); font-weight: 900; line-height: 1.05; letter-spacing: normal;
-    color: #fff; text-align: center; max-width: 16ch; padding-inline: 1.5rem;
-    text-shadow: 0 6px 40px rgba(0,0,0,.35);
+  .pd-mono {
+    font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--color-ink-3);
   }
 
-  /* ── split + type ────────────────────────────────────────────────── */
-  .pd-split {
-    display: grid; grid-template-columns: minmax(0,.55fr) minmax(0,1.45fr);
-    gap: clamp(2rem, 6vw, 8rem); align-items: start;
+  /* ── 1. title ───────────────────────────────────────────────────── */
+  .pd-top { padding-top: clamp(7rem, 14svh, 10rem); padding-bottom: clamp(2rem, 5vw, 4rem); }
+  .pd-h1 {
+    margin: .75rem 0 1rem; font-family: var(--font-display);
+    font-size: clamp(2.75rem, 7vw, 6rem); font-weight: 900; line-height: 1.05; letter-spacing: normal; color: var(--color-ink);
   }
-  .pd-tags__k, .pd-work__sub {
-    margin: 0; font-size: var(--text-micro); font-weight: 800; letter-spacing: .14em; color: var(--color-ink-3);
-  }
-  .pd-tags__k--gap { margin-top: 1.5rem; }
-  .pd-tags__v { margin: .5rem 0 0; font-weight: 700; color: var(--color-ink); }
-  .pd-tags__list {
-    list-style: none; margin: .9rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .55rem;
-    font-family: var(--font-display); font-size: clamp(1.125rem, 1.6vw, 1.5rem); font-weight: 700; color: var(--color-ink);
-  }
-  .pd-text__h {
-    margin: 0 0 1rem; font-family: var(--font-display);
-    font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 800; line-height: 1.3; color: var(--color-ink);
-  }
-  .pd-text__lead {
-    margin: 0; font-family: var(--font-display);
-    font-size: clamp(1.375rem, 2.4vw, 2.125rem); font-weight: 400; line-height: 1.5; letter-spacing: normal; color: var(--color-ink);
-  }
-  .pd-text__body { margin: 0; font-size: var(--text-body-lg); line-height: 1.7; color: var(--color-ink-2); }
-  .pd-work__service {
-    margin: 0; font-family: var(--font-display);
-    font-size: clamp(1.5rem, 2.8vw, 2.5rem); font-weight: 900; line-height: 1.15; color: var(--color-ink);
-  }
-  .pd-work__sub { margin-top: .5rem; letter-spacing: .06em; }
+  .pd-lead { margin: 0; max-width: 60ch; font-size: var(--text-lead); line-height: 1.6; color: var(--color-ink-2); }
 
-  /* ── 3. stage (kind-specific) ────────────────────────────────────── */
-  .pd-stage { margin-top: clamp(3rem, 7vw, 6rem); }
-  .pd-stage__k {
-    margin: 0 0 1.25rem; font-family: var(--font-display);
-    font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 800; color: var(--color-ink);
+  /* ── 2. grid ────────────────────────────────────────────────────── */
+  .pd-body { padding-bottom: clamp(4rem, 10vw, 8rem); }
+  .pd-grid {
+    display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: clamp(1.5rem, 3vw, 3rem); align-items: start;
   }
+  .pd-side { position: sticky; top: calc(var(--header-h, 5rem) + 1rem); }
+  .pd-side__card { background: var(--color-surface-2); border: 1px solid var(--color-line); border-radius: var(--radius-sm); padding: 1.25rem; }
+  .pd-meta { margin: 0; }
+  .pd-meta__row { padding: .9rem 0; border-top: 1px solid var(--color-line); }
+  .pd-meta__row:first-child { padding-top: 0; border-top: 0; }
+  .pd-meta dt { margin: 0 0 .35rem; }
+  .pd-meta dd { margin: 0; font-size: var(--text-body); font-weight: 700; color: var(--color-ink); }
+  .pd-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .pd-chip {
+    display: inline-block; padding: .3rem .6rem; border-radius: var(--radius-sm);
+    background: var(--color-surface-3); color: var(--color-ink-2);
+    font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+  }
+
+  .pd-main { display: flex; flex-direction: column; gap: clamp(2.5rem, 5vw, 4.5rem); min-width: 0; }
+
+  /* figures */
+  .pd-fig { margin: 0; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-surface-2); border: 1px solid var(--color-line); }
+  .pd-fig img, .pd-fig video { display: block; width: 100%; height: auto; }
+  .pd-fig--hero img, .pd-fig--hero video { max-height: 44rem; object-fit: cover; object-position: top; }
+  .pd-fig__placeholder { display: block; aspect-ratio: 16 / 10; background: linear-gradient(135deg, var(--color-navy), var(--color-royal)); }
+  .pd-fig__bar { display: flex; gap: .4rem; padding: .55rem .75rem; background: var(--color-surface-3); border-bottom: 1px solid var(--color-line); }
+  .pd-fig__bar i { width: .55rem; height: .55rem; border-radius: 50%; background: var(--color-line-strong); }
+  .pd-fig__cap { display: block; padding: .6rem .9rem; text-align: end; border-top: 1px solid var(--color-line); background: var(--color-surface); }
+  .pd-fig--phones { padding: clamp(1rem, 3vw, 2rem); overflow: hidden; }
+  .pd-phones { display: flex; gap: 1rem; justify-content: center; }
+  .pd-phone { flex: 0 0 34%; aspect-ratio: 9 / 19; border-radius: 1.25rem; overflow: hidden; background: var(--color-surface); box-shadow: 0 0 0 1px var(--color-line), 0 20px 40px -20px rgba(0,0,0,.4); }
+  .pd-phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .pd-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1rem, 2.5vw, 2rem); align-items: start; }
+
+  /* prose */
+  .pd-h2 { margin: 0 0 1rem; font-family: var(--font-display); font-size: var(--text-h3); font-weight: 800; color: var(--color-ink); }
+  .pd-prose p { margin: 0 0 1rem; font-size: var(--text-body-lg); line-height: 1.75; color: var(--color-ink-2); max-width: 70ch; }
+
+  /* stage */
+  .pd-stage { display: grid; gap: 1rem; }
+  .pd-stage__k { margin: 0; }
   :global(.pd-viz) { width: 100%; height: auto; display: block; }
 
-  /* CRM: a five-column board; one card travels across it and settles. */
-  .pd-board {
-    display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: .75rem;
-    padding: 1rem; border-radius: var(--radius-xl);
-    background: var(--color-surface); border: 1px solid var(--color-line);
-    overflow: hidden;
-  }
-  .pd-board__h { margin: 0 0 .75rem; font-size: var(--text-micro); font-weight: 800; letter-spacing: .06em; color: var(--color-ink-3); }
-  .pd-board__slot { min-height: 8.5rem; border-radius: var(--radius); background: var(--color-surface-2); padding: .5rem; position: relative; }
-  .pd-card {
-    display: flex; flex-direction: column; gap: .2rem;
-    padding: .7rem .8rem; border-radius: var(--radius);
-    background: var(--color-navy); color: #fff; border: 1px solid rgba(255,255,255,.08);
-    font-size: var(--text-small); box-shadow: 0 10px 24px -10px rgba(0,0,0,.6);
-  }
-  .pd-card b { font-weight: 800; }
-  .pd-card i { font-style: normal; opacity: .7; }
-  /* travels 4 columns to the LEFT (RTL) and back, pausing at each */
+  .pd-board { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: .6rem; padding: .9rem; border-radius: var(--radius-sm); background: var(--color-surface-2); border: 1px solid var(--color-line); overflow: hidden; }
+  .pd-board__h { margin: 0 0 .6rem; font-family: ui-monospace, monospace; font-size: .7rem; font-weight: 700; letter-spacing: .06em; color: var(--color-ink-3); }
+  .pd-board__slot { min-height: 8rem; border-radius: var(--radius-sm); background: var(--color-surface-3); padding: .45rem; position: relative; }
+  .pd-card { display: flex; flex-direction: column; gap: .15rem; padding: .6rem .7rem; border-radius: var(--radius-sm); background: var(--color-navy); color: #fff; font-size: var(--text-small); }
+  .pd-card b { font-weight: 800; } .pd-card i { font-style: normal; opacity: .7; }
   .pd-card--travel { position: relative; animation: pd-travel 14s ease-in-out infinite; }
   @keyframes pd-travel {
     0%,10%   { transform: translateX(0); }
-    22%,32%  { transform: translateX(calc(-100% - .75rem - 1rem)); }
-    44%,54%  { transform: translateX(calc(-200% - 1.5rem - 2rem)); }
-    66%,76%  { transform: translateX(calc(-300% - 2.25rem - 3rem)); }
-    88%,100% { transform: translateX(calc(-400% - 3rem - 4rem)); }
+    22%,32%  { transform: translateX(calc(-100% - .6rem - .9rem)); }
+    44%,54%  { transform: translateX(calc(-200% - 1.2rem - 1.8rem)); }
+    66%,76%  { transform: translateX(calc(-300% - 1.8rem - 2.7rem)); }
+    88%,100% { transform: translateX(calc(-400% - 2.4rem - 3.6rem)); }
   }
 
-  /* Automations: the line-art flow, then a run log that writes itself. */
-  .pd-auto { display: grid; gap: 1.5rem; }
-  .pd-log {
-    list-style: none; margin: 0; padding: 1rem 1.25rem; border-radius: var(--radius-xl);
-    background: var(--color-surface); border: 1px solid var(--color-line);
-    font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--text-small); color: var(--color-ink-2);
-    display: flex; flex-direction: column; gap: .45rem;
-  }
+  .pd-auto { display: grid; gap: 1rem; }
+  .pd-log { list-style: none; margin: 0; padding: .9rem 1.1rem; border-radius: var(--radius-sm); background: var(--color-surface-2); border: 1px solid var(--color-line); font-family: ui-monospace, monospace; font-size: var(--text-small); color: var(--color-ink-2); display: flex; flex-direction: column; gap: .4rem; }
   .pd-log li { opacity: 0; transform: translateY(4px); animation: pd-line .5s var(--ease-out) forwards; }
-  .pd-log li:nth-child(1) { animation-delay: .2s }
-  .pd-log li:nth-child(2) { animation-delay: 1.1s }
-  .pd-log li:nth-child(3) { animation-delay: 2.0s }
-  .pd-log li:nth-child(4) { animation-delay: 2.9s }
-  .pd-log li:nth-child(5) { animation-delay: 3.9s }
+  .pd-log li:nth-child(1){animation-delay:.2s} .pd-log li:nth-child(2){animation-delay:1.1s} .pd-log li:nth-child(3){animation-delay:2s} .pd-log li:nth-child(4){animation-delay:2.9s} .pd-log li:nth-child(5){animation-delay:3.9s}
   .pd-log__t { display: inline-block; min-width: 3.5em; color: var(--color-ink-3); }
   .pd-log__wait { color: var(--color-electric); font-weight: 700; }
   @keyframes pd-line { to { opacity: 1; transform: none; } }
 
-  /* AI content: brief on one side, a draft typing itself on the other. */
-  .pd-draft { display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); gap: 1rem; }
-  .pd-draft__pane {
-    padding: 1.25rem; border-radius: var(--radius-xl);
-    background: var(--color-surface); border: 1px solid var(--color-line);
-  }
-  .pd-draft__pane--out { background: var(--color-navy); color: #fff; border-color: rgba(255,255,255,.08); position: relative; }
-  .pd-draft__h { margin: 0 0 .75rem; font-size: var(--text-micro); font-weight: 800; letter-spacing: .1em; color: var(--color-ink-3); }
-  .pd-draft__pane--out .pd-draft__h { color: rgba(255,255,255,.6); }
-  .pd-draft__line { margin: .35rem 0; font-size: var(--text-small); color: var(--color-ink); opacity: 0; animation: pd-line .5s var(--ease-out) forwards; }
-  .pd-draft__line--1 { animation-delay: .2s } .pd-draft__line--2 { animation-delay: .7s } .pd-draft__line--3 { animation-delay: 1.2s }
-  .pd-draft__type {
-    margin: 0; font-family: var(--font-display); font-size: var(--text-body-lg); line-height: 1.6;
-    overflow: hidden; white-space: nowrap; max-width: 0;
-    border-inline-end: 2px solid var(--color-electric);
-    animation: pd-type 4s steps(60) 1.6s forwards, pd-caret 1s step-end infinite;
-  }
+  .pd-draft { display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); gap: .9rem; }
+  .pd-draft__pane { padding: 1.1rem; border-radius: var(--radius-sm); background: var(--color-surface-2); border: 1px solid var(--color-line); }
+  .pd-draft__pane--out { background: var(--color-navy); color: #fff; border-color: transparent; position: relative; padding-bottom: 3.2rem; }
+  .pd-draft__pane--out .pd-mono { color: rgba(255,255,255,.6); }
+  .pd-draft__line { margin: .4rem 0 0; font-size: var(--text-small); color: var(--color-ink); opacity: 0; animation: pd-line .5s var(--ease-out) forwards; }
+  .pd-draft__line--1{animation-delay:.2s} .pd-draft__line--2{animation-delay:.7s} .pd-draft__line--3{animation-delay:1.2s}
+  .pd-draft__type { margin: .6rem 0 0; font-family: var(--font-display); font-size: var(--text-body-lg); line-height: 1.6; overflow: hidden; white-space: nowrap; max-width: 0; border-inline-end: 2px solid var(--color-electric); animation: pd-type 4s steps(60) 1.6s forwards, pd-caret 1s step-end infinite; }
   @keyframes pd-type { to { max-width: 100%; } }
   @keyframes pd-caret { 50% { border-color: transparent; } }
-  .pd-draft__ok {
-    position: absolute; inset-inline-start: 1.25rem; bottom: 1.1rem;
-    padding: .35rem .8rem; border-radius: 999px; font-size: var(--text-micro); font-weight: 800;
-    background: var(--color-electric); color: var(--color-navy);
-    opacity: 0; animation: pd-line .5s var(--ease-out) 5.8s forwards;
-  }
+  .pd-draft__ok { position: absolute; inset-inline-start: 1.1rem; bottom: 1rem; padding: .3rem .7rem; border-radius: var(--radius-sm); font-size: .72rem; font-weight: 800; letter-spacing: .08em; background: var(--color-electric); color: var(--color-navy); opacity: 0; animation: pd-line .5s var(--ease-out) 5.8s forwards; }
 
-  /* ── screenshots ────────────────────────────────────────────────── */
-  .pd-shots {
-    display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
-    column-gap: clamp(1.5rem, 5vw, 6.5rem); align-items: start;
-    margin-top: clamp(3rem, 7vw, 6rem);
-  }
-  .pd-shots__col { display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 4rem); }
-  .pd-shots__col--far { padding-top: clamp(4rem, 12vw, 10rem); }
-  .pd-shot {
-    margin: 0; border-radius: 8px; overflow: hidden; background: var(--color-surface);
-    box-shadow: 0 30px 60px -20px rgba(0,0,0,.45), 0 0 0 1px var(--color-line);
-  }
-  .pd-shot img { display: block; width: 100%; height: auto; }
-  .pd-shot__bar { display: flex; gap: .4rem; padding: .55rem .75rem; background: var(--color-surface-2); border-bottom: 1px solid var(--color-line); }
-  .pd-shot__bar i { width: .55rem; height: .55rem; border-radius: 50%; background: var(--color-line-strong); }
+  /* quote */
+  .pd-quote { margin: 0; padding: .25rem 1.5rem; border-inline-start: 3px solid var(--color-ink); }
+  .pd-quote p { margin: 0 0 .75rem; font-family: var(--font-display); font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 600; line-height: 1.45; color: var(--color-ink); }
 
-  /* ── phones ─────────────────────────────────────────────────────── */
-  .pd-phones { padding-block: clamp(3rem, 8vw, 6rem); overflow: hidden; }
-  .pd-phones__track {
-    display: flex; gap: clamp(1.25rem, 3vw, 2.5rem); padding-inline: clamp(1rem, 4vw, 3rem);
-    overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+  /* next */
+  .pd-next {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding-top: 1.5rem; border-top: 1px solid var(--color-line-strong); text-decoration: none; color: inherit;
   }
-  .pd-phones__track--inwork { margin-top: clamp(2.5rem, 6vw, 5rem); }
-  .pd-phones__track::-webkit-scrollbar { display: none; }
-  .pd-phone {
-    flex: 0 0 clamp(14rem, 22vw, 20rem); margin: 0; aspect-ratio: 9 / 19; border-radius: 2rem; overflow: hidden;
-    background: var(--color-surface); box-shadow: 0 30px 60px -20px rgba(0,0,0,.5), 0 0 0 1px var(--color-line);
-    scroll-snap-align: center;
+  .pd-next__text { display: flex; flex-direction: column; gap: .4rem; }
+  .pd-next__name { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 800; color: var(--color-ink); transition: color var(--dur) var(--ease-out); }
+  .pd-next:hover .pd-next__name { color: var(--color-electric); }
+  .pd-next__btn {
+    flex: none; width: 2.75rem; height: 2.75rem; display: grid; place-items: center;
+    border: 1px solid var(--color-ink); border-radius: var(--radius-sm); color: var(--color-ink);
+    transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
   }
-  .pd-phone img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .pd-next:hover .pd-next__btn { background: var(--color-ink); color: var(--color-surface); transform: translateX(-4px); }
 
-  /* ── next project ───────────────────────────────────────────────── */
-  a.pd-next { display: block; position: relative; min-height: clamp(22rem, 62svh, 40rem); text-decoration: none; overflow: hidden; }
-  .pd-next__media { transition: transform 700ms var(--ease-out); }
-  a.pd-next:hover .pd-next__media { transform: scale(1.04); }
-  .pd-next__scrim { position: absolute; inset: 0; background: rgba(9,15,33,.42); }
-  .pd-next__in {
-    position: relative; z-index: 1; min-height: inherit;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem;
-  }
-  .pd-marquee { display: block; width: 100%; overflow: hidden; white-space: nowrap; }
-  .pd-marquee__run {
-    display: inline-flex; gap: clamp(2rem, 6vw, 6rem); padding-inline-end: clamp(2rem, 6vw, 6rem);
-    font-family: var(--font-display); font-size: clamp(3.5rem, 11vw, 9rem); font-weight: 900; line-height: 1.05; color: #fff;
-    animation: pd-marquee 28s linear infinite;
-  }
-  @keyframes pd-marquee { from { transform: translateX(0); } to { transform: translateX(50%); } }
-  .pd-next__name {
-    display: inline-flex; align-items: center; gap: .6rem;
-    font-size: var(--text-body-lg); font-weight: 800; letter-spacing: .12em; color: #fff;
-  }
-  .pd-next__name .arrow-inline { color: var(--color-electric); }
-
-  @media (max-width: 760px) {
-    .pd-split { grid-template-columns: 1fr; gap: 1.25rem; }
-    .pd-shots { grid-template-columns: 1fr; row-gap: 2rem; }
-    .pd-shots__col--far { padding-top: 0; }
-    .pd-board { grid-template-columns: repeat(5, 9rem); overflow-x: auto; }
+  @media (max-width: 860px) {
+    .pd-grid { grid-template-columns: 1fr; }
+    .pd-side { position: static; }
+    .pd-two { grid-template-columns: 1fr; }
+    .pd-board { grid-template-columns: repeat(5, 8.5rem); overflow-x: auto; }
     .pd-draft { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .pd-marquee__run, .pd-card--travel, .pd-draft__type { animation: none; }
+    .pd-card--travel, .pd-draft__type { animation: none; }
     .pd-log li, .pd-draft__line, .pd-draft__ok { animation: none; opacity: 1; transform: none; }
     .pd-draft__type { max-width: none; white-space: normal; }
-    .pd-next__media { transition: none; }
   }
 </style>

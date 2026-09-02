@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>STUDIO | Premium Portfolio</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800;900&amp;family=Inter:wght@400;500;600&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#1a1c1c",
+                    "on-error-container": "#93000a",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#474746",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-container-low": "#f3f3f4",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#1c1b1b",
+                    "inverse-on-surface": "#f0f1f1",
+                    "surface-container-high": "#e8e8e8",
+                    "background": "#f9f9f9",
+                    "on-surface": "#1a1c1c",
+                    "outline": "#747878",
+                    "soft-clay": "#F6D8CC",
+                    "tertiary-fixed": "#e6e2df",
+                    "on-tertiary-container": "#868382",
+                    "surface-dim": "#dadada",
+                    "surface-tint": "#5f5e5e",
+                    "on-secondary-container": "#7a4732",
+                    "tertiary": "#000000",
+                    "surface": "#f9f9f9",
+                    "surface-bright": "#f9f9f9",
+                    "surface-container": "#eeeeee",
+                    "primary-fixed-dim": "#c8c6c5",
+                    "tertiary-fixed-dim": "#cac6c4",
+                    "on-tertiary-fixed": "#1c1b1a",
+                    "paper-white": "#FDFDFD",
+                    "on-primary-fixed": "#1c1b1b",
+                    "inverse-surface": "#2f3131",
+                    "on-secondary-fixed": "#351002",
+                    "secondary-container": "#ffb99e",
+                    "secondary-fixed": "#ffdbce",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#858383",
+                    "deep-charcoal": "#2A2A2A",
+                    "tertiary-container": "#1c1b1a",
+                    "on-secondary-fixed-variant": "#6a3a26",
+                    "secondary-fixed-dim": "#fcb69b",
+                    "outline-variant": "#c4c7c7",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#000000",
+                    "surface-variant": "#e2e2e2",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#e5e2e1",
+                    "on-surface-variant": "#444748",
+                    "on-tertiary-fixed-variant": "#484645",
+                    "inverse-primary": "#c8c6c5",
+                    "secondary": "#86513b"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "20px",
+                    "unit": "8px",
+                    "margin-desktop": "64px",
+                    "masonry-gap": "32px",
+                    "gutter": "24px",
+                    "sidebar-width": "320px"
+            },
+            "fontFamily": {
+                    "headline-md": [
+                            "Hanken Grotesk"
+                    ],
+                    "nav-item": [
+                            "Hanken Grotesk"
+                    ],
+                    "display-lg": [
+                            "Hanken Grotesk"
+                    ],
+                    "headline-lg": [
+                            "Hanken Grotesk"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "display-lg-mobile": [
+                            "Hanken Grotesk"
+                    ],
+                    "label-caps": [
+                            "Space Mono"
+                    ]
+            },
+            "fontSize": {
+                    "headline-md": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "nav-item": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "84px",
+                            {
+                                    "lineHeight": "92px",
+                                    "letterSpacing": "-0.04em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "headline-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "26px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg-mobile": [
+                            "48px",
+                            {
+                                    "lineHeight": "52px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.1em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+        /* Custom Styles to support design system rules not entirely covered by Tailwind classes */
+        .group-hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.05);
+        }
+        .masonry-grid {
+            column-count: 1;
+            column-gap: 32px;
+        }
+        @media (min-width: 768px) {
+            .masonry-grid {
+                column-count: 2;
+            }
+        }
+        @media (min-width: 1024px) {
+            .masonry-grid {
+                column-count: 3;
+            }
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 32px;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="fixed z-50 w-full bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant/30">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-screen-2xl mx-auto">
+<a class="font-headline-md text-headline-md font-black tracking-tighter text-primary dark:text-on-primary" href="#">STUDIO</a>
+<nav class="hidden md:flex gap-8 items-center">
+<a class="font-nav-item text-nav-item uppercase tracking-widest text-primary dark:text-on-primary border-b-2 border-primary dark:border-on-primary pb-1" href="#portfolio">Portfolio</a>
+<a class="font-nav-item text-nav-item uppercase tracking-widest text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-on-primary transition-colors" href="#story">Story</a>
+<a class="font-nav-item text-nav-item uppercase tracking-widest text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-on-primary transition-colors" href="#talents">Talents</a>
+<a class="font-nav-item text-nav-item uppercase tracking-widest text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-on-primary transition-colors" href="#contact">Contact</a>
+</nav>
+<button class="bg-primary text-on-primary font-nav-item text-nav-item uppercase tracking-widest px-6 py-3 rounded-none hover:bg-surface-tint transition-all scale-95 active:scale-90 transition-transform">
+                Hire Us
+            </button>
+</div>
+</header>
+<main class="flex-grow pt-24">
+<!-- Hero Section -->
+<section class="relative w-full h-[80vh] flex flex-col items-center justify-center overflow-hidden mb-32">
+<div class="absolute inset-0 z-0 bg-surface-container-high">
+<img class="w-full h-full object-cover opacity-60" data-alt="A minimalist architectural interior featuring dramatic lighting and harsh shadows, emphasizing clean lines and sophisticated modern design. High contrast black and white photography style. The scene is vast and imposing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4pINKVNvIABDpqFilkl5ynNzJ73CUHKVWwfPmeNsnaGTfCmsIK0NSrYP_TsLv0dDA9cQYCX4fO7buLsXgLfoo2K6WV5beBO6csaomX8SOMpBtKlPkgonm2dnTjHy49HZ_MbadXEOiCa30OW0F3OAM-jKII1AONLLXB4uVt0m6U-fo5V1fqRaNPPqCOlW6_IiHgHFVF6opPvTtZqAssB7SZmgoKkaEFI8OO2ZDJBm_hni725rFaBNBjg"/>
+</div>
+<div class="relative z-10 text-center px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6 uppercase tracking-tighter">
+                    Designing <br/> Default Reality
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                    We are a digital product studio crafting high-end experiences for forward-thinking brands. Minimalist aesthetics meets brutalist engineering.
+                </p>
+<div class="mt-10">
+<a class="inline-block border border-primary px-8 py-4 font-nav-item text-nav-item uppercase tracking-widest hover:bg-primary hover:text-on-primary transition-colors" href="#portfolio">View Selected Work</a>
+</div>
+</div>
+</section>
+<!-- Portfolio Masonry Section -->
+<section class="px-margin-mobile md:px-margin-desktop max-w-screen-2xl mx-auto mb-40" id="portfolio">
+<div class="mb-16 border-b border-outline-variant pb-4 flex justify-between items-end">
+<h2 class="font-headline-lg text-headline-lg text-primary uppercase">Selected Works</h2>
+<span class="font-label-caps text-label-caps text-on-surface-variant">01 — 24</span>
+</div>
+<div class="masonry-grid">
+<!-- Item 1 -->
+<div class="masonry-item group relative overflow-hidden group-hover-lift transition-all duration-500 bg-paper-white border border-outline-variant/10">
+<img alt="Project Milega" class="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida/AEtjO1XPw1bDYNr-b6yAx-5T4xDNR75oVD5q5agR7xlP-VhThM90tjoVO5YHFMtEiY_07Np9gaPlPuiQLZLEfzhPDyBWmw_27Gj75zBaB9wlxWy5TY0Q3PNmakpxyndzD18YZZRxVIUvCsZzt2eGNnXdMHGlF8h05zS6uJE1A6gw2IojMkgL-LwyMuYeEodylglgrfiIiFT7Mi-4Q98SXoSppIbBJLXEe5J-zYRLSQwnLnPlffsRJ3PHs-gIBRrz"/>
+<div class="p-6">
+<div class="flex gap-2 mb-4">
+<span class="bg-soft-clay/20 font-label-caps text-label-caps px-3 py-1 text-primary">ECOMMERCE</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Milega Concept</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Digital transformation for lifestyle brand.</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="masonry-item group relative overflow-hidden group-hover-lift transition-all duration-500 bg-paper-white border border-outline-variant/10">
+<img alt="Project 3" class="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida/AEtjO1WqNxkmqWew31-q_bqQ6ZixVqtlNbxsuMVofhi9fcnrZn1jZAvSJWlTRuxhGS6MuSUX0VVC0Rpu60PjMLyp5HtuekMVFM4aKN3K8kzlh58Pa3zNAbhJVzsgkzjOGrB5Fc4ead1er8zlaDyPvFxv7xMIG34nGzkzFSXMALlvgF3_iqa5syhPgNOfN0K2w3npMZ2on_eSeyazALXZloWxyIQCdW9RHCUlrg7Qi4xAI8AxBYOVHgOCRx5TQzhr"/>
+<div class="p-6">
+<div class="flex gap-2 mb-4">
+<span class="bg-soft-clay/20 font-label-caps text-label-caps px-3 py-1 text-primary">ARCHITECTURE</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Casa V</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Immersive spatial web experience.</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="masonry-item group relative overflow-hidden group-hover-lift transition-all duration-500 bg-paper-white border border-outline-variant/10">
+<img alt="Project 4" class="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida/AEtjO1WHHG4JtinkcrGB8pVD-BOOXYCtBIXhZLW9U_r33NfuYtJGlPx6ZIZQrOqjDz3yqsASTyGaTCCdfSO5FJzXcv4Oaum8j55RvTczJXuKgTkfRyj7MzWdLfqs9pHldSNU7kBqX_5eL4rWB1Z_jVr9uZX0ySFvkcf-rmcdElDT2ni6IDjd9rxRD61_eMqxrybnbSxYcMOU-RxlmbW9yTwszTS21C4nxwFOlCjIKxmyu7CnjDG_vytoiKzbZdZo"/>
+<div class="p-6">
+<div class="flex gap-2 mb-4">
+<span class="bg-soft-clay/20 font-label-caps text-label-caps px-3 py-1 text-primary">BRANDING</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">M25 Identity</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Holistic brand system for cultural institution.</p>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="masonry-item group relative overflow-hidden group-hover-lift transition-all duration-500 bg-paper-white border border-outline-variant/10">
+<img alt="Project 5" class="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida/AEtjO1VId_xLqsktnhLoxNcft0u8fIbCUahC6Legj8FDVd1v7shgyyJzh_QYvDzdJUwuyP4X0wdzSGp-yzyL4kPB4pDkM0kGx4K4IRHibvextr6cIOO6832p31BKjFc_A8nIchcPgBuq0t1qcLV2s-xpMSIJ4ylwKQlDC6KLV8kUvGs3gGtpodYhur31rtdr0wxJ7-pS1Xkt9ovprac-4Ufbiw8U9rcW0ArkDHoe4jrvbh-E9gE8siwFlddG76ZA"/>
+<div class="p-6">
+<div class="flex gap-2 mb-4">
+<span class="bg-soft-clay/20 font-label-caps text-label-caps px-3 py-1 text-primary">WEBGL</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Polyron Tech</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Interactive product visualization platform.</p>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="masonry-item group relative overflow-hidden group-hover-lift transition-all duration-500 bg-paper-white border border-outline-variant/10">
+<img alt="Project 6" class="w-full h-auto object-cover grayscale hover:grayscale-0 transition-all duration-700" src="https://lh3.googleusercontent.com/aida/AEtjO1UloC6RHY2r3LnQu7K8mdfHEJ7O-fVFwbto2CYjvNj2NPcUiLD5FOv9eOXr1v3YAUVz4uks2MIN_i3YLKcX5289RrSi7rJltH-Aq1iDp34OzLEsfvSKpsk365-BMPtmElQ7y7vS6JHUJPxCCbBJwVw5oTAOsTTeo8IZ8UfZ_BbrOK1EPFbzHvsXLJTOIiAkbr1CHhgCtA2H3WiUdDMzZeQzCWlOqX10tTOr5slhKGUzUfNoi_1UI0ROdSM"/>
+<div class="p-6">
+<div class="flex gap-2 mb-4">
+<span class="bg-soft-clay/20 font-label-caps text-label-caps px-3 py-1 text-primary">EDITORIAL</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Avisofer</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Digital publication redesign.</p>
+</div>
+</div>
+</div>
+<div class="mt-16 text-center">
+<button class="border border-primary px-8 py-4 font-nav-item text-nav-item uppercase tracking-widest hover:bg-surface-container-low transition-colors inline-flex items-center gap-2">
+                    Load More Projects <span class="material-symbols-outlined text-sm">arrow_downward</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-container-lowest border-t border-outline-variant">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-16 w-full max-w-screen-2xl mx-auto">
+<div class="col-span-1 md:col-span-2">
+<div class="font-headline-lg text-headline-lg font-black text-primary dark:text-on-primary mb-6">STUDIO</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm mb-8">
+                    Designing the future of digital experiences with uncompromising aesthetics.
+                </p>
+<div class="font-body-md text-body-md text-on-surface dark:text-on-surface">
+                    © 2024 STUDIO PREMIUM. ALL RIGHTS RESERVED.
+                </div>
+</div>
+<div class="col-span-1">
+<h4 class="font-label-caps text-label-caps text-primary mb-6">Information</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity hover:opacity-80" href="#">Privacy Policy</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity hover:opacity-80" href="#">Terms of Service</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity hover:opacity-80" href="#">Career</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<h4 class="font-label-caps text-label-caps text-primary mb-6">Social</h4>
+<ul class="space-y-4">
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity hover:opacity-80" href="#">Instagram</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity hover:opacity-80" href="#">Twitter</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity hover:opacity-80" href="#">LinkedIn</a></li>
+</ul>
+</div>
+</div>
+</footer>
+</body></html>
