@@ -24,7 +24,7 @@ import Presenter from '../components/Presenter.astro';
 import FloatingCards from '../components/FloatingCards.astro';
 import PartnersJointPhoto from '../components/PartnersJointPhoto.astro';
 import Flow from '../components/Flow.astro';
-import { SERVICES, PROCESS } from '../lib/site';
+import { PROCESS } from '../lib/site';
 import { SERVICE_ICONS } from '../lib/icons';
 import { HOME_DEFAULT, getPublicContent, getDraftContent } from '../lib/cms/content.ts';
 import { resolvePreview } from '../lib/cms/preview.ts';
@@ -78,6 +78,45 @@ const pains = [
 ];
 
 const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות', 'תוכן AI', 'אפיון', 'אינטגרציות'];
+
+// The "what we build" rail's own order and copy (client, 2026-09-02) --
+// deliberately NOT the same order as SERVICES (used by the nav, footer
+// and services index): this rail is free to lead with whichever service
+// makes the strongest home-page case, without reordering the site's
+// canonical service list everywhere else. `slug` still resolves the icon
+// and the link, so a service page rename stays in sync automatically.
+const svcHome = [
+  {
+    slug: 'crm',
+    name: 'מערכות CRM',
+    lead: 'תפסיקו לאבד זמן על לחפש מה קורה עם כל לקוח.',
+    points: ['כל הלידים במקום אחד', 'רואים מיד מה סוכם ומה השלב הבא', 'פולואפים לא נשכחים בדרך'],
+  },
+  {
+    slug: 'web-development',
+    name: 'פיתוח אתרים',
+    lead: 'האתר שלכם אמור לעבוד בשביל העסק, לא הפוך!',
+    points: ['כל עמוד מוביל לפעולה', 'חוויה פשוטה גם בנייד', 'מתחבר ללידים ולמערכות שלכם'],
+  },
+  {
+    slug: 'app-development',
+    name: 'פיתוח אפליקציות',
+    lead: 'תפסיקו להתאים את העסק לתוכנה שלא מתאימה לכם.',
+    points: ['מתאימים את האפליקציה לשיטת העבודה ש-ל-כ-ם', 'רק מה שבאמת צריך', 'פחות צעדים מיותרים בדרך'],
+  },
+  {
+    slug: 'ai-content',
+    name: 'מערכות AI וכלים חכמים',
+    lead: 'אם אתם עושים את אותה עבודה כל יום, אז כנראה שאפשר לעשות את זה אחרת.',
+    points: ['יצירת תוכן ומסמכים', 'כלים פנימיים לעבודה', 'מערכות שעוזרות לעשות יותר בפחות זמן, הרבה פחות זמן...'],
+  },
+  {
+    slug: 'automations',
+    name: 'אוטומציות עסקיות',
+    lead: 'תפסיקו להתעסק בדברים שחוזרים על עצמם.',
+    points: ['הודעות נשלחות לבד', 'עדכונים קורים בזמן', 'משימות קבועות לא מחכות שמישהו יטפל בהם'],
+  },
+] as const;
 
 // What the guide says when a visitor asks it to talk. Timed lines, so
 // a real audio track can be dropped in later without touching markup.
@@ -231,14 +270,14 @@ const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות'
 
     <div class="u-container u-container--wide svc__head">
       <p class="t-eyebrow" data-reveal>מה אנחנו בונים</p>
-      <h2 class="svc__h t-display-2" data-reveal style="--mo-delay:80ms">הארסנל הדיגיטלי<br />שיזניק את העסק שלכם:</h2>
+      <h2 class="svc__h t-display-2" data-reveal style="--mo-delay:80ms">הזמן שלכם עולה כסף.</h2>
       <p class="svc__lead t-lead" data-reveal style="--mo-delay:160ms">
-        חמישה כלים. כל אחד פותר כאב אחר. מתחילים ממה שהכי מפריע, וממשיכים משם.
+        אז למה לבזבז אותו על דברים שמערכת יכולה לעשות בשבילכם?
       </p>
     </div>
 
     <ul class="svc__rail" data-svc-rail>
-      {SERVICES.map((s, i) => (
+      {svcHome.map((s, i) => (
         <li class="svc__card" data-reveal style={`--mo-delay:${i * 70}ms`}>
           <span class="svc__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
