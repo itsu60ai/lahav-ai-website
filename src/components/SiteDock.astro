@@ -189,7 +189,26 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
       const div = document.createElement('div');
       div.className = `chat__msg chat__msg--${role}`;
       const p = document.createElement('p');
-      p.textContent = text;
+      // Render URLs (and the site's own /paths/) as real links. Built
+      // from text nodes and anchors only, never innerHTML, so the model's
+      // reply can never inject markup.
+      const linkRe = /(https?:\/\/[^\s<>"']+|(?:^|(?<=[\s(]))\/[a-z0-9\-]+(?:\/[a-z0-9\-]+)*\/?)/gi;
+      let last = 0;
+      for (const m of text.matchAll(linkRe)) {
+        const url = m[0];
+        const at = m.index ?? 0;
+        if (at > last) p.appendChild(document.createTextNode(text.slice(last, at)));
+        const a = document.createElement('a');
+        // trailing punctuation belongs to the sentence, not the link
+        const trimmed = url.replace(/[.,;:!?)]+$/, '');
+        a.href = trimmed;
+        a.textContent = trimmed;
+        if (/^https?:/i.test(trimmed)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+        p.appendChild(a);
+        if (trimmed.length < url.length) p.appendChild(document.createTextNode(url.slice(trimmed.length)));
+        last = at + url.length;
+      }
+      if (last < text.length) p.appendChild(document.createTextNode(text.slice(last)));
       div.appendChild(p);
       log.appendChild(div);
       log.scrollTop = log.scrollHeight;
@@ -407,11 +426,26 @@ const bookingUrl = settings.discovery_booking_url || DISCOVERY_BOOKING_URL;
   .chat__msg,
   :global(.chat__msg) {
     max-width: 86%;
+    min-width: 0;
     padding: 0.7rem 0.9rem;
     border-radius: 1.1rem;
     font-size: var(--text-small);
     line-height: 1.6;
+    /* long words, URLs and pasted text must wrap inside the bubble,
+       never push it out of the panel */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: pre-wrap;
   }
+  :global(.chat__msg p) { margin: 0; min-width: 0; }
+  :global(.chat__msg a) {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  :global(.chat__msg--bot a) { color: var(--color-royal); }
   .chat__msg--bot,
   :global(.chat__msg--bot) {
     align-self: flex-start;
