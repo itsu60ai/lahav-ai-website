@@ -7,6 +7,7 @@ F-30..F-33 (2026-09-01), the Website Content CMS - see section 7.
 F-34..F-37 (2026-09-01), CMS finalization (draft/publish gaps closed) - see section 7.
 F-38..F-40 (2026-09-02), Portfolio redesign to the STG reference and COPY V2 - see section 8.
 F-41, F-42 (2026-09-02), chat upgrade and AI engine Stages C+D - see section 9.
+F-43 (2026-09-02), LAHAV AI becomes a two-partner business - see section 10. NOT PUBLISHED, client review pending.
 
 ---
 
@@ -583,3 +584,58 @@ approved and still requires the client's deliberate arming action.
 throughout: stop node processes first, or build with
 `npx astro build --outDir dist-verify`. Worth fixing properly by pinning Node
 or upgrading Astro.
+
+## 10. Decision taken 2026-09-02, later still: LAHAV AI is now a two-partner business
+
+### F-43 - Ownership: Ethan and Yehiel, both partners
+Client instruction, verbatim: LAHAV AI is now owned and run by two partners,
+Yehiel and Ethan. The site must stop presenting Ethan as the sole
+owner/founder. Role labels, exact client wording:
+
+- **יחיאל** - שותף | שיווק, מכירות וקשרי לקוחות
+- **איתן** - שותף | תפעול, מערכות וטכנולוגיה
+
+**What changed:** `PARTNERS` replaces `FOUNDER` in `src/lib/site.ts`. The
+About page opens with the joint photo and the client's own opening
+paragraph, then a new Partners section with equal-treatment portraits (same
+crop, same dimensions, same typography for both - neither reads as "the
+boss"). The Home page's founder teaser became a short partnership teaser
+("שני שותפים, גישה אחת"), not a second full introduction. The article
+JSON-LD author changed from the named person to the Organization, since a
+byline was never tied to who specifically wrote a piece. The chat's
+approved knowledge now states both partners and their focus, and answers
+"who owns/runs LAHAV AI" from that. `docs/AI_ENGINE.md`/gates and the
+Organization schema in `BaseLayout.astro` needed no change: neither ever
+named Ethan as founder.
+
+**What was deliberately NOT changed, and why:** the privacy page's operator
+identification line ("Ethan Lahav / LAHAV AI", F-15) is untouched. That
+line answers a different question, who is personally accountable for the
+site's data handling as an unregistered brand, and changing it to two names
+has real implications for a non-registered partnership that the client did
+not resolve in this instruction. Flagged in a code comment in `site.ts`
+rather than decided silently.
+
+**No biography was invented.** The client was explicit: only verified facts,
+nothing else. No background facts were supplied for either partner, so
+`PartnerContent.bio` ships empty for both and the About page simply omits
+the bio paragraph when it is empty, rather than showing a placeholder
+sentence. The client can add verified text later from
+`/admin/website/about`.
+
+**Photos: not yet on the filesystem.** The three approved photos (Yehiel
+solo, Ethan solo, both together) were shared as pasted chat images, which
+this tooling has no way to save to disk. `PartnerPortrait.astro` and
+`PartnersJointPhoto.astro` reference the intended final paths
+(`public/partners/yehiel.jpg`, `ethan.jpg`, `together.jpg`) and render an
+honest "photo pending" placeholder, never a stand-in image, until those
+files exist and `PHOTOS_READY` is flipped to `true` in both components.
+
+**Status: NOT PUBLISHED, NOT DEPLOYED.** All code changes are on the local
+working tree and build cleanly. The About page's `partners`/`intro` CMS
+fields were written to the LOCAL database only, as a draft
+(`migrations/0016_partners_draft.sql`), and the OLD published About content
+(without partners) is untouched in both local and remote D1, so the live
+site is unaffected until the client reviews and the work is deployed and
+published. Client review is pending per their explicit request to stop
+before publishing.

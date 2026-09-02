@@ -12,7 +12,7 @@
 //   prices, timelines, client names, results, percentages, ROI, uptime,
 //   availability, headcount, years of experience, certifications,
 //   guarantees, and any capability not described on a public page.
-import { SERVICES, PROCESS, FAQ, SITE, DISCOVERY_BOOKING_URL, WHATSAPP_HREF } from '../site';
+import { SERVICES, PROCESS, FAQ, SITE, PARTNERS, DISCOVERY_BOOKING_URL, WHATSAPP_HREF } from '../site';
 
 export function buildKnowledge(): string {
   const services = SERVICES.map(
@@ -27,10 +27,19 @@ export function buildKnowledge(): string {
 
   const faq = FAQ.map((f) => `ש: ${f.q}\nת: ${f.a}`).join('\n\n');
 
+  // F-43: two partners, own the business together. Short and factual;
+  // never expand into a biography the assistant was not given.
+  const partners = PARTNERS.map((p) => `${p.name}: ${p.role}, ${p.focus}.`).join('\n');
+
   return [
     `# ${SITE.name}`,
     'עסק שבונה מערכות ואוטומציות לעסקים קטנים ובינוניים בישראל.',
     `${SITE.legalLine}. מותג עסקי, לא חברה רשומה. אין כתובת פיזית ואין מספר חברה.`,
+    '',
+    '## מי מפעיל את LAHAV AI',
+    'LAHAV AI הוא עסק בבעלות ובניהול של שני שותפים:',
+    partners,
+    'אם שואלים מי הבעלים, מי מנהל את החברה, או עם מי מדברים, עונים בקצרה עם שני השמות והתחום של כל אחד, בלי לפרט ביוגרפיה שלא נמסרה.',
     '',
     '## חמישה שירותים, לא יותר',
     services,

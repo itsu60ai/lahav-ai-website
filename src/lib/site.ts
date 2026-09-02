@@ -12,28 +12,75 @@ export const SITE = {
   name: 'LAHAV AI',
   // F-15: brand, not a registered entity. Never add a company number,
   // registered office or physical address.
+  // F-43 (2026-09-02): LAHAV AI became a two-person partnership. The
+  // legal identification line stays a single name deliberately -- it is
+  // "who operates the brand" for the privacy page, not "who owns it";
+  // changing it to two names would need the client's explicit sign-off
+  // on how a two-person, non-registered partnership should be named
+  // there, which was not given. Flagged, not silently decided.
   legalLine: 'Ethan Lahav · LAHAV AI',
 };
 
-// F-14 / F-17: the founder photo is the client's own asset. Never AI
-// generated or facially altered. Cropping, compression, responsive sizing
-// and a CSS black and white treatment are the only edits allowed.
-export const FOUNDER = {
-  name: 'איתן להב',
-  role: 'Founder & AI Systems Builder',
-  // Background removed locally, nothing else touched. The person's pixels
-  // are the original photograph. WebP first, PNG as the fallback.
-  cutout: {
-    webp: '/founder/ethan-lahav-cutout-760.webp',
-    webpSet:
-      '/founder/ethan-lahav-cutout-360.webp 360w, /founder/ethan-lahav-cutout-520.webp 520w, /founder/ethan-lahav-cutout-760.webp 720w',
-    png: '/founder/ethan-lahav-cutout-760.png',
-    pngSet:
-      '/founder/ethan-lahav-cutout-360.png 360w, /founder/ethan-lahav-cutout-520.png 520w, /founder/ethan-lahav-cutout-760.png 720w',
-    width: 720,
-    height: 868,
+// F-43 (2026-09-02): LAHAV AI is owned and run by two partners. Ethan is
+// no longer presented as the sole founder anywhere on the public site.
+// Role labels are the client's own words, verbatim. NO biography text is
+// invented here: a partner's `bio` stays empty until the client supplies
+// verified background facts, and every component that renders `bio` must
+// handle '' by simply not printing a paragraph, never a placeholder
+// sentence. See docs/SOURCE_OF_TRUTH.md F-43.
+//
+// Photos: three approved assets (Yehiel solo, Ethan solo, both together)
+// are referenced below but NOT YET on disk -- the client shared them as
+// pasted chat images, which this tooling cannot save to the filesystem.
+// Every PartnerPortrait / PartnersJointPhoto usage therefore renders its
+// honest "photo pending" placeholder until the real files land at these
+// exact paths. Never regenerate, retouch or substitute a stand-in photo.
+export const PARTNERS = [
+  {
+    key: 'yehiel',
+    name: 'יחיאל',
+    role: 'שותף',
+    focus: 'שיווק, מכירות וקשרי לקוחות',
+    bio: '',
+    photo: {
+      src: '/partners/yehiel.jpg',
+      width: 1120,
+      height: 1400,
+    },
+    alt: 'יחיאל, שותף ב-LAHAV AI',
   },
-  alt: 'איתן להב, מייסד LAHAV AI',
+  {
+    key: 'ethan',
+    name: 'איתן',
+    role: 'שותף',
+    focus: 'תפעול, מערכות וטכנולוגיה',
+    bio: '',
+    // Legacy cutout kept for the presenter/hero uses that are explicitly
+    // frozen (F-43 does not touch presenter video or its architecture).
+    cutout: {
+      webp: '/founder/ethan-lahav-cutout-760.webp',
+      webpSet:
+        '/founder/ethan-lahav-cutout-360.webp 360w, /founder/ethan-lahav-cutout-520.webp 520w, /founder/ethan-lahav-cutout-760.webp 720w',
+      png: '/founder/ethan-lahav-cutout-760.png',
+      pngSet:
+        '/founder/ethan-lahav-cutout-360.png 360w, /founder/ethan-lahav-cutout-520.png 520w, /founder/ethan-lahav-cutout-760.png 720w',
+      width: 720,
+      height: 868,
+    },
+    photo: {
+      src: '/partners/ethan.jpg',
+      width: 1120,
+      height: 1400,
+    },
+    alt: 'איתן, שותף ב-LAHAV AI',
+  },
+] as const;
+
+export const PARTNERS_PHOTO = {
+  src: '/partners/together.jpg',
+  width: 1600,
+  height: 1067,
+  alt: 'יחיאל ואיתן, השותפים מאחורי LAHAV AI',
 };
 
 // F-12: the real, tested Discovery booking flow, live 2026-08-30. The

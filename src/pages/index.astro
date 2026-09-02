@@ -22,9 +22,9 @@ import { turnstileSiteKey } from '../lib/turnstile.ts';
 import SplitLines from '../components/SplitLines.astro';
 import Presenter from '../components/Presenter.astro';
 import FloatingCards from '../components/FloatingCards.astro';
-import FounderPortrait from '../components/FounderPortrait.astro';
+import PartnersJointPhoto from '../components/PartnersJointPhoto.astro';
 import Flow from '../components/Flow.astro';
-import { SERVICES, PROCESS, FOUNDER } from '../lib/site';
+import { SERVICES, PROCESS } from '../lib/site';
 import { SERVICE_ICONS } from '../lib/icons';
 import { HOME_DEFAULT, getPublicContent, getDraftContent } from '../lib/cms/content.ts';
 import { resolvePreview } from '../lib/cms/preview.ts';
@@ -310,29 +310,24 @@ const marquee = ['CRM', 'אוטומציות', 'אתרים', 'אפליקציות'
     </div>
   </section>
 
-  <!-- ═════════ 8. FOUNDER ═════════ -->
+  <!-- ═════════ 8. PARTNERS TEASER ═════════ -->
   <section class="u-section band fnd">
     <Curve tone="surface" shape="slope" flip />
     <div class="u-container u-container--wide fnd__grid">
       <div class="fnd__art" data-clip>
-        <FounderPortrait scale="home" sizes="(max-width: 1024px) 70vw, 30rem" />
+        <PartnersJointPhoto />
       </div>
 
       <div class="fnd__copy">
         <p class="t-eyebrow" data-reveal>נעים להכיר</p>
-        <SplitLines class="t-display-3 fnd__name" lines={[FOUNDER.name]} />
-        <p class="fnd__role" data-reveal style="--mo-delay:120ms">{FOUNDER.role}</p>
+        <SplitLines class="t-display-3 fnd__name" lines={['יחיאל ואיתן']} />
+        <p class="fnd__role" data-reveal style="--mo-delay:120ms">השותפים מאחורי LAHAV AI</p>
         <p class="fnd__p" data-reveal style="--mo-delay:180ms">
-          הקמתי את LAHAV AI מתוך הבנה ברורה: טכנולוגיה נועדה לשרת את העסק,
-          לא להפך.
+          שני שותפים, גישה אחת: קודם להבין איך העסק עובד, אחר כך להחליט מה
+          שווה לבנות.
         </p>
-        <p class="fnd__p" data-reveal style="--mo-delay:240ms">
-          ראיתי יותר מדי בעלי עסקים שטובעים במשימות ידניות מתישות ומאבדים
-          לקוחות רק בגלל בלגן במערכות. התפקיד שלי הוא לעשות לכם סדר בראש
-          ובעסק, להוריד מכם את המשימות הסיזיפיות ולתת לכם את השקט לצמוח באמת.
-        </p>
-        <a class="link-arrow" href="/about/" data-reveal style="--mo-delay:300ms">
-          עוד עליי <span class="arrow-inline" aria-hidden="true">←</span>
+        <a class="link-arrow" href="/about/" data-reveal style="--mo-delay:240ms">
+          עוד עלינו <span class="arrow-inline" aria-hidden="true">←</span>
         </a>
       </div>
     </div>

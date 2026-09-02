@@ -43,10 +43,48 @@ const meta = await content.meta('about');
     </fieldset>
 
     <fieldset class="adm-fieldset">
-      <legend>המייסד</legend>
+      <legend>פסקת הפתיחה, מציגה את השותפים</legend>
       <div class="adm-field">
-        <label class="adm-label" for="f-role">התפקיד המוצג ליד השם</label>
-        <input class="adm-input" id="f-role" data-f="founderRole" value={about.founderRole} />
+        <label class="adm-label" for="f-intro">הפסקה שמופיעה מיד אחרי התמונה המשותפת</label>
+        <textarea class="adm-textarea" id="f-intro" data-f="intro" rows="4">{about.intro}</textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="adm-fieldset">
+      <legend>השותפים</legend>
+      <p class="adm-hint" style="margin-bottom:1rem">
+        התמונות עצמן (הפורטרטים והתמונה המשותפת) אינן חלק מהעורך הזה, בדיוק כמו תמונת המייסד הקודמת: הן נכסים קבועים של האתר, לא תוכן שמוחלף כאן.
+      </p>
+      <div class="adm-field-row">
+        <div class="adm-field">
+          <label class="adm-label" for="f-yehiel-role">יחיאל, תפקיד</label>
+          <input class="adm-input" id="f-yehiel-role" data-f="partners.yehiel.role" value={about.partners.yehiel.role} />
+        </div>
+        <div class="adm-field">
+          <label class="adm-label" for="f-yehiel-focus">יחיאל, תחום אחריות</label>
+          <input class="adm-input" id="f-yehiel-focus" data-f="partners.yehiel.focus" value={about.partners.yehiel.focus} />
+        </div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-yehiel-bio">יחיאל, כמה מילים עליו (לא חובה)</label>
+        <textarea class="adm-textarea" id="f-yehiel-bio" data-f="partners.yehiel.bio" rows="3">{about.partners.yehiel.bio}</textarea>
+        <span class="adm-hint">כתבו רק עובדות מדויקות. שדה ריק פשוט לא מציג פסקה, ולא מוצג טקסט גנרי במקומו.</span>
+      </div>
+
+      <div class="adm-field-row" style="margin-top:1.5rem">
+        <div class="adm-field">
+          <label class="adm-label" for="f-ethan-role">איתן, תפקיד</label>
+          <input class="adm-input" id="f-ethan-role" data-f="partners.ethan.role" value={about.partners.ethan.role} />
+        </div>
+        <div class="adm-field">
+          <label class="adm-label" for="f-ethan-focus">איתן, תחום אחריות</label>
+          <input class="adm-input" id="f-ethan-focus" data-f="partners.ethan.focus" value={about.partners.ethan.focus} />
+        </div>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="f-ethan-bio">איתן, כמה מילים עליו (לא חובה)</label>
+        <textarea class="adm-textarea" id="f-ethan-bio" data-f="partners.ethan.bio" rows="3">{about.partners.ethan.bio}</textarea>
+        <span class="adm-hint">כתבו רק עובדות מדויקות. שדה ריק פשוט לא מציג פסקה, ולא מוצג טקסט גנרי במקומו.</span>
       </div>
     </fieldset>
 
@@ -81,7 +119,19 @@ const meta = await content.meta('about');
         headlineLine2: val('[data-f="hero.headlineLine2"]'),
         lead: val('[data-f="hero.lead"]'),
       },
-      founderRole: val('[data-f="founderRole"]'),
+      intro: val('[data-f="intro"]'),
+      partners: {
+        yehiel: {
+          role: val('[data-f="partners.yehiel.role"]'),
+          focus: val('[data-f="partners.yehiel.focus"]'),
+          bio: val('[data-f="partners.yehiel.bio"]'),
+        },
+        ethan: {
+          role: val('[data-f="partners.ethan.role"]'),
+          focus: val('[data-f="partners.ethan.focus"]'),
+          bio: val('[data-f="partners.ethan.bio"]'),
+        },
+      },
       seo: {
         title: val('[data-f="seo.title"]'),
         description: val('[data-f="seo.description"]'),

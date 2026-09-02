@@ -1,0 +1,67 @@
+---
+// THE JOINT PHOTO: Yehiel and Ethan together.
+//
+// A large, deliberate editorial image, never a small card (F-43 client
+// instruction). Same "honest placeholder until the real file exists"
+// rule as PartnerPortrait.astro.
+import { PARTNERS_PHOTO } from '../lib/site';
+
+interface Props {
+  class?: string;
+}
+const { class: cls = '' } = Astro.props;
+const PHOTOS_READY = false;
+---
+
+<figure class:list={['pj', cls]} data-reveal>
+  {PHOTOS_READY ? (
+    <img
+      class="pj__img"
+      src={PARTNERS_PHOTO.src}
+      alt={PARTNERS_PHOTO.alt}
+      width={PARTNERS_PHOTO.width}
+      height={PARTNERS_PHOTO.height}
+      loading="lazy"
+      decoding="async"
+    />
+  ) : (
+    <span class="pj__pending" role="img" aria-label={PARTNERS_PHOTO.alt}>
+      <span class="pj__pending-t">יחיאל ואיתן</span>
+    </span>
+  )}
+</figure>
+
+<style>
+  .pj { margin: 0; }
+  .pj__img,
+  .pj__pending {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+  .pj__img {
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.08) brightness(1.02);
+  }
+  .pj__pending {
+    background: linear-gradient(135deg, var(--color-surface-2), var(--color-line));
+    border: 1px dashed var(--color-line-strong);
+    display: grid;
+    place-items: center;
+  }
+  .pj__pending-t {
+    font-family: var(--font-display);
+    font-size: var(--text-h1);
+    font-weight: 900;
+    color: var(--color-ink-3);
+  }
+
+  :global(html.reveal-ready) .pj { opacity: 0; translate: 0 18px; }
+  .pj { transition: opacity 800ms var(--ease-out), translate 800ms var(--ease-out); }
+  :global(html.reveal-ready) .pj.is-in { opacity: 1; translate: 0 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .pj { opacity: 1 !important; translate: none !important; transition: none !important; }
+  }
+</style>

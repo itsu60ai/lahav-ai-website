@@ -16,7 +16,6 @@
 import {
   CTA_PRIMARY,
   DISCOVERY_BOOKING_URL,
-  FOUNDER,
   NAV,
   SERVICES,
   SERVICE_PAGES,
@@ -80,6 +79,16 @@ export const HOME_DEFAULT: HomeContent = {
 // Same shape as Home's hero, and for the same reason: the h1 is two
 // separately-timed spans in the template (src/pages/about.astro), so two
 // fields, not one string that code would have to re-split.
+// F-43 (2026-09-02): a fixed pair, not a general team roster (the client
+// was explicit: "two current partners are enough", no unlimited
+// team-management platform). `bio` stays '' by default and by design --
+// it is editable in the admin so the client can add verified background
+// later, but nothing here may invent one.
+export interface PartnerContent {
+  role: string;
+  focus: string;
+  bio: string;
+}
 export interface AboutContent {
   hero: {
     eyebrow: string;
@@ -87,7 +96,11 @@ export interface AboutContent {
     headlineLine2: string;
     lead: string;
   };
-  founderRole: string;
+  intro: string;
+  partners: {
+    yehiel: PartnerContent;
+    ethan: PartnerContent;
+  };
   seo: SeoFields;
 }
 
@@ -98,7 +111,12 @@ export const ABOUT_DEFAULT: AboutContent = {
     headlineLine2: 'רק אז הטכנולוגיה.',
     lead: 'לפני שבוחרים כלי, נבין איך הפניות והכסף זזים אצלכם, איפה זה נתקע, ומה באמת חייב להשתנות.',
   },
-  founderRole: FOUNDER.role,
+  intro:
+    'אנחנו יחיאל ואיתן, השותפים מאחורי LAHAV AI. כל אחד מאיתנו הגיע מעולם קצת אחר, אבל שנינו התחברנו לאותו דבר: לקחת עסק שעובד עם יותר מדי אלתורים, מערכות שלא מדברות אחת עם השנייה ותהליכים שקשה לעקוב אחריהם, ולעשות בהם סדר.',
+  partners: {
+    yehiel: { role: 'שותף', focus: 'שיווק, מכירות וקשרי לקוחות', bio: '' },
+    ethan: { role: 'שותף', focus: 'תפעול, מערכות וטכנולוגיה', bio: '' },
+  },
   seo: seoDefault(
     'אודות | LAHAV AI',
     'LAHAV AI מתמחה בתכנון ובהקמה של מערכות חכמות לעסקים. מתחילים מהתהליך העסקי, ורק אחר כך בוחרים טכנולוגיה.'

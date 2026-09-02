@@ -19,9 +19,10 @@ import ContactBlock from '../components/ContactBlock.astro';
 const SITE_KEY = turnstileSiteKey();
 import { turnstileSiteKey } from '../lib/turnstile.ts';
 import Flow from '../components/Flow.astro';
-import FounderPortrait from '../components/FounderPortrait.astro';
+import PartnerPortrait from '../components/PartnerPortrait.astro';
+import PartnersJointPhoto from '../components/PartnersJointPhoto.astro';
 import Presenter from '../components/Presenter.astro';
-import { FOUNDER, PROCESS, SERVICES } from '../lib/site';
+import { PARTNERS, PROCESS, SERVICES } from '../lib/site';
 import { ABOUT_DEFAULT, getPublicContent, getDraftContent } from '../lib/cms/content.ts';
 import { resolvePreview } from '../lib/cms/preview.ts';
 
@@ -81,36 +82,49 @@ const guideLines = [
     <span class="ab-hero__cue" aria-hidden="true"></span>
   </section>
 
-  <!-- ═════════ 2. PINNED PORTRAIT + SCROLLING STATEMENT ═════════ -->
-  <section class="ab-story band" data-swap-root>
+  <!-- ═════════ 2. JOINT PHOTO + OPENING PARAGRAPH ═════════ -->
+  <section class="ab-story band u-section">
     <div class="u-container u-container--wide ab-story__grid">
-      <aside class="ab-story__side">
-        <div class="mo-sticky ab-story__pin">
-          <div class="ab-story__art" data-clip>
-            <FounderPortrait scale="about" sizes="(max-width: 1024px) 60vw, 26rem" />
-          </div>
-          <p class="ab-story__name">{FOUNDER.name}</p>
-          <p class="ab-story__role">{about.founderRole}</p>
-        </div>
-      </aside>
-
+      <PartnersJointPhoto class="ab-story__photo" />
       <div class="ab-story__text">
-        <p class="ab-story__p ab-story__p--lead" data-swap-index="0" data-reveal>
-          נעים להכיר, איתן להב. הקמתי את LAHAV AI מתוך הבנה ברורה: טכנולוגיה נועדה לשרת את העסק, לא להפך.
+        <p class="ab-story__p ab-story__p--lead" data-reveal>{about.intro}</p>
+        <p class="ab-story__p" data-reveal style="--mo-delay:80ms">
+          אנחנו לא מתחילים מ"איזה כלי נשים לכם". קודם מבינים איך העסק עובד
+          היום: מאיפה מגיעים הלקוחות, מה קורה במכירה, איך נראה השירות, מה
+          קורה מאחורי הקלעים, ואיפה הדברים נתקעים.
         </p>
-        <p class="ab-story__p" data-swap-index="1" data-reveal>
-          ראיתי יותר מדי בעלי עסקים שטובעים במשימות ידניות מתישות ומאבדים
-          לקוחות רק בגלל בלגן במערכות.
-        </p>
-        <p class="ab-story__p" data-swap-index="2" data-reveal>
-          התפקיד שלי הוא לעשות לכם סדר בראש ובעסק, להוריד מכם את המשימות
-          הסיזיפיות ולתת לכם את השקט לצמוח באמת.
-        </p>
-        <p class="ab-story__p" data-reveal>
-          קודם הפיצוח, רק אז הטכנולוגיה. לפני שבוחרים כלי, מבינים איך הכסף
-          והלידים זזים אצלכם. זה נשמע מובן מאליו, וזה כמעט אף פעם לא מה שקורה.
+        <p class="ab-story__p" data-reveal style="--mo-delay:160ms">
+          משם בונים את הפתרון סביב העסק עצמו: CRM, אתר, אפליקציה, מערכת
+          עסקית, או שילוב ביניהם. המטרה היא לא להכניס עוד תוכנה לעסק. המטרה
+          היא לבנות משהו שאפשר באמת לעבוד איתו.
         </p>
       </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 2.5. THE PARTNERS ═════════ -->
+  <section class="ab-partners u-section band band--soft">
+    <div class="u-container u-container--wide">
+      <p class="t-eyebrow" data-reveal>השותפים</p>
+      <ul class="ab-partners__grid" data-stagger style="--mo-step:90ms">
+        {PARTNERS.map((p) => {
+          const cms = p.key === 'yehiel' ? about.partners.yehiel : about.partners.ethan;
+          return (
+            <li>
+              <PartnerPortrait
+                name={p.name}
+                role={cms.role}
+                focus={cms.focus}
+                src={p.photo.src}
+                alt={p.alt}
+                width={p.photo.width}
+                height={p.photo.height}
+              />
+              {cms.bio && <p class="ab-partners__bio" data-reveal>{cms.bio}</p>}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   </section>
 
@@ -257,55 +271,50 @@ const guideLines = [
     50%      { transform: scaleY(1);   transform-origin: top; opacity: 0.6 }
   }
 
-  /* ══════ pinned portrait + statement ══════ */
-  .ab-story { padding-block: var(--space-section); }
+  /* ══════ joint photo + opening paragraph ══════ */
   .ab-story__grid {
     display: grid;
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    gap: clamp(2rem, 6vw, 6rem);
-    align-items: start;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: center;
   }
-  /* A sticky child can only travel inside its PARENT's box, so the
-     column has to fill the whole grid row. Without this the aside is
-     only as tall as the portrait and nothing ever pins. */
-  .ab-story__side { align-self: stretch; height: 100%; }
-  .ab-story__pin { top: 16vh; }
-  .ab-story__art { border-radius: var(--radius-xl); overflow: hidden; }
-  .ab-story__name {
-    font-family: var(--font-display); font-size: var(--text-h3);
-    font-weight: 800; margin-top: 1.25rem;
-  }
-  .ab-story__role {
-    font-size: var(--text-small); font-weight: 700; color: var(--color-royal);
-    direction: ltr; text-align: start;
-  }
-  /* Each statement gets close to its own screen. That length is what
-     gives the pinned portrait something to travel through, and what
-     turns this from a paragraph stack into a scroll story. */
+  :global(.ab-story__photo) { width: 100%; }
   .ab-story__text {
     display: flex;
     flex-direction: column;
-    /* Enough travel for the pinned portrait to move through, without the
-       270px dead bands the old 30svh gap produced. */
-    gap: clamp(2.5rem, 16svh, 9rem);
-    padding-block: clamp(1rem, 5svh, 3rem) clamp(2rem, 10svh, 5rem);
+    gap: 1.25rem;
   }
   .ab-story__p {
-    font-size: clamp(1.25rem, 2vw, 1.9rem);
-    line-height: 1.5;
+    font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+    line-height: 1.6;
     color: var(--color-ink-2);
-    max-width: 34ch;
-    font-weight: 500;
+    max-width: 46ch;
   }
-  /* the first paragraph carries the weight, as a pull-quote would */
+  /* the opening paragraph carries the weight, as a pull-quote would */
   .ab-story__p--lead {
     font-family: var(--font-display);
-    font-size: clamp(1.6rem, 3vw, 2.8rem);
-    font-weight: 800;
-    line-height: 1.18;
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.35;
     letter-spacing: normal;
     color: var(--color-ink);
-    max-width: 22ch;
+    max-width: 24ch;
+  }
+
+  /* ══════ the partners ══════ */
+  .ab-partners__grid {
+    list-style: none;
+    margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+  .ab-partners__bio {
+    margin-top: 1rem;
+    font-size: var(--text-body);
+    line-height: 1.65;
+    color: var(--color-ink-2);
   }
 
   /* ══════ beliefs ══════ */
@@ -405,8 +414,6 @@ const guideLines = [
   /* ══════ responsive ══════ */
   @media (max-width: 1024px) {
     .ab-story__grid, .ab-guide__grid { grid-template-columns: 1fr; }
-    .ab-story__pin { position: static; }
-    .ab-story__art { max-width: 22rem; }
     .ab-guide__fig { justify-items: start; }
   }
   @media (max-width: 760px) {
@@ -415,6 +422,7 @@ const guideLines = [
     .ab-proc__row { grid-template-columns: 3rem 1fr; }
     .ab-proc__d { grid-column: 2; }
     .ab-eco__row { grid-template-columns: 2.75rem 1fr 1.5rem; }
+    .ab-partners__grid { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
     .ab-hero__cue { animation: none; }

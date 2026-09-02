@@ -30,7 +30,11 @@ export function buildArticleJsonLd(a: Article): Record<string, unknown> {
     '@type': 'BlogPosting',
     headline: a.title,
     description: a.excerpt,
-    author: { '@type': 'Person', name: 'Ethan Lahav' },
+    // F-43 (2026-09-02): LAHAV AI is a two-partner business, and an
+    // article's byline was never tied to a specific person writing it.
+    // Attributing every article to one named partner would misrepresent
+    // who actually wrote it, so authorship is the organization.
+    author: { '@type': 'Organization', name: 'LAHAV AI' },
     datePublished: a.publishedAt ?? a.createdAt,
     dateModified: a.updatedAt,
     mainEntityOfPage: buildCanonicalPath(a.slug),

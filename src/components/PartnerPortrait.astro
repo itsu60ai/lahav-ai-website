@@ -1,0 +1,87 @@
+---
+// ONE PARTNER'S PORTRAIT.
+//
+// Unlike the old FounderPortrait, this is NOT a cutout with an alpha
+// channel -- the three approved partner photos are plain studio shots, so
+// this renders a normal rectangular editorial frame, object-fit: cover,
+// same treatment for both partners on purpose (F-43: neither partner
+// should visually read as "the boss").
+//
+// The photo is the client's own approved asset. Never AI generated,
+// retouched or beautified here. Cropping, compression and the shared CSS
+// black-and-white treatment are the only edits this component may apply.
+//
+// PENDING ASSET: renders an honest placeholder, never a stand-in photo,
+// when the file at `src` does not exist on disk yet.
+interface Props {
+  name: string;
+  role: string;
+  focus: string;
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+const { name, role, focus, src, alt, width, height } = Astro.props;
+
+// Astro's dev/build pipeline has no cheap way to check public/ file
+// existence from a component at request time in SSR mode, so this is a
+// deliberate, named toggle rather than a silent 404: flip it once the
+// three files are actually in public/partners/.
+const PHOTOS_READY = false;
+---
+
+<figure class="pp" data-reveal>
+  {PHOTOS_READY ? (
+    <img class="pp__img" src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" />
+  ) : (
+    <span class="pp__pending" role="img" aria-label={alt}>
+      <span class="pp__pending-name">{name}</span>
+    </span>
+  )}
+  <figcaption class="pp__cap">
+    <span class="pp__name">{name}</span>
+    <span class="pp__role">{role} · {focus}</span>
+  </figcaption>
+</figure>
+
+<style>
+  .pp { margin: 0; display: flex; flex-direction: column; gap: 0.85rem; }
+  .pp__img,
+  .pp__pending {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .pp__img {
+    object-fit: cover;
+    /* Editorial black and white, matching the presenter/founder treatment
+       used everywhere else on the site, so a partner photo never reads as
+       a different visual language. */
+    filter: grayscale(1) contrast(1.1) brightness(1.02);
+  }
+  .pp__pending {
+    background: linear-gradient(135deg, var(--color-surface-2), var(--color-line));
+    border: 1px dashed var(--color-line-strong);
+    display: grid;
+    place-items: center;
+  }
+  .pp__pending-name {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: 800;
+    color: var(--color-ink-3);
+  }
+  .pp__cap { display: flex; flex-direction: column; gap: 0.2rem; }
+  .pp__name { font-family: var(--font-display); font-size: var(--text-h3); font-weight: 800; color: var(--color-ink); }
+  .pp__role { font-size: var(--text-small); color: var(--color-ink-3); }
+
+  :global(html.reveal-ready) .pp { opacity: 0; translate: 0 18px; }
+  .pp { transition: opacity 800ms var(--ease-out), translate 800ms var(--ease-out); }
+  :global(html.reveal-ready) .pp.is-in { opacity: 1; translate: 0 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .pp { opacity: 1 !important; translate: none !important; transition: none !important; }
+  }
+</style>
