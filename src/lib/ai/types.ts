@@ -45,8 +45,19 @@ export type OpportunityStatus = 'new' | 'generated' | 'dismissed';
 export type Priority = 'low' | 'medium' | 'high';
 
 /** One radar find: a real item from a real, named source. */
+/** Where an item comes from. Two values because only two are true here:
+ *  Israeli/Hebrew sources, and everything else. Derived at collection time
+ *  from the source plus a Hebrew-script check, never guessed later. */
+export type OpportunityRegion = 'il' | 'intl';
+
+export const REGION_LABELS: Record<OpportunityRegion, string> = {
+  il: 'ישראל',
+  intl: 'בינלאומי',
+};
+
 export interface Opportunity {
   id: string;
+  region: OpportunityRegion;
   sourceName: string;
   sourceUrl: string;
   publishedAt: string | null;

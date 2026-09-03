@@ -57,8 +57,11 @@ export function buildOutputFormatInstructions(): string {
 לחלוטין שהן נכונות (למשל עמוד מוצר רשמי). אסור להמציא כתובת. אם אין לכם
 כתובת אמיתית מעבר למקור, קשרו למקור עצמו ולא לשום דבר אחר.
 
-תרשימים: שלבו 2 עד 3 סימוני [DIAGRAM] בנקודות שבהן תרשים באמת עוזר להבין,
-ולכל אחד מהם ספקו SVG בהמשך (IMAGE_SVG, IMAGE_SVG_2, IMAGE_SVG_3 לפי הסדר).
+תרשימים: ברירת המחדל היא בלי תרשים בכלל. רוב הכתבות לא צריכות אחד.
+הוסיפו [DIAGRAM] רק אם יש משהו שבאמת קשה להסביר במילים ותרשים יעשה את זה
+ברור יותר, למשל תהליך עם כמה שלבים או השוואה בין שתי דרכים. תרשים
+שרק מקשט, או שרק חוזר על מה שכתוב בפסקה, הוא רעש. מקסימום שניים, וברוב
+המקרים אפס.
 
 אם מדובר בכתבת מגמה (trend), חובה כותרות נפרדות: ## עובדה, ## פרשנות, ## המלצה.
 
@@ -80,16 +83,14 @@ ALT: תיאור אמיתי של מה שהתמונה מראה
 CAPTION: כיתוב קצר, אופציונלי
 
 ===IMAGE_SVG===
-קוד SVG מקורי לתרשים הראשי (לא תמונה פוטוגרפית, לא רובוט, לא מוח זוהר).
-viewBox בגודל 1200 380, צבעים: רקע #f2f4f7, מסגרת/הדגשה #0b1530 ו-#2997ff.
-התרשים צריך להראות משהו אמיתי מהכתבה: שלבים בתהליך, השוואה, לפני ואחרי.
-אם אין לכם דרך ליצור SVG, השאירו את המקטע הזה ריק ותמונה זמנית תיווצר במקום.
+רק אם סימנתם [DIAGRAM] בגוף. קוד SVG מקורי (לא תמונה פוטוגרפית, לא רובוט,
+לא מוח זוהר). viewBox בגודל 1200 380, צבעים: רקע #f2f4f7, מסגרת והדגשה
+#0b1530 ו-#2997ff. התרשים צריך להראות משהו אמיתי מהכתבה.
+אם לא צריך תרשים, השאירו את המקטע הזה ריק לגמרי. זו התשובה הנכונה ברוב
+המקרים ואין בה שום בעיה.
 
 ===IMAGE_SVG_2===
-SVG לתרשים השני, באותם כללים. אם יש רק תרשים אחד, השאירו ריק.
-
-===IMAGE_SVG_3===
-SVG לתרשים השלישי, באותם כללים. אם אין, השאירו ריק.
+רק אם סימנתם [DIAGRAM] פעם שנייה. אחרת השאירו ריק.
 `.trim();
 }
 
@@ -211,7 +212,10 @@ function parseBody(section: string): { blocks: Block[]; hasVizMarker: boolean } 
   flushP();
   flushList();
 
-  if (!hasVizMarker) blocks.push({ t: 'viz' });
+  // No forced diagram. Every article used to get one appended whether it
+  // needed it or not, which is exactly the "why is there a diagram on top
+  // of every post" problem. A diagram now appears only where the writer
+  // actually asked for one with [DIAGRAM].
   return { blocks, hasVizMarker };
 }
 
@@ -259,14 +263,15 @@ function buildVisual(
     };
   }
 
+  // A missing diagram is the NORMAL, correct outcome now that diagrams are
+  // opt-in, so it is not reported as a problem. Only a diagram that was
+  // supplied and then rejected is worth telling the admin about.
   if (svgCandidate) {
     warnings.push(
       looksLikeSvg
-        ? 'התרשים שהודבק נחסם משום שהכיל תוכן לא בטוח, ולכן הוחלף בתמונה זמנית.'
-        : 'לא זוהה קוד SVG תקין בתשובה שהודבקה, ולכן נוצרה תמונה זמנית במקום.'
+        ? 'התרשים שהתקבל נחסם משום שהכיל תוכן לא בטוח, ולכן לא נוסף לכתבה.'
+        : 'המקטע של התרשים לא הכיל SVG תקין, ולכן לא נוסף תרשים.'
     );
-  } else {
-    warnings.push('לא סופק תרשים בתשובה שהודבקה, ולכן נוצרה תמונה זמנית במקום. אפשר להחליף אותה מאוחר יותר.');
   }
 
   const fallback = generateMockVisual({ brief, kindLabel: '', slug });
@@ -356,6 +361,13 @@ export function parseManualResult(
       finalBody.push({ t: 'aiviz', svg: d.svg, alt: d.alt, caption: d.caption });
     }
   }
+
+  // A [DIAGRAM] marker with no drawing behind it would otherwise fall back
+  // to the site's generic figure, which is decoration standing in for
+  // content. Drop those: no diagram is better than a diagram that says
+  // nothing.
+  finalBody = finalBody.filter((b) => b.t !== 'viz');
+  if (finalBody.length === 0) finalBody = [{ t: 'p' as const, x: '(לא נמצא תוכן, יש לערוך את הטיוטה)' }];
 
   const output: GeneratorOutput = {
     title: finalTitle,

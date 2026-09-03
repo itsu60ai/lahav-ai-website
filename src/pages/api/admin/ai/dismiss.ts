@@ -13,5 +13,17 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const f = await request.formData();
   const id = String(f.get('id') ?? '');
   if (id) await getAiStores().opportunities.setStatus(id, 'dismissed');
-  return redirect('/admin/ai', 303);
+
+  // The admin list dismisses over fetch and removes the row itself, so it
+  // asks for JSON and never pays for a full re-render of 300+ items. The
+  // redirect stays for the no-JS path, and now keeps you on the tab and
+  // filters you were actually looking at instead of resetting to the top
+  // of an unfiltered list.
+  if ((request.headers.get('accept') ?? '').includes('application/json')) {
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+  const back = String(f.get('back') ?? '');
+  return redirect(back.startsWith('/admin/') ? back : '/admin/ai', 303);
 };

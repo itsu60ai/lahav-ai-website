@@ -32,9 +32,11 @@ const { a, more = [] } = Astro.props;
        cover with a curved light panel overlapping its lower corner, and
        the title, author and date sitting inside that panel. -->
   <header class="art__cover">
-    <div class="art__cover-art" aria-hidden="true">
-      <Viz kind={a.viz as any} />
-    </div>
+    {/* No automatic diagram above every article. The cover used to render
+        one whether the piece needed it or not, so every post opened on a
+        generic picture the reader had no reason to look at. A diagram now
+        appears only inside the body, and only where the writing asked for
+        one. */}
     <div class="art__plate">
       <p class="art__kicker">
         <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
@@ -197,7 +199,9 @@ const { a, more = [] } = Astro.props;
   /* ══════ cover ══════ */
   .art__cover {
     position: relative;
-    padding-top: 84px; /* clears the fixed header */
+    /* clears the fixed header, plus the band of colour the title plate
+       used to overlap when a cover diagram sat here */
+    padding-top: calc(84px + clamp(2.5rem, 7vw, 6rem));
     /* Brand blue, not near-black. Every article opened on a full-width
        #0b1530 band, which is what "getting the black page" was. */
     background: linear-gradient(158deg, #17347f 0%, #1d4ed8 55%, #2564e0 100%);
@@ -211,7 +215,10 @@ const { a, more = [] } = Astro.props;
   .art__plate {
     position: relative;
     z-index: 2;
-    margin-top: clamp(-7rem, -12vw, -4rem);
+    /* was a negative margin that pulled the plate up over the cover
+       artwork. With no artwork there is nothing to overlap, and the
+       negative value dragged the title under the site header. */
+    margin-top: 0;
     margin-inline: auto;
     width: min(100% - 2 * clamp(1rem, 4vw, 3rem), var(--container-max));
     background: var(--color-surface);

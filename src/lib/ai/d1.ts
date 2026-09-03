@@ -49,6 +49,7 @@ const parseJson = <T,>(s: string, fallback: T): T => {
 function toOpportunity(r: Row): Opportunity {
   return {
     id: r.id,
+    region: r.region === 'il' ? 'il' : 'intl',
     sourceName: r.source_name,
     sourceUrl: r.source_url,
     publishedAt: r.published_at ?? null,
@@ -108,13 +109,13 @@ class D1OpportunityStore implements OpportunityStore {
         `INSERT INTO ai_opportunities
          (id, source_name, source_url, published_at, headline, summary, why_it_matters,
           suggested_angle, content_kind, service_slug, verification, verification_note,
-          freshness_score, priority, status, created_at, updated_at)
-         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,'new',?15,?16)`
+          freshness_score, priority, status, created_at, updated_at, region)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,'new',?15,?16,?17)`
       )
       .bind(
         id, d.sourceName, d.sourceUrl, d.publishedAt, d.headline, d.summary, d.whyItMatters,
         d.suggestedAngle, d.contentKind, d.serviceSlug, d.verification, d.verificationNote,
-        d.freshnessScore, d.priority, t, t
+        d.freshnessScore, d.priority, t, t, d.region
       )
       .run();
     return (await this.get(id))!;

@@ -27,6 +27,25 @@ export interface CollectResult {
   errors: { source: string; message: string }[];
 }
 
+// Hebrew letters. An item written in Hebrew is Israeli for the purpose of
+// the country filter, whatever the feed calls itself, and this is a fact
+// about the text rather than a guess about the publisher.
+const HEBREW = /[֐-׿]/;
+
+function regionFor(sourceName: string, headline: string, summary: string): 'il' | 'intl' {
+  if (HEBREW.test(sourceName) || HEBREW.test(headline) || HEBREW.test(summary)) return 'il';
+  return ISRAELI_SOURCE_NAMES.has(sourceName) ? 'il' : 'intl';
+}
+
+// Israeli outlets that publish in English or with English titles, which the
+// script check alone would miss.
+const ISRAELI_SOURCE_NAMES = new Set([
+  "Let's AI",
+  'GeekTime TV',
+  'Eyal Marcus',
+  'https://letsai.co.il/',
+]);
+
 export async function collectOpportunities(stores: AiStores): Promise<CollectResult> {
   const result: CollectResult = { fetched: 0, created: 0, skippedDuplicate: 0, errors: [] };
 
@@ -73,6 +92,7 @@ export async function collectOpportunities(stores: AiStores): Promise<CollectRes
 
       const scored = scoreItem(item, source);
       await stores.opportunities.create({
+        region: regionFor(source.name, item.title, item.summary),
         sourceName: source.name,
         sourceUrl: item.link,
         publishedAt: item.publishedAt,

@@ -21,7 +21,7 @@ import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { can } from '../../../lib/cms/types.ts';
 import { csrfFor } from '../../../lib/cms/auth.ts';
 import { getAiStores } from '../../../lib/ai/context.ts';
-import { CONTENT_KIND_LABELS } from '../../../lib/ai/types.ts';
+import { CONTENT_KIND_LABELS, REGION_LABELS } from '../../../lib/ai/types.ts';
 import type { Opportunity } from '../../../lib/ai/types.ts';
 import { getOrComputeRecommendation } from '../../../lib/ai/recommend/index.ts';
 import { SERVICES } from '../../../lib/site.ts';
@@ -81,12 +81,14 @@ const sourceNames = Array.from(new Set(opportunitiesRaw.map((o) => o.sourceName)
   a.localeCompare(b, 'he')
 );
 
+const regionFilter = Astro.url.searchParams.get('region') ?? '';
 const kindFilter = Astro.url.searchParams.get('kind') ?? '';
 const sourceFilter = Astro.url.searchParams.get('source') ?? '';
 const daysFilter = Astro.url.searchParams.get('days') ?? '';
-const hasActiveFilter = !!(kindFilter || sourceFilter || daysFilter);
+const hasActiveFilter = !!(regionFilter || kindFilter || sourceFilter || daysFilter);
 
 const opportunities = opportunitiesRaw.filter((o) => {
+  if (regionFilter && o.region !== regionFilter) return false;
   if (kindFilter && o.contentKind !== kindFilter) return false;
   if (sourceFilter && o.sourceName !== sourceFilter) return false;
   if (daysFilter) {
@@ -327,6 +329,15 @@ const collectStats = collected
       <form class="filters" method="get" action="/admin/ai">
         <input type="hidden" name="tab" value={tab} />
         <div class="filters__field">
+          <label class="filters__lbl" for="f-region">מדינה</label>
+          <select class="adm-input filters__sel" id="f-region" name="region">
+            <option value="">הכל</option>
+            {Object.entries(REGION_LABELS).map(([value, label]) => (
+              <option value={value} selected={value === regionFilter}>{label}</option>
+            ))}
+          </select>
+        </div>
+        <div class="filters__field">
           <label class="filters__lbl" for="f-kind">סוג תוכן</label>
           <select class="adm-input filters__sel" id="f-kind" name="kind">
             <option value="">הכל</option>
@@ -379,7 +390,7 @@ const collectStats = collected
       ) : (
         <div class="opps">
           {currentList.map((o) => (
-            <article class="opp">
+            <article class="opp" data-opp-card={o.id}>
               <div class="opp__main">
                 <a class="opp__title" href={o.sourceUrl} target="_blank" rel="noopener">{o.headline}</a>
 
@@ -396,9 +407,25 @@ const collectStats = collected
                 <p class="opp__why"><strong>למה זה חשוב:</strong> {o.whyItMatters}</p>
                 {o.suggestedAngle && <p class="opp__angle"><strong>זווית מוצעת:</strong> {o.suggestedAngle}</p>}
 
-                {/* C3: verification state, its source link, and the action
-                    that satisfies the fact gate, all visible before any click */}
-                <div class="ver">
+                {/* Collapsed by default. This used to shout a paragraph of
+                    process language on all 300 cards ("הטענה עדיין לא נבדקה
+                    מול המקור...") without ever saying what to DO, which is
+                    exactly what the client said he could not understand. It
+                    is an optional step, so it now reads as one: a quiet line
+                    you open only if you want it. */}
+                <details class="ver">
+                  <summary class="ver__sum">
+                    {o.verification === 'verified'
+                      ? '✓ בדקתם את המקור'
+                      : o.verification === 'partial'
+                        ? 'בדקתם חלק מהמקור'
+                        : 'עוד לא בדקתם את המקור (לא חובה)'}
+                  </summary>
+                  <p class="ver__how">
+                    זה אופציונלי. אם תפתחו את הקישור למקור ותוודאו שמה שכתוב שם באמת נכון,
+                    הכתבה שתיכתב מהרעיון הזה לא תקבל אזהרה של "מידע שלא נבדק". אם תדלגו,
+                    הכל עדיין עובד, פשוט תראו סימון על הכתבה.
+                  </p>
                   {
                     o.verification === 'verified' && o.verifiedBy ? (
                       <p class="ver__ok">
@@ -448,7 +475,7 @@ const collectStats = collected
                       </form>
                     )
                   }
-                </div>
+                </details>
               </div>
 
               {
@@ -463,7 +490,7 @@ const collectStats = collected
                       <input type="hidden" name="mode" value="mock" />
                       <button class="adm-btn adm-btn--ghost row__btn" type="submit" title="יוצר שלד מהיר מתבנית, בלי להפעיל את ה-AI ובלי עלות">שלד לדוגמה (חינם)</button>
                     </form>
-                    <form method="post" action={`/api/admin/ai/dismiss?csrf=${csrf}`}>
+                    <form method="post" action={`/api/admin/ai/dismiss?csrf=${csrf}`} data-dismiss-form data-opp-id={o.id}>
                       <input type="hidden" name="id" value={o.id} />
                       <button class="adm-btn adm-btn--ghost row__btn" type="submit">התעלמות</button>
                     </form>
@@ -674,6 +701,41 @@ const collectStats = collected
   }
 </AdminLayout>
 
+<script is:inline>
+  // "התעלמות" used to submit a normal form, which reloaded the whole page:
+  // the browser jumped back to the top, and the server re-rendered 300+
+  // opportunities plus the recommendation before answering. Both were the
+  // reported complaint. The row is now removed in place, and the form is
+  // still a real form so this works with scripting off.
+  (() => {
+    document.querySelectorAll('[data-dismiss-form]').forEach((form) => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = form;
+        const id = f.getAttribute('data-opp-id');
+        const card = document.querySelector('[data-opp-card="' + id + '"]');
+        const btn = f.querySelector('button');
+        if (btn) { btn.disabled = true; btn.textContent = 'מסיר...'; }
+        if (card) { card.style.transition = 'opacity .15s'; card.style.opacity = '0.45'; }
+        try {
+          const res = await fetch(f.getAttribute('action'), {
+            method: 'POST',
+            body: new FormData(f),
+            headers: { accept: 'application/json' },
+          });
+          if (!res.ok) throw new Error('failed');
+          if (card) card.remove();
+        } catch {
+          if (card) card.style.opacity = '1';
+          if (btn) { btn.disabled = false; btn.textContent = 'התעלמות'; }
+          alert('לא הצלחנו להסיר את הפריט. אפשר לנסות שוב.');
+        }
+      });
+    });
+  })();
+</script>
+
+
 <style>
   .hd {
     display: flex;
@@ -848,6 +910,19 @@ const collectStats = collected
     background: var(--color-surface-2);
     border: 1px solid var(--color-line);
   }
+  .ver__sum {
+    cursor: pointer;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-ink-3);
+    list-style: none;
+    padding: 0.25rem 0;
+  }
+  .ver__sum::-webkit-details-marker { display: none; }
+  .ver__sum::before { content: '▸ '; }
+  .ver[open] .ver__sum::before { content: '▾ '; }
+  .ver__sum:hover { color: var(--color-royal); }
+  .ver__how { font-size: 0.8125rem; color: var(--color-ink-2); line-height: 1.7; margin: 0.5rem 0; }
   .ver__ok { font-size: 0.875rem; color: #15803d; font-weight: 600; }
   .ver__warn { font-size: 0.875rem; color: #8a5300; font-weight: 600; }
   .ver__note { font-weight: 400; color: var(--color-ink-2); }
