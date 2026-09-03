@@ -14,6 +14,7 @@ const drafts = all.filter((a) => a.status === 'draft');
 const csrf = await csrfFor(Astro.locals.sessionToken);
 const mayPublish = can(user, 'article:publish');
 const mayCreate = can(user, 'article:create');
+const mayDelete = can(user, 'article:delete');
 
 const fmt = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
@@ -43,6 +44,16 @@ const fmt = (iso: string | null) =>
   </div>
 
   {
+    mayDelete && all.length > 0 && (
+      <div class="bulkbar" data-bulkbar hidden>
+        <span class="bulkbar__count" data-bulk-count></span>
+        <button class="adm-btn adm-btn--ghost" type="button" data-bulk-clear>ביטול בחירה</button>
+        <button class="adm-btn adm-btn--danger" type="button" data-bulk-delete>מחיקת הנבחרים</button>
+      </div>
+    )
+  }
+
+  {
     all.length === 0 ? (
       <div class="empty">
         <p class="empty__t">עוד אין מאמרים</p>
@@ -52,8 +63,13 @@ const fmt = (iso: string | null) =>
         </p>
       </div>
     ) : (
-      <div class="tbl">
+      <div class:list={['tbl', mayDelete && 'tbl--check']} data-article-table data-csrf={csrf}>
         <div class="tbl__head">
+          {mayDelete && (
+            <span class="tbl__check">
+              <input type="checkbox" data-select-all aria-label="בחירת כל המאמרים" />
+            </span>
+          )}
           <span>כותרת</span>
           <span>סוג</span>
           <span>סטטוס</span>
@@ -62,7 +78,12 @@ const fmt = (iso: string | null) =>
         </div>
 
         {all.map((a) => (
-          <div class="row">
+          <div class="row" data-row data-row-id={a.id}>
+            {mayDelete && (
+              <span class="tbl__check">
+                <input type="checkbox" data-row-check value={a.id} aria-label={`בחירת ${a.title || 'מאמר ללא כותרת'}`} />
+              </span>
+            )}
             <div class="row__main">
               <a class="row__title" href={`/admin/${a.id}`}>{a.title || '(ללא כותרת)'}</a>
               <div class="row__meta">
@@ -128,6 +149,84 @@ const fmt = (iso: string | null) =>
   </p>
 </AdminLayout>
 
+<script is:inline>
+  // Bulk select + delete. Reuses the exact same /api/admin/delete route a
+  // single "מחיקת המאמר" button already calls (see admin/[id].astro) --
+  // just handed an array of ids instead of one, so there is only ever one
+  // deletion code path to trust, not two.
+  (() => {
+    const table = document.querySelector('[data-article-table]');
+    const bar = document.querySelector('[data-bulkbar]');
+    if (!table || !bar) return;
+    const csrf = table.dataset.csrf;
+    const selectAll = table.querySelector('[data-select-all]');
+    const countEl = bar.querySelector('[data-bulk-count]');
+    const clearBtn = bar.querySelector('[data-bulk-clear]');
+    const deleteBtn = bar.querySelector('[data-bulk-delete]');
+
+    const checks = () => Array.from(table.querySelectorAll('[data-row-check]'));
+
+    function refresh() {
+      const all = checks();
+      const checked = all.filter((c) => c.checked);
+      bar.hidden = checked.length === 0;
+      countEl.textContent = checked.length === 1 ? 'מאמר אחד נבחר' : `${checked.length} מאמרים נבחרו`;
+      all.forEach((c) => {
+        const row = c.closest('[data-row]');
+        if (row) row.classList.toggle('is-selected', c.checked);
+      });
+      if (selectAll) {
+        selectAll.checked = all.length > 0 && checked.length === all.length;
+        selectAll.indeterminate = checked.length > 0 && checked.length < all.length;
+      }
+    }
+
+    selectAll?.addEventListener('change', () => {
+      checks().forEach((c) => { c.checked = selectAll.checked; });
+      refresh();
+    });
+    checks().forEach((c) => c.addEventListener('change', refresh));
+
+    clearBtn?.addEventListener('click', () => {
+      checks().forEach((c) => { c.checked = false; });
+      refresh();
+    });
+
+    deleteBtn?.addEventListener('click', async () => {
+      const ids = checks().filter((c) => c.checked).map((c) => c.value);
+      if (ids.length === 0) return;
+      const titles = ids
+        .map((id) => table.querySelector(`[data-row-id="${id}"] .row__title`)?.textContent?.trim())
+        .filter(Boolean)
+        .slice(0, 5);
+      const preview = titles.join('\n') + (ids.length > titles.length ? `\n...ועוד ${ids.length - titles.length}` : '');
+      const confirmMsg =
+        ids.length === 1
+          ? `למחוק לצמיתות את המאמר "${titles[0] ?? ''}"? אי אפשר לבטל את זה.`
+          : `למחוק לצמיתות ${ids.length} מאמרים? אי אפשר לבטל את זה.\n\n${preview}`;
+      if (!confirm(confirmMsg)) return;
+
+      deleteBtn.disabled = true;
+      const originalLabel = deleteBtn.textContent;
+      deleteBtn.textContent = 'מוחק...';
+      try {
+        const res = await fetch(`/api/admin/delete?csrf=${encodeURIComponent(csrf)}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
+          body: JSON.stringify({ ids }),
+        });
+        if (!res.ok) throw new Error('failed');
+        ids.forEach((id) => table.querySelector(`[data-row-id="${id}"]`)?.remove());
+        refresh();
+      } catch {
+        alert('המחיקה נכשלה. אפשר לנסות שוב.');
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = originalLabel;
+      }
+    });
+  })();
+</script>
+
 <style>
   .hd {
     display: flex;
@@ -162,6 +261,33 @@ const fmt = (iso: string | null) =>
     align-items: center;
     padding: 0.875rem 1.125rem;
   }
+  .tbl--check .tbl__head,
+  .tbl--check .row {
+    grid-template-columns: 1.75rem minmax(0, 1fr) 7rem 8rem 8rem auto;
+  }
+  .tbl__check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tbl__check input[type='checkbox'] {
+    width: 1.05rem;
+    height: 1.05rem;
+    cursor: pointer;
+  }
+  .row.is-selected { background: #eef4ff; }
+
+  .bulkbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.875rem;
+    padding: 0.75rem 1.125rem;
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 0.75rem;
+  }
+  .bulkbar__count { font-size: 0.875rem; font-weight: 700; color: var(--color-ink); margin-inline-end: auto; }
   .tbl__head {
     background: var(--color-surface-2);
     border-bottom: 1px solid var(--color-line);
