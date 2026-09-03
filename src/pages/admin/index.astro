@@ -29,9 +29,15 @@ const fmt = (iso: string | null) =>
     </div>
     {
       mayCreate && (
-        <form method="post" action={`/api/admin/new?csrf=${csrf}`}>
-          <button class="adm-btn adm-btn--primary" type="submit">+ מאמר חדש</button>
-        </form>
+        <div class="hd__acts">
+          {/* The AI-write option used to exist only as a collapsed,
+              unlabelled accordion at the bottom of a different page, with
+              nothing here pointing to it -- this is the fix for that. */}
+          <a class="adm-btn adm-btn--primary" href="/admin/ai#write-with-ai">+ מאמר חדש עם AI</a>
+          <form method="post" action={`/api/admin/new?csrf=${csrf}`}>
+            <button class="adm-btn adm-btn--ghost" type="submit">+ מאמר ריק (בלי AI)</button>
+          </form>
+        </div>
       )
     }
   </div>
@@ -40,7 +46,10 @@ const fmt = (iso: string | null) =>
     all.length === 0 ? (
       <div class="empty">
         <p class="empty__t">עוד אין מאמרים</p>
-        <p class="empty__b">התחילו מ"מאמר חדש". הוא ייווצר כטיוטה ולא יופיע באתר עד שתפרסמו אותו.</p>
+        <p class="empty__b">
+          התחילו מ"מאמר חדש עם AI" ותכתבו על מה, או מ"מאמר ריק" אם אתם רוצים לכתוב הכל בעצמכם.
+          הוא ייווצר כטיוטה ולא יופיע באתר עד שתפרסמו אותו.
+        </p>
       </div>
     ) : (
       <div class="tbl">
@@ -132,6 +141,7 @@ const fmt = (iso: string | null) =>
     font-size: 1.75rem;
     font-weight: 800;
   }
+  .hd__acts { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
   .hd__sub {
     font-size: 0.875rem;
     color: var(--color-ink-3);

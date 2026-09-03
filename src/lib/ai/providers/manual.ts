@@ -80,35 +80,24 @@ CAPTION: כיתוב קצר, אופציונלי
 
 ===PHOTO_PROMPT===
 תיאור באנגלית של תמונה אמיתית לראש הכתבה. זו לא תמונה מופשטת של טכנולוגיה,
-אלא סצנה אנושית שקשורה לנושא: אנשים אמיתיים, מקום עבודה אמיתי, רגע אמיתי.
+אלא סצנה אנושית שממחישה את הבעיה או הרגע הספציפי שהכתבה הזו מדברת עליו,
+לא כל כתבה על AI, אלא הכתבה הזאת דווקא. תשאלו את עצמכם: איזה רגע ממשי
+בעסק קטן קורה כשקורה מה שתיארתי בפסקה הראשונה? זה מה שמצלמים.
 כתבו משפט אחד או שניים באנגלית בלבד, ותארו מה רואים בפריים.
-דוגמה טובה: "A small shop owner at a wooden counter looking at a laptop,
-morning light, boxes waiting to be packed behind her."
-דוגמה רעה: "Artificial intelligence concept, digital brain, futuristic."
+דוגמה גרועה, כי היא כללית מדי ומתאימה לכל כתבה: "A small shop owner at a
+laptop, morning light." זה לא קשור לשום דבר ספציפי.
+דוגמה טובה, כי היא הרגע הספציפי מהכתבה: אם הכתבה על תשובות איטיות
+לוואטסאפ, "A phone screen with several unanswered WhatsApp messages
+piling up, seen over a busy shop owner's shoulder." אם הכתבה על סוכן קוד
+שטעה, "A frustrated small business owner looking at a laptop screen
+showing an error, sticky notes with to-do lists around the desk."
+דוגמה רעה נוספת: "Artificial intelligence concept, digital brain,
+futuristic."
 אל תבקשו טקסט, מספרים, לוגו או ממשק בתוך התמונה, זה תמיד יוצא מעוות.
 
 ===PHOTO_PROMPT_2===
-תיאור באנגלית לתמונה שנייה, לאמצע הכתבה. אופציונלי, אפשר להשאיר ריק.
-
-===CITATIONS===
-- שם המקור | https://example.com
-(שורה אחת לכל מקור בו נעשה שימוש בפועל)
-
-===IMAGE===
-ALT: תיאור אמיתי של מה שהתמונה מראה
-CAPTION: כיתוב קצר, אופציונלי
-
-===PHOTO_PROMPT===
-תיאור באנגלית של תמונה אמיתית לראש הכתבה. זו לא תמונה מופשטת של טכנולוגיה,
-אלא סצנה אנושית שקשורה לנושא: אנשים אמיתיים, מקום עבודה אמיתי, רגע אמיתי.
-כתבו משפט אחד או שניים באנגלית בלבד, ותארו מה רואים בפריים.
-דוגמה טובה: "A small shop owner at a wooden counter looking at a laptop,
-morning light, boxes waiting to be packed behind her."
-דוגמה רעה: "Artificial intelligence concept, digital brain, futuristic."
-אל תבקשו טקסט, מספרים, לוגו או ממשק בתוך התמונה, זה תמיד יוצא מעוות.
-
-===PHOTO_PROMPT_2===
-תיאור באנגלית לתמונה שנייה, לאמצע הכתבה. אופציונלי, אפשר להשאיר ריק.
+תיאור באנגלית לתמונה שנייה, לאמצע הכתבה, באותם כללים: ספציפית לרגע אחר
+מהכתבה הזו, לא סצנה כללית. אופציונלי, אפשר להשאיר ריק.
 
 `.trim();
 }

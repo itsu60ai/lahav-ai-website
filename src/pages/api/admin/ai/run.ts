@@ -60,6 +60,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
+  // The lock. Reopening the review screen in a second tab, or a page
+  // reload while the first run is still mid-flight, used to start a
+  // SECOND full paid call for the same idea -- the same article, billed
+  // twice. claimRun() sets run_started_at atomically and only one caller
+  // ever gets claimed:true for a given row.
+  const claim = await aiStores.generations.claimRun(generationId);
+  if (!claim.claimed) {
+    return new Response(
+      JSON.stringify({ ok: true, alreadyRunning: true, runStartedAt: claim.runStartedAt }),
+      { headers: { 'content-type': 'application/json' } }
+    );
+  }
+
   const stream = new ReadableStream({
     async start(controller) {
       const enc = new TextEncoder();

@@ -512,15 +512,16 @@ const collectStats = collected
               <p class="opp__title">{g.brief.topic}</p>
               <div class="opp__meta">
                 <span>התחיל {fmt(g.createdAt)}</span>
-                <span class="adm-pill adm-pill--placeholder">נכתב עכשיו</span>
+                <span class="adm-pill adm-pill--blocked">עצר, ממתין לכם</span>
               </div>
               <p class="opp__why">
-                המערכת כותבת את הכתבה הזו ברקע. זה לוקח בדרך כלל בין דקה לשלוש דקות.
-                אפשר לעזוב את המסך ולחזור, זה ימשיך לרוץ.
+                הכתיבה מתקדמת רק כשמסך המעקב שלה פתוח, ומישהו יצא ממנו לפני שהיא
+                הסתיימה. לחצו "המשך", השאירו את המסך פתוח 1 עד 3 דקות עד שיסתיים,
+                ורק אז אפשר לעבור הלאה.
               </p>
             </div>
             <div class="opp__actions">
-              <a class="adm-btn adm-btn--primary row__btn" href={`/admin/ai/${g.id}`}>מעקב</a>
+              <a class="adm-btn adm-btn--primary row__btn" href={`/admin/ai/${g.id}`}>המשך</a>
             </div>
           </article>
         ))}
@@ -651,10 +652,21 @@ const collectStats = collected
   }
 
   <!-- ─────────── manual brief: for when you already know the topic ─────────── -->
+  {/* This is the ONLY place a new article can be written by AI from a topic
+      you type yourself, rather than from something the radar collected --
+      and it used to be a collapsed accordion labelled "optional" with no
+      mention of AI at all, reachable only by scrolling to the bottom of
+      this exact page. The "+ מאמר חדש" button on the article list had no
+      link to it whatsoever. It is now open by default, has an id the
+      article list links straight to, and says plainly what it does. */}
   {
     mayCreate && (
-      <details class="card card--collapsed">
-        <summary class="card__h card__h--summary">כתיבת בריף בעצמכם (אופציונלי)</summary>
+      <section class="card" id="write-with-ai">
+        <h2 class="card__h">כתיבת מאמר חדש עם AI</h2>
+        <p class="foot-note" style="border:0; padding:0; margin-bottom:0.75rem;">
+          תכתבו נושא, וה-AI יכתוב לכם טיוטה מלאה: כותרת, גוף, תמונות וחבילת SEO.
+          זו הדרך היחידה להתחיל כתבה חדשה שלא הגיעה מהרדאר.
+        </p>
         <form method="post" action={writeAction} class="brief-form">
           <div class="adm-field">
             <label class="adm-label" for="topic">נושא</label>
@@ -696,7 +708,7 @@ const collectStats = collected
             </button>
           </div>
         </form>
-      </details>
+      </section>
     )
   }
 </AdminLayout>

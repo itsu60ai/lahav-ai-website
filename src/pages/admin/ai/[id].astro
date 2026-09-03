@@ -20,10 +20,17 @@ const generation = await aiStores.generations.get(String(id));
 if (!generation) return Astro.redirect('/admin/ai', 302);
 
 const { articles } = Astro.locals.stores!;
-const [assets, feedback, article] = await Promise.all([
+const [assets, feedback, article, opportunity] = await Promise.all([
   aiStores.assets.listByGeneration(generation.id),
   aiStores.feedback.listByGeneration(generation.id),
   generation.articleId ? articles.get(generation.articleId) : Promise.resolve(null),
+  // Fetched by id directly, with no status filter. The main engine list
+  // only shows opportunities with status 'new', and generating an article
+  // moves this one to 'generated' -- so once a draft exists, this was the
+  // ONLY way left to reach it. The gate message told the user to go verify
+  // "at the content engine screen", and that screen no longer has it: the
+  // "אימתתי" button the message promised genuinely did not exist anywhere.
+  generation.opportunityId ? aiStores.opportunities.get(generation.opportunityId) : Promise.resolve(null),
 ]);
 const visual = assets[0];
 const csrf = await csrfFor(Astro.locals.sessionToken);
@@ -164,7 +171,7 @@ const runFailed = generation.status === 'failed';
         )
       }
       {
-        article && mayPublish && (
+        article && mayPublish && (outcome === 'pass' || article.status === 'published') && (
           <button
             class="adm-btn adm-btn--primary"
             type="button"
@@ -172,9 +179,28 @@ const runFailed = generation.status === 'failed';
             data-article-id={article.id}
             data-target-status={article.status === 'published' ? 'draft' : 'published'}
             data-csrf={csrf}
-            disabled={outcome !== 'pass' && article.status !== 'published'}
           >
             {article.status === 'published' ? 'הסרה מפרסום' : 'פרסום המאמר'}
+          </button>
+        )
+      }
+      {
+        // The override the client asked for directly: publish anyway,
+        // skipping the review notes. Deliberately still an intentional,
+        // separate click rather than the main button turning active on its
+        // own -- it asks for a reason and writes it to the audit trail
+        // (ai_feedback), so a piece that skipped review stays traceable
+        // to who decided that and why.
+        article && mayPublish && outcome === 'blocked' && article.status !== 'published' && (
+          <button
+            class="adm-btn adm-btn--danger"
+            type="button"
+            data-publish-override
+            data-generation-id={generation.id}
+            data-article-id={article.id}
+            data-csrf={csrf}
+          >
+            פרסום בכל זאת
           </button>
         )
       }
@@ -219,6 +245,52 @@ const runFailed = generation.status === 'failed';
       )
     }
   </section>
+
+  {/* The gate below tells the user to go verify the source "at the content
+      engine screen" and click "אימתתי" -- but that screen only lists
+      opportunities with status 'new', and this one left that status the
+      moment the article was generated. The button the message promised
+      was, correctly, nowhere to be found. It lives here now, where the
+      opportunity actually still is. */}
+  {
+    opportunity && opportunity.verification !== 'verified' && mayCreate && (
+      <section class="card card--verify">
+        <h2 class="card__h">אימות המקור</h2>
+        <p class="foot-note" style="border:0; padding:0; margin-bottom:0.75rem;">
+          זה מה שהודעת "הטענה לא אומתה" למטה מבקשת: לפתוח את המקור, לוודא שמה
+          שכתוב בכתבה באמת נכון, וללחוץ "אימתתי". זה לא חובה, אבל בלי זה
+          הכתבה תישאר במצב "צריך תיקון".
+        </p>
+        <form method="post" action={`/api/admin/ai/verify?csrf=${csrf}`} class="ver__form">
+          <input type="hidden" name="id" value={opportunity.id} />
+          <input type="hidden" name="back" value={`/admin/ai/${generation.id}`} />
+          <a class="ver__link" href={opportunity.sourceUrl} target="_blank" rel="noopener">
+            פתיחת המקור לקריאה ←
+          </a>
+          <input
+            class="adm-input ver__input"
+            type="text"
+            name="note"
+            value={opportunity.verificationNote}
+            placeholder="מה בדקתם (לא חובה)"
+          />
+          <button class="adm-btn adm-btn--primary ver__btn" type="submit" name="verification" value="verified">
+            אימתתי
+          </button>
+          <button class="adm-btn adm-btn--ghost ver__btn" type="submit" name="verification" value="partial">
+            אומת חלקית
+          </button>
+        </form>
+      </section>
+    )
+  }
+  {
+    opportunity?.verification === 'verified' && (
+      <p class="foot-note foot-note--ok">
+        המקור אומת על ידי {opportunity.verifiedBy}{opportunity.verifiedAt ? ` בתאריך ${fmt(opportunity.verifiedAt)}` : ''}.
+      </p>
+    )
+  }
 
   <!-- ─────────── issue cards ─────────── -->
   <section class="card" hidden={isRunning || isAwaitingPaste || (runFailed && !article)}>
@@ -424,6 +496,53 @@ const runFailed = generation.status === 'failed';
     });
   });
 
+  // The override: publish despite blocking review notes. Asks for a short
+  // reason (required, so there is always something in the audit trail),
+  // writes it as feedback against this generation, then publishes exactly
+  // like the normal button does.
+  document.querySelectorAll('[data-publish-override]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const el = btn as HTMLButtonElement;
+      const articleId = el.dataset.articleId;
+      const generationId = el.dataset.generationId;
+      const csrf = el.dataset.csrf;
+
+      if (!confirm('לפרסם את המאמר הזה למרות שיש הערות שלא טופלו? הכתבה תעלה לאתר כמו שהיא.')) {
+        return;
+      }
+      const reason = prompt('למה אתם מפרסמים למרות ההערות? (משפט קצר, נשמר לתיעוד)') || '';
+
+      el.disabled = true;
+      try {
+        await fetch(`/api/admin/ai/feedback?csrf=${csrf}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            generationId: generationId || '',
+            articleId: articleId || '',
+            kind: 'approve',
+            note: 'פורסם ידנית למרות הערות (override): ' + reason,
+          }),
+        });
+        const res = await fetch(`/api/admin/status?csrf=${csrf}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id: articleId, status: 'published' }),
+        });
+        if (res.ok) {
+          location.reload();
+        } else {
+          const body = (await res.json().catch(() => ({}))) as { error?: string };
+          alert(body.error || 'הפעולה נכשלה');
+          el.disabled = false;
+        }
+      } catch {
+        alert('הפעולה נכשלה, בדקו את החיבור ונסו שוב.');
+        el.disabled = false;
+      }
+    });
+  });
+
   // ── drive the generation ──
   // The Worker only stays alive while it is streaming to a client that is
   // still reading, so this fetch IS the thing that makes a long generation
@@ -501,6 +620,12 @@ const runFailed = generation.status === 'failed';
   .running__h { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
   .running__b { font-size: 0.9375rem; line-height: 1.7; color: var(--color-ink-2); max-width: 46rem; }
   .running__note { font-size: 0.8125rem; color: var(--color-ink-3); margin-top: 0.5rem; }
+
+  .card--verify { border-inline-start: 3px solid #f59e0b; }
+  .ver__form { display: flex; flex-wrap: wrap; align-items: center; gap: 0.625rem; }
+  .ver__link { font-size: 0.8125rem; font-weight: 700; color: var(--color-royal); white-space: nowrap; }
+  .ver__input { flex: 1; min-width: 12rem; padding: 0.4rem 0.65rem; font-size: 0.8125rem; }
+  .ver__btn { padding: 0.4rem 0.85rem; font-size: 0.8125rem; }
   .run-bar { height: 4px; border-radius: 999px; background: var(--color-line); overflow: hidden; margin-top: 1rem; }
   .run-bar__fill { display: block; height: 100%; width: 35%; border-radius: 999px; background: var(--color-electric); animation: run-slide 1.4s ease-in-out infinite; }
   @keyframes run-slide { 0% { transform: translateX(-120%) } 100% { transform: translateX(320%) } }

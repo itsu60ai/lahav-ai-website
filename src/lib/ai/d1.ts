@@ -37,6 +37,9 @@ type D1 = D1Database;
 type Row = Record<string, any>;
 
 const now = () => new Date().toISOString();
+/** A real generation finishes in well under this. Past it, a lock is
+ *  treated as abandoned rather than still legitimately in progress. */
+const STALE_RUN_MS = 8 * 60 * 1000;
 const j = (v: unknown) => JSON.stringify(v ?? null);
 const parseJson = <T,>(s: string, fallback: T): T => {
   try {
@@ -180,6 +183,7 @@ function toGeneration(r: Row): Generation {
     status: r.status,
     gates: parseJson(r.gate_results_json, { passed: !!r.gates_passed, failures: [] }),
     createdAt: r.created_at,
+    runStartedAt: r.run_started_at ?? null,
   };
 }
 
@@ -198,7 +202,7 @@ class D1GenerationStore implements GenerationStore {
     return r ? toGeneration(r) : null;
   }
 
-  async create(g: Omit<Generation, 'id' | 'createdAt'>): Promise<Generation> {
+  async create(g: Omit<Generation, 'id' | 'createdAt' | 'runStartedAt'>): Promise<Generation> {
     const id = crypto.randomUUID();
     const t = now();
     await this.db
@@ -216,6 +220,33 @@ class D1GenerationStore implements GenerationStore {
       )
       .run();
     return (await this.get(id))!;
+  }
+
+  /**
+   * The UPDATE only touches a row with no lock, OR a lock old enough to be
+   * abandoned, so two near-simultaneous calls can never both succeed: D1
+   * serialises writes to a row, the second one matches zero rows and gets
+   * claimed:false. `meta.changes` says which call that was.
+   *
+   * The staleness window exists because the lock is only ever released by
+   * completeGeneration finishing. If the browser tab that was holding the
+   * streaming connection open gets closed mid-run (see run.ts), the
+   * Worker doing the writing can be cut off with nothing left to release
+   * it, and a permanent lock on a permanently 'pending' row would be worse
+   * than the rare double-charge a stale reclaim risks.
+   */
+  async claimRun(id: string): Promise<{ claimed: boolean; runStartedAt: string | null }> {
+    const t = now();
+    const staleCutoff = new Date(Date.now() - STALE_RUN_MS).toISOString();
+    const res = await this.db
+      .prepare(
+        'UPDATE ai_generations SET run_started_at = ?1 WHERE id = ?2 AND (run_started_at IS NULL OR run_started_at < ?3)'
+      )
+      .bind(t, id, staleCutoff)
+      .run();
+    if ((res.meta?.changes ?? 0) > 0) return { claimed: true, runStartedAt: t };
+    const row = await this.db.prepare('SELECT run_started_at FROM ai_generations WHERE id = ?1').bind(id).first<Row>();
+    return { claimed: false, runStartedAt: row?.run_started_at ?? null };
   }
 
   async update(

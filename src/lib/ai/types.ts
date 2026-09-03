@@ -255,6 +255,11 @@ export type GenerationStatus = 'pending' | 'succeeded' | 'failed';
 
 export interface Generation {
   id: string;
+  /** set the instant /api/admin/ai/run actually starts calling the
+   *  provider, null otherwise. Exists to stop a reopened tab or a second
+   *  request from re-running (and re-billing) a paid generation that is
+   *  already in flight -- see the header comment on run.ts. */
+  runStartedAt: string | null;
   opportunityId: string | null;
   articleId: string | null;
   brief: Brief;
@@ -273,7 +278,7 @@ export interface Generation {
 export interface GenerationStore {
   list(): Promise<Generation[]>;
   get(id: string): Promise<Generation | null>;
-  create(g: Omit<Generation, 'id' | 'createdAt'>): Promise<Generation>;
+  create(g: Omit<Generation, 'id' | 'createdAt' | 'runStartedAt'>): Promise<Generation>;
   /**
    * Stage B needs this: a manual generation is created once, as `pending`,
    * the moment the prompt is prepared — then updated in place once the
@@ -284,6 +289,13 @@ export interface GenerationStore {
     id: string,
     patch: Partial<Pick<Generation, 'articleId' | 'output' | 'inputTokens' | 'outputTokens' | 'costUsd' | 'status' | 'gates'>>
   ): Promise<Generation>;
+  /**
+   * Claims the run lock: sets run_started_at ONLY if it is currently null,
+   * atomically, and reports whether this call was the one that set it. Two
+   * requests racing to run the same generation can both call this; exactly
+   * one gets claimed=true.
+   */
+  claimRun(id: string): Promise<{ claimed: boolean; runStartedAt: string | null }>;
 }
 
 // ─────────────────────────────────────────────── learning

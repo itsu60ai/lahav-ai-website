@@ -24,6 +24,14 @@ interface Props {
   more?: Article[];
 }
 const { a, more = [] } = Astro.props;
+
+// The first real photograph, if the article opens with one, becomes the
+// COVER image instead of sitting buried below the title where the reader
+// has to scroll to find it -- a diagram used to fill this exact spot, so
+// removing diagrams (a separate change) left the cover permanently blank.
+// It is sliced out of the body so it never appears twice.
+const heroImg = a.body[0]?.t === 'img' ? a.body[0] : null;
+const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
 ---
 
 <article class="art">
@@ -31,13 +39,24 @@ const { a, more = [] } = Astro.props;
        Structure taken from the reference's own article page: a full-bleed
        cover with a curved light panel overlapping its lower corner, and
        the title, author and date sitting inside that panel. -->
-  <header class="art__cover">
-    {/* No automatic diagram above every article. The cover used to render
-        one whether the piece needed it or not, so every post opened on a
-        generic picture the reader had no reason to look at. A diagram now
-        appears only inside the body, and only where the writing asked for
-        one. */}
-    <div class="art__plate">
+  <header class:list={['art__cover', heroImg && 'art__cover--photo']}>
+    {/* Restored to the ORIGINAL reference layout (see the comment above):
+        full-bleed art filling the cover, with the plate curving up over
+        its lower corner. This is what a diagram used to fill. Removing
+        diagrams left it collapsed to a flat band, and the photo that
+        replaced them got stacked as its own separate section ABOVE the
+        title instead -- pushing the whole cover down, which is the exact
+        "image went to the top, not where we said" complaint. It goes back
+        to sitting IN the cover, behind the plate, exactly where the
+        circled screenshot pointed. */}
+    {
+      heroImg && (
+        <div class="art__cover-art art__cover-art--photo" aria-hidden="true">
+          <img src={heroImg.src} alt="" />
+        </div>
+      )
+    }
+    <div class:list={['art__plate', heroImg && 'art__plate--overlap']}>
       <p class="art__kicker">
         <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
         <span class="art__topic">{a.topic}</span>
@@ -52,7 +71,7 @@ const { a, more = [] } = Astro.props;
 
   <div class="art__body u-container">
     {
-      a.body.map((b) => {
+      bodyBlocks.map((b) => {
         if (b.t === 'h2') return <h2>{b.x}</h2>;
         if (b.t === 'h3') return <h3>{b.x}</h3>;
         if (b.t === 'quote') return <blockquote set:html={linkifyText(b.x)} />;
@@ -206,25 +225,47 @@ const { a, more = [] } = Astro.props;
   /* ══════ cover ══════ */
   .art__cover {
     position: relative;
-    /* clears the fixed header, plus the band of colour the title plate
-       used to overlap when a cover diagram sat here */
-    padding-top: calc(84px + clamp(2.5rem, 7vw, 6rem));
+    padding-top: 84px; /* clears the fixed header */
     /* Brand blue, not near-black. Every article opened on a full-width
-       #0b1530 band, which is what "getting the black page" was. */
+       #0b1530 band, which is what "getting the black page" was. Also the
+       colour behind a hero photo while it loads, and the fallback for an
+       article that has no photo at all. */
     background: linear-gradient(158deg, #17347f 0%, #1d4ed8 55%, #2564e0 100%);
   }
+  /* An article WITH a hero photo gets real height to show it in, behind
+     the plate. One with no photo stays a flat, short band -- there is
+     nothing to give height to. */
+  .art__cover--photo { min-height: calc(84px + clamp(18rem, 36vw, 28rem)); }
+
   .art__cover-art {
     padding: clamp(1.5rem, 3.5vw, 3rem) clamp(1.25rem, 5vw, 5rem) clamp(6rem, 14vw, 11rem);
     max-width: var(--container-wide);
     margin-inline: auto;
   }
+  /* The generated hero photo fills the cover edge to edge, the same
+     footprint the old diagram's padding used to reserve, so the plate
+     below still has real artwork to curve over instead of empty gradient. */
+  .art__cover-art--photo {
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    max-width: none;
+    margin: 0;
+    overflow: hidden;
+  }
+  .art__cover-art--photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
   /* the light plate that the title sits on, curving up out of the cover */
   .art__plate {
     position: relative;
     z-index: 2;
-    /* was a negative margin that pulled the plate up over the cover
-       artwork. With no artwork there is nothing to overlap, and the
-       negative value dragged the title under the site header. */
+    /* Flat by default: an article with no hero photo has nothing to
+       overlap, and a negative margin here would drag the title under the
+       fixed site header with nothing behind it to justify the space. */
     margin-top: 0;
     margin-inline: auto;
     width: min(100% - 2 * clamp(1rem, 4vw, 3rem), var(--container-max));
@@ -234,6 +275,10 @@ const { a, more = [] } = Astro.props;
     padding: clamp(1.75rem, 4vw, 3.25rem) clamp(1.5rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem);
     box-shadow: 0 -20px 60px rgba(11, 21, 48, 0.18);
   }
+  /* Restored ONLY when there is a real photo behind it to curve over --
+     see the header comment on .art__cover--photo. */
+  .art__plate--overlap { margin-top: clamp(-7rem, -12vw, -4rem); }
+
   .art__kicker {
     display: flex;
     flex-wrap: wrap;
