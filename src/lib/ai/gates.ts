@@ -216,20 +216,11 @@ function checkImageCompleteness(output: GeneratorOutput): GateFailure[] {
       }),
     ];
   }
-  if (output.visual.source === 'mock') {
-    return [
-      fail(
-        'image-completeness',
-        'info',
-        'משמש תרשים ברירת מחדל זמני',
-        'התשובה שהודבקה לא כללה SVG תקין, כך שהופק תרשים ממותג זמני במקום תרשים ייחודי לכתבה.',
-        {
-          location: 'תמונת הכתבה',
-          suggestion: 'אפשר להמשיך כך, או לחזור ל-AI ולבקש תרשים SVG בפורמט הנדרש ולהדביק מחדש.',
-        }
-      ),
-    ];
-  }
+  // The engine stopped asking for SVG diagrams on 2026-09-03 (they looked
+  // bad and the client asked for photographs instead), so a placeholder
+  // visual is now the ordinary case and not worth a note. Warning about it
+  // put a permanent "something is missing" line on every good article.
+  if (output.visual.source === 'mock') return [];
   if (!output.visual.altText?.trim()) {
     // BLOCKING, per docs/AI_ENGINE.md section 8: alt text must exist on
     // every non-decorative image. A generated article diagram is always

@@ -407,8 +407,18 @@ const { a, more = [] } = Astro.props;
   .art__photo {
     display: block;
     width: 100%;
+    /* The generator renders square. Left at its natural height a 1024x1024
+       photo is taller than the viewport and swallows the article, so it is
+       cropped to an editorial ratio instead. `cover` keeps the centre of
+       the frame, which is where the subject always is. */
+    aspect-ratio: 3 / 2;
     height: auto;
+    object-fit: cover;
     border-radius: var(--radius-xl);
+  }
+  @media (max-width: 560px) {
+    /* a little taller on a phone, where a wide crop leaves almost nothing */
+    .art__photo { aspect-ratio: 4 / 3; }
   }
   .art__fig--photo figcaption { padding-inline: 0.5rem; }
 
