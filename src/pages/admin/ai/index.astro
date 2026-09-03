@@ -195,6 +195,26 @@ const backHere = `/admin/ai?tab=${tab}`;
 const tabList = TABS.map((t) => ({ id: t, label: TAB_LABELS[t], count: TAB_COUNTS[t] }));
 const currentList = tab === 'latest' ? latest : tab === 'trending' ? trending : evergreen;
 
+// ── pagination ──
+// The radar keeps collecting daily and nothing ever removed an item from
+// this list except acting on it, so "כל הזמנים" with no filter renders
+// every 'new' opportunity the radar has ever found -- 325 full cards and
+// growing, every one of them with two paragraphs and a form, on one page
+// load. Slicing to a page is the fix; the query itself already reads the
+// whole 'new' status cheaply, so this only bounds what gets built as HTML.
+const PAGE_SIZE = 20;
+const totalPages = Math.max(1, Math.ceil(currentList.length / PAGE_SIZE));
+const pageRaw = Number(Astro.url.searchParams.get('page') ?? '1');
+const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.min(Math.floor(pageRaw), totalPages) : 1;
+const pageItems = currentList.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+const pageHref = (n: number) => {
+  const p = new URLSearchParams(Astro.url.searchParams);
+  if (n <= 1) p.delete('page');
+  else p.set('page', String(n));
+  const qs = p.toString();
+  return qs ? `/admin/ai?${qs}` : '/admin/ai';
+};
+
 // Feedback for "איסוף עדכונים עכשיו", which used to redirect back with no
 // sign of whether anything actually happened. Read once, straight from
 // collect.ts's own result, so this can never say something the collector
@@ -371,8 +391,11 @@ const collectStats = collected
     )
   }
   {
-    hasActiveFilter && (tab === 'latest' || tab === 'trending' || tab === 'evergreen') && (
-      <p class="filters__count">{currentList.length} תוצאות מתוך {opportunitiesRaw.length} לפי הסינון שבחרתם.</p>
+    (tab === 'latest' || tab === 'trending' || tab === 'evergreen') && currentList.length > 0 && (
+      <p class="filters__count">
+        {hasActiveFilter && <>{currentList.length} תוצאות מתוך {opportunitiesRaw.length} לפי הסינון שבחרתם. </>}
+        מציג {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, currentList.length)} מתוך {currentList.length}.
+      </p>
     )
   }
 
@@ -389,7 +412,7 @@ const collectStats = collected
         </div>
       ) : (
         <div class="opps">
-          {currentList.map((o) => (
+          {pageItems.map((o) => (
             <article class="opp" data-opp-card={o.id}>
               <div class="opp__main">
                 <a class="opp__title" href={o.sourceUrl} target="_blank" rel="noopener">{o.headline}</a>
@@ -501,6 +524,19 @@ const collectStats = collected
           ))}
         </div>
       ))
+  }
+  {
+    (tab === 'latest' || tab === 'trending' || tab === 'evergreen') && totalPages > 1 && (
+      <nav class="pager" aria-label="דפדוף">
+        <a class:list={['pager__btn', page <= 1 && 'is-disabled']} href={page > 1 ? pageHref(page - 1) : undefined} aria-disabled={page <= 1}>
+          הקודם
+        </a>
+        <span class="pager__pos">עמוד {page} מתוך {totalPages}</span>
+        <a class:list={['pager__btn', page >= totalPages && 'is-disabled']} href={page < totalPages ? pageHref(page + 1) : undefined} aria-disabled={page >= totalPages}>
+          הבא
+        </a>
+      </nav>
+    )
   }
 
   {
@@ -669,6 +705,16 @@ const collectStats = collected
           זו הדרך היחידה להתחיל כתבה חדשה שלא הגיעה מהרדאר.
         </p>
         <form method="post" action={writeAction} class="brief-form">
+          {/* Typing "תחשוב לבד" into the topic box used to produce an
+              article about the phrase "תחשוב לבד". A checkbox is the
+              honest way to say "I have no topic": it takes the field out
+              of play instead of asking the model to read intent. */}
+          <div class="adm-field adm-field--wide">
+            <label class="brief-auto">
+              <input type="checkbox" id="autoTopic" name="autoTopic" value="1" />
+              <span>אין לי נושא — שה-AI יבחר בעצמו (ייקח את הפריט הכי טרי מהרדאר, ואם אין — יבחר נושא לבד)</span>
+            </label>
+          </div>
           <div class="adm-field">
             <label class="adm-label" for="topic">נושא</label>
             <input class="adm-input" id="topic" name="topic" required placeholder="לדוגמה: איך לבחור מערכת CRM ראשונה" />
@@ -745,6 +791,24 @@ const collectStats = collected
         }
       });
     });
+  })();
+
+  // The topic field is `required`, so "let the AI choose" has to release it
+  // or the form simply refuses to submit. Greying it out also makes the
+  // choice visible instead of leaving a live-looking box that is ignored.
+  (() => {
+    const auto = document.getElementById('autoTopic');
+    const topic = document.getElementById('topic');
+    if (!auto || !topic) return;
+    const sync = () => {
+      topic.required = !auto.checked;
+      topic.disabled = auto.checked;
+      topic.placeholder = auto.checked
+        ? 'ה-AI יבחר נושא בעצמו'
+        : 'לדוגמה: איך לבחור מערכת CRM ראשונה';
+    };
+    auto.addEventListener('change', sync);
+    sync();
   })();
 </script>
 
@@ -882,6 +946,20 @@ const collectStats = collected
 
   /* ── cards ── */
   .opps { display: flex; flex-direction: column; gap: 0.875rem; margin-bottom: 1.5rem; }
+  .pager { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 1.5rem 0 2rem; }
+  .pager__pos { font-size: 0.875rem; color: #64748b; }
+  .pager__btn {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.45rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d5dbe6;
+    background: #fff;
+    color: #1d4ed8;
+    text-decoration: none;
+  }
+  .pager__btn:hover { background: #eef2f7; }
+  .pager__btn.is-disabled { color: #b8c0cc; border-color: #e5e9f0; pointer-events: none; }
   .opp {
     display: flex;
     justify-content: space-between;
@@ -982,6 +1060,16 @@ const collectStats = collected
   }
   .adm-field--wide { grid-column: 1 / -1; }
   .brief-actions { grid-column: 1 / -1; display: flex; gap: 0.625rem; justify-self: start; }
+  .brief-auto {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #334155;
+    cursor: pointer;
+  }
+  .brief-auto input { width: 1rem; height: 1rem; flex: none; cursor: pointer; }
+  #topic:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
   .row__btn { padding: 0.375rem 0.75rem; font-size: 0.8125rem; }
 
   @media (max-width: 900px) {

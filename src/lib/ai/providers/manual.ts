@@ -14,6 +14,7 @@
 // bad content still becomes something you can look at and fix, never
 // nothing.
 import type { Block } from '../../cms/types.ts';
+import { youtubeIdFrom } from '../../cms/types.ts';
 import { buildCanonicalPath } from '../seo.ts';
 import { generateMockVisual } from '../visuals.ts';
 import { isSvgSafe } from '../validate.ts';
@@ -47,14 +48,48 @@ export function buildOutputFormatInstructions(): string {
 - פריט ברשימה
 > ציטוט
 
+סרטון YouTube: אם יש סרטון אמיתי שבאמת מוסיף לקורא, שימו את הכתובת שלו
+לבדה בשורה נפרדת (רק הכתובת, בלי טקסט לפניה או אחריה), ומיד בשורה שאחריה
+כתבו כיתוב קצר בעברית שמתאר מה רואים או שומעים בסרטון, בפורמט:
+כיתוב: תיאור קצר של הסרטון
+זה מוצג מתחת לנגן ומשמש גם למי שלא יכול לראות אותו — אל תדלגו על זה.
+הוא יוטמע כנגן בתוך העמוד. אסור להמציא כתובת של סרטון — רק סרטון שקיבלתם
+כאן במקור או שמצאתם בחיפוש ברשת ואתם בטוחים שהוא קיים. סרטון שמוזכר
+באמצע משפט נשאר קישור רגיל.
+
+קוד: אם הכתבה כוללת דוגמת קוד, פקודה, או פרומפט שהקורא אמור להעתיק,
+עטפו אותו בשלושה גרשים אחוריים עם שם השפה, למשל:
+\`\`\`python
+print("hello")
+\`\`\`
+זה יוצג בתיבה עם כפתור העתקה. אל תשתמשו בזה לטקסט רגיל.
+
+צילום מסך אמיתי (רק כשבאמת אין ברירה): לפעמים הכתבה חייבת להראות ממשק
+אמיתי של כלי ספציפי — למשל "לוחצים על הכפתור הזה בהגדרות של X" — ותמונה
+מצולמת-AI תהיה שקרית, כי היא לא הממשק האמיתי. במקרה כזה בלבד, סמנו את
+המקום המדויק בגוף הכתבה כך:
+[SCREENSHOT]
+מה לצלם: תיאור מדויק של המסך או החלון הספציפי
+הוראות: שלבים ברורים בעברית - איפה להיכנס, על מה ללחוץ, מה בדיוק צריך
+להיראות בתמונה. כאילו מסבירים למישהו שלא מכיר את הכלי בכלל.
+[/SCREENSHOT]
+זה יופיע למי שעורך את הכתבה כתיבה ברורה עם כפתור העלאה במקום הזה בדיוק
+- לא צריך לדאוג לאן זה ילך. אל תשתמשו בזה בתור ברירת מחדל: זה לבקשות
+אמיתיות של ממשק אמיתי בלבד. אם תמונה רגילה (===PHOTO_PROMPT=== למטה)
+מספיקה, השתמשו בה במקום - היא לא דורשת עבודה מאף אחד.
+
 אורך: כתבה מלאה, 700 עד 1100 מילים. לא פסקה או שתיים.
 
 קישורים בתוך הטקסט (חשוב, זה מה שגורם לכתבה להיראות כתובה בידי אדם):
 שלבו 2 עד 4 קישורים אמיתיים בתוך המשפטים עצמם, בפורמט [טקסט הקישור](כתובת).
 הקישור נכנס בדיוק במקום שבו מזכירים את מה שהוא מוביל אליו, לא ברשימה בסוף.
-מותר לקשר רק לכתובות שקיבלתם כאן במקור, או לכתובות רשמיות שאתם בטוחים
-לחלוטין שהן נכונות (למשל עמוד מוצר רשמי). אסור להמציא כתובת. אם אין לכם
-כתובת אמיתית מעבר למקור, קשרו למקור עצמו ולא לשום דבר אחר.
+מותר לקשר רק לכתובות שקיבלתם כאן במקור, לכתובות רשמיות שאתם בטוחים לחלוטין
+שהן נכונות (למשל עמוד מוצר רשמי), או לכתובות אמיתיות שמצאתם עכשיו בעצמכם
+באמצעות חיפוש ברשת, אם יש לכם גישה לכלי כזה. אם כן, השתמשו בו בלי היסוס
+כדי למצוא עוד עמוד או שניים שרלוונטיים ממש לנושא הספציפי של הכתבה הזו,
+לא כתבה כללית על AI. אסור להמציא כתובת. אם אין לכם כתובת אמיתית מעבר למקור,
+או שאין לכם גישה לחיפוש, קשרו למקור עצמו
+ולא לשום דבר אחר.
 
 אם מדובר בכתבת מגמה: חובה שיהיה ברור לקורא מה עובדה מהמקור ומה הפרשנות
 שלכם. עושים את זה בתוך המשפטים ("המקור מדווח ש...", "מה שאנחנו מבינים מזה
@@ -79,10 +114,10 @@ ALT: תיאור אמיתי של מה שהתמונה מראה
 CAPTION: כיתוב קצר, אופציונלי
 
 ===PHOTO_PROMPT===
-תיאור באנגלית של תמונה אמיתית לראש הכתבה. זו לא תמונה מופשטת של טכנולוגיה,
-אלא סצנה אנושית שממחישה את הבעיה או הרגע הספציפי שהכתבה הזו מדברת עליו,
-לא כל כתבה על AI, אלא הכתבה הזאת דווקא. תשאלו את עצמכם: איזה רגע ממשי
-בעסק קטן קורה כשקורה מה שתיארתי בפסקה הראשונה? זה מה שמצלמים.
+שורה ראשונה: תיאור באנגלית של תמונה אמיתית לראש הכתבה. זו לא תמונה מופשטת
+של טכנולוגיה, אלא סצנה אנושית שממחישה את הבעיה או הרגע הספציפי שהכתבה הזו
+מדברת עליו, לא כל כתבה על AI, אלא הכתבה הזאת דווקא. תשאלו את עצמכם: איזה
+רגע ממשי בעסק קטן קורה כשקורה מה שתיארתי בפסקה הראשונה? זה מה שמצלמים.
 כתבו משפט אחד או שניים באנגלית בלבד, ותארו מה רואים בפריים.
 דוגמה גרועה, כי היא כללית מדי ומתאימה לכל כתבה: "A small shop owner at a
 laptop, morning light." זה לא קשור לשום דבר ספציפי.
@@ -95,9 +130,14 @@ showing an error, sticky notes with to-do lists around the desk."
 futuristic."
 אל תבקשו טקסט, מספרים, לוגו או ממשק בתוך התמונה, זה תמיד יוצא מעוות.
 
+שורה שנייה, חובה: ALT_HE: ואז תיאור קצר בעברית של מה בדיוק רואים בתמונה
+הזו (לא כותרת הכתבה, ולא סתם "תמונה של עסק" — מה שממש רואים בפריים).
+זה מה שמוצג לכל מי שלא רואה את התמונה בעצמו (טכנולוגיה מסייעת, גוגל).
+לדוגמה: ALT_HE: בעל חנות בודק בטלפון הודעות וואטסאפ שהצטברו בלי מענה.
+
 ===PHOTO_PROMPT_2===
-תיאור באנגלית לתמונה שנייה, לאמצע הכתבה, באותם כללים: ספציפית לרגע אחר
-מהכתבה הזו, לא סצנה כללית. אופציונלי, אפשר להשאיר ריק.
+תמונה שנייה, לאמצע הכתבה, באותם כללים: ספציפית לרגע אחר מהכתבה הזו, לא
+סצנה כללית. אופציונלי, אפשר להשאיר ריק כולל את ALT_HE.
 
 `.trim();
 }
@@ -115,11 +155,11 @@ export interface ManualParseResult {
   /** shown to the admin, never hidden — this is what "explain what's missing" means */
   warnings: string[];
   /**
-   * English descriptions of the photographs to generate, in order. Parsing
-   * only reads them; the actual image call lives in src/lib/ai/images.ts and
-   * runs from generate.ts, so this file stays free of network access.
+   * Photographs to generate, in order. Parsing only reads them; the actual
+   * image call lives in src/lib/ai/images.ts and runs from generate.ts, so
+   * this file stays free of network access.
    */
-  photoPrompts: string[];
+  photoPrompts: { description: string; alt: string }[];
 }
 
 function stripFence(s: string): string {
@@ -190,13 +230,82 @@ function parseBody(section: string): { blocks: Block[]; hasVizMarker: boolean } 
     listBuf = [];
   };
 
+  // Fenced-code state. Lines inside a fence are taken verbatim — no
+  // trimming, no markdown handling — because indentation is meaning in code.
+  let inFence = false;
+  let fenceLang = '';
+  let fenceBuf: string[] = [];
+
+  // [SCREENSHOT]...[/SCREENSHOT] state, same shape as the code fence —
+  // everything between the markers is the instructions text verbatim, so
+  // a numbered "1. ... 2. ..." step list keeps its own line breaks.
+  let inShot = false;
+  let shotBuf: string[] = [];
+
   for (const rawLine of section.split(/\r?\n/)) {
     const line = rawLine.trim();
+
+    if (/^\[SCREENSHOT\]\s*$/i.test(line)) {
+      flushP();
+      flushList();
+      inShot = true;
+      shotBuf = [];
+      continue;
+    }
+    if (inShot) {
+      if (/^\[\/SCREENSHOT\]\s*$/i.test(line)) {
+        const instructions = shotBuf.join('\n').trim();
+        if (instructions) blocks.push({ t: 'shot', instructions, alt: '', caption: '' });
+        inShot = false;
+        shotBuf = [];
+      } else {
+        shotBuf.push(rawLine);
+      }
+      continue;
+    }
+
+    const fence = line.match(/^```+\s*([A-Za-z0-9+#._-]*)\s*$/);
+    if (fence) {
+      if (inFence) {
+        const code = fenceBuf.join('\n').replace(/\s+$/, '');
+        if (code.trim()) blocks.push({ t: 'code', code, lang: fenceLang, caption: '' });
+        inFence = false;
+        fenceLang = '';
+        fenceBuf = [];
+      } else {
+        flushP();
+        flushList();
+        inFence = true;
+        fenceLang = (fence[1] || '').toLowerCase();
+      }
+      continue;
+    }
+    if (inFence) {
+      fenceBuf.push(rawLine);
+      continue;
+    }
+
     if (!line) {
       flushP();
       flushList();
       continue;
     }
+
+    // A line that is nothing but a YouTube link becomes a player. A link to
+    // a video is a dead end on the page; the reader has to leave to watch
+    // it. Only a whole-line link is converted — a video mentioned mid-
+    // sentence stays an inline link, where it belongs.
+    const bareYt = line.match(/^(?:\[[^\]]*\]\()?(\S+?)\)?$/);
+    if (bareYt) {
+      const ytId = youtubeIdFrom(bareYt[1]);
+      if (ytId) {
+        flushP();
+        flushList();
+        blocks.push({ t: 'yt', id: ytId, title: '', caption: '' });
+        continue;
+      }
+    }
+
     let m: RegExpMatchArray | null;
     if ((m = line.match(/^##\s+(.+)/))) {
       flushP();
@@ -223,6 +332,15 @@ function parseBody(section: string): { blocks: Block[]; hasVizMarker: boolean } 
       pBuf.push(line);
     }
   }
+  // An unterminated fence would otherwise swallow the rest of the article.
+  if (inFence) {
+    const code = fenceBuf.join('\n').replace(/\s+$/, '');
+    if (code.trim()) blocks.push({ t: 'code', code, lang: fenceLang, caption: '' });
+  }
+  if (inShot) {
+    const instructions = shotBuf.join('\n').trim();
+    if (instructions) blocks.push({ t: 'shot', instructions, alt: '', caption: '' });
+  }
   flushP();
   flushList();
 
@@ -230,7 +348,37 @@ function parseBody(section: string): { blocks: Block[]; hasVizMarker: boolean } 
   // needed it or not, which is exactly the "why is there a diagram on top
   // of every post" problem. A diagram now appears only where the writer
   // actually asked for one with [DIAGRAM].
-  return { blocks, hasVizMarker };
+  return { blocks: attachYoutubeCaptions(blocks), hasVizMarker };
+}
+
+/**
+ * A "כיתוב: ..." line right after a bare YouTube URL is exactly what the
+ * prompt asks the writer for, but parseBody's own line loop has already
+ * turned it into an ordinary paragraph by the time it is seen -- there was
+ * no clean way to look ahead one line inside that loop. Fixing it up here,
+ * as one pass over the finished block list, is simpler than restructuring
+ * the loop: find every `yt` block immediately followed by a paragraph that
+ * starts with "כיתוב:", move that text onto the video (both as its
+ * caption and its accessible title), and drop the now-redundant paragraph.
+ *
+ * Every video otherwise ends up with an empty title/caption -- no visible
+ * description under the player and a generic "סרטון" for anyone using a
+ * screen reader, exactly the gap flagged by the client.
+ */
+function attachYoutubeCaptions(blocks: Block[]): Block[] {
+  const out: Block[] = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    const next = blocks[i + 1];
+    if (b.t === 'yt' && next?.t === 'p' && /^כיתוב\s*:/.test(next.x)) {
+      const caption = next.x.replace(/^כיתוב\s*:\s*/, '').trim();
+      out.push({ ...b, title: caption, caption });
+      i++; // the caption paragraph is consumed, not emitted on its own
+      continue;
+    }
+    out.push(b);
+  }
+  return out;
 }
 
 function parseCitations(section: string): { label: string; url: string }[] {
@@ -411,8 +559,26 @@ export function parseManualResult(
   };
 
   const photoPrompts = [sections.PHOTO_PROMPT ?? '', sections.PHOTO_PROMPT_2 ?? '']
-    .map((t) => t.trim())
-    .filter(Boolean);
+    .map(splitPhotoSection)
+    .filter((p): p is { description: string; alt: string } => p.description.length > 0);
 
   return { output, blocked: false, warnings, photoPrompts };
+}
+
+/**
+ * Splits a PHOTO_PROMPT section into the English scene sent to the image
+ * model and the writer's own "ALT_HE: ..." line describing what is
+ * actually in that photo. Missing ALT_HE is not an error -- the prompt
+ * marks it required, but a real reply can still omit it, and a photo with
+ * no accessible description is better than no photo at all.
+ */
+function splitPhotoSection(raw: string): { description: string; alt: string } {
+  const lines = raw.split(/\r?\n/);
+  const altLine = lines.find((l) => /^ALT_HE\s*:/i.test(l.trim()));
+  const alt = altLine ? altLine.trim().replace(/^ALT_HE\s*:\s*/i, '').trim() : '';
+  const description = lines
+    .filter((l) => !/^ALT_HE\s*:/i.test(l.trim()))
+    .join(' ')
+    .trim();
+  return { description, alt };
 }

@@ -20,7 +20,7 @@ export function isSvgSafe(svg: string): boolean {
 // validation with "רכיבי תוכן בפורמט לא תקין" and threw the whole article
 // away. The only generations that ever passed were the ones whose diagram
 // was missing or rejected -- which is precisely backwards.
-const VALID_BLOCK_TYPES = new Set(['p', 'h2', 'h3', 'quote', 'ul', 'viz', 'aiviz', 'img']);
+const VALID_BLOCK_TYPES = new Set(['p', 'h2', 'h3', 'quote', 'ul', 'viz', 'aiviz', 'img', 'yt', 'code', 'shot']);
 
 function isValidBlock(b: unknown): b is Block {
   if (!b || typeof b !== 'object') return false;
@@ -33,6 +33,20 @@ function isValidBlock(b: unknown): b is Block {
     // an arbitrary external URL into the page.
     const src = (b as any).src;
     return typeof src === 'string' && src.startsWith('/api/media/');
+  }
+  if (t === 'shot') {
+    const instructions = (b as any).instructions;
+    return typeof instructions === 'string' && instructions.trim().length > 0;
+  }
+  if (t === 'yt') {
+    // Exactly a YouTube id, nothing else. The renderer builds the embed URL
+    // from this, so anything that is not an id must never get through.
+    const id = (b as any).id;
+    return typeof id === 'string' && /^[A-Za-z0-9_-]{11}$/.test(id);
+  }
+  if (t === 'code') {
+    const code = (b as any).code;
+    return typeof code === 'string' && code.trim().length > 0;
   }
   if (t === 'aiviz') {
     // Shape AND safety: an aiviz block carries raw markup that will be

@@ -196,16 +196,21 @@ export async function completeGeneration(generationId: string, args: GenerateArg
       if (args.media && photoPrompts.length > 0) {
         const imageWarnings: string[] = [];
         const images: Block[] = [];
-        for (const [i, description] of photoPrompts.slice(0, 2).entries()) {
+        for (const [i, prompt] of photoPrompts.slice(0, 2).entries()) {
+          // The writer's own "ALT_HE:" line describing what is actually in
+          // THIS photo -- not the article title repeated (image 1) or an
+          // empty string (image 2, before this fix). A screen reader, or
+          // Google, learned nothing from either of those.
+          const alt = prompt.alt || (i === 0 ? output.title : `תמונה נלווית לכתבה: ${output.title}`);
           const img = await generateAndStoreImage({
-            description,
-            alt: i === 0 ? output.title : `תמונה נלווית לכתבה: ${output.title}`,
+            description: prompt.description,
+            alt,
             media: args.media,
             createdBy: args.createdBy ?? 'ai-engine',
             slug,
             warnings: imageWarnings,
           });
-          if (img) images.push({ t: 'img', src: img.src, alt: i === 0 ? output.title : '', caption: '' });
+          if (img) images.push({ t: 'img', src: img.src, alt, caption: '' });
         }
 
         if (images.length > 0) {
@@ -262,6 +267,16 @@ export async function completeGeneration(generationId: string, args: GenerateArg
     }
   } catch (e) {
     gates = internalFailure(e instanceof Error ? e.message : 'שגיאה לא צפויה');
+    // Record what the failed attempt actually cost. Every API failure mode
+    // (refusal, truncation, unparsable reply) happens after the tokens are
+    // billed, and leaving these at 0 meant a real charge showed as $0.00 in
+    // both the admin and the ai_generations audit trail.
+    const usage = (e as { usage?: { inputTokens: number; outputTokens: number; costUsd: number } })?.usage;
+    if (usage) {
+      inputTokens = usage.inputTokens;
+      outputTokens = usage.outputTokens;
+      costUsd = usage.costUsd;
+    }
   }
 
   await aiStores.generations.update(generationId, {

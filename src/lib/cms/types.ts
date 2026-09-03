@@ -23,7 +23,33 @@ export type Block =
   /** a real raster image from the media library, served by /api/media/<id>.
    *  Holds the URL rather than the bytes, unlike aiviz, because a photo is
    *  far too large to carry inside an article row. */
-  | { t: 'img'; src: string; alt: string; caption: string };
+  | { t: 'img'; src: string; alt: string; caption: string }
+  /** an embedded YouTube video. Stores the 11-character video id, never a
+   *  full URL: the id is the only part we trust, and building the embed URL
+   *  ourselves means a pasted link can never smuggle in another host or
+   *  extra query parameters. A link to a video is a dead end on a page —
+   *  this renders the player inline instead. */
+  | { t: 'yt'; id: string; title: string; caption: string }
+  /** a copyable code sample. `code` is plain text and is always rendered
+   *  escaped; `lang` is a label only (e.g. 'python'), never executed. */
+  | { t: 'code'; code: string; lang: string; caption: string }
+  /**
+   * A placeholder for a REAL screenshot only a person can take -- the AI
+   * decided this spot needs an actual capture of a real tool's interface
+   * (something an AI-generated photo would be dishonest to fake), and
+   * `instructions` is its own exact, step-by-step Hebrew explanation of
+   * what to open, where to click, and what to capture. Requested
+   * verbatim by the client: "אם יש צורך בצילום מסך שמצריך עבודה של בן
+   * אדם, שיציין את זה... ויגיד לי מה בדיוק לעשות, איך לעשות, לאן להיכנס
+   * ומה לחפש... ואיפה להשים את התמונה."
+   *
+   * MUST NEVER reach the public page: it carries an internal note, not
+   * content. Blocked by a dedicated gate (checkScreenshotPending in
+   * gates.ts) and rendered as nothing by ArticleView as a second line of
+   * defence. The editor replaces it in place with a real `img` block the
+   * moment someone uploads the photo it is asking for.
+   */
+  | { t: 'shot'; instructions: string; alt: string; caption: string };
 
 export const BLOCK_LABELS: Record<Block['t'], string> = {
   img: 'תמונה',
@@ -34,7 +60,40 @@ export const BLOCK_LABELS: Record<Block['t'], string> = {
   ul: 'רשימה',
   viz: 'תרשים',
   aiviz: 'תרשים AI',
+  yt: 'סרטון YouTube',
+  code: 'קוד',
+  shot: 'צילום מסך נדרש',
 };
+
+/**
+ * Pulls the video id out of any shape of YouTube link people actually
+ * paste: watch?v=, youtu.be/, /embed/, /shorts/, with or without extra
+ * query parameters. Returns null for anything that is not a YouTube URL,
+ * which is what keeps a bare id from being accepted from untrusted text.
+ */
+export function youtubeIdFrom(raw: string): string | null {
+  const s = (raw ?? '').trim();
+  if (!s) return null;
+  // A bare id, typed deliberately in the editor.
+  if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+  let u: URL;
+  try {
+    u = new URL(s);
+  } catch {
+    return null;
+  }
+  const host = u.hostname.replace(/^www\./, '').toLowerCase();
+  let id = '';
+  if (host === 'youtu.be') id = u.pathname.slice(1);
+  else if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
+    if (u.pathname === '/watch') id = u.searchParams.get('v') ?? '';
+    else if (u.pathname.startsWith('/embed/')) id = u.pathname.slice(7);
+    else if (u.pathname.startsWith('/shorts/')) id = u.pathname.slice(8);
+    else if (u.pathname.startsWith('/live/')) id = u.pathname.slice(6);
+  }
+  id = id.split('/')[0].split('?')[0];
+  return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+}
 
 /** guide = a considered piece; hack = a short practical tip */
 export type ArticleKind = 'guide' | 'hack';

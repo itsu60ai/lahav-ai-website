@@ -31,7 +31,12 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const brief = await buildBriefFromForm(f, aiStores);
   if (!brief) return redirect('/admin/ai?err=nobrief', 303);
 
-  const forceMode = String(f.get('mode') ?? '').trim() || undefined;
+  // Only 'mock' may be forced from a form, never 'api'. Choosing the PAID
+  // provider is a settings:manage decision (see api/admin/ai/settings.ts);
+  // article:create is enough to reach this route, and an editor posting
+  // mode=api used to override an owner who had deliberately left the engine
+  // on the free provider. Downgrading to free is safe; upgrading is not.
+  const forceMode = String(f.get('mode') ?? '').trim() === 'mock' ? 'mock' : undefined;
   const args = { brief, aiStores, articles, media, createdBy: locals.user!.id, forceMode };
 
   let generationId: string;

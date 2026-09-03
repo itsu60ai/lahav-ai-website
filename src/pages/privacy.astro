@@ -1,10 +1,15 @@
 ---
-// PRIVACY. Structure and honest, implementation-based copy only.
+// PRIVACY. Honest, implementation-based copy: every claim here matches
+// what the code actually does (see src/lib/leads/* for the contact/chat
+// data path, hashIp() for the IP handling, spam.ts for Turnstile). No
+// section describes a system that doesn't exist yet, except "מדידה
+// ומעקב", which says plainly that no analytics tool is active.
 //
 // F-15: LAHAV AI is a brand, not a registered entity. Operator line is
 // "Ethan Lahav / LAHAV AI". No company number, no address.
-// NV-2: no compliance claim is made anywhere. Final legal text and legal
-// review remain a separate, open item.
+// NV-2: this is not legal advice and was not written or reviewed by a
+// lawyer -- said outright in the page's own closing line. No compliance
+// claim (GDPR/CCPA/etc.) is made anywhere.
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { SITE } from '../lib/site';
 
@@ -19,7 +24,9 @@ const sections = [
   {
     h: 'איזה מידע אנחנו אוספים',
     p: [
-      'המידע היחיד שאנחנו אוספים ישירות הוא מה שאתם בוחרים למסור לנו בטופס יצירת הקשר: שם, טלפון, אימייל, השירות שמעניין אתכם, וההודעה שאתם כותבים.',
+      'המידע היחיד שאנחנו אוספים ישירות הוא מה שאתם בוחרים למסור לנו: בטופס יצירת הקשר (שם, טלפון, אימייל, השירות שמעניין אתכם וההודעה שכתבתם), או בצ׳אט באתר, אם אתם משתמשים בו ומשאירים בו פרטים.',
+      'כתובת ה-IP שממנה נשלחה פנייה לא נשמרת כמו שהיא. היא עוברת חישוב שהופך אותה לקוד שאי אפשר לשחזר ממנו את הכתובת המקורית, ומשמש רק כדי לזהות ניסיונות ספאם חוזרים — לא כדי לזהות אתכם אישית.',
+      'ההגנה מפני בוטים בטופס (Cloudflare Turnstile) מופעלת על ידי Cloudflare, לא על ידינו, ולה יש מדיניות פרטיות משלה.',
       'אנחנו לא מבקשים ולא אוספים פרטי תשלום, מספרי זהות או מידע רגיש דרך האתר.',
     ],
   },
@@ -30,28 +37,28 @@ const sections = [
     ],
   },
   {
-    h: 'מדידה ונתוני שימוש',
+    h: 'עוגיות ומעקב',
     p: [
-      'אנחנו מתכננים למדוד שימוש בסיסי באתר כדי להבין אילו עמודים מעניינים מבקרים. הכלי שנבחר לא משתמש בעוגיות מעקב ואינו מזהה מבקרים אישית.',
-      'הפירוט המדויק יעודכן כאן לאחר שהמערכות ייכנסו לפעולה בפועל.',
+      'האתר הזה לא משתמש בעוגיות פרסום או מעקב שיווקי. העוגייה היחידה שעשויה להישמר היא זו של Cloudflare Turnstile, לצורך ההגנה מפני בוטים בטפסים, לא לצורך זיהוי או מעקב אחריכם.',
+      'כרגע אין באתר כלי מדידת שימוש (אנליטיקס) פעיל. אם וכשנפעיל כלי כזה, נעדכן כאן איזה כלי, מה הוא אוסף, ואיך אפשר לצאת ממנו.',
     ],
   },
   {
     h: 'שמירת מידע',
     p: [
-      'פניות שנשלחות דרך האתר נשמרות כדי שנוכל לטפל בהן ולחזור אליכם. משך השמירה ואופן המחיקה יעודכנו כאן לאחר שהמערכות ייכנסו לפעולה.',
+      'פנייה שנשלחת דרך הטופס או הצ׳אט נשמרת במערכת שלנו כדי שנוכל לטפל בה ולחזור אליכם. אין כרגע מנגנון שמוחק פניות ישנות אוטומטית אחרי זמן קבוע — הן נשמרות עד שנפנה אותן בעצמנו או שתבקשו מאיתנו למחוק אותן.',
     ],
   },
   {
     h: 'הזכויות שלכם',
     p: [
-      'אתם יכולים לפנות אלינו ולבקש לראות איזה מידע יש לנו עליכם, לתקן אותו, או לבקש שנמחק אותו. נטפל בפנייה כזו ונעדכן אתכם.',
+      'אתם יכולים לפנות אלינו ולבקש לראות איזה מידע יש לנו עליכם, לתקן אותו, או לבקש שנמחק אותו. נטפל בבקשה כזו בעצמנו ידנית ונעדכן אתכם כשהיא בוצעה.',
     ],
   },
   {
     h: 'שינויים בעמוד הזה',
     p: [
-      'העמוד הזה ישתנה ככל שהאתר והמערכות מאחוריו יתפתחו. כשנעדכן אותו, נעדכן גם את תאריך העדכון למטה.',
+      'העמוד הזה ישתנה ככל שהאתר והמערכות מאחוריו יתפתחו — למשל אם נוסיף כלי מדידה. כשנעדכן אותו, נעדכן גם את תאריך העדכון למטה.',
     ],
   },
 ];
@@ -61,12 +68,6 @@ const sections = [
   title="מדיניות פרטיות | LAHAV AI"
   description="איזה מידע נאסף באתר LAHAV AI, למה משתמשים בו, ואיך אפשר לפנות אלינו בנושא."
 >
-  <div class="pv-flag">
-    <div class="u-container u-container--wide">
-      טיוטה. הנוסח הסופי ייקבע לאחר שהמערכות באתר יופעלו בפועל ולאחר בדיקה משפטית.
-    </div>
-  </div>
-
   <article class="pv">
     <header class="pv__head band band--hero">
       <div class="u-container u-container--wide">
@@ -95,23 +96,14 @@ const sections = [
         ))
       }
 
-      <p class="pv__updated">עודכן לאחרונה: לא פורסם עדיין</p>
+      <p class="pv__updated">עודכן לאחרונה: ספטמבר 2026</p>
+      <p class="pv__disclaimer">העמוד הזה כתוב בכנות, לפי מה שהאתר עושה בפועל — הוא לא נוסח או אושר על ידי עורך דין.</p>
       <p class="pv__legal">{SITE.legalLine}</p>
     </div>
   </article>
 </SiteLayout>
 
 <style>
-  .pv-flag {
-    background: #fff4e5;
-    border-bottom: 1px solid #f0c98a;
-    color: #8a5300;
-    font-size: var(--text-small);
-    font-weight: 600;
-    padding-block: 0.75rem;
-    /* sits under the fixed header */
-    padding-top: calc(0.75rem + 84px);
-  }
   .pv__head { padding-block: clamp(3rem, 6vw, 5rem) clamp(2.5rem, 5vw, 4rem); }
   .pv__title {
     display: flex;
@@ -167,6 +159,7 @@ const sections = [
     max-width: 62ch;
   }
   .pv__updated,
+  .pv__disclaimer,
   .pv__legal {
     font-size: var(--text-small);
     color: var(--color-ink-3);
@@ -176,6 +169,7 @@ const sections = [
     padding-top: 1.5rem;
     border-top: 1px solid var(--color-line-strong);
   }
+  .pv__disclaimer { margin-top: 0.5rem; }
   .pv__legal { margin-top: 0.5rem; }
 
   @media (max-width: 640px) {

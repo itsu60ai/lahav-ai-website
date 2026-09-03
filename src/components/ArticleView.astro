@@ -54,7 +54,7 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
         <div class="art__cover-scrim" aria-hidden="true" />
         <div class="art__cover-text">
           <p class="art__kicker art__kicker--onphoto">
-            <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
+            <span class="art__kind">{ARTICLE_KINDS[a.kind]?.label ?? a.kind}</span>
             <span class="art__topic">{a.topic}</span>
             <span class="art__time">{a.readingTime}</span>
           </p>
@@ -71,7 +71,7 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
       <header class="art__cover">
         <div class="art__plate">
           <p class="art__kicker">
-            <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
+            <span class="art__kind">{ARTICLE_KINDS[a.kind]?.label ?? a.kind}</span>
             <span class="art__topic">{a.topic}</span>
             <span class="art__time">{a.readingTime}</span>
           </p>
@@ -105,6 +105,49 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
               {b.caption && <figcaption>{b.caption}</figcaption>}
             </figure>
           );
+        if (b.t === 'yt')
+          return (
+            <figure class="art__fig art__fig--yt" data-clip>
+              <div class="art__yt">
+                {/* youtube-nocookie + the id we stored (never a pasted URL)
+                    so an article can only ever embed a YouTube video. */}
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${b.id}`}
+                  title={b.title || 'סרטון'}
+                  loading="lazy"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                />
+              </div>
+              {b.caption && <figcaption>{b.caption}</figcaption>}
+            </figure>
+          );
+        if (b.t === 'code')
+          return (
+            <figure class="art__fig art__fig--code" data-clip>
+              <div class="art__code">
+                <div class="art__code-bar">
+                  <span class="art__code-lang">{b.lang || 'קוד'}</span>
+                  <button class="art__code-copy" type="button" data-copy-code>
+                    העתקה
+                  </button>
+                </div>
+                {/* dir=ltr: code is left-to-right even on an RTL page. */}
+                <pre class="art__code-pre" dir="ltr"><code>{b.code}</code></pre>
+              </div>
+              {b.caption && <figcaption>{b.caption}</figcaption>}
+            </figure>
+          );
+        if (b.t === 'shot') {
+          // MUST NEVER show on the public page: `instructions` is an
+          // internal note for whoever edits the article, not content, and
+          // this block only exists here at all if someone published past
+          // the blocking gate in gates.ts (checkScreenshotPending) that
+          // exists specifically to stop that. Render nothing rather than
+          // a broken-looking gap or, worse, the note itself.
+          return null;
+        }
         if (b.t === 'aiviz') {
           // Re-validated at render time, not just at creation — belt and
           // suspenders for anything that reaches the public page.
@@ -145,13 +188,17 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
 
   <!-- The service connection, kept quiet. It reads as a related link,
        not as a sales block interrupting the article. -->
-  <aside class="art__rel u-container" data-reveal>
-    <p class="art__rel-k">קשור לנושא</p>
-    <a class="art__rel-a" href={`/services/${a.serviceSlug}/`}>
-      {a.serviceName}
-      <span class="arrow-inline" aria-hidden="true">←</span>
-    </a>
-  </aside>
+  {
+    a.serviceSlug && (
+      <aside class="art__rel u-container" data-reveal>
+        <p class="art__rel-k">קשור לנושא</p>
+        <a class="art__rel-a" href={`/services/${a.serviceSlug}/`}>
+          {a.serviceName || 'לשירות'}
+          <span class="arrow-inline" aria-hidden="true">←</span>
+        </a>
+      </aside>
+    )
+  }
 
   <footer class="art__foot u-container">
     <p class="art__foot-line">
@@ -215,6 +262,39 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', onScroll);
     update();
+  })();
+
+  // Copy-to-clipboard on code samples. Reads the rendered <code> text rather
+  // than a data attribute, so what lands on the clipboard is exactly what
+  // the reader is looking at.
+  (() => {
+    document.querySelectorAll('[data-copy-code]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const pre = btn.closest('.art__code')?.querySelector('code');
+        if (!pre) return;
+        const done = (label) => {
+          btn.textContent = label;
+          btn.classList.add('is-done');
+          setTimeout(() => {
+            btn.textContent = 'העתקה';
+            btn.classList.remove('is-done');
+          }, 1600);
+        };
+        try {
+          await navigator.clipboard.writeText(pre.textContent || '');
+          done('הועתק ✓');
+        } catch {
+          // Clipboard API needs a secure context and permission; select the
+          // text instead so the reader can still copy it by hand.
+          const sel = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(pre);
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+          done('סמנו והעתיקו');
+        }
+      });
+    });
   })();
 </script>
 
@@ -454,6 +534,77 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
       margin-inline: calc((44rem - min(100% + 12rem, 62rem)) / 2);
     }
   }
+  /* ══════ embedded YouTube ══════ */
+  .art__yt {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: #0b1530;
+  }
+  .art__yt iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* ══════ code sample ══════ */
+  .art__code {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: #0d1730;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+  }
+  .art__code-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.875rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  }
+  .art__code-lang {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .art__code-copy {
+    font: inherit;
+    font-size: 0.8125rem;
+    color: #dbeafe;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .art__code-copy:hover { background: rgba(255, 255, 255, 0.16); }
+  .art__code-copy:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+  .art__code-copy.is-done {
+    background: #16a34a;
+    border-color: #16a34a;
+    color: #fff;
+  }
+  .art__code-pre {
+    margin: 0;
+    padding: clamp(0.875rem, 2vw, 1.25rem);
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: #e2e8f0;
+    text-align: left;
+    tab-size: 2;
+  }
+  .art__code-pre code { font: inherit; color: inherit; background: none; white-space: pre; }
+
   .art__fig-stage {
     background: linear-gradient(158deg, #17347f 0%, #1d4ed8 55%, #2564e0 100%);
     border-radius: var(--radius-xl);

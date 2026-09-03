@@ -29,6 +29,20 @@
 // cannot drift from manual mode, and the downstream
 // validateGeneratorOutput + runGates see an identical shape either way.
 // One contract, one parser, two transports.
+//
+// WEB SEARCH (2026-09-03): the client asked for more than the one link
+// every article got, which was always the radar opportunity's own source.
+// Anthropic's server-side web_search tool is declared below, so the model
+// can look up 1-3 more real, current pages while it writes -- the search
+// runs on Anthropic's infrastructure, inside this same request, no second
+// call and no separate "search engine" of our own to build or trust.
+//
+// The real URLs are read straight from the tool's own result blocks
+// (harvestSearchCitations below), NOT from whatever the model typed into
+// the ===CITATIONS=== text. A model can mistype a URL it read; the tool
+// result cannot, so citations built this way are guaranteed to be pages
+// that were actually fetched, matching the site's own rule against
+// unverifiable claims.
 import { buildOutputFormatInstructions, parseManualResult } from './manual.ts';
 import type { GeneratorInput, GeneratorMeta, GeneratorOutput, TextGenerator } from '../types.ts';
 
@@ -66,7 +80,40 @@ export function computeCostUsd(inputTokens: number, outputTokens: number): numbe
  *  for the same result. */
 const MAX_TOKENS = 12000;
 
-export class ApiGenerationError extends Error {}
+/**
+ * A hard ceiling on searches per generation. The published per-token price
+ * above does NOT include Anthropic's separate per-search fee for this tool
+ * (documented as billed per search, not per token), so the cost shown for
+ * a generation that used search undercounts the true spend by that amount
+ * until this file adds a per-search line item -- flagged here rather than
+ * quietly estimated, because a guessed number would violate the site's own
+ * rule against inventing figures.
+ */
+const MAX_SEARCHES_PER_ARTICLE = 3;
+
+/**
+ * Anthropic can return many raw results per search call. Keeping only the
+ * top 2 per call (see below) and capping the overall total here keeps the
+ * article's citation list close to what a human writer would actually cite,
+ * instead of a raw search-results dump.
+ */
+const MAX_SEARCH_CITATIONS = 6;
+
+/**
+ * Carries the usage measured before the failure. Every failure mode below
+ * — refusal, truncation, empty reply, unparsable reply — happens AFTER the
+ * tokens were billed, so throwing a bare Error made a real charge show up
+ * in the admin and in ai_generations as $0.00. A cost the owner cannot see
+ * is a cost they cannot control.
+ */
+export class ApiGenerationError extends Error {
+  usage: { inputTokens: number; outputTokens: number; costUsd: number } | null;
+
+  constructor(message: string, usage: ApiGenerationError['usage'] = null) {
+    super(message);
+    this.usage = usage;
+  }
+}
 
 export const apiGenerator: TextGenerator = {
   mode: 'api',
@@ -97,6 +144,13 @@ export const apiGenerator: TextGenerator = {
           model: MODEL,
           max_tokens: MAX_TOKENS,
           stream: true,
+          tools: [
+            {
+              type: 'web_search_20260209',
+              name: 'web_search',
+              max_uses: MAX_SEARCHES_PER_ARTICLE,
+            },
+          ],
           messages: [{ role: 'user', content: prompt }],
         }),
       });
@@ -146,6 +200,9 @@ export const apiGenerator: TextGenerator = {
     let outputTokens = 0;
     let stopReason = '';
     let streamError = '';
+    // Real pages the web_search tool actually fetched, harvested from the
+    // tool's own result blocks -- see the header comment above.
+    const searchCitations: { label: string; url: string }[] = [];
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -174,6 +231,30 @@ export const apiGenerator: TextGenerator = {
             }
             if (evt?.type === 'content_block_delta' && typeof evt?.delta?.text === 'string') {
               text += evt.delta.text;
+            } else if (
+              evt?.type === 'content_block_start' &&
+              evt?.content_block?.type === 'web_search_tool_result'
+            ) {
+              // A successful result's `content` is an array of
+              // web_search_result objects; a failed search's `content` is a
+              // single error object instead (see the pitfall in the API
+              // reference) -- Array.isArray is the branch between them.
+              // Anthropic returns up to ~10 raw results per search call, but
+              // dumping all of them produces a noisy, mostly-irrelevant
+              // citation list (seen live: 19 links for one article, several
+              // unrelated). Keep only the top 2 results per search (the
+              // most relevant per Anthropic's own ranking) and cap the
+              // overall total, so citations stay close to what a human
+              // writer would actually reference.
+              const results = evt.content_block.content;
+              if (Array.isArray(results) && searchCitations.length < MAX_SEARCH_CITATIONS) {
+                for (const r of results.slice(0, 2)) {
+                  if (searchCitations.length >= MAX_SEARCH_CITATIONS) break;
+                  if (typeof r?.url === 'string' && r.url.startsWith('http')) {
+                    searchCitations.push({ label: String(r.title ?? r.url).slice(0, 200), url: r.url });
+                  }
+                }
+              }
             } else if (evt?.type === 'message_start') {
               inputTokens = evt?.message?.usage?.input_tokens ?? 0;
             } else if (evt?.type === 'message_delta') {
@@ -191,25 +272,30 @@ export const apiGenerator: TextGenerator = {
       );
     }
 
+    // Computed here, before any of the failure branches below, so each of
+    // them can report what was actually spent.
+    const costUsd = computeCostUsd(inputTokens, outputTokens);
+    const usage = { inputTokens, outputTokens, costUsd };
+
     if (streamError) {
       throw new ApiGenerationError(
-        `הקריאה ל-Anthropic נכשלה באמצע ולכן לא נוצרה כתבה. פרטים: ${streamError}`
+        `הקריאה ל-Anthropic נכשלה באמצע ולכן לא נוצרה כתבה. פרטים: ${streamError}`,
+        usage
       );
     }
-
-    const costUsd = computeCostUsd(inputTokens, outputTokens);
 
     // A refusal is a real, documented outcome. Treat it as a failure with
     // a clear message; never fabricate an article to fill the gap.
     if (stopReason === 'refusal') {
       throw new ApiGenerationError(
-        'המודל סירב לכתוב את הכתבה הזו. לא נוצרה כתבה. בדקו את הבריף ואת ההערות, ונסו לנסח מחדש.'
+        'המודל סירב לכתוב את הכתבה הזו. לא נוצרה כתבה. בדקו את הבריף ואת ההערות, ונסו לנסח מחדש.',
+        usage
       );
     }
 
     const raw = text.trim();
     if (!raw) {
-      throw new ApiGenerationError('Anthropic החזיר תשובה ריקה. לא נוצרה כתבה. אפשר לנסות שוב.');
+      throw new ApiGenerationError('Anthropic החזיר תשובה ריקה. לא נוצרה כתבה. אפשר לנסות שוב.', usage);
     }
 
     // Truncation is not a silent condition: a cut-off article would parse
@@ -217,7 +303,8 @@ export const apiGenerator: TextGenerator = {
     // parse, so a truncated reply can never reach the article table.
     if (stopReason === 'max_tokens') {
       throw new ApiGenerationError(
-        'התשובה נקטעה באמצע כי היא חרגה מאורך התשובה המרבי. לא נוצרה כתבה חלקית בכוונה. נסו שוב, או קצרו את הבריף.'
+        'התשובה נקטעה באמצע כי היא חרגה מאורך התשובה המרבי. לא נוצרה כתבה חלקית בכוונה. נסו שוב, או קצרו את הבריף.',
+        usage
       );
     }
 
@@ -226,8 +313,23 @@ export const apiGenerator: TextGenerator = {
 
     if (parsed.blocked || !parsed.output) {
       throw new ApiGenerationError(
-        `התשובה שהתקבלה לא הייתה בפורמט הנדרש ולכן לא נוצרה כתבה. ${parsed.warnings.join(' ')}`.trim()
+        `התשובה שהתקבלה לא הייתה בפורמט הנדרש ולכן לא נוצרה כתבה. ${parsed.warnings.join(' ')}`.trim(),
+        usage
       );
+    }
+
+    // Real search results merged in on top of whatever the model wrote in
+    // ===CITATIONS===, deduped by URL. This is additive only: nothing the
+    // model cited is removed, and a generation that never searched (the
+    // tool is available, not mandatory) behaves exactly as before.
+    if (searchCitations.length > 0) {
+      const seen = new Set(parsed.output.seo.citations.map((c) => c.url));
+      for (const c of searchCitations) {
+        if (!seen.has(c.url)) {
+          parsed.output.seo.citations.push(c);
+          seen.add(c.url);
+        }
+      }
     }
 
     return {

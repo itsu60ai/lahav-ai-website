@@ -563,12 +563,28 @@ const runFailed = generation.status === 'failed';
         '<strong>אל תסגרו את החלון הזה עד שזה מסתיים.</strong>';
     }, 1000);
 
+    // RELOADING UNCONDITIONALLY WAS A MONEY BUG. When a run is already in
+    // flight (a second tab, or a dropped first connection), /run answers
+    // instantly with {alreadyRunning:true} instead of a stream. Reloading
+    // on that reply re-ran this script, which POSTed again, which replied
+    // instantly again -- a hot loop for the whole generation, and once the
+    // stale-lock window passed one iteration won the claim and started a
+    // SECOND paid article for the same row. Reload only when this call was
+    // the one doing the work.
+    let alreadyRunning = false;
+
     fetch('/api/admin/ai/run?csrf=' + encodeURIComponent(csrf), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ generationId: id }),
     })
       .then(async (res) => {
+        const ct = res.headers.get('content-type') ?? '';
+        if (ct.includes('application/json')) {
+          const data = (await res.json().catch(() => ({}))) as { alreadyRunning?: boolean };
+          alreadyRunning = Boolean(data?.alreadyRunning);
+          return;
+        }
         if (!res.body) return;
         const reader = res.body.getReader();
         // Drain it. Every chunk read is another few seconds of life for
@@ -581,6 +597,22 @@ const runFailed = generation.status === 'failed';
       .catch(() => {})
       .finally(() => {
         clearInterval(tick);
+        if (alreadyRunning && statusEl) {
+          statusEl.innerHTML =
+            'הכתבה כבר נכתבת בחלון אחר. אפשר להשאיר את החלון הזה פתוח — ' +
+            'הוא יתעדכן לבד כשזה יסתיים.';
+          // A slow poll, not a reload loop: this checks whether the other
+          // window finished, without ever POSTing to /run again.
+          setInterval(() => {
+            fetch(location.pathname, { headers: { 'x-poll': '1' } })
+              .then((r) => r.text())
+              .then((html) => {
+                if (!html.includes('data-run-panel')) location.reload();
+              })
+              .catch(() => {});
+          }, 15000);
+          return;
+        }
         location.reload();
       });
   })();
@@ -742,7 +774,11 @@ const runFailed = generation.status === 'failed';
   .issue__badge.issue--review { background: #fff4e0; color: #8a5300; }
   .issue__badge.issue--info { background: var(--color-surface-2); color: var(--color-ink-3); }
   .issue__title { font-family: var(--font-display); font-size: 1.0625rem; font-weight: 700; }
-  .issue__detail { font-size: 0.9375rem; color: var(--color-ink-2); margin-bottom: 0.5rem; }
+  {/* pre-line: the screenshot-pending gate's detail is the AI's own
+      multi-line, numbered instructions ("1. ...\n2. ...") and needs its
+      line breaks to stay readable as steps, not run together. Harmless
+      for every other gate's detail, which is plain single-line text. */}
+  .issue__detail { font-size: 0.9375rem; color: var(--color-ink-2); margin-bottom: 0.5rem; white-space: pre-line; }
   .issue__evidence {
     font-size: 0.9375rem;
     background: #fff;

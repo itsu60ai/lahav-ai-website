@@ -207,6 +207,38 @@ function checkSeoCompleteness(output: GeneratorOutput): GateFailure[] {
 
 // ─────────────────────────────────────────────── image / visual
 
+/**
+ * Blocks publishing while the article still has a `shot` placeholder in
+ * its body -- a spot where the AI decided only a REAL screenshot would be
+ * honest, and asked for one instead of faking it. This is the client's
+ * own explicit request: the engine must say so clearly, with exact
+ * instructions, rather than publish something showing a fake interface
+ * or a hole where the image should be.
+ *
+ * The instructions themselves are put directly in `detail`, not just
+ * referenced -- this card IS the "what to do, how, where to go, what to
+ * look for" the client asked for, not a pointer to it.
+ */
+function checkScreenshotPending(output: GeneratorOutput): GateFailure[] {
+  const pending = output.body.filter((b) => b.t === 'shot') as Extract<
+    GeneratorOutput['body'][number],
+    { t: 'shot' }
+  >[];
+  if (pending.length === 0) return [];
+  return pending.map((b, i) =>
+    fail(
+      'screenshot-pending',
+      'blocking',
+      pending.length > 1 ? `צילום מסך נדרש (${i + 1} מתוך ${pending.length})` : 'צריך צילום מסך אמיתי לפני פרסום',
+      b.instructions,
+      {
+        location: 'גוף הכתבה',
+        suggestion: 'צלמו לפי ההוראות למעלה, ובמסך העריכה של המאמר העלו את התמונה ישר במקום שסומן — היא תיכנס אוטומטית.',
+      }
+    )
+  );
+}
+
 function checkImageCompleteness(output: GeneratorOutput): GateFailure[] {
   if (!output.visual) {
     return [
@@ -326,20 +358,42 @@ function checkSourceFreshness(opportunity: Opportunity | null, contentKind: stri
 
 // ─────────────────────────────────────────────── fact / interpretation / recommendation
 
+/**
+ * A trend article must let the reader tell what the source reported from
+ * what we concluded.
+ *
+ * THIS GATE USED TO REQUIRE HEADINGS NAMED "עובדה" / "פרשנות" / "המלצה",
+ * which the prompt explicitly forbids ("זה נראה כמו טופס ולא כמו כתבה").
+ * So it failed 100% of real trend articles, and because autopublish.ts
+ * treats any non-info failure as disqualifying, no trend article could
+ * ever be auto-published. The only thing that satisfied it was the mock
+ * generator it was written against.
+ *
+ * It now checks what the prompt actually asks for: attribution inside the
+ * sentences.
+ */
 function checkFactSeparation(output: GeneratorOutput, contentKind: string): GateFailure[] {
   if (contentKind !== 'trend') return [];
-  const headings = output.body.filter((b) => b.t === 'h2' || b.t === 'h3').map((b) => (b as any).x as string);
-  const has = (needle: string) => headings.some((h) => h.includes(needle));
-  if (has('עובד') && has('פרשנ') && has('המלצ')) return [];
+
+  const text = textOf(output);
+  // Phrases that hand a claim to the source, or mark a line as our own
+  // reading of it. One of each is enough to show the two are distinguished.
+  const ATTRIBUTION = ['לפי ', 'על פי ', 'המקור מדווח', 'מדווח כי', 'הודיע', 'הודיעה', 'פרסמו', 'פרסמה', 'לפי הדיווח', 'נכתב ב'];
+  const INTERPRETATION = ['אנחנו מעריכים', 'ההערכה שלנו', 'מה שאנחנו מבינים', 'לדעתנו', 'נראה לנו', 'הפרשנות שלנו', 'מה שזה אומר', 'למה זה חשוב', 'בשורה התחתונה'];
+
+  const hasAny = (list: string[]) => list.some((p) => text.includes(p));
+  if (hasAny(ATTRIBUTION) && hasAny(INTERPRETATION)) return [];
+
   return [
     fail(
       'fact-separation',
       'review',
-      'חסרה הפרדה ברורה בין עובדה, פרשנות והמלצה',
-      'כתבת מגמה חייבת כותרות נפרדות לעובדה המאומתת, לפרשנות, ולהמלצה, כדי שקוראים לא יבלבלו בין השלושה.',
+      'לא ברור מה מהמקור ומה הפרשנות שלנו',
+      'בכתבת מגמה הקורא צריך להבחין בין מה שהמקור דיווח לבין המסקנה שלנו ממנו. כרגע זה כתוב כאילו הכל עובדה אחת.',
       {
-        location: 'מבנה הכתבה',
-        suggestion: 'הוסיפו כותרות ## עובדה, ## פרשנות, ## המלצה בגוף הכתבה, ואז הריצו בדיקה מחדש.',
+        location: 'גוף הכתבה',
+        suggestion:
+          'שלבו את זה בתוך המשפטים עצמם: "לפי X..." למה שהמקור אמר, ו"מה שזה אומר לעסק שלכם הוא..." למסקנה שלנו. לא להוסיף כותרות בשם עובדה/פרשנות/המלצה — זה נראה כמו טופס.',
       }
     ),
   ];
@@ -389,6 +443,7 @@ export function runGates(args: {
     ...checkInventedNumbers(args.output, args.opportunity, args.briefNotes),
     ...checkDuplicateTopic(args.output, args.existingArticles),
     ...checkSeoCompleteness(args.output),
+    ...checkScreenshotPending(args.output),
     ...checkImageCompleteness(args.output),
     ...checkFactVerification(args.output, args.opportunity),
     ...checkSourceFreshness(args.opportunity, args.contentKind),

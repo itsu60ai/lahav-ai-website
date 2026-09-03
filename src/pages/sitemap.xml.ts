@@ -16,6 +16,7 @@ const STATIC: { path: string; priority: string; freq: string }[] = [
   { path: '/articles/', priority: '0.8', freq: 'weekly' },
   { path: '/faq/', priority: '0.6', freq: 'monthly' },
   { path: '/contact/', priority: '0.9', freq: 'monthly' },
+  { path: '/portfolio/', priority: '0.7', freq: 'monthly' },
   { path: '/privacy/', priority: '0.2', freq: 'yearly' },
 ];
 
@@ -45,6 +46,24 @@ export const GET: APIRoute = async ({ locals, url }) => {
   } catch {
     // A CMS hiccup must not take the whole sitemap down: the static
     // routes are still worth serving.
+  }
+
+  // Portfolio detail pages were missing from the sitemap entirely, even
+  // though /portfolio/ is in the main navigation and the pages are live.
+  try {
+    const items = await (locals as any).stores?.portfolioList?.listPublished();
+    for (const it of items ?? []) {
+      const slug = it?.content?.slug;
+      if (!slug) continue;
+      entries.push({
+        loc: `${origin}/portfolio/${slug}/`,
+        priority: '0.6',
+        freq: 'monthly',
+        lastmod: undefined as string | undefined,
+      });
+    }
+  } catch {
+    // Same reasoning as above.
   }
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>

@@ -25,8 +25,11 @@ Thumbs.db
 
 # review batch exports: one-time internal review deliverables (~100MB of
 # screenshots and standalone HTML snapshots), not application source,
-# regenerated on demand — never part of the live site or its repo
-review/
+# regenerated on demand — never part of the live site or its repo.
+# MUST be root-anchored (/review/, not review/): the unanchored form also
+# matched src/pages/review/ -- real, deployed site pages -- and silently
+# kept them out of git entirely. Found while auditing what wasn't backed up.
+/review/
 
 # CMS database: content and users are data, never committed
 data/

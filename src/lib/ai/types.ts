@@ -118,6 +118,15 @@ export interface Brief {
   /** free-text notes from the admin; also where a manually-noticed trend goes */
   notes: string;
   opportunityId?: string;
+  /**
+   * The admin did not have a topic in mind and asked the engine to choose
+   * one. Set by buildBriefFromForm only when the radar had nothing fresh to
+   * hand over; when it did, that opportunity becomes the brief instead and
+   * this stays false. Without this flag, typing "תחשוב לבד" into the topic
+   * box produced an article whose subject was, literally, "think of one
+   * yourself" — the model has no way to tell an instruction from a topic.
+   */
+  autoTopic?: boolean;
 }
 
 // ─────────────────────────────────────────────── SEO package
@@ -170,9 +179,15 @@ export interface AssetStore {
 
 /** what a provider (mock, manual, or eventually api) hands back */
 export interface GeneratorOutput {
-  /** English descriptions of photographs to generate for this article, in
-   *  order. Empty when the writer asked for none. */
-  photoPrompts?: string[];
+  /**
+   * Photographs to generate for this article, in order. Empty when the
+   * writer asked for none. `description` is the English scene fed to the
+   * image model; `alt` is the writer's own Hebrew line describing what is
+   * actually in that specific photo — used as the img block's alt text,
+   * instead of a generic "same as the article title" fallback that told a
+   * screen reader nothing about the photo itself.
+   */
+  photoPrompts?: { description: string; alt: string }[];
   title: string;
   standfirst: string;
   excerpt: string;

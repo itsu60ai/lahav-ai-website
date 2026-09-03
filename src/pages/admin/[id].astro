@@ -89,20 +89,63 @@ const vizLabels: Record<string, string> = {
         <div class="card">
           <div class="card__head">
             <h2 class="card__h">גוף המאמר</h2>
-            <span class="adm-hint">בחרו סוג תוכן והוסיפו. אין צורך בסימוני עיצוב.</span>
+            {/* Two ways to edit the same body. "טקסט רציף" is the default
+                because writing an article one small box at a time was the
+                actual complaint; the block view stays for reordering and
+                for the pieces you cannot type, like a photo. */}
+            <div class="modes" role="tablist" aria-label="מצב עריכה">
+              <button class="modes__btn is-on" type="button" data-mode="text" role="tab" aria-selected="true">
+                טקסט רציף
+              </button>
+              <button class="modes__btn" type="button" data-mode="blocks" role="tab" aria-selected="false">
+                בלוקים
+              </button>
+            </div>
           </div>
 
-          <div class="blocks" data-blocks></div>
+          <div class="pane" data-pane="text">
+            {/* A real formatted document, not typed syntax: the toolbar
+                applies formatting, a photo/video/code shows as an actual
+                card in the flow. See src/lib/cms/blockcanvas.ts. */}
+            <div class="bc-toolbar" role="toolbar" aria-label="עיצוב טקסט">
+              <button type="button" class="bc-tbtn" data-fmt="p" title="פסקה רגילה">פסקה</button>
+              <button type="button" class="bc-tbtn" data-fmt="h2" title="כותרת ראשית">כותרת</button>
+              <button type="button" class="bc-tbtn" data-fmt="h3" title="כותרת משנה">כותרת משנה</button>
+              <button type="button" class="bc-tbtn" data-fmt="quote" title="ציטוט">ציטוט</button>
+              <button type="button" class="bc-tbtn" data-fmt="ul" title="רשימה עם תבליטים">רשימה</button>
+              <span class="bc-tsep" aria-hidden="true"></span>
+              <button type="button" class="bc-tbtn" data-fmt="link" title="הפיכת הטקסט המסומן לקישור">קישור</button>
+              <span class="bc-tsep" aria-hidden="true"></span>
+              <button type="button" class="bc-tbtn" data-insert="yt" title="הוספת סרטון YouTube">+ סרטון</button>
+              <button type="button" class="bc-tbtn" data-insert="code" title="הוספת קטע קוד">+ קוד</button>
+              <button type="button" class="bc-tbtn" data-insert="img" title="הוספת תמונה מהמחשב">+ תמונה</button>
+            </div>
+            <div
+              class="bc-canvas"
+              data-canvas
+              contenteditable="true"
+              role="textbox"
+              aria-multiline="true"
+              aria-label="גוף המאמר"
+            ></div>
+            <p class="cheat">
+              תמונות מסודרות בתצוגת "בלוקים" — שם גם קובעים תיאור נגישות וכיתוב לתמונה.
+            </p>
+          </div>
 
-          <div class="addbar">
-            <span class="addbar__label">הוספה:</span>
-            {
-              (['p', 'h2', 'h3', 'ul', 'quote', 'viz'] as const).map((t) => (
-                <button class="addbar__btn" type="button" data-add={t}>
-                  {BLOCK_LABELS[t]}
-                </button>
-              ))
-            }
+          <div class="pane" data-pane="blocks" hidden>
+            <div class="blocks" data-blocks></div>
+
+            <div class="addbar">
+              <span class="addbar__label">הוספה:</span>
+              {
+                (['p', 'h2', 'h3', 'ul', 'quote', 'code', 'yt', 'viz'] as const).map((t) => (
+                  <button class="addbar__btn" type="button" data-add={t}>
+                    {BLOCK_LABELS[t]}
+                  </button>
+                ))
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -211,6 +254,29 @@ const vizLabels: Record<string, string> = {
       const savedEl = root.querySelector('[data-saved]');
       const blocksEl = root.querySelector('[data-blocks]');
 
+      // Measured at runtime, not hard-coded: the site's own sticky admin
+      // bar (.ad__bar, AdminLayout.astro) and the editor's own save/publish
+      // bar (.ed__top) can both change height with their content (e.g.
+      // the breadcrumb or button row wrapping on a narrower screen), and a
+      // wrong fixed number here would either leave a gap or hide something
+      // behind something else. Three things stack while scrolling: the
+      // site nav, the save bar right under it, and the formatting toolbar
+      // right under that -- each one's offset is the sum of what is
+      // stacked above it.
+      (() => {
+        const bar = document.querySelector('.ad__bar');
+        const edTop = document.querySelector('.ed__top');
+        if (!bar) return;
+        const setOffsets = () => {
+          const barH = bar.getBoundingClientRect().height;
+          document.documentElement.style.setProperty('--ed-top-offset', barH + 'px');
+          const edTopH = edTop ? edTop.getBoundingClientRect().height : 0;
+          document.documentElement.style.setProperty('--bc-toolbar-top', barH + edTopH + 'px');
+        };
+        setOffsets();
+        window.addEventListener('resize', setOffsets);
+      })();
+
       let body = Array.isArray(initial.body) ? structuredClone(initial.body) : [];
       let dirty = false;
 
@@ -264,6 +330,52 @@ const vizLabels: Record<string, string> = {
           note.className = 'blk__aiviz-note';
           note.textContent = 'תרשים שנוצר על ידי מנוע ה-AI. לא ניתן לערוך כאן, אפשר רק להסיר.';
           wrap.append(box, note);
+        } else if (b.t === 'shot') {
+          // A pending "real screenshot needed" placeholder from the AI
+          // (see gates.ts checkScreenshotPending). Uploading here replaces
+          // this block in place with a real img block -- same behaviour
+          // as the upload control in the "טקסט רציף" tab.
+          const shotBox = document.createElement('div');
+          shotBox.className = 'blk__shot';
+          const shotNote = document.createElement('p');
+          shotNote.className = 'blk__shot-note';
+          shotNote.textContent = b.instructions;
+          const shotLabel = document.createElement('label');
+          shotLabel.className = 'blk__shot-upload';
+          const shotInput = document.createElement('input');
+          shotInput.type = 'file';
+          shotInput.accept = 'image/png,image/jpeg,image/webp';
+          const shotBtnText = document.createElement('span');
+          shotBtnText.textContent = '📷 העלאת התמונה כאן';
+          const shotStatus = document.createElement('span');
+          shotStatus.className = 'blk__shot-status';
+          shotLabel.append(shotBtnText, shotInput);
+          shotBox.append(shotNote, shotLabel, shotStatus);
+          shotInput.addEventListener('change', async () => {
+            const file = shotInput.files && shotInput.files[0];
+            if (!file) return;
+            shotInput.disabled = true;
+            shotStatus.textContent = 'מעלה...';
+            try {
+              const fd = new FormData();
+              fd.append('file', file);
+              fd.append('alt', String(b.instructions || '').split('\n')[0].slice(0, 300));
+              const res = await fetch('/api/admin/media/upload?csrf=' + csrf, {
+                method: 'POST',
+                headers: { 'x-csrf-token': csrf },
+                body: fd,
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok || !data.media || !data.media.id) throw new Error('upload failed');
+              body[i] = { t: 'img', src: '/api/media/' + data.media.id, alt: fd.get('alt'), caption: '' };
+              touch();
+              render();
+            } catch {
+              shotInput.disabled = false;
+              shotStatus.textContent = 'ההעלאה נכשלה. אפשר לנסות שוב.';
+            }
+          });
+          wrap.appendChild(shotBox);
         } else if (b.t === 'img') {
           // The picture itself is not editable here (it lives in the media
           // library), but its alt text and caption are, and both matter.
@@ -289,6 +401,82 @@ const vizLabels: Record<string, string> = {
 
           wrapImg.append(altIn, capIn);
           wrap.appendChild(wrapImg);
+        } else if (b.t === 'yt') {
+          // Paste any YouTube link; we keep only the video id, so the
+          // preview below is proof it resolved to the right video.
+          const box = document.createElement('div');
+          box.className = 'blk__yt';
+          const urlIn = document.createElement('input');
+          urlIn.className = 'adm-input';
+          urlIn.dir = 'ltr';
+          urlIn.placeholder = 'הדביקו קישור ליוטיוב';
+          urlIn.value = b.id ? 'https://www.youtube.com/watch?v=' + b.id : '';
+          const frame = document.createElement('div');
+          frame.className = 'blk__yt-frame';
+          const note = document.createElement('p');
+          note.className = 'blk__note';
+
+          const paint = () => {
+            frame.replaceChildren();
+            if (b.id) {
+              const f = document.createElement('iframe');
+              f.src = 'https://www.youtube-nocookie.com/embed/' + b.id;
+              f.loading = 'lazy';
+              f.allowFullscreen = true;
+              frame.appendChild(f);
+              note.textContent = '';
+            } else {
+              note.textContent = urlIn.value.trim()
+                ? 'זה לא נראה כמו קישור תקין ליוטיוב.'
+                : 'הסרטון יוטמע בעמוד המאמר.';
+            }
+          };
+          urlIn.addEventListener('input', () => {
+            b.id = ytId(urlIn.value) || '';
+            touch();
+            paint();
+          });
+
+          const capIn = document.createElement('input');
+          capIn.className = 'adm-input';
+          capIn.placeholder = 'כיתוב מתחת לסרטון (לא חובה)';
+          capIn.value = b.caption || '';
+          capIn.addEventListener('input', () => { b.caption = capIn.value; touch(); });
+
+          box.append(urlIn, frame, note, capIn);
+          wrap.appendChild(box);
+          queueMicrotask(paint);
+        } else if (b.t === 'code') {
+          const box = document.createElement('div');
+          box.className = 'blk__code';
+          const langIn = document.createElement('input');
+          langIn.className = 'adm-input blk__code-lang';
+          langIn.dir = 'ltr';
+          langIn.placeholder = 'שפה (python, bash...) — לא חובה';
+          langIn.value = b.lang || '';
+          langIn.addEventListener('input', () => { b.lang = langIn.value; touch(); });
+
+          const ta = document.createElement('textarea');
+          ta.className = 'adm-textarea blk__code-ta';
+          ta.dir = 'ltr';
+          ta.spellcheck = false;
+          ta.rows = 6;
+          ta.placeholder = 'הדביקו כאן את הקוד';
+          ta.value = b.code || '';
+          ta.addEventListener('input', () => { b.code = ta.value; touch(); });
+
+          const capIn = document.createElement('input');
+          capIn.className = 'adm-input';
+          capIn.placeholder = 'כיתוב מתחת לקוד (לא חובה)';
+          capIn.value = b.caption || '';
+          capIn.addEventListener('input', () => { b.caption = capIn.value; touch(); });
+
+          const note = document.createElement('p');
+          note.className = 'blk__note';
+          note.textContent = 'יוצג באתר בתיבה כהה עם כפתור העתקה.';
+
+          box.append(langIn, ta, capIn, note);
+          wrap.appendChild(box);
         } else if (b.t === 'ul') {
           const list = document.createElement('div');
           list.className = 'blk__list';
@@ -325,6 +513,28 @@ const vizLabels: Record<string, string> = {
         return wrap;
       }
 
+      // Same rule as youtubeIdFrom() in src/lib/cms/types.ts, which is the
+      // canonical one (it also guards the public renderer). Repeated here
+      // because an is:inline script cannot import; keep the two in step.
+      function ytId(raw) {
+        const s = String(raw ?? '').trim();
+        if (!s) return null;
+        if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+        let u;
+        try { u = new URL(s); } catch { return null; }
+        const host = u.hostname.replace(/^www\./, '').toLowerCase();
+        let id = '';
+        if (host === 'youtu.be') id = u.pathname.slice(1);
+        else if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
+          if (u.pathname === '/watch') id = u.searchParams.get('v') ?? '';
+          else if (u.pathname.startsWith('/embed/')) id = u.pathname.slice(7);
+          else if (u.pathname.startsWith('/shorts/')) id = u.pathname.slice(8);
+          else if (u.pathname.startsWith('/live/')) id = u.pathname.slice(6);
+        }
+        id = id.split('/')[0].split('?')[0];
+        return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+      }
+
       function autoGrow(ta) {
         ta.style.height = 'auto';
         ta.style.height = Math.max(ta.scrollHeight, 44) + 'px';
@@ -352,15 +562,43 @@ const vizLabels: Record<string, string> = {
       root.querySelectorAll('[data-add]').forEach((b) => {
         b.addEventListener('click', () => {
           const t = b.dataset.add;
-          body.push(t === 'ul' ? { t, items: [''] } : t === 'viz' ? { t } : { t, x: '' });
+          const fresh =
+            t === 'ul' ? { t, items: [''] }
+            : t === 'viz' ? { t }
+            : t === 'yt' ? { t, id: '', title: '', caption: '' }
+            : t === 'code' ? { t, code: '', lang: '', caption: '' }
+            : { t, x: '' };
+          body.push(fresh);
           touch();
           render();
           blocksEl.lastElementChild?.querySelector('textarea, input')?.focus();
         });
       });
 
+      // ── bridge to the continuous-text editor ─────────────────────
+      // That half lives in a bundled module script (it imports the
+      // text<->blocks converter, which an is:inline script cannot do), so
+      // the two talk through this small, explicit surface rather than
+      // reaching into each other's internals.
+      let beforeCollect = null;
+      window.__articleEditor = {
+        getBody: () => body,
+        setBody: (next) => {
+          body = Array.isArray(next) ? next : [];
+          render();
+        },
+        touch: () => touch(),
+        // Called right before the body is read for saving, so whatever is
+        // in the active mode wins. Without this, saving while the text
+        // pane is open would persist the pre-edit blocks.
+        onBeforeCollect: (fn) => {
+          beforeCollect = fn;
+        },
+      };
+
       // ── field collection ─────────────────────────────────────────
       const fields = () => {
+        if (beforeCollect) beforeCollect();
         const out = {};
         root.querySelectorAll('[data-f]').forEach((el) => {
           out[el.dataset.f] = el.type === 'checkbox' ? el.checked : el.value;
@@ -454,11 +692,547 @@ const vizLabels: Record<string, string> = {
       render();
     })();
   </script>
+
+  {/* The WYSIWYG half. A separate, BUNDLED script because it imports the
+      canvas<->blocks converter, which the is:inline script above cannot
+      do. They talk through window.__articleEditor.
+      See src/lib/cms/blockcanvas.ts for why this exists: the first
+      version of this pane still asked for typed syntax (## headings,
+      [[תמונה 1]] markers), and the client's own words were "this isn't
+      like Word at all — you think I'm going to start writing articles
+      like this?". This is a real formatted document instead. */}
+  <script>
+    import { buildCanvas, readCanvas, newCodeChip, newYoutubeChip, imageChipFromMedia } from '../../lib/cms/blockcanvas.ts';
+
+    (() => {
+      const ed = (window as any).__articleEditor;
+      const canvasEl = document.querySelector<HTMLElement>('[data-canvas]');
+      const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-mode]'));
+      const panes = Array.from(document.querySelectorAll<HTMLElement>('[data-pane]'));
+      if (!ed || !canvasEl || tabs.length === 0) return;
+      const canvas = canvasEl;
+
+      let mode: 'text' | 'blocks' = 'text';
+
+      // Enter always makes a new <p>, in every browser -- without this,
+      // some browsers default to <div>, which readCanvas below still
+      // treats as body text, but a consistent element keeps formatting
+      // (e.g. "was this line a heading a second ago") predictable.
+      try {
+        document.execCommand('defaultParagraphSeparator', false, 'p');
+      } catch {
+        // Unsupported is fine; readCanvas already treats any block-level
+        // element it doesn't recognise as a plain paragraph.
+      }
+
+      function loadCanvas() {
+        buildCanvas(canvas, ed.getBody());
+      }
+
+      function commitCanvas() {
+        if (mode !== 'text') return;
+        ed.setBody(readCanvas(canvas));
+      }
+
+      // Whatever the open pane holds is what gets saved.
+      ed.onBeforeCollect(commitCanvas);
+
+      canvas.addEventListener('input', () => ed.touch());
+
+      // Paste as PLAIN TEXT only. Rich HTML from Word/Gmail/a web page
+      // carries bold, colors, spans -- none of which this editor's data
+      // model can store (a paragraph block is one plain string). Letting
+      // it through would silently vanish on save, or worse leak as stray
+      // tags; stripping it to text up front means what you see after
+      // pasting is exactly what gets saved.
+      canvas.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = e.clipboardData?.getData('text/plain') ?? '';
+        document.execCommand('insertText', false, text);
+        ed.touch();
+      });
+
+      // A pending screenshot placeholder's upload input. The moment a real
+      // photo lands, this replaces the whole placeholder chip with an
+      // actual `img` chip -- exactly the "you don't need to worry about
+      // where it goes, it inserts itself with alt text and everything"
+      // the client asked for.
+      canvas.addEventListener('change', async (e) => {
+        const input = e.target as HTMLInputElement;
+        if (!input.matches('[data-shot-upload]') || !input.files?.[0]) return;
+        const chip = input.closest<HTMLElement>('.bc-chip--shot');
+        const status = chip?.querySelector<HTMLElement>('[data-shot-status]');
+        const file = input.files[0];
+        input.disabled = true;
+        if (status) status.textContent = 'מעלה...';
+        try {
+          const csrf = document.querySelector<HTMLElement>('.ed')?.dataset.csrf ?? '';
+          const note = chip?.querySelector<HTMLElement>('.bc-shot__note')?.textContent ?? '';
+          const fd = new FormData();
+          fd.set('file', file);
+          // First line of the instructions makes a reasonable default alt
+          // text -- it names what the screenshot shows. Editable afterward
+          // like any other photo, in the "בלוקים" tab.
+          fd.set('alt', note.split('\n')[0].slice(0, 300));
+          const res = await fetch(`/api/admin/media/upload?csrf=${encodeURIComponent(csrf)}`, {
+            method: 'POST',
+            headers: { 'x-csrf-token': csrf },
+            body: fd,
+          });
+          const data = (await res.json().catch(() => ({}))) as { media?: { id?: string }; error?: string };
+          if (!res.ok || !data?.media?.id) throw new Error(data?.error || 'upload failed');
+          const replacement = imageChipFromMedia(data.media.id, fd.get('alt') as string);
+          chip?.replaceWith(replacement);
+          ed.touch();
+        } catch {
+          input.disabled = false;
+          if (status) status.textContent = 'ההעלאה נכשלה. אפשר לנסות שוב.';
+        }
+      });
+
+      // Chip buttons (↑ ↓ ✕) are inside a contenteditable="false" shell,
+      // delegated from the canvas since chips can be inserted after load.
+      canvas.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-chip-action]');
+        if (!btn) return;
+        e.preventDefault();
+        const chip = btn.closest<HTMLElement>('.bc-chip');
+        if (!chip) return;
+        const action = btn.dataset.chipAction;
+        if (action === 'del') {
+          chip.remove();
+        } else if (action === 'up' && chip.previousElementSibling) {
+          chip.parentElement!.insertBefore(chip, chip.previousElementSibling);
+        } else if (action === 'down' && chip.nextElementSibling) {
+          chip.parentElement!.insertBefore(chip.nextElementSibling, chip);
+        }
+        ed.touch();
+      });
+
+      // Clicking any toolbar button normally moves focus to the button,
+      // which is exactly what was landing every "+ סרטון"/"+ קוד" insert
+      // at the very end -- there was no caret left inside the canvas by
+      // the time the click handler ran, so it fell back to "just append".
+      // Blocking mousedown's default focus-shift is the standard fix: the
+      // browser's own caret position survives the click untouched.
+      document.querySelector('.bc-toolbar')?.addEventListener('mousedown', (e) => {
+        if ((e.target as HTMLElement).closest('button')) e.preventDefault();
+      });
+
+      /**
+       * Finds the direct child of `canvas` the caret is currently inside,
+       * so a chip can be inserted right after that element instead of
+       * always at the end. Returns null when there is no caret in the
+       * canvas at all (e.g. it was never clicked into yet) -- callers
+       * fall back to appending at the end in that case.
+       */
+      function insertionAnchor(): Element | null {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return null;
+        let node: Node | null = sel.getRangeAt(0).startContainer;
+        if (!canvas.contains(node)) return null;
+        while (node && node.parentElement !== canvas) node = node.parentElement;
+        return node instanceof Element ? node : null;
+      }
+
+      // ── formatting toolbar ──
+      document.querySelectorAll<HTMLButtonElement>('[data-fmt]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          canvas.focus();
+          const fmt = btn.dataset.fmt;
+          if (fmt === 'ul') {
+            document.execCommand('insertUnorderedList');
+          } else if (fmt === 'link') {
+            const sel = window.getSelection();
+            const inLink = sel && sel.anchorNode && (sel.anchorNode.parentElement?.closest('a') != null);
+            if (inLink) {
+              document.execCommand('unlink');
+            } else if (sel && !sel.isCollapsed) {
+              const url = prompt('כתובת הקישור:', 'https://');
+              if (url && /^https?:\/\//i.test(url.trim())) document.execCommand('createLink', false, url.trim());
+            } else {
+              alert('קודם מסמנים את הטקסט שרוצים להפוך לקישור.');
+            }
+          } else {
+            document.execCommand('formatBlock', false, fmt === 'p' ? 'p' : fmt === 'quote' ? 'blockquote' : (fmt ?? 'p'));
+          }
+          ed.touch();
+        });
+      });
+
+      document.querySelectorAll<HTMLButtonElement>('[data-insert]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          canvas.focus();
+          const kind = btn.dataset.insert;
+          // Captured before anything async (or even the prompt()) has a
+          // chance to run, or the caret position it depends on is gone by
+          // the time we get to it. Paired with the mousedown guard above:
+          // "+ סרטון"/"+ קוד" used to always land at the very end
+          // regardless of where you clicked -- this is what fixes that.
+          const anchor = insertionAnchor();
+          const place = (node: HTMLElement) => {
+            if (anchor) anchor.insertAdjacentElement('afterend', node);
+            else canvas.appendChild(node);
+          };
+
+          if (kind === 'yt') {
+            const url = prompt('קישור לסרטון ביוטיוב:');
+            if (!url) return;
+            const node = newYoutubeChip(url.trim());
+            if (!node) {
+              alert('זה לא נראה כמו קישור תקין ליוטיוב.');
+              return;
+            }
+            // Placed immediately -- no reason to make someone wait on a
+            // network call just to see the video land where they clicked.
+            place(node);
+            ed.touch();
+
+            // The real title, fetched automatically from YouTube itself
+            // (see api/admin/ai/youtube-info.ts) instead of asking the
+            // person to describe their own video by hand. Still editable
+            // afterward in the field this fills in.
+            const capInput = node.querySelector<HTMLInputElement>('.bc-chip__cap');
+            if (capInput) capInput.placeholder = 'מאחזר כיתוב אוטומטית...';
+            try {
+              const res = await fetch(`/api/admin/ai/youtube-info?url=${encodeURIComponent(url.trim())}`);
+              const data = (await res.json().catch(() => ({}))) as { title?: string };
+              if (res.ok && data.title && capInput) {
+                capInput.value = data.title;
+                capInput.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+            } catch {
+              // Silent: the video itself is already placed and working: a
+              // failed title lookup just leaves the caption field empty
+              // and editable, same as before this feature existed.
+            } finally {
+              if (capInput) capInput.placeholder = 'כיתוב קצר לסרטון (מה רואים בו) — לא חובה, אבל מומלץ';
+            }
+            return;
+          }
+
+          if (kind === 'code') {
+            const node = newCodeChip();
+            place(node);
+            node.querySelector<HTMLElement>('[data-code-text]')?.focus();
+            ed.touch();
+          }
+
+          if (kind === 'img') {
+            // No persistent file input to reuse here (unlike a "shot"
+            // placeholder, which ships with its own) -- built fresh each
+            // click and never attached to the page.
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/png,image/jpeg,image/webp';
+            input.addEventListener('change', async () => {
+              const file = input.files?.[0];
+              if (!file) return;
+              try {
+                const csrf = document.querySelector<HTMLElement>('.ed')?.dataset.csrf ?? '';
+                const fd = new FormData();
+                fd.set('file', file);
+                fd.set('alt', '');
+                const res = await fetch(`/api/admin/media/upload?csrf=${encodeURIComponent(csrf)}`, {
+                  method: 'POST',
+                  headers: { 'x-csrf-token': csrf },
+                  body: fd,
+                });
+                const data = (await res.json().catch(() => ({}))) as { media?: { id?: string }; error?: string };
+                if (!res.ok || !data?.media?.id) throw new Error(data?.error || 'upload failed');
+                const node = imageChipFromMedia(data.media.id, '');
+                place(node);
+                ed.touch();
+
+                // Real Hebrew description, written by Claude looking at
+                // the actual photo (src/lib/ai/caption.ts) -- not the
+                // article title repeated, and not left for the person to
+                // type by hand. Filled into BOTH fields: alt (invisible,
+                // for accessibility/SEO) AND caption (the visible line
+                // under the photo on the actual page) -- filling only alt
+                // was the bug: nothing on the public page ever showed it,
+                // which is exactly what looked like "it doesn't work" even
+                // though the description had genuinely been generated.
+                const [altInput, capInput] = node.querySelectorAll<HTMLInputElement>('.bc-chip__cap');
+                const status = node.querySelector<HTMLElement>('[data-img-status]');
+                if (status) status.textContent = 'מתאר את התמונה...';
+                try {
+                  const capFd = new FormData();
+                  capFd.set('mediaId', data.media.id);
+                  const capRes = await fetch(`/api/admin/ai/caption-image?csrf=${encodeURIComponent(csrf)}`, {
+                    method: 'POST',
+                    headers: { 'x-csrf-token': csrf },
+                    body: capFd,
+                  });
+                  const capData = (await capRes.json().catch(() => ({}))) as { caption?: string };
+                  if (capRes.ok && capData.caption) {
+                    if (altInput) {
+                      altInput.value = capData.caption;
+                      altInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    if (capInput) {
+                      capInput.value = capData.caption;
+                      capInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    if (status) status.textContent = '✓ תואר אוטומטית — אפשר לערוך למעלה';
+                  } else if (status) {
+                    status.textContent = '';
+                  }
+                } catch {
+                  // The photo is already placed and working either way. A
+                  // failed caption just leaves both fields empty and
+                  // editable, same as before this feature existed.
+                  if (status) status.textContent = '';
+                }
+              } catch {
+                alert('ההעלאה נכשלה. אפשר לנסות שוב.');
+              }
+            });
+            input.click();
+          }
+        });
+      });
+
+      function show(next: 'text' | 'blocks') {
+        if (next === mode) return;
+        // Carry the current pane's content across before swapping, or the
+        // edits just made in it would be overwritten by the stale side.
+        if (mode === 'text') commitCanvas();
+        mode = next;
+        if (mode === 'text') loadCanvas();
+        tabs.forEach((t) => {
+          const on = t.dataset.mode === mode;
+          t.classList.toggle('is-on', on);
+          t.setAttribute('aria-selected', String(on));
+        });
+        panes.forEach((p) => {
+          p.hidden = p.dataset.pane !== mode;
+        });
+      }
+
+      tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.mode as 'text' | 'blocks')));
+
+      loadCanvas();
+    })();
+  </script>
 </AdminLayout>
 
 <style>
+  /* ── edit-mode tabs ── */
+  .modes { display: flex; gap: 0.25rem; background: #eef2f7; padding: 0.2rem; border-radius: 999px; }
+  .modes__btn {
+    font: inherit;
+    font-size: 0.8125rem;
+    border: 0;
+    background: transparent;
+    color: #475569;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .modes__btn.is-on { background: #fff; color: #0f172a; font-weight: 600; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12); }
+  .modes__btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
+
+  /* ── WYSIWYG canvas (src/lib/cms/blockcanvas.ts) ── */
+  .bc-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem;
+    border: 1px solid #d5dbe6;
+    border-bottom: 0;
+    border-radius: 0.75rem 0.75rem 0 0;
+    background: #f8fafc;
+    /* This is the bar meant here by "sticky" -- the formatting toolbar
+       itself, not the save/publish bar above it (that one is its own,
+       separate sticky fix). Docks below BOTH the site nav and the
+       save bar, so it survives scrolling deep into a long article body
+       without either of them covering it. --bc-toolbar-top is measured
+       at runtime, same reasoning as --ed-top-offset above. */
+    position: sticky;
+    top: var(--bc-toolbar-top, 8.5rem);
+    z-index: 10;
+  }
+  .bc-tbtn {
+    font: inherit;
+    font-size: 0.8125rem;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #334155;
+    padding: 0.35rem 0.7rem;
+    border-radius: 0.4rem;
+    cursor: pointer;
+  }
+  .bc-tbtn:hover { background: #eef2f7; border-color: #d5dbe6; }
+  .bc-tbtn:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
+  .bc-tsep { width: 1px; align-self: stretch; background: #d5dbe6; margin: 0.2rem 0.15rem; }
+
+  .bc-canvas {
+    width: 100%;
+    min-height: 26rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #d5dbe6;
+    border-radius: 0 0 0.75rem 0.75rem;
+    background: #fff;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    color: #0f172a;
+  }
+  .bc-canvas:focus { outline: 2px solid #2563eb; outline-offset: -1px; }
+  .bc-canvas h2 { font-size: 1.375rem; font-weight: 700; margin: 1.5rem 0 0.5rem; }
+  .bc-canvas h3 { font-size: 1.125rem; font-weight: 700; margin: 1.25rem 0 0.4rem; }
+  .bc-canvas p { margin: 0 0 0.9rem; }
+  .bc-canvas blockquote {
+    margin: 0.9rem 0;
+    padding: 0.6rem 1rem;
+    border-inline-start: 3px solid #93c5fd;
+    background: #f0f6ff;
+    color: #1e3a5f;
+    font-style: italic;
+  }
+  .bc-canvas ul { margin: 0 0 0.9rem; padding-inline-start: 1.4rem; }
+  .bc-canvas a { color: #1d4ed8; text-decoration: underline; }
+  .bc-canvas > *:first-child { margin-top: 0; }
+
+  .cheat { margin-top: 0.6rem; font-size: 0.8125rem; color: #64748b; }
+
+  /* ── chips: photo / diagram / video / code, inline in the canvas ── */
+  .bc-chip {
+    margin: 0.9rem 0;
+    border: 1px solid #d5dbe6;
+    border-radius: 0.625rem;
+    overflow: hidden;
+    background: #f8fafc;
+  }
+  .bc-chip__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    background: #eef2f7;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .bc-chip__label { font-size: 0.75rem; font-weight: 600; color: #475569; }
+  .bc-icon {
+    margin-inline-start: auto;
+    font: inherit;
+    font-size: 0.8125rem;
+    border: 1px solid #d5dbe6;
+    background: #fff;
+    color: #334155;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.4rem;
+    cursor: pointer;
+  }
+  .bc-icon:hover { background: #f1f5f9; }
+  .bc-chip__img { display: block; width: 100%; max-height: 22rem; object-fit: cover; }
+  .bc-chip__svg { padding: 1rem; background: #17347f; }
+  .bc-chip__note { margin: 0.9rem; font-size: 0.8125rem; color: #64748b; }
+  .bc-chip__yt { position: relative; aspect-ratio: 16/9; background: #0b1530; }
+  .bc-chip__yt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .bc-chip__cap {
+    display: block;
+    width: 100%;
+    margin-top: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #d5dbe6;
+    border-radius: 0.4rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: #334155;
+    background: #fff;
+  }
+  .bc-chip__status {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+    color: #64748b;
+    min-height: 1em;
+  }
+  .bc-chip--code .bc-chip__lang {
+    font: inherit;
+    font-size: 0.8125rem;
+    border: 1px solid #d5dbe6;
+    border-radius: 0.35rem;
+    padding: 0.2rem 0.5rem;
+    width: 10rem;
+    direction: ltr;
+  }
+  .bc-chip__pre {
+    margin: 0;
+    padding: 0.9rem 1.1rem;
+    background: #0d1730;
+    color: #e2e8f0;
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .bc-chip__pre code:focus { outline: none; }
+  .bc-chip__pre code:empty::before { content: 'הדביקו או הקלידו כאן את הקוד'; color: #64748b; font-style: italic; }
+
+  /* ── pending screenshot placeholder ── */
+  .bc-chip--shot { background: #fff8ec; border-color: #f0c674; }
+  .bc-chip--shot .bc-chip__bar { background: #fdf0d5; border-color: #f0c674; }
+  .bc-chip--shot .bc-chip__label { color: #92650c; }
+  .bc-shot { padding: 0.9rem 1rem; display: grid; gap: 0.7rem; }
+  .bc-shot__note { margin: 0; white-space: pre-line; color: #5c4a1f; line-height: 1.6; font-size: 0.9375rem; }
+  .bc-shot__upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    padding: 0.5rem 1rem;
+    background: #fff;
+    border: 1px solid #e0b555;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #92650c;
+    cursor: pointer;
+  }
+  .bc-shot__upload:hover { background: #fef6e6; }
+  .bc-shot__upload input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .bc-shot__status { font-size: 0.8125rem; color: #92650c; }
+  .bc-shot__status:empty { display: none; }
+
+  /* ── youtube + code blocks in the block view ── */
+  .blk__yt, .blk__code { display: grid; gap: 0.5rem; }
+  .blk__yt-frame:not(:empty) {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-width: 26rem;
+    border-radius: 0.625rem;
+    overflow: hidden;
+    background: #0b1530;
+  }
+  .blk__yt-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .blk__note { margin: 0; font-size: 0.8125rem; color: #64748b; }
+  .blk__code-ta {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    background: #0d1730;
+    color: #e2e8f0;
+    border-color: #334155;
+  }
+  .blk__code-lang { max-width: 18rem; }
+
   .blk__img { display: grid; gap: 0.5rem; }
   .blk__img img { width: 100%; max-width: 22rem; border-radius: 0.625rem; display: block; }
+  .blk--shot { background: #fff8ec; border-color: #f0c674; }
+  .blk__shot { display: grid; gap: 0.6rem; }
+  .blk__shot-note { margin: 0; white-space: pre-line; color: #5c4a1f; line-height: 1.6; font-size: 0.9375rem; }
+  .blk__shot-upload {
+    display: inline-flex; align-items: center; gap: 0.5rem; width: fit-content;
+    padding: 0.5rem 1rem; background: #fff; border: 1px solid #e0b555; border-radius: 0.5rem;
+    font-size: 0.875rem; font-weight: 600; color: #92650c; cursor: pointer;
+  }
+  .blk__shot-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .blk__shot-status { font-size: 0.8125rem; color: #92650c; }
+  .blk__shot-status:empty { display: none; }
 
   .ed__top {
     display: flex;
@@ -467,6 +1241,18 @@ const vizLabels: Record<string, string> = {
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 1.25rem;
+    /* Sticky under the site's own sticky admin bar (.ad__bar in
+       AdminLayout.astro, z-index 20) so שמירה/פרסום stay reachable while
+       scrolling a long article body -- was scrolling out of view entirely,
+       which meant scrolling all the way back up just to save.
+       --ed-top-offset is measured at runtime below, since the admin bar's
+       real height depends on its content and can change. */
+    position: sticky;
+    top: var(--ed-top-offset, 4.5rem);
+    z-index: 15;
+    background: var(--color-surface-2);
+    padding-block: 0.75rem;
+    box-shadow: 0 4px 10px -6px rgba(11, 21, 48, 0.18);
   }
   .ed__crumbs {
     display: flex;

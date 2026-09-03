@@ -31,6 +31,42 @@ function cleanBody(input: unknown): Block[] {
       if (svg && isSvgSafe(svg)) {
         out.push({ t: 'aiviz', svg, alt: str((b as any).alt, 300), caption: str((b as any).caption, 300) });
       }
+    } else if (t === 'img') {
+      // MUST be here. 'img' was added to the Block union, the AI engine, the
+      // validator and the renderer, but not to this allowlist -- so opening
+      // any AI-written article in the editor and pressing save silently
+      // deleted its photographs, including the cover. Same class of bug as
+      // the missing 'aiviz' in validate.ts, one layer further down.
+      // Our own media route only, exactly as src/lib/ai/validate.ts requires:
+      // an article must never carry an arbitrary external image URL.
+      const src = str((b as any).src, 300);
+      if (src.startsWith('/api/media/')) {
+        out.push({ t: 'img', src, alt: str((b as any).alt, 300), caption: str((b as any).caption, 300) });
+      }
+    } else if (t === 'shot') {
+      // A pending "needs a real screenshot" placeholder — see gates.ts
+      // (checkScreenshotPending) and cms/types.ts. Must survive a save
+      // just like any other block, same reasoning as 'img' above: opening
+      // and saving the article must never be how one of these silently
+      // disappears before the person even sees what to do about it.
+      const instructions = str((b as any).instructions, 4000);
+      if (instructions.trim()) {
+        out.push({ t: 'shot', instructions, alt: str((b as any).alt, 300), caption: str((b as any).caption, 300) });
+      }
+    } else if (t === 'yt') {
+      // Store the id only, never a pasted URL -- the renderer builds the
+      // embed URL from it, so this is the boundary that keeps an article
+      // from embedding an arbitrary third-party frame.
+      const id = str((b as any).id, 20);
+      if (/^[A-Za-z0-9_-]{11}$/.test(id)) {
+        out.push({ t: 'yt', id, title: str((b as any).title, 300), caption: str((b as any).caption, 300) });
+      }
+    } else if (t === 'code') {
+      // Generous cap: a code sample is legitimately long, unlike a caption.
+      const code = str((b as any).code, 20000);
+      if (code.trim()) {
+        out.push({ t: 'code', code, lang: str((b as any).lang, 40), caption: str((b as any).caption, 300) });
+      }
     } else if (t === 'ul') {
       const items = Array.isArray((b as any).items)
         ? (b as any).items.map((i: unknown) => str(i, 400)).filter((i: string) => i.trim() !== '')

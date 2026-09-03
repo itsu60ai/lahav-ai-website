@@ -97,6 +97,11 @@ const t = T[kind];
   <!-- ═══ title ═══ -->
   <section class="pd-top band">
     <div class="u-container u-container--wide">
+      {/* In-page, not just on the listing above it -- someone who lands
+          directly on this URL (a shared link, a search result) never sees
+          the index page's own disclosure, and the sidebar right after this
+          states "הלקוח" as if it names a real client. */}
+      <p class="pd-example" data-reveal>פרויקט לדוגמה — ממחיש את סוג העבודה שאנחנו עושים, לא לקוח אמיתי.</p>
       <p class="pd-mono" data-reveal>{item.industry} · {LABEL[kind]}</p>
       <h1 class="pd-h1" data-reveal style="--mo-delay:60ms">{item.name}</h1>
       <p class="pd-lead" data-reveal style="--mo-delay:140ms">{item.tagline || item.challenge}</p>
@@ -111,7 +116,7 @@ const t = T[kind];
         <div class="pd-side__card">
           {photo && <img class="pd-side__photo" src={photo} alt="" />}
           <dl class="pd-meta">
-            <div class="pd-meta__row"><dt class="pd-mono">הלקוח</dt><dd>{item.name}</dd></div>
+            <div class="pd-meta__row"><dt class="pd-mono">שם לדוגמה</dt><dd>{item.name}</dd></div>
             <div class="pd-meta__row"><dt class="pd-mono">התחום</dt><dd>{item.industry}</dd></div>
             <div class="pd-meta__row"><dt class="pd-mono">סוג הפרויקט</dt><dd>{LABEL[kind]}</dd></div>
             <div class="pd-meta__row">
@@ -225,6 +230,18 @@ const t = T[kind];
 
 <style>
   .pd-mono { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: .72rem; font-weight: 700; letter-spacing: .1em; color: var(--color-ink-3); }
+  .pd-example {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 0.75rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-line-strong);
+    font-size: var(--text-small);
+    color: var(--color-ink-2);
+  }
   .pd-top { padding-top: clamp(7rem, 14svh, 10rem); padding-bottom: clamp(2rem, 5vw, 4rem); }
   .pd-h1 { margin: .75rem 0 1rem; font-family: var(--font-display); font-size: clamp(2.75rem, 7vw, 6rem); font-weight: 900; line-height: 1.05; letter-spacing: normal; color: var(--color-ink); }
   .pd-lead { margin: 0; max-width: 60ch; font-size: var(--text-lead); line-height: 1.6; color: var(--color-ink-2); }

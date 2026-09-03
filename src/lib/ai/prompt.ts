@@ -70,8 +70,9 @@ const TRUTH_RULES = `
 - אין טענות מקצועיות בלתי מבוססות לגבי ספקים או פלטפורמות חיצוניות.
 - אין כתובת פיזית, מספר חברה או פרטי התאגדות.
 - אין מקף ארוך (—) בשום מקום בטקסט.
-- במאמר מגמה (trend): יש להפריד בבירור בין עובדה מאומתת (מקור מצוטט),
-  פרשנות, והמלצה. אין להציג פרשנות כעובדה.
+- במאמר מגמה (trend): הקורא חייב להבחין בין מה שהמקור דיווח לבין המסקנה
+  שלנו ממנו. עושים את זה בתוך המשפטים ("לפי X...", "מה שזה אומר לעסק שלכם
+  הוא..."), ולא בכותרות בשם עובדה/פרשנות/המלצה. אין להציג פרשנות כעובדה.
 `.trim();
 
 function opportunityBlock(o: Opportunity | null): string {
@@ -108,9 +109,16 @@ function rulesBlock(rules: Rule[]): string {
 }
 
 function briefBlock(brief: Brief): string {
+  // autoTopic means the admin had nothing specific in mind AND the radar had
+  // no fresh item to hand over, so the topic line becomes an instruction to
+  // choose one. Anything else here would put a phrase like "תחשוב לבד" in
+  // the topic slot, and the model would dutifully write about that phrase.
+  const topicLine = brief.autoTopic
+    ? `נושא: לא נקבע נושא. בחרו נושא בעצמכם — משהו שבאמת מעניין ומועיל לקהל היעד שלמטה, קשור ל-AI ולעסקים קטנים בישראל, וספציפי מספיק כדי לכתוב עליו מאמר מעשי אחד. אל תכתבו על "בחירת נושא" או על עצם הבקשה הזו.`
+    : `נושא: ${brief.topic}`;
   return `
 המשימה:
-נושא: ${brief.topic}
+${topicLine}
 מטרה: ${brief.goal}
 קהל יעד: ${brief.audience}
 סוג תוכן: ${CONTENT_KIND_LABELS[brief.contentKind]}

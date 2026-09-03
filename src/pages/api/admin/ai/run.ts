@@ -27,6 +27,13 @@ import { completeGeneration } from '../../../../lib/ai/generate.ts';
 
 const HEARTBEAT_MS = 5000;
 
+/**
+ * Paid generations allowed in any rolling 24 hours. Deliberately well above
+ * normal use (a person reviewing drafts writes a handful a day) and well
+ * below a runaway loop. Raise it here if the business genuinely needs more.
+ */
+const MAX_PAID_RUNS_PER_DAY = 25;
+
 export const POST: APIRoute = async ({ request, locals }) => {
   const denied = require_(locals.user, 'article:create');
   if (denied) return denied;
@@ -58,6 +65,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ ok: true, alreadyDone: true }), {
       headers: { 'content-type': 'application/json' },
     });
+  }
+
+  // A CEILING ON THE DAILY BILL. claimRun() below stops the SAME article
+  // being billed twice; nothing stopped N different ones. There is no rate
+  // limit on this route, so a stuck loop or a careless script could run up
+  // an unbounded charge on a paid model before anyone noticed. The
+  // scheduled path already enforces a weekly cap (src/lib/ai/autopublish.ts)
+  // -- this is the same idea for the human path.
+  if (generation.providerMode === 'api') {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const recent = (await aiStores.generations.list()).filter(
+      (g) => g.providerMode === 'api' && g.createdAt >= since
+    );
+    if (recent.length > MAX_PAID_RUNS_PER_DAY) {
+      return new Response(
+        JSON.stringify({
+          error: `נעצר בכוונה: כבר נוצרו ${recent.length} כתבות בתשלום ב-24 השעות האחרונות, וזו התקרה היומית. אפשר להמשיך מחר, או לשנות את התקרה בקוד.`,
+        }),
+        { status: 429, headers: { 'content-type': 'application/json' } }
+      );
+    }
   }
 
   // The lock. Reopening the review screen in a second tab, or a page
