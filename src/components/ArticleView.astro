@@ -64,6 +64,13 @@ const { a, more = [] } = Astro.props;
               ))}
             </ul>
           );
+        if (b.t === 'img')
+          return (
+            <figure class="art__fig art__fig--photo" data-clip>
+              <img class="art__photo" src={b.src} alt={b.alt} loading="lazy" decoding="async" />
+              {b.caption && <figcaption>{b.caption}</figcaption>}
+            </figure>
+          );
         if (b.t === 'aiviz') {
           // Re-validated at render time, not just at creation — belt and
           // suspenders for anything that reaches the public page.
@@ -394,6 +401,17 @@ const { a, more = [] } = Astro.props;
     white-space: nowrap;
     border: 0;
   }
+  /* A photograph fills its frame instead of sitting on the blue diagram
+     stage, which is built for line art on a dark ground. */
+  .art__fig--photo { border-radius: var(--radius-xl); overflow: hidden; }
+  .art__photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-xl);
+  }
+  .art__fig--photo figcaption { padding-inline: 0.5rem; }
+
   .art__fig figcaption {
     margin-top: 1rem;
     font-size: var(--text-small);

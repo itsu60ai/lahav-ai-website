@@ -170,6 +170,9 @@ export interface AssetStore {
 
 /** what a provider (mock, manual, or eventually api) hands back */
 export interface GeneratorOutput {
+  /** English descriptions of photographs to generate for this article, in
+   *  order. Empty when the writer asked for none. */
+  photoPrompts?: string[];
   title: string;
   standfirst: string;
   excerpt: string;

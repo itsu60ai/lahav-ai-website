@@ -19,9 +19,14 @@ export type Block =
    *  Self-contained — the markup lives on the block itself, not looked up
    *  from another table at render time — so it round-trips through the
    *  block editor exactly like every other block. */
-  | { t: 'aiviz'; svg: string; alt: string; caption: string };
+  | { t: 'aiviz'; svg: string; alt: string; caption: string }
+  /** a real raster image from the media library, served by /api/media/<id>.
+   *  Holds the URL rather than the bytes, unlike aiviz, because a photo is
+   *  far too large to carry inside an article row. */
+  | { t: 'img'; src: string; alt: string; caption: string };
 
 export const BLOCK_LABELS: Record<Block['t'], string> = {
+  img: 'תמונה',
   p: 'פסקה',
   h2: 'כותרת',
   h3: 'כותרת משנה',

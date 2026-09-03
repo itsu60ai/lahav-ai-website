@@ -46,7 +46,6 @@ export function buildOutputFormatInstructions(): string {
 ### כותרת משנה קטנה יותר (H3)
 - פריט ברשימה
 > ציטוט
-[DIAGRAM] סמנו כאן היכן כדאי שיופיע תרשים
 
 אורך: כתבה מלאה, 700 עד 1100 מילים. לא פסקה או שתיים.
 
@@ -57,13 +56,10 @@ export function buildOutputFormatInstructions(): string {
 לחלוטין שהן נכונות (למשל עמוד מוצר רשמי). אסור להמציא כתובת. אם אין לכם
 כתובת אמיתית מעבר למקור, קשרו למקור עצמו ולא לשום דבר אחר.
 
-תרשימים: ברירת המחדל היא בלי תרשים בכלל. רוב הכתבות לא צריכות אחד.
-הוסיפו [DIAGRAM] רק אם יש משהו שבאמת קשה להסביר במילים ותרשים יעשה את זה
-ברור יותר, למשל תהליך עם כמה שלבים או השוואה בין שתי דרכים. תרשים
-שרק מקשט, או שרק חוזר על מה שכתוב בפסקה, הוא רעש. מקסימום שניים, וברוב
-המקרים אפס.
-
-אם מדובר בכתבת מגמה (trend), חובה כותרות נפרדות: ## עובדה, ## פרשנות, ## המלצה.
+אם מדובר בכתבת מגמה: חובה שיהיה ברור לקורא מה עובדה מהמקור ומה הפרשנות
+שלכם. עושים את זה בתוך המשפטים ("המקור מדווח ש...", "מה שאנחנו מבינים מזה
+הוא..."), ולא בכותרות. אסור לכתוב כותרת בשם "עובדה", "פרשנות" או "המלצה",
+זה נראה כמו טופס ולא כמו כתבה.
 
 ===SEO===
 PRIMARY_KEYWORD: מילת המפתח הראשית
@@ -82,15 +78,38 @@ SEARCH_INTENT: מה המבקר מחפש כשהוא מגיע לכתבה הזו
 ALT: תיאור אמיתי של מה שהתמונה מראה
 CAPTION: כיתוב קצר, אופציונלי
 
-===IMAGE_SVG===
-רק אם סימנתם [DIAGRAM] בגוף. קוד SVG מקורי (לא תמונה פוטוגרפית, לא רובוט,
-לא מוח זוהר). viewBox בגודל 1200 380, צבעים: רקע #f2f4f7, מסגרת והדגשה
-#0b1530 ו-#2997ff. התרשים צריך להראות משהו אמיתי מהכתבה.
-אם לא צריך תרשים, השאירו את המקטע הזה ריק לגמרי. זו התשובה הנכונה ברוב
-המקרים ואין בה שום בעיה.
+===PHOTO_PROMPT===
+תיאור באנגלית של תמונה אמיתית לראש הכתבה. זו לא תמונה מופשטת של טכנולוגיה,
+אלא סצנה אנושית שקשורה לנושא: אנשים אמיתיים, מקום עבודה אמיתי, רגע אמיתי.
+כתבו משפט אחד או שניים באנגלית בלבד, ותארו מה רואים בפריים.
+דוגמה טובה: "A small shop owner at a wooden counter looking at a laptop,
+morning light, boxes waiting to be packed behind her."
+דוגמה רעה: "Artificial intelligence concept, digital brain, futuristic."
+אל תבקשו טקסט, מספרים, לוגו או ממשק בתוך התמונה, זה תמיד יוצא מעוות.
 
-===IMAGE_SVG_2===
-רק אם סימנתם [DIAGRAM] פעם שנייה. אחרת השאירו ריק.
+===PHOTO_PROMPT_2===
+תיאור באנגלית לתמונה שנייה, לאמצע הכתבה. אופציונלי, אפשר להשאיר ריק.
+
+===CITATIONS===
+- שם המקור | https://example.com
+(שורה אחת לכל מקור בו נעשה שימוש בפועל)
+
+===IMAGE===
+ALT: תיאור אמיתי של מה שהתמונה מראה
+CAPTION: כיתוב קצר, אופציונלי
+
+===PHOTO_PROMPT===
+תיאור באנגלית של תמונה אמיתית לראש הכתבה. זו לא תמונה מופשטת של טכנולוגיה,
+אלא סצנה אנושית שקשורה לנושא: אנשים אמיתיים, מקום עבודה אמיתי, רגע אמיתי.
+כתבו משפט אחד או שניים באנגלית בלבד, ותארו מה רואים בפריים.
+דוגמה טובה: "A small shop owner at a wooden counter looking at a laptop,
+morning light, boxes waiting to be packed behind her."
+דוגמה רעה: "Artificial intelligence concept, digital brain, futuristic."
+אל תבקשו טקסט, מספרים, לוגו או ממשק בתוך התמונה, זה תמיד יוצא מעוות.
+
+===PHOTO_PROMPT_2===
+תיאור באנגלית לתמונה שנייה, לאמצע הכתבה. אופציונלי, אפשר להשאיר ריק.
+
 `.trim();
 }
 
@@ -106,6 +125,12 @@ export interface ManualParseResult {
   blocked: boolean;
   /** shown to the admin, never hidden — this is what "explain what's missing" means */
   warnings: string[];
+  /**
+   * English descriptions of the photographs to generate, in order. Parsing
+   * only reads them; the actual image call lives in src/lib/ai/images.ts and
+   * runs from generate.ts, so this file stays free of network access.
+   */
+  photoPrompts: string[];
 }
 
 function stripFence(s: string): string {
@@ -297,6 +322,7 @@ export function parseManualResult(
       warnings: [
         'לא הצלחנו למצוא כותרת או תוכן בתשובה שהודבקה. ודאו שהודבקה התשובה המלאה מהצ\'אט, כולל התגיות ===TITLE=== ו-===BODY===, ונסו שוב.',
       ],
+      photoPrompts: [],
     };
   }
   if (!title) warnings.push('לא נמצאה כותרת (===TITLE===). הושלמה כותרת זמנית מהנושא המקורי.');
@@ -395,5 +421,9 @@ export function parseManualResult(
     visual,
   };
 
-  return { output, blocked: false, warnings };
+  const photoPrompts = [sections.PHOTO_PROMPT ?? '', sections.PHOTO_PROMPT_2 ?? '']
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  return { output, blocked: false, warnings, photoPrompts };
 }

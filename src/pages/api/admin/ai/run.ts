@@ -32,7 +32,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (denied) return denied;
 
   const aiStores = getAiStores();
-  const { articles } = locals.stores!;
+  const { articles, media } = locals.stores!;
 
   const body = (await request.json().catch(() => ({}))) as { generationId?: string };
   const generationId = String(body.generationId ?? '');
@@ -84,6 +84,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
           brief: generation.brief,
           aiStores,
           articles,
+          media,
+          createdBy: locals.user!.id,
         });
         finished = true;
         clearInterval(beat);

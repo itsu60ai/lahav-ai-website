@@ -43,7 +43,14 @@ const needsAttention = blocking.length + review.length;
 
 const outcome: 'pass' | 'review' | 'blocked' =
   generation.status !== 'succeeded' ? 'blocked' : blocking.length > 0 ? 'blocked' : review.length > 0 ? 'review' : 'pass';
-const OUTCOME_LABEL = { pass: 'תקין ✓', review: 'דורש בדיקה', blocked: 'חסום' } as const;
+// Plain outcomes. These used to read "תקין ✓ / דורש בדיקה / חסום", which
+// told the user a state but never what to do about it, and the count next
+// to them said "1 נושאים דורשים טיפול" -- wrong Hebrew and still no action.
+const OUTCOME_LABEL = {
+  pass: 'מוכן לפרסום',
+  review: 'אפשר לפרסם, אבל שווה לקרוא קודם',
+  blocked: 'צריך תיקון לפני פרסום',
+} as const;
 const OUTCOME_CLASS = { pass: 'adm-pill--published', review: 'adm-pill--placeholder', blocked: 'adm-pill--blocked' } as const;
 const SEVERITY_LABEL = { blocking: 'חוסם', review: 'לבדיקה', info: 'הערה' } as const;
 const SEVERITY_CLASS = { blocking: 'issue--blocking', review: 'issue--review', info: 'issue--info' } as const;
@@ -129,9 +136,12 @@ const runFailed = generation.status === 'failed';
       <span class:list={['adm-pill', 'adm-pill--outcome', OUTCOME_CLASS[outcome]]}>
         מצב המאמר: {OUTCOME_LABEL[outcome]}
       </span>
-      {needsAttention > 0 && <span class="status-note status-note--warn">{needsAttention} נושאים דורשים טיפול</span>}
-      {info.length > 0 && <span class="status-note">{info.length === 1 ? 'הערה אחת בלבד' : `${info.length} הערות בלבד`}</span>}
-      {needsAttention === 0 && info.length === 0 && <span class="status-note status-note--ok">הכל תקין</span>}
+      {needsAttention > 0 && (
+        <span class="status-note status-note--warn">
+          {needsAttention === 1 ? 'נקודה אחת למטה' : `${needsAttention} נקודות למטה`}
+        </span>
+      )}
+      {needsAttention === 0 && info.length === 0 && <span class="status-note status-note--ok">לא נמצאו בעיות</span>}
     </div>
 
     <div class="primary-actions">
@@ -189,9 +199,17 @@ const runFailed = generation.status === 'failed';
       }
     </div>
     {
-      article && outcome !== 'pass' && article.status !== 'published' && (
+      article && outcome === 'blocked' && article.status !== 'published' && (
         <p class="foot-note">
-          פרסום זמין רק כשהמצב הוא "תקין ✓". טפלו בנושאים למטה, לחצו "בדיקה מחדש", והכפתור ייפתח.
+          מצאנו משהו שכדאי לתקן לפני פרסום. גללו למטה, קראו את הנקודה, תקנו אותה
+          ב"עריכת המאמר", ואז לחצו "בדיקה מחדש" כדי לפתוח את כפתור הפרסום.
+        </p>
+      )
+    }
+    {
+      article && outcome === 'review' && article.status !== 'published' && (
+        <p class="foot-note">
+          אפשר לפרסם ככה. הנקודות למטה הן הערות בלבד, לא חסימות.
         </p>
       )
     }
@@ -204,10 +222,10 @@ const runFailed = generation.status === 'failed';
 
   <!-- ─────────── issue cards ─────────── -->
   <section class="card" hidden={isRunning || isAwaitingPaste || (runFailed && !article)}>
-    <h2 class="card__h">בדיקות איכות</h2>
+    <h2 class="card__h">מה שווה לבדוק</h2>
     {
       orderedFailures.length === 0 ? (
-        <p class="empty__b">כל הבדיקות עברו. עדיין מומלץ לקרוא את המאמר לפני פרסום, זו לא ערובה מוחלטת.</p>
+        <p class="empty__b">לא מצאנו בעיות. עדיין שווה לקרוא את המאמר לפני שמפרסמים.</p>
       ) : (
         <div class="issues">
           {orderedFailures.map((f) => (

@@ -231,7 +231,7 @@ export const apiGenerator: TextGenerator = {
     }
 
     return {
-      output: parsed.output,
+      output: { ...parsed.output, photoPrompts: parsed.photoPrompts },
       meta: {
         model: MODEL,
         mode: 'api',

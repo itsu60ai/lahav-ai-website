@@ -20,7 +20,8 @@
 // response is sent. This is the same create-pending-then-patch shape the
 // manual paste flow has always used, so the data model needed no change.
 import { newId, slugify } from '../cms/context.ts';
-import type { ArticleStore, VizKind } from '../cms/types.ts';
+import type { ArticleStore, Block, MediaStore, VizKind } from '../cms/types.ts';
+import { generateAndStoreImage } from './images.ts';
 import { SERVICES } from '../site.ts';
 import { assemblePrompt } from './prompt.ts';
 import { runGates } from './gates.ts';
@@ -61,6 +62,11 @@ export interface GenerateArgs {
   brief: Brief;
   aiStores: AiStores;
   articles: ArticleStore;
+  /** the existing media library. Generated photographs are filed here, the
+   *  same place a human upload goes, and referenced as /api/media/<id>. */
+  media?: MediaStore;
+  /** who to record as the uploader of a generated photograph */
+  createdBy?: string;
   /**
    * Overrides ai_settings.provider_mode for this one generation. The free
    * "טיוטת בדיקה" button passes 'mock' so that a button labelled as a free
@@ -180,6 +186,57 @@ export async function completeGeneration(generationId: string, args: GenerateArg
       const service = SERVICES.find((s) => s.slug === brief.serviceSlug);
       const viz: VizKind = vizForServiceSlug(brief.serviceSlug);
 
+      // ── real photographs ──
+      // The engine could only draw vector diagrams before, which is why
+      // every article looked identical. A failure here is never fatal: an
+      // article without a picture is still a finished article, so a
+      // problem is recorded as a note and the writing ships regardless.
+      let body = output.body;
+      const photoPrompts = output.photoPrompts ?? [];
+      if (args.media && photoPrompts.length > 0) {
+        const imageWarnings: string[] = [];
+        const images: Block[] = [];
+        for (const [i, description] of photoPrompts.slice(0, 2).entries()) {
+          const img = await generateAndStoreImage({
+            description,
+            alt: i === 0 ? output.title : `תמונה נלווית לכתבה: ${output.title}`,
+            media: args.media,
+            createdBy: args.createdBy ?? 'ai-engine',
+            slug,
+            warnings: imageWarnings,
+          });
+          if (img) images.push({ t: 'img', src: img.src, alt: i === 0 ? output.title : '', caption: '' });
+        }
+
+        if (images.length > 0) {
+          // First image opens the article. A second one goes at the last
+          // section break, so it lands between ideas rather than cutting a
+          // paragraph in half.
+          const rest = [...body];
+          if (images.length > 1) {
+            const breaks = rest.map((b, i) => (b.t === 'h2' ? i : -1)).filter((i) => i > 0);
+            const at = breaks.length ? breaks[Math.floor(breaks.length / 2)] : rest.length;
+            rest.splice(at, 0, images[1]);
+          }
+          body = [images[0], ...rest];
+        }
+
+        if (imageWarnings.length > 0) {
+          gates = {
+            ...gates,
+            failures: [
+              ...gates.failures,
+              ...imageWarnings.map((detail) => ({
+                gate: 'image',
+                severity: 'info' as const,
+                title: 'תמונה לא נוצרה',
+                detail,
+              })),
+            ],
+          };
+        }
+      }
+
       await articles.create({
         id,
         slug,
@@ -195,7 +252,7 @@ export async function completeGeneration(generationId: string, args: GenerateArg
         vizCaption: output.visual.caption || output.title,
         serviceName: service?.name ?? '',
         serviceSlug: service?.slug ?? '',
-        body: output.body,
+        body,
         // Never mistakeable for approved, real content — same flag and
         // same UI treatment already used for review-only articles.
         isPlaceholder: true,

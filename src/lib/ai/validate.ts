@@ -20,7 +20,7 @@ export function isSvgSafe(svg: string): boolean {
 // validation with "רכיבי תוכן בפורמט לא תקין" and threw the whole article
 // away. The only generations that ever passed were the ones whose diagram
 // was missing or rejected -- which is precisely backwards.
-const VALID_BLOCK_TYPES = new Set(['p', 'h2', 'h3', 'quote', 'ul', 'viz', 'aiviz']);
+const VALID_BLOCK_TYPES = new Set(['p', 'h2', 'h3', 'quote', 'ul', 'viz', 'aiviz', 'img']);
 
 function isValidBlock(b: unknown): b is Block {
   if (!b || typeof b !== 'object') return false;
@@ -28,6 +28,12 @@ function isValidBlock(b: unknown): b is Block {
   if (!VALID_BLOCK_TYPES.has(t)) return false;
   if (t === 'ul') return Array.isArray((b as any).items);
   if (t === 'viz') return true;
+  if (t === 'img') {
+    // Only our own media route. An article must never be able to hotlink
+    // an arbitrary external URL into the page.
+    const src = (b as any).src;
+    return typeof src === 'string' && src.startsWith('/api/media/');
+  }
   if (t === 'aiviz') {
     // Shape AND safety: an aiviz block carries raw markup that will be
     // rendered with set:html, so it is checked here as well as at render

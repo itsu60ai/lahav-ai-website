@@ -264,6 +264,31 @@ const vizLabels: Record<string, string> = {
           note.className = 'blk__aiviz-note';
           note.textContent = 'תרשים שנוצר על ידי מנוע ה-AI. לא ניתן לערוך כאן, אפשר רק להסיר.';
           wrap.append(box, note);
+        } else if (b.t === 'img') {
+          // The picture itself is not editable here (it lives in the media
+          // library), but its alt text and caption are, and both matter.
+          const wrapImg = document.createElement('div');
+          wrapImg.className = 'blk__img';
+          const pic = document.createElement('img');
+          pic.src = b.src;
+          pic.alt = b.alt || '';
+          pic.loading = 'lazy';
+          wrapImg.appendChild(pic);
+
+          const altIn = document.createElement('input');
+          altIn.className = 'adm-input';
+          altIn.placeholder = 'תיאור התמונה (חשוב לנגישות ולגוגל)';
+          altIn.value = b.alt || '';
+          altIn.addEventListener('input', () => { b.alt = altIn.value; touch(); });
+
+          const capIn = document.createElement('input');
+          capIn.className = 'adm-input';
+          capIn.placeholder = 'כיתוב מתחת לתמונה (לא חובה)';
+          capIn.value = b.caption || '';
+          capIn.addEventListener('input', () => { b.caption = capIn.value; touch(); });
+
+          wrapImg.append(altIn, capIn);
+          wrap.appendChild(wrapImg);
         } else if (b.t === 'ul') {
           const list = document.createElement('div');
           list.className = 'blk__list';
@@ -432,6 +457,9 @@ const vizLabels: Record<string, string> = {
 </AdminLayout>
 
 <style>
+  .blk__img { display: grid; gap: 0.5rem; }
+  .blk__img img { width: 100%; max-width: 22rem; border-radius: 0.625rem; display: block; }
+
   .ed__top {
     display: flex;
     align-items: center;

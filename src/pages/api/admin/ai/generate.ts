@@ -25,14 +25,14 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   if (denied) return denied;
 
   const aiStores = getAiStores();
-  const { articles } = locals.stores!;
+  const { articles, media } = locals.stores!;
   const f = await request.formData();
 
   const brief = await buildBriefFromForm(f, aiStores);
   if (!brief) return redirect('/admin/ai?err=nobrief', 303);
 
   const forceMode = String(f.get('mode') ?? '').trim() || undefined;
-  const args = { brief, aiStores, articles, forceMode };
+  const args = { brief, aiStores, articles, media, createdBy: locals.user!.id, forceMode };
 
   let generationId: string;
   try {
