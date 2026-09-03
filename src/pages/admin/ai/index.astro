@@ -11,9 +11,10 @@
 // JavaScript switched off and each tab is its own shareable URL. No
 // client-side script is needed and none is loaded.
 //
-// Nothing on this page calls a paid API. The recommendation card is the
-// free heuristic (recommend/heuristic.ts) and every list below is a read of
-// data the radar already collected.
+// The recommendation card is the free heuristic (recommend/heuristic.ts)
+// and every list below is a read of data the radar already collected.
+// The ONE action here that can spend money is "כתיבת מאמר אמיתי" while
+// provider_mode is 'api'; it is labelled with its mode and cost in the UI.
 export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
@@ -138,14 +139,23 @@ const withArticles = generations
 const drafts = withArticles.filter((x) => x.a.status !== 'published');
 const published = withArticles.filter((x) => x.a.status === 'published');
 
-// pending manual pastes are drafts-in-waiting and belong on the drafts tab
-const pendingPastes = generations.filter((g) => g.status === 'pending');
+// Two very different kinds of "pending" live on the drafts tab, and showing
+// them the same way told the user to go and paste something for an article
+// the machine was already busy writing.
+//   manual -> waiting for a HUMAN to paste the reply back
+//   api    -> the background task is writing it right now (see generate.ts)
+const pendingPastes = generations.filter((g) => g.status === 'pending' && g.providerMode === 'manual');
+const pendingRuns = generations.filter((g) => g.status === 'pending' && g.providerMode !== 'manual');
+
+// A generation that failed produced no article, so it never appears in
+// `drafts` -- it used to vanish with no trace and no explanation.
+const failedRuns = generations.filter((g) => g.status === 'failed' && !g.articleId);
 
 const TAB_COUNTS: Record<Tab, number> = {
   latest: latest.length,
   trending: trending.length,
   evergreen: evergreen.length,
-  drafts: drafts.length + pendingPastes.length,
+  drafts: drafts.length + pendingPastes.length + pendingRuns.length + failedRuns.length,
   published: published.length,
 };
 
@@ -163,6 +173,21 @@ const MODE_LABEL: Record<string, string> = {
 
 const fmt = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+// "כתיבת מאמר אמיתי" used to always post to manual-prepare, so with
+// provider_mode='api' the user still landed on a copy-paste screen for an
+// article the engine was configured to write by itself. It now follows the
+// configured mode, and the button says which one it is about to use.
+const writeAction =
+  settings.providerMode === 'manual'
+    ? `/api/admin/ai/manual-prepare?csrf=${csrf}`
+    : `/api/admin/ai/generate?csrf=${csrf}`;
+const WRITE_LABEL =
+  settings.providerMode === 'manual'
+    ? 'הכנת בקשה להדבקה'
+    : settings.providerMode === 'api'
+      ? 'כתיבת מאמר (בתשלום)'
+      : 'כתיבת מאמר';
 
 const backHere = `/admin/ai?tab=${tab}`;
 const tabList = TABS.map((t) => ({ id: t, label: TAB_LABELS[t], count: TAB_COUNTS[t] }));
@@ -260,13 +285,13 @@ const collectStats = collected
                 {
                   mayCreate && (
                     <div class="rec__actions">
-                      <form method="post" action={`/api/admin/ai/manual-prepare?csrf=${csrf}`}>
+                      <form method="post" action={writeAction}>
                         <input type="hidden" name="opportunityId" value={pick.opportunityId} />
-                        <button class="adm-btn adm-btn--primary" type="submit">כתיבת מאמר אמיתי</button>
+                        <button class="adm-btn adm-btn--primary" type="submit">{WRITE_LABEL}</button>
                       </form>
                       <form method="post" action={`/api/admin/ai/generate?csrf=${csrf}`}>
                         <input type="hidden" name="opportunityId" value={pick.opportunityId} />
-                        <button class="adm-btn adm-btn--ghost" type="submit">טיוטת בדיקה</button>
+                        <button class="adm-btn adm-btn--ghost" type="submit" name="mode" value="mock">שלד לדוגמה (חינם)</button>
                       </form>
                     </div>
                   )
@@ -429,13 +454,14 @@ const collectStats = collected
               {
                 mayCreate && (
                   <div class="opp__actions">
-                    <form method="post" action={`/api/admin/ai/manual-prepare?csrf=${csrf}`}>
+                    <form method="post" action={writeAction}>
                       <input type="hidden" name="opportunityId" value={o.id} />
-                      <button class="adm-btn adm-btn--primary row__btn" type="submit">כתיבת מאמר אמיתי</button>
+                      <button class="adm-btn adm-btn--primary row__btn" type="submit">{WRITE_LABEL}</button>
                     </form>
                     <form method="post" action={`/api/admin/ai/generate?csrf=${csrf}`}>
                       <input type="hidden" name="opportunityId" value={o.id} />
-                      <button class="adm-btn adm-btn--ghost row__btn" type="submit">טיוטת בדיקה</button>
+                      <input type="hidden" name="mode" value="mock" />
+                      <button class="adm-btn adm-btn--ghost row__btn" type="submit" title="יוצר שלד מהיר מתבנית, בלי להפעיל את ה-AI ובלי עלות">שלד לדוגמה (חינם)</button>
                     </form>
                     <form method="post" action={`/api/admin/ai/dismiss?csrf=${csrf}`}>
                       <input type="hidden" name="id" value={o.id} />
@@ -453,6 +479,43 @@ const collectStats = collected
   {
     tab === 'drafts' && (
       <div class="opps">
+        {pendingRuns.map((g) => (
+          <article class="opp opp--running">
+            <div class="opp__main">
+              <p class="opp__title">{g.brief.topic}</p>
+              <div class="opp__meta">
+                <span>התחיל {fmt(g.createdAt)}</span>
+                <span class="adm-pill adm-pill--placeholder">נכתב עכשיו</span>
+              </div>
+              <p class="opp__why">
+                המערכת כותבת את הכתבה הזו ברקע. זה לוקח בדרך כלל בין דקה לשלוש דקות.
+                אפשר לעזוב את המסך ולחזור, זה ימשיך לרוץ.
+              </p>
+            </div>
+            <div class="opp__actions">
+              <a class="adm-btn adm-btn--primary row__btn" href={`/admin/ai/${g.id}`}>מעקב</a>
+            </div>
+          </article>
+        ))}
+
+        {failedRuns.map((g) => (
+          <article class="opp opp--failed">
+            <div class="opp__main">
+              <p class="opp__title">{g.brief.topic}</p>
+              <div class="opp__meta">
+                <span>{fmt(g.createdAt)}</span>
+                <span class="adm-pill adm-pill--blocked">הכתיבה נכשלה</span>
+              </div>
+              <p class="opp__why">
+                {g.gates.failures[0]?.detail ?? 'הכתיבה נכשלה ולא נוצרה כתבה.'}
+              </p>
+            </div>
+            <div class="opp__actions">
+              <a class="adm-btn adm-btn--ghost row__btn" href={`/admin/ai/${g.id}`}>פרטים</a>
+            </div>
+          </article>
+        ))}
+
         {pendingPastes.map((g) => (
           <article class="opp">
             <div class="opp__main">
@@ -514,7 +577,7 @@ const collectStats = collected
           );
         })}
 
-        {drafts.length === 0 && pendingPastes.length === 0 && (
+        {drafts.length === 0 && pendingPastes.length === 0 && pendingRuns.length === 0 && failedRuns.length === 0 && (
           <div class="card empty">
             <p class="empty__t">אין טיוטות ממתינות</p>
             <p class="empty__b">בחרו נושא מלשונית "חדש" והתחילו כתיבה.</p>
@@ -565,7 +628,7 @@ const collectStats = collected
     mayCreate && (
       <details class="card card--collapsed">
         <summary class="card__h card__h--summary">כתיבת בריף בעצמכם (אופציונלי)</summary>
-        <form method="post" action={`/api/admin/ai/manual-prepare?csrf=${csrf}`} class="brief-form">
+        <form method="post" action={writeAction} class="brief-form">
           <div class="adm-field">
             <label class="adm-label" for="topic">נושא</label>
             <input class="adm-input" id="topic" name="topic" required placeholder="לדוגמה: איך לבחור מערכת CRM ראשונה" />
@@ -600,9 +663,9 @@ const collectStats = collected
             <textarea class="adm-textarea" id="notes" name="notes" rows={2} />
           </div>
           <div class="brief-actions">
-            <button class="adm-btn adm-btn--primary" type="submit">כתיבת מאמר אמיתי</button>
-            <button class="adm-btn adm-btn--ghost" type="submit" formaction={`/api/admin/ai/generate?csrf=${csrf}`}>
-              טיוטת בדיקה בלבד
+            <button class="adm-btn adm-btn--primary" type="submit">{WRITE_LABEL}</button>
+            <button class="adm-btn adm-btn--ghost" type="submit" name="mode" value="mock" formaction={`/api/admin/ai/generate?csrf=${csrf}`}>
+              שלד לדוגמה (חינם)
             </button>
           </div>
         </form>
@@ -650,6 +713,9 @@ const collectStats = collected
   .filters__sel { min-width: 10rem; }
   .filters__go { align-self: end; }
   .filters__count { font-size: 0.8125rem; color: var(--color-ink-3); margin-bottom: 0.75rem; }
+
+  .opp--running { border-inline-start: 3px solid var(--color-electric); }
+  .opp--failed { border-inline-start: 3px solid var(--color-error); }
 
   .foot-note {
     font-size: 0.8125rem;

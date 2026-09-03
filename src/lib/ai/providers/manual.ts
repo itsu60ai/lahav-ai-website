@@ -46,7 +46,19 @@ export function buildOutputFormatInstructions(): string {
 ### כותרת משנה קטנה יותר (H3)
 - פריט ברשימה
 > ציטוט
-[DIAGRAM] — סמנו כאן היכן כדאי שיופיע תרשים
+[DIAGRAM] סמנו כאן היכן כדאי שיופיע תרשים
+
+אורך: כתבה מלאה, 700 עד 1100 מילים. לא פסקה או שתיים.
+
+קישורים בתוך הטקסט (חשוב, זה מה שגורם לכתבה להיראות כתובה בידי אדם):
+שלבו 2 עד 4 קישורים אמיתיים בתוך המשפטים עצמם, בפורמט [טקסט הקישור](כתובת).
+הקישור נכנס בדיוק במקום שבו מזכירים את מה שהוא מוביל אליו, לא ברשימה בסוף.
+מותר לקשר רק לכתובות שקיבלתם כאן במקור, או לכתובות רשמיות שאתם בטוחים
+לחלוטין שהן נכונות (למשל עמוד מוצר רשמי). אסור להמציא כתובת. אם אין לכם
+כתובת אמיתית מעבר למקור, קשרו למקור עצמו ולא לשום דבר אחר.
+
+תרשימים: שלבו 2 עד 3 סימוני [DIAGRAM] בנקודות שבהן תרשים באמת עוזר להבין,
+ולכל אחד מהם ספקו SVG בהמשך (IMAGE_SVG, IMAGE_SVG_2, IMAGE_SVG_3 לפי הסדר).
 
 אם מדובר בכתבת מגמה (trend), חובה כותרות נפרדות: ## עובדה, ## פרשנות, ## המלצה.
 
@@ -68,9 +80,16 @@ ALT: תיאור אמיתי של מה שהתמונה מראה
 CAPTION: כיתוב קצר, אופציונלי
 
 ===IMAGE_SVG===
-קוד SVG מקורי לתרשים (לא תמונה פוטוגרפית, לא רובוט, לא מוח זוהר).
+קוד SVG מקורי לתרשים הראשי (לא תמונה פוטוגרפית, לא רובוט, לא מוח זוהר).
 viewBox בגודל 1200 380, צבעים: רקע #f2f4f7, מסגרת/הדגשה #0b1530 ו-#2997ff.
+התרשים צריך להראות משהו אמיתי מהכתבה: שלבים בתהליך, השוואה, לפני ואחרי.
 אם אין לכם דרך ליצור SVG, השאירו את המקטע הזה ריק ותמונה זמנית תיווצר במקום.
+
+===IMAGE_SVG_2===
+SVG לתרשים השני, באותם כללים. אם יש רק תרשים אחד, השאירו ריק.
+
+===IMAGE_SVG_3===
+SVG לתרשים השלישי, באותם כללים. אם אין, השאירו ריק.
 `.trim();
 }
 
@@ -294,12 +313,43 @@ export function parseManualResult(
   // A real, article-specific diagram replaces the generic placeholder
   // marker in the body — the generic site diagram stays as the fallback
   // (visual.source === 'mock') exactly when no valid SVG was supplied.
+  //
+  // Up to three diagrams are supported (2026-09-03). One bare diagram per
+  // article read as machine output; a piece with a diagram at each point
+  // where one actually helps reads as something a person built. The Nth
+  // [DIAGRAM] marker in the body takes the Nth supplied SVG, and any
+  // marker with no SVG behind it stays the site's own generic figure.
   let finalBody = body.length > 0 ? body : [{ t: 'p' as const, x: '(לא נמצא תוכן, יש לערוך את הטיוטה)' }, { t: 'viz' as const }];
-  if (visual.source === 'generated') {
-    const vizIndex = finalBody.findIndex((b) => b.t === 'viz');
-    if (vizIndex !== -1) {
-      finalBody = [...finalBody];
-      finalBody[vizIndex] = { t: 'aiviz', svg: visual.svgMarkup, alt: visual.altText, caption: visual.caption };
+
+  const extraSvgs = [sections.IMAGE_SVG_2 ?? '', sections.IMAGE_SVG_3 ?? '']
+    .map((raw) => stripFence(raw || ''))
+    .filter((c) => /^<svg[\s>]/i.test(c) && isSvgSafe(c));
+
+  const inlineDiagrams = [
+    ...(visual.source === 'generated'
+      ? [{ svg: visual.svgMarkup as string, alt: visual.altText, caption: visual.caption }]
+      : []),
+    ...extraSvgs.map((svg, i) => ({
+      svg,
+      alt: `תרשים ${i + 2} לכתבה בנושא ${brief.topic}`,
+      caption: '',
+    })),
+  ];
+
+  if (inlineDiagrams.length > 0) {
+    finalBody = [...finalBody];
+    let used = 0;
+    for (let i = 0; i < finalBody.length && used < inlineDiagrams.length; i += 1) {
+      if (finalBody[i].t !== 'viz') continue;
+      const d = inlineDiagrams[used];
+      finalBody[i] = { t: 'aiviz', svg: d.svg, alt: d.alt, caption: d.caption };
+      used += 1;
+    }
+    // More diagrams than markers: append the leftovers rather than drop
+    // work the model already did.
+    for (; used < inlineDiagrams.length; used += 1) {
+      const d = inlineDiagrams[used];
+      finalBody.push({ t: 'aiviz', svg: d.svg, alt: d.alt, caption: d.caption });
     }
   }
 

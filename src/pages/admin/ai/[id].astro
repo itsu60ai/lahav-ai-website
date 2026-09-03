@@ -50,9 +50,24 @@ const SEVERITY_CLASS = { blocking: 'issue--blocking', review: 'issue--review', i
 
 // ordered so the most serious issues render first
 const orderedFailures = [...blocking, ...review, ...info];
+
+// The browser is redirected here the moment a generation STARTS, so this
+// screen is the first thing the user sees while the article is still being
+// written in the background (see src/lib/ai/generate.ts). Without this the
+// page reported the run as "חסום" -- blocked -- which is a lie: nothing is
+// wrong, it simply is not finished. A manual generation is also 'pending',
+// but that one is waiting for a person, not for the machine.
+const isRunning = generation.status === 'pending' && generation.providerMode !== 'manual';
+const isAwaitingPaste = generation.status === 'pending' && generation.providerMode === 'manual';
+const runFailed = generation.status === 'failed';
 ---
 
 <AdminLayout title={`בדיקת מאמר: ${generation.brief.topic}`}>
+  {/* The run is DRIVEN from here, not polled: the fetch below holds a
+      streaming connection open, and that is what keeps the Worker alive
+      long enough to finish writing (see src/pages/api/admin/ai/run.ts).
+      The meta refresh is only a fallback for a stalled row. */}
+
   <div class="crumbs">
     <a href="/admin/ai">מנוע תוכן AI</a>
     <span aria-hidden="true">›</span>
@@ -68,8 +83,47 @@ const orderedFailures = [...blocking, ...review, ...info];
     </div>
   </div>
 
+  {
+    isRunning && (
+      <section class="card card--running" data-run-panel data-generation-id={generation.id} data-csrf={csrf}>
+        <h2 class="running__h">הכתבה נכתבת עכשיו</h2>
+        <p class="running__b" data-run-status>
+          המערכת כותבת את הכתבה. זה לוקח בדרך כלל בין דקה לשלוש דקות.
+          <strong>חשוב: אל תסגרו את החלון הזה עד שזה מסתיים.</strong>
+        </p>
+        <div class="run-bar" aria-hidden="true"><span class="run-bar__fill"></span></div>
+        <p class="running__note">מצב: {generation.providerMode === 'api' ? 'כתיבה אוטומטית בתשלום' : 'יצירת שלד לדוגמה, ללא עלות'}</p>
+      </section>
+    )
+  }
+
+  {
+    isAwaitingPaste && (
+      <section class="card card--running">
+        <h2 class="running__h">ממתין להדבקה שלכם</h2>
+        <p class="running__b">
+          הבקשה מוכנה. צריך להעתיק אותה למנוי ה-AI שלכם ולהדביק את התשובה בחזרה.
+        </p>
+        <a class="adm-btn adm-btn--primary" href={`/admin/ai/manual/${generation.id}`}>למסך ההדבקה</a>
+      </section>
+    )
+  }
+
+  {
+    runFailed && !article && (
+      <section class="card card--failed">
+        <h2 class="running__h">הכתיבה נכשלה, לא נוצרה כתבה</h2>
+        <p class="running__b">{generation.gates.failures[0]?.detail ?? 'לא התקבלו פרטים נוספים.'}</p>
+        <p class="running__note">
+          ההזדמנות נשארה ברשימה ואפשר לנסות שוב. אם זה חוזר, בדקו את מצב הספק במסך ההגדרות.
+        </p>
+        <a class="adm-btn adm-btn--ghost" href="/admin/ai?tab=latest">חזרה לרשימת הרעיונות</a>
+      </section>
+    )
+  }
+
   <!-- ─────────── this page is a REVIEW screen: say so, and put the article one click away ─────────── -->
-  <section class="card card--primary">
+  <section class="card card--primary" hidden={isRunning || isAwaitingPaste || (runFailed && !article)}>
     <p class="review-kicker">זהו מסך בדיקה וסקירה. עריכת התוכן עצמו נעשית במאמר.</p>
     <div class="status-row">
       <span class:list={['adm-pill', 'adm-pill--outcome', OUTCOME_CLASS[outcome]]}>
@@ -149,7 +203,7 @@ const orderedFailures = [...blocking, ...review, ...info];
   </section>
 
   <!-- ─────────── issue cards ─────────── -->
-  <section class="card">
+  <section class="card" hidden={isRunning || isAwaitingPaste || (runFailed && !article)}>
     <h2 class="card__h">בדיקות איכות</h2>
     {
       orderedFailures.length === 0 ? (
@@ -352,6 +406,48 @@ const orderedFailures = [...blocking, ...review, ...info];
     });
   });
 
+  // ── drive the generation ──
+  // The Worker only stays alive while it is streaming to a client that is
+  // still reading, so this fetch IS the thing that makes a long generation
+  // possible at all. Reading the body to completion is not optional.
+  (() => {
+    const panel = document.querySelector('[data-run-panel]');
+    if (!panel) return;
+    const statusEl = panel.querySelector('[data-run-status]');
+    const id = panel.getAttribute('data-generation-id') || '';
+    const csrf = panel.getAttribute('data-csrf') || '';
+    const started = Date.now();
+
+    const tick = setInterval(() => {
+      if (!statusEl) return;
+      const secs = Math.round((Date.now() - started) / 1000);
+      statusEl.innerHTML =
+        'המערכת כותבת את הכתבה. עברו ' + secs + ' שניות. ' +
+        '<strong>אל תסגרו את החלון הזה עד שזה מסתיים.</strong>';
+    }, 1000);
+
+    fetch('/api/admin/ai/run?csrf=' + encodeURIComponent(csrf), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ generationId: id }),
+    })
+      .then(async (res) => {
+        if (!res.body) return;
+        const reader = res.body.getReader();
+        // Drain it. Every chunk read is another few seconds of life for
+        // the Worker doing the writing.
+        for (;;) {
+          const { done } = await reader.read();
+          if (done) break;
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        clearInterval(tick);
+        location.reload();
+      });
+  })();
+
   // Discard draft: same delete capability as the article list, just
   // reachable from the review screen for a genuine-duplicate case.
   document.querySelectorAll('[data-discard-draft]').forEach((btn) => {
@@ -382,6 +478,16 @@ const orderedFailures = [...blocking, ...review, ...info];
 </script>
 
 <style>
+  .card--running { border-inline-start: 3px solid var(--color-electric); }
+  .card--failed { border-inline-start: 3px solid var(--color-error); }
+  .running__h { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .running__b { font-size: 0.9375rem; line-height: 1.7; color: var(--color-ink-2); max-width: 46rem; }
+  .running__note { font-size: 0.8125rem; color: var(--color-ink-3); margin-top: 0.5rem; }
+  .run-bar { height: 4px; border-radius: 999px; background: var(--color-line); overflow: hidden; margin-top: 1rem; }
+  .run-bar__fill { display: block; height: 100%; width: 35%; border-radius: 999px; background: var(--color-electric); animation: run-slide 1.4s ease-in-out infinite; }
+  @keyframes run-slide { 0% { transform: translateX(-120%) } 100% { transform: translateX(320%) } }
+  @media (prefers-reduced-motion: reduce) { .run-bar__fill { animation: none; width: 100% } }
+
   .crumbs {
     font-size: 0.875rem;
     color: var(--color-ink-3);

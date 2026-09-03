@@ -13,7 +13,14 @@ export function isSvgSafe(svg: string): boolean {
   return !DANGEROUS_SVG_PATTERN.test(svg);
 }
 
-const VALID_BLOCK_TYPES = new Set(['p', 'h2', 'h3', 'quote', 'ul', 'viz']);
+// 'aiviz' was MISSING from this set until 2026-09-03, and that one omission
+// silently broke the engine's best output. The parser turns a [DIAGRAM]
+// marker into an 'aiviz' block exactly when the model supplied a usable
+// SVG, so every generation that actually produced a real diagram failed
+// validation with "רכיבי תוכן בפורמט לא תקין" and threw the whole article
+// away. The only generations that ever passed were the ones whose diagram
+// was missing or rejected -- which is precisely backwards.
+const VALID_BLOCK_TYPES = new Set(['p', 'h2', 'h3', 'quote', 'ul', 'viz', 'aiviz']);
 
 function isValidBlock(b: unknown): b is Block {
   if (!b || typeof b !== 'object') return false;
@@ -21,6 +28,13 @@ function isValidBlock(b: unknown): b is Block {
   if (!VALID_BLOCK_TYPES.has(t)) return false;
   if (t === 'ul') return Array.isArray((b as any).items);
   if (t === 'viz') return true;
+  if (t === 'aiviz') {
+    // Shape AND safety: an aiviz block carries raw markup that will be
+    // rendered with set:html, so it is checked here as well as at render
+    // time in ArticleView.astro.
+    const svg = (b as any).svg;
+    return typeof svg === 'string' && svg.trim().length > 0 && isSvgSafe(svg);
+  }
   return typeof (b as any).x === 'string';
 }
 
