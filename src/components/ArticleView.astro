@@ -39,35 +39,50 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
        Structure taken from the reference's own article page: a full-bleed
        cover with a curved light panel overlapping its lower corner, and
        the title, author and date sitting inside that panel. -->
-  <header class:list={['art__cover', heroImg && 'art__cover--photo']}>
-    {/* Restored to the ORIGINAL reference layout (see the comment above):
-        full-bleed art filling the cover, with the plate curving up over
-        its lower corner. This is what a diagram used to fill. Removing
-        diagrams left it collapsed to a flat band, and the photo that
-        replaced them got stacked as its own separate section ABOVE the
-        title instead -- pushing the whole cover down, which is the exact
-        "image went to the top, not where we said" complaint. It goes back
-        to sitting IN the cover, behind the plate, exactly where the
-        circled screenshot pointed. */}
-    {
-      heroImg && (
-        <div class="art__cover-art art__cover-art--photo" aria-hidden="true">
-          <img src={heroImg.src} alt="" />
+  {
+    heroImg ? (
+      // A REAL PHOTO IS CONTENT THE READER SHOULD SEE, not a decorative
+      // accent. The white "plate" pattern above was built for a small
+      // abstract diagram peeking out behind it and, measured in the
+      // browser, covered 93% of a real photo's width -- practically
+      // hiding it, which is exactly what was reported ("התמונה... מוסתרת").
+      // A photo cover instead shows the WHOLE image, with the title set
+      // directly on it over a dark scrim, the ordinary way a photo and a
+      // headline share one frame.
+      <header class="art__cover art__cover--photo">
+        <img class="art__cover-photo" src={heroImg.src} alt="" />
+        <div class="art__cover-scrim" aria-hidden="true" />
+        <div class="art__cover-text">
+          <p class="art__kicker art__kicker--onphoto">
+            <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
+            <span class="art__topic">{a.topic}</span>
+            <span class="art__time">{a.readingTime}</span>
+          </p>
+          <h1 class="art__title art__title--onphoto">
+            <span class="mo-line" style="--mo-delay:60ms"><span>{a.title}</span></span>
+          </h1>
+          <p class="art__standfirst art__standfirst--onphoto" data-reveal style="--mo-delay:220ms">
+            {a.standfirst}
+          </p>
         </div>
-      )
-    }
-    <div class:list={['art__plate', heroImg && 'art__plate--overlap']}>
-      <p class="art__kicker">
-        <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
-        <span class="art__topic">{a.topic}</span>
-        <span class="art__time">{a.readingTime}</span>
-      </p>
-      <h1 class="art__title">
-        <span class="mo-line" style="--mo-delay:60ms"><span>{a.title}</span></span>
-      </h1>
-      <p class="art__standfirst" data-reveal style="--mo-delay:220ms">{a.standfirst}</p>
-    </div>
-  </header>
+      </header>
+    ) : (
+      // No photo: the site's original flat blue band, unchanged.
+      <header class="art__cover">
+        <div class="art__plate">
+          <p class="art__kicker">
+            <span class="art__kind">{ARTICLE_KINDS[a.kind].label}</span>
+            <span class="art__topic">{a.topic}</span>
+            <span class="art__time">{a.readingTime}</span>
+          </p>
+          <h1 class="art__title">
+            <span class="mo-line" style="--mo-delay:60ms"><span>{a.title}</span></span>
+          </h1>
+          <p class="art__standfirst" data-reveal style="--mo-delay:220ms">{a.standfirst}</p>
+        </div>
+      </header>
+    )
+  }
 
   <div class="art__body u-container">
     {
@@ -232,40 +247,16 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
        article that has no photo at all. */
     background: linear-gradient(158deg, #17347f 0%, #1d4ed8 55%, #2564e0 100%);
   }
-  /* An article WITH a hero photo gets real height to show it in, behind
-     the plate. One with no photo stays a flat, short band -- there is
-     nothing to give height to. */
-  .art__cover--photo { min-height: calc(84px + clamp(18rem, 36vw, 28rem)); }
-
   .art__cover-art {
     padding: clamp(1.5rem, 3.5vw, 3rem) clamp(1.25rem, 5vw, 5rem) clamp(6rem, 14vw, 11rem);
     max-width: var(--container-wide);
     margin-inline: auto;
   }
-  /* The generated hero photo fills the cover edge to edge, the same
-     footprint the old diagram's padding used to reserve, so the plate
-     below still has real artwork to curve over instead of empty gradient. */
-  .art__cover-art--photo {
-    position: absolute;
-    inset: 0;
-    padding: 0;
-    max-width: none;
-    margin: 0;
-    overflow: hidden;
-  }
-  .art__cover-art--photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  /* the light plate that the title sits on, curving up out of the cover */
+  /* the light plate that the title sits on, curving up out of the cover.
+     Only used when there is no photo -- see the frontmatter branch above. */
   .art__plate {
     position: relative;
     z-index: 2;
-    /* Flat by default: an article with no hero photo has nothing to
-       overlap, and a negative margin here would drag the title under the
-       fixed site header with nothing behind it to justify the space. */
     margin-top: 0;
     margin-inline: auto;
     width: min(100% - 2 * clamp(1rem, 4vw, 3rem), var(--container-max));
@@ -275,9 +266,49 @@ const bodyBlocks = heroImg ? a.body.slice(1) : a.body;
     padding: clamp(1.75rem, 4vw, 3.25rem) clamp(1.5rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem);
     box-shadow: 0 -20px 60px rgba(11, 21, 48, 0.18);
   }
-  /* Restored ONLY when there is a real photo behind it to curve over --
-     see the header comment on .art__cover--photo. */
-  .art__plate--overlap { margin-top: clamp(-7rem, -12vw, -4rem); }
+
+  /* ══════ photo cover ══════
+     A real photo is content the reader should see in full, not a sliver
+     peeking out from behind a plate -- measured in the browser, the plate
+     pattern above covered 93% of a real photo's width. The title sits
+     directly on the image instead, the ordinary way a photo and a
+     headline share one frame: full-bleed photo, a dark scrim for
+     legibility, white text over it. */
+  .art__cover--photo {
+    padding-top: 0;
+    min-height: clamp(20rem, 44vw, 32rem);
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background: #0b1530; /* shows for a moment while the photo loads */
+  }
+  .art__cover-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .art__cover-scrim {
+    position: absolute;
+    inset: 0;
+    /* strongest at the bottom, where the title sits, fading out toward
+       the top so the photo itself still reads clearly up there */
+    background: linear-gradient(0deg, rgba(9, 15, 38, 0.88) 0%, rgba(9, 15, 38, 0.45) 45%, rgba(9, 15, 38, 0.05) 80%);
+  }
+  .art__cover-text {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding: clamp(1.25rem, 4vw, 3rem) clamp(1.25rem, 4vw, 3.5rem) clamp(1.75rem, 4vw, 3rem);
+  }
+  .art__kicker--onphoto .art__topic { color: #cfe0ff; }
+  .art__kicker--onphoto .art__time { color: rgba(255, 255, 255, 0.75); }
+  .art__title--onphoto { color: #fff; }
+  .art__standfirst--onphoto { color: rgba(255, 255, 255, 0.88); }
 
   .art__kicker {
     display: flex;
