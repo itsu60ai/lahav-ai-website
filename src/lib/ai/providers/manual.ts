@@ -130,7 +130,11 @@ function splitSections(raw: string): Record<string, string> {
   };
 
   for (const line of lines) {
-    const m = line.match(/^\s*={2,}\s*([A-Za-z_]+)\s*={2,}\s*$/);
+    // Digits matter: IMAGE_SVG_2 / IMAGE_SVG_3 are real tags. Without
+    // them in the class the marker was not recognised as a section at all
+    // and the whole block, SVG included, was swallowed into the body as
+    // literal text -- visible in the finished article as "===IMAGE_SVG_2===".
+    const m = line.match(/^\s*={2,}\s*([A-Za-z0-9_]+)\s*={2,}\s*$/);
     if (m) {
       flush();
       current = m[1].toUpperCase();
