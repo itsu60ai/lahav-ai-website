@@ -1,0 +1,62 @@
+{
+  "version": "1-sample",
+  "_note": "FIXTURE ONLY. A local stand-in for COPYWRITER AI/voice_rules.json, used so scripts/build-voice.mjs can run before the real file exists. Do not treat this as the authority: the real rule set is produced by the COPYWRITER AI project.",
+  "banned_lexicon": [
+    { "term": "מהווה", "suggest": "הוא / זה", "severity": "blocking", "match": "substring" },
+    { "term": "הינו", "suggest": "הוא", "severity": "blocking", "match": "substring" },
+    { "term": "הינה", "suggest": "היא", "severity": "blocking", "match": "substring" },
+    { "term": "בכדי", "suggest": "כדי", "severity": "blocking", "match": "substring" },
+    { "term": "על מנת", "suggest": "כדי", "severity": "review", "match": "substring" },
+    { "term": "לפיכך", "suggest": "אז", "severity": "review", "match": "substring" },
+    { "term": "יתרה מזאת", "suggest": "וגם", "severity": "review", "match": "substring" },
+    { "term": "כמו כן", "suggest": "וגם", "severity": "review", "match": "substring" },
+    { "term": "תנאי סף", "suggest": "מה שחייבים לפני שמתחילים", "severity": "review", "match": "substring" },
+    { "term": "יחולו עליכם", "suggest": "תצטרכו", "severity": "review", "match": "substring" },
+    { "term": "אפס סובלנות", "suggest": "אוכפים את זה בלי הנחות", "severity": "review", "match": "substring" },
+    { "term": "מגוון רחב של", "suggest": "הרבה", "severity": "review", "match": "substring" },
+    { "term": "פתרונות מתקדמים", "suggest": "הכלים עצמם, בשם", "severity": "review", "match": "substring" },
+    { "term": "בעולם של היום", "suggest": "היום", "severity": "review", "match": "substring" },
+    { "term": "בואו נצלול", "suggest": "אז בוא נתחיל", "severity": "review", "match": "substring" },
+    { "term": "חשוב לציין", "suggest": "שווה לדעת", "severity": "review", "match": "substring" },
+    { "term": "על הרדאר", "suggest": "משהו ששווה לשים לב אליו", "severity": "review", "match": "substring" },
+    { "term": "לסיכום החלק הזה", "suggest": "למחוק את המשפט, הכותרת כבר אומרת את זה", "severity": "review", "match": "substring" }
+  ],
+  "banned_chars": [
+    { "char": "—", "name": "em-dash", "suggest": "פסיק, נקודתיים, או פיצול למשפט נפרד", "severity": "blocking" },
+    { "char": "–", "name": "en-dash", "suggest": "מקף רגיל או פסיק", "severity": "review" },
+    { "char": "!", "name": "exclamation-mark", "suggest": "נקודה", "severity": "review" },
+    { "char": "…", "name": "ellipsis", "suggest": "נקודה", "severity": "info" }
+  ],
+  "metrics": {
+    "max_sentence_words": 20,
+    "max_long_sentence_ratio": 0.15,
+    "max_paragraph_sentences": 4,
+    "avg_sentence_words_range": [8, 16]
+  },
+  "heading_rules": {
+    "forbid_bare_noun_heading": true,
+    "min_heading_words": 2
+  },
+  "claim_rules": {
+    "absolute_legal_terms": [
+      "לא חוקי",
+      "אסור בחוק",
+      "חובה על פי חוק",
+      "מחויב בחוק",
+      "עבירה פלילית",
+      "אין שום אפשרות"
+    ],
+    "requires_source_marker": [
+      "לפי",
+      "על פי",
+      "המקור",
+      "דיווח",
+      "נכתב ב",
+      "פרסמו"
+    ]
+  },
+  "scoring": {
+    "blocking_zero_tolerance": true,
+    "pass_threshold": 8.0
+  }
+}

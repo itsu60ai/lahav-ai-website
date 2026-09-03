@@ -16,6 +16,15 @@ const mayPublish = can(user, 'article:publish');
 const mayCreate = can(user, 'article:create');
 const mayDelete = can(user, 'article:delete');
 
+// Plain query-param filter, same pattern already used on /admin/ai's tabs:
+// works with no client JS, every combination is a shareable/bookmarkable
+// URL, and the counts always reflect the REAL total, not the filtered view.
+const statusParam = Astro.url.searchParams.get('status');
+const statusFilter: 'all' | 'draft' | 'published' =
+  statusParam === 'draft' || statusParam === 'published' ? statusParam : 'all';
+const shown =
+  statusFilter === 'draft' ? drafts : statusFilter === 'published' ? published : all;
+
 const fmt = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 ---
@@ -27,6 +36,17 @@ const fmt = (iso: string | null) =>
       <p class="hd__sub">
         {published.length} מפורסמים · {drafts.length} טיוטות
       </p>
+      <nav class="statfilter" aria-label="סינון לפי סטטוס">
+        <a class:list={['statfilter__pill', statusFilter === 'all' && 'is-on']} href="/admin">
+          הכל ({all.length})
+        </a>
+        <a class:list={['statfilter__pill', statusFilter === 'draft' && 'is-on']} href="/admin?status=draft">
+          רק טיוטות ({drafts.length})
+        </a>
+        <a class:list={['statfilter__pill', statusFilter === 'published' && 'is-on']} href="/admin?status=published">
+          רק מפורסמים ({published.length})
+        </a>
+      </nav>
     </div>
     {
       mayCreate && (
@@ -44,7 +64,7 @@ const fmt = (iso: string | null) =>
   </div>
 
   {
-    mayDelete && all.length > 0 && (
+    mayDelete && shown.length > 0 && (
       <div class="bulkbar" data-bulkbar hidden>
         <span class="bulkbar__count" data-bulk-count></span>
         <button class="adm-btn adm-btn--ghost" type="button" data-bulk-clear>ביטול בחירה</button>
@@ -54,13 +74,24 @@ const fmt = (iso: string | null) =>
   }
 
   {
-    all.length === 0 ? (
+    shown.length === 0 ? (
       <div class="empty">
-        <p class="empty__t">עוד אין מאמרים</p>
-        <p class="empty__b">
-          התחילו מ"מאמר חדש עם AI" ותכתבו על מה, או מ"מאמר ריק" אם אתם רוצים לכתוב הכל בעצמכם.
-          הוא ייווצר כטיוטה ולא יופיע באתר עד שתפרסמו אותו.
-        </p>
+        {statusFilter === 'all' ? (
+          <>
+            <p class="empty__t">עוד אין מאמרים</p>
+            <p class="empty__b">
+              התחילו מ"מאמר חדש עם AI" ותכתבו על מה, או מ"מאמר ריק" אם אתם רוצים לכתוב הכל בעצמכם.
+              הוא ייווצר כטיוטה ולא יופיע באתר עד שתפרסמו אותו.
+            </p>
+          </>
+        ) : (
+          <>
+            <p class="empty__t">{statusFilter === 'draft' ? 'אין כרגע טיוטות' : 'אין כרגע מאמרים מפורסמים'}</p>
+            <p class="empty__b">
+              <a href="/admin">חזרה לכל המאמרים</a>
+            </p>
+          </>
+        )}
       </div>
     ) : (
       <div class:list={['tbl', mayDelete && 'tbl--check']} data-article-table data-csrf={csrf}>
@@ -77,7 +108,7 @@ const fmt = (iso: string | null) =>
           <span class="tbl__actions-h">פעולות</span>
         </div>
 
-        {all.map((a) => (
+        {shown.map((a) => (
           <div class="row" data-row data-row-id={a.id}>
             {mayDelete && (
               <span class="tbl__check">
@@ -216,8 +247,15 @@ const fmt = (iso: string | null) =>
           body: JSON.stringify({ ids }),
         });
         if (!res.ok) throw new Error('failed');
-        ids.forEach((id) => table.querySelector(`[data-row-id="${id}"]`)?.remove());
-        refresh();
+        // A full reload, not a DOM patch: the header count ("X מפורסמים ·
+        // Y טיוטות") and the three filter pill counts are all rendered
+        // server-side from the page-load snapshot, and deleting rows from
+        // the table client-side left every one of those numbers stale
+        // until a manual refresh -- confirmed live ("מחקתי הכל אבל זה
+        // עדיין הראה 22"). Reloading is simpler and more robust than
+        // hunting down and patching every place a count is shown.
+        location.reload();
+        return;
       } catch {
         alert('המחיקה נכשלה. אפשר לנסות שוב.');
         deleteBtn.disabled = false;
@@ -245,6 +283,23 @@ const fmt = (iso: string | null) =>
     font-size: 0.875rem;
     color: var(--color-ink-3);
     margin-top: 0.25rem;
+  }
+  .statfilter { display: flex; gap: 0.4rem; margin-top: 0.75rem; }
+  .statfilter__pill {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-ink-2);
+    background: #fff;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    padding: 0.3rem 0.85rem;
+    text-decoration: none;
+  }
+  .statfilter__pill:hover { background: var(--color-surface-2); }
+  .statfilter__pill.is-on {
+    background: var(--color-royal);
+    border-color: var(--color-royal);
+    color: #fff;
   }
 
   .tbl {
